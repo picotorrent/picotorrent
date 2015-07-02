@@ -1,0 +1,6 @@
+#include "resources.h"
+
+STRINGTABLE 
+BEGIN
+    IDR_MAINWINDOW "PicoTorrent"
+END

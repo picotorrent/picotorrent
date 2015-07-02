@@ -1,0 +1,1 @@
+#define IDR_MAINWINDOW 128

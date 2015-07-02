@@ -1,0 +1,5 @@
+*.aps
+
+build/
+tools/Cake
+tools/nuget.exe
