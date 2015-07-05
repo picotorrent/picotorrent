@@ -12,16 +12,14 @@ set(includes
     ${LIBTORRENT_ROOT}/include
 )
 
-set(sources
-    main
-    picotorrent
-    resources.rc
-    ui/mainwindow
+set(PICOTORRENT_SOURCES
+    src/main
+    src/picotorrent
+    src/resources.rc
+    src/ui/mainwindow
+    src/ui/torrentdetailsframe
+    src/ui/torrentlistviewctrl
 )
-
-foreach(s ${sources})
-    list(APPEND PICOTORRENT_SOURCES src/${s})
-endforeach(s)
 
 include_directories(${includes})
 
