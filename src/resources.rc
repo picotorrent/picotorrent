@@ -1,6 +1,30 @@
 #include "resources.h"
+#include "atlres.h"
 
 STRINGTABLE 
 BEGIN
     IDR_MAINWINDOW "PicoTorrent"
+END
+
+// Menu for main frame
+IDR_MAINWINDOW MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "Add torrent",       ID_FILE_ADD_TORRENT
+        MENUITEM SEPARATOR
+        MENUITEM "Exit",              ID_APP_EXIT
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "About PicoTorrent", ID_APP_ABOUT
+    END
+END
+
+// About dialog
+IDD_ABOUTDIALOG DIALOG DISCARDABLE  0, 0, 187, 102
+FONT 8, "MS Shell Dlg"
+CAPTION "About PicoTorrent"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,130,81,50,14
 END
