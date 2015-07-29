@@ -25,13 +25,14 @@ include_directories(${includes})
 
 link_directories(
     ${BOOST_ROOT}/stage/lib
-    ${LIBTORRENT_ROOT}/bin/msvc-12.0/$(ConfigurationName)/boost-source/link-static/threading-multi
+    ${LIBTORRENT_ROOT}/bin/msvc-12.0/$(ConfigurationName)/boost-source/deprecated-functions-off/link-static/threading-multi
 )
 
 add_definitions(
     -DBOOST_ASIO_SEPARATE_COMPILATION
     -DUNICODE
     -D_UNICODE
+    -DTORRENT_NO_DEPRECATE
     -DWIN32
     -DWIN32_LEAN_AND_MEAN
     /MP
@@ -47,5 +48,6 @@ target_link_libraries(
     PicoTorrent
     dbghelp
     libtorrent
+    iphlpapi
 )
 
