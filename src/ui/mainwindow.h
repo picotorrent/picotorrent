@@ -4,6 +4,7 @@
 #include "../stdafx.h"
 
 #include <libtorrent/session.hpp>
+#include <libtorrent/session_stats.hpp>
 #include <map>
 #include <memory>
 
@@ -27,8 +28,8 @@ public:
         MESSAGE_HANDLER(WM_CREATE, OnCreate)
         MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
         MESSAGE_HANDLER(WM_APP + 0x01, OnSessionAlert)
+        MESSAGE_HANDLER(WM_TIMER, OnBackgroundTimer)
 
-        NOTIFY_CODE_HANDLER(LVN_GETDISPINFO, OnLVGetDispInfo)
         NOTIFY_CODE_HANDLER(NM_DBLCLK, OnTorrentItemDoubleClick)
     END_MSG_MAP()
 
@@ -39,17 +40,17 @@ protected:
 
     LRESULT OnSessionAlert(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
+    LRESULT OnBackgroundTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
     LRESULT OnFileAddTorrent(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
     LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
     LRESULT OnHelpAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-    LRESULT OnLVGetDispInfo(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
-
     LRESULT OnTorrentItemDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
-    void AlertDispatch(std::auto_ptr<libtorrent::alert> alert);
+    void OnSessionAlertNotify();
 
 private:
     CListViewCtrl torrentList_;
@@ -57,6 +58,7 @@ private:
     std::map<std::string, std::shared_ptr<CTorrentDetailsFrame>> torrentDetails_;
 
     std::unique_ptr<libtorrent::session> session_;
+    std::vector<libtorrent::stats_metric> sessionMetrics_;
 };
 
 #endif
