@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 #include <libtorrent/alert_types.hpp>
+#include <libtorrent/bencode.hpp>
 
 #include "aboutdialog.h"
 
@@ -32,15 +33,6 @@ LRESULT CMainWindow::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT | LVS_AUTOARRANGE | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS,
         WS_EX_CLIENTEDGE);
 
-    torrentList_.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT);
-
-    torrentList_.InsertColumn(0, _T("Name"), LVCFMT_LEFT, 250, 0);
-    torrentList_.InsertColumn(1, _T("#"), LVCFMT_RIGHT, 40, 1);
-    torrentList_.InsertColumn(2, _T("Size"), LVCFMT_RIGHT, 100, 2);
-    torrentList_.InsertColumn(3, _T("Status"), LVCFMT_LEFT, 140, 3);
-    torrentList_.InsertColumn(4, _T("DL"), LVCFMT_RIGHT, 100, 4);
-    torrentList_.InsertColumn(5, _T("UL"), LVCFMT_RIGHT, 100, 5);
-
     // Set up our timer. Responsible for checking for updates, refreshing torrents, etc.
     SetTimer(1, 1000, NULL);
 
@@ -49,6 +41,7 @@ LRESULT CMainWindow::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 LRESULT CMainWindow::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
+    session_->set_alert_notify(notify_func_t());
     bHandled = FALSE;
     return 1;
 }
@@ -63,11 +56,9 @@ LRESULT CMainWindow::OnFileAddTorrent(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 
     if (dlg.DoModal() == IDOK)
     {
-        std::string fileName = pt::to_string(dlg.m_szFileName);
-
         libtorrent::add_torrent_params p;
         p.save_path = "C:/Downloads";
-        p.ti = boost::make_shared<libtorrent::torrent_info>(fileName);
+        p.ti = boost::make_shared<libtorrent::torrent_info>(lt::convert_from_wstring(dlg.m_szFileName));
 
         session_->async_add_torrent(p);
     }
@@ -103,21 +94,7 @@ LRESULT CMainWindow::OnSessionAlert(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
             libtorrent::torrent_added_alert* al = libtorrent::alert_cast<libtorrent::torrent_added_alert>(alert);
             lt::torrent_status status = al->handle.status();
 
-            int item = torrentList_.AddItem(torrentList_.GetItemCount(), 0, pt::to_lpwstr(status.name));
-            torrentList_.AddItem(item, 1, pt::to_lpwstr(std::to_string(status.queue_position)));
-            
-            if (al->handle.torrent_file())
-            {
-                torrentList_.AddItem(item, 2, pt::to_lpwstr(std::to_string(al->handle.torrent_file()->total_size())));
-            }
-            else
-            {
-                torrentList_.AddItem(item, 2, L"");
-            }
-
-            torrentList_.AddItem(item, 3, pt::to_lpwstr(std::to_string(status.state)));
-            torrentList_.AddItem(item, 4, pt::to_lpwstr(std::to_string(status.download_rate)));
-            torrentList_.AddItem(item, 5, pt::to_lpwstr(std::to_string(status.upload_rate)));
+            torrentList_.InsertTorrent(status);
         }
         
         case lt::metadata_received_alert::alert_type:
@@ -142,6 +119,8 @@ LRESULT CMainWindow::OnSessionAlert(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
             for (lt::torrent_status status : al->status)
             {
                 // Update items
+                torrentList_.UpdateTorrent(status);
+
                 dl += status.download_payload_rate;
                 ul += status.upload_payload_rate;
             }
