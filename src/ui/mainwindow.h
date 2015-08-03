@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "torrentdetailsframe.h"
+#include "torrentlistviewctrl.h"
 
 class CMainWindow
     : public CFrameWindowImpl<CMainWindow>
@@ -53,10 +54,8 @@ protected:
     void OnSessionAlertNotify();
 
 private:
-    CListViewCtrl torrentList_;
-    
+    CTorrentListViewCtrl torrentList_;
     std::map<std::string, std::shared_ptr<CTorrentDetailsFrame>> torrentDetails_;
-
     std::unique_ptr<libtorrent::session> session_;
     std::vector<libtorrent::stats_metric> sessionMetrics_;
 };

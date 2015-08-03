@@ -7,7 +7,7 @@ CPicoTorrent::CPicoTorrent(HINSTANCE hInstance)
 
     // Set up main application window
     window_.CreateEx();
-    window_.ResizeClient(600, 400);
+    window_.ResizeClient(800, 400);
 }
 
 CPicoTorrent::~CPicoTorrent()
