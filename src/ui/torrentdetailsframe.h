@@ -1,20 +1,15 @@
 #ifndef _PT_UI_TORRENTDETAILSFRAME_H
 #define _PT_UI_TORRENTDETAILSFRAME_H
 
-#include "../stdafx.h"
+#include <libtorrent/torrent_handle.hpp>
+#include <wx/frame.h>
 
-class CTorrentDetailsFrame
-    : public CFrameWindowImpl<CTorrentDetailsFrame>
+class TorrentDetailsFrame : public wxFrame
 {
 public:
-    CTorrentDetailsFrame();
-    ~CTorrentDetailsFrame();
+    TorrentDetailsFrame(wxWindow* parent, wxWindowID id);
 
-    DECLARE_FRAME_WND_CLASS_EX(NULL, IDR_TORRENTDETAILSFRAME, 0, -1);
-
-    BEGIN_MSG_MAP(CTorrentDetailsFrame)
-        CHAIN_MSG_MAP(CFrameWindowImpl<CTorrentDetailsFrame>)
-    END_MSG_MAP()
+    void SetTorrent(const libtorrent::torrent_status& status);
 };
 
 #endif
