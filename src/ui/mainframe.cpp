@@ -91,8 +91,15 @@ void MainFrame::UpdateTorrent(const lt::torrent_status& status)
 
     long idx = item->second;
 
+    std::string queuePosition = "";
+
+    if (status.queue_position >= 0)
+    {
+        queuePosition = std::to_string(status.queue_position + 1);
+    }
+
     torrentList_->SetItem(idx, 0, status.name);
-    torrentList_->SetItem(idx, 1, std::to_string(status.queue_position));
+    torrentList_->SetItem(idx, 1, queuePosition);
     torrentList_->SetItem(idx, 2, GetTorrentState(status));
 }
 
