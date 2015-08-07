@@ -33,6 +33,15 @@ protected:
     };
 
 private:
+    void LoadState();
+    void LoadTorrents();
+    void SaveState();
+    void SaveTorrents();
+
+    void SaveTorrentFile(boost::shared_ptr<const libtorrent::torrent_info> file);
+
+    int numOutstandingResumeData = 0;
+
     libtorrent::session* session_;
     MainFrame* mainFrame_;
     wxTimer* timer_;

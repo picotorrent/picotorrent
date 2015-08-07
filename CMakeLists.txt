@@ -16,6 +16,7 @@ set(includes
 set(PICOTORRENT_SOURCES
     src/main
     src/common
+    src/fsutil
     src/picotorrent
     src/ui/mainframe
     src/ui/torrentlistctrl
@@ -37,6 +38,7 @@ add_definitions(
     -DTORRENT_NO_DEPRECATE
     -DWIN32
     -DWIN32_LEAN_AND_MEAN
+    -D_WIN32_WINNT=0x0501
     /MP
 )
 
