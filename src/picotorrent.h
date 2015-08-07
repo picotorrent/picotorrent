@@ -1,24 +1,43 @@
 #ifndef _PT_PICOTORRENT_H
 #define _PT_PICOTORRENT_H
 
-#include <atlbase.h>
-#include <atlapp.h>
-#include <windows.h>
+#include <wx/app.h>
+#include <wx/timer.h>
 
-#include "ui/mainwindow.h"
+#include <libtorrent/session.hpp>
 
-class CPicoTorrent
+#include "ui/mainframe.h"
+
+class PicoTorrent : public wxApp
 {
 public:
-    CPicoTorrent(HINSTANCE hInstance);
-    ~CPicoTorrent();
+    PicoTorrent();
+    ~PicoTorrent();
 
-    int Run(LPWSTR lpCmdLine, int nCmdShow = SW_SHOWDEFAULT);
+    virtual bool OnInit();
+
+    virtual int OnExit();
+
+    void OnReadAlerts(wxCommandEvent& event);
+
+protected:
+    void OnSessionAlert();
+
+    void OnSessionTimer(wxTimerEvent& event);
+
+    void SetApplicationStatusText(const wxString& text);
+
+    enum
+    {
+        Session_Timer
+    };
 
 private:
-    CAppModule module_;
-    CMessageLoop loop_;
-    CMainWindow window_;
+    libtorrent::session* session_;
+    MainFrame* mainFrame_;
+    wxTimer* timer_;
+
+    wxDECLARE_EVENT_TABLE();
 };
 
 #endif

@@ -2,30 +2,32 @@ project("PicoTorrent")
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 # Set dependency directories
-set(WTL_ROOT        $ENV{WTL_ROOT})
 set(BOOST_ROOT      $ENV{BOOST_ROOT})
 set(LIBTORRENT_ROOT $ENV{LIBTORRENT_ROOT})
+set(WXWIDGETS_ROOT  $ENV{WXWIN})
 
 set(includes
-    ${WTL_ROOT}
     ${BOOST_ROOT}
     ${LIBTORRENT_ROOT}/include
+    ${WXWIDGETS_ROOT}/include
+    ${WXWIDGETS_ROOT}/include/msvc
 )
 
 set(PICOTORRENT_SOURCES
     src/main
+    src/common
     src/picotorrent
-    src/resources.rc
-    src/ui/mainwindow
+    src/ui/mainframe
+    src/ui/torrentlistctrl
     src/ui/torrentdetailsframe
-    src/ui/torrentlistviewctrl
 )
 
 include_directories(${includes})
 
 link_directories(
     ${BOOST_ROOT}/stage/lib
-    ${LIBTORRENT_ROOT}/bin/msvc-12.0/$(ConfigurationName)/boost-source/deprecated-functions-off/link-static/threading-multi
+    ${LIBTORRENT_ROOT}/bin/msvc-14.0/$(ConfigurationName)/boost-source/deprecated-functions-off/link-static/threading-multi
+    ${WXWIDGETS_ROOT}/lib/vc_lib
 )
 
 add_definitions(
