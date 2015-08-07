@@ -6,6 +6,7 @@
 #include <wx/menu.h>
 
 #include "../common.h"
+#include "addtorrentdialog.h"
 
 namespace lt = libtorrent;
 
@@ -116,18 +117,35 @@ void MainFrame::OnFileAddTorrent(wxCommandEvent& WXUNUSED(event))
         "",
         "",
         "Torrent files (*.torrent)|*.torrent|All files (*.*)|*.*",
-        wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
 
     if (openFile.ShowModal() == wxID_CANCEL)
     {
         return;
     }
 
-    lt::add_torrent_params p;
-    p.save_path = "C:/Downloads";
-    p.ti = boost::make_shared<lt::torrent_info>(openFile.GetPath().ToStdString());
+    wxArrayString paths;
+    openFile.GetPaths(paths);
 
-    session_.async_add_torrent(p);
+    std::vector<boost::shared_ptr<lt::torrent_info>> torrents;
+    torrents.reserve(paths.GetCount());
+
+    for (wxString& path : paths)
+    {
+        lt::error_code ec;
+        boost::shared_ptr<lt::torrent_info> torrent = boost::make_shared<lt::torrent_info>(path.ToStdString(), ec);
+
+        if (ec)
+        {
+            // Log error
+            continue;
+        }
+
+        torrents.push_back(torrent);
+    }
+
+    AddTorrentDialog* dlg = new AddTorrentDialog(this, session_, torrents);
+    dlg->Show(true);
 }
 
 void MainFrame::OnFileExit(wxCommandEvent& WXUNUSED(event))
