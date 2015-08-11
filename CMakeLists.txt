@@ -18,6 +18,7 @@ set(PICOTORRENT_SOURCES
     src/common
     src/fsutil
     src/picotorrent
+    src/ui/addtorrentdialog
     src/ui/mainframe
     src/ui/torrentlistctrl
     src/ui/torrentdetailsframe
