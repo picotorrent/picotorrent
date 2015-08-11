@@ -39,6 +39,8 @@ private:
     void SaveTorrents();
 
     void SaveTorrentFile(boost::shared_ptr<const libtorrent::torrent_info> file);
+    void DeleteTorrentFile(const libtorrent::sha1_hash& hash);
+    void DeleteResumeData(const libtorrent::sha1_hash& hash);
 
     int numOutstandingResumeData = 0;
 
