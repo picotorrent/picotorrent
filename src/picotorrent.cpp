@@ -107,11 +107,18 @@ void PicoTorrent::OnReadAlerts(wxCommandEvent& WXUNUSED(event))
         case lt::state_update_alert::alert_type:
         {
             lt::state_update_alert* a = lt::alert_cast<lt::state_update_alert>(alert);
+            mainFrame_->UpdateTorrents(a->status);
+        }
+        break;
 
-            for (lt::torrent_status& status : a->status)
-            {
-                mainFrame_->UpdateTorrent(status);
-            }
+        case lt::torrent_removed_alert::alert_type:
+        {
+            lt::torrent_removed_alert* a = lt::alert_cast<lt::torrent_removed_alert>(alert);
+            mainFrame_->RemoveTorrent(a->info_hash);
+
+            // Remove torrent file and resume data
+            DeleteTorrentFile(a->info_hash);
+            DeleteResumeData(a->info_hash);
         }
         break;
         }
@@ -329,4 +336,32 @@ void PicoTorrent::SaveTorrentFile(boost::shared_ptr<const lt::torrent_info> file
     fs::path resumeDataPath = torrentsPath / (hash + ".torrent");
     std::ofstream output(resumeDataPath.string(), std::ios::binary);
     output.write(&buffer[0], buffer.size());
+}
+
+void PicoTorrent::DeleteTorrentFile(const lt::sha1_hash& hash)
+{
+    fs::path torrentsPath(FsUtil::GetDataPath());
+    torrentsPath /= "torrents";
+
+    std::string encodedHash = lt::to_hex(hash.to_string());
+    fs::path torrentFilePath = torrentsPath / (encodedHash + ".torrent");
+
+    if (fs::exists(torrentFilePath))
+    {
+        fs::remove(torrentFilePath);
+    }
+}
+
+void PicoTorrent::DeleteResumeData(const lt::sha1_hash& hash)
+{
+    fs::path torrentsPath(FsUtil::GetDataPath());
+    torrentsPath /= "torrents";
+
+    std::string encodedHash = lt::to_hex(hash.to_string());
+    fs::path torrentFilePath = torrentsPath / (encodedHash + ".resume");
+
+    if (fs::exists(torrentFilePath))
+    {
+        fs::remove(torrentFilePath);
+    }
 }
