@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<?define IsWin64 = "no" ?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*"
+           Name="PicoTorrent"
+           Manufacturer="Viktor Elofsson and contributors."
+           Version="$(var.BuildVersion)"
+           UpgradeCode="efd723e8-33ac-4d29-a370-31435677ae19"
+           Language="1033"
+           Codepage="1252">
+
+    <Package Id="*"
+             InstallerVersion="405"
+             InstallScope="perUser"
+             Compressed="yes" />
+
+    <Media Id="1" Cabinet="PicoTorrent.cab" EmbedCab="yes" />
+
+    <MajorUpgrade DowngradeErrorMessage="Downgrading is not supported."
+                  Schedule="afterInstallInitialize" />
+
+    <!-- Application icon -->
+    <Icon Id="I_AppIcon" SourceFile="$(var.ResourcesDirectory)/app.ico" />
+    <Property Id="ARPPRODUCTICON" Value="I_AppIcon" />
+
+    <!-- Properties -->
+    <Property Id="ALLUSERS" Secure="yes"/>
+
+    <Condition Message="Setting ALLUSERS is disabled. PicoTorrent is a per-user application.">
+      NOT ALLUSERS
+    </Condition>
+
+    <!-- Directory -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="LocalAppDataFolder">
+        <Directory Id="D_AppRoot" Name="PicoTorrent" />
+      </Directory>
+
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="D_AppShortcut" Name="PicoTorrent" />
+      </Directory>
+    </Directory>
+
+    <ComponentGroup Id="CG_PicoTorrent" Directory="D_AppRoot" Source="$(var.BinariesDirectory)">
+      <Component Id="C_PicoTorrent.exe" Guid="cec7e751-0c2a-40d5-b074-f734c3ac6221">
+        <RegistryValue Root="HKCU"
+                       Key="Software\PicoTorrent"
+                       Name="InstallFolder"
+                       Value="[INSTALLFOLDER]"
+                       Type="string"
+                       KeyPath="yes" />
+
+        <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" />
+
+        <Shortcut Id="S_PicoTorrentShortcut"
+                  Directory="D_AppShortcut"
+                  Icon="I_AppIcon"
+                  Name="PicoTorrent"
+                  Target="[#F_PicoTorrent.exe]"
+                  WorkingDirectory="D_AppRoot" />
+
+        <RemoveFolder Id="RF_AppRoot" Directory="D_AppRoot" On="uninstall" />
+        <RemoveFolder Id="RF_AppShortcut" Directory="D_AppShortcut" On="uninstall" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Features -->
+    <Feature Id="Complete"
+             Level="1"
+             Title="PicoTorrent"
+             Description="A tiny BitTorrent client."
+             Display="expand">
+      <ComponentRef Id="C_PicoTorrent.exe" />
+    </Feature>
+  </Product>
+</Wix>

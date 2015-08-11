@@ -26,6 +26,8 @@ MainFrame::MainFrame(lt::session_handle& session)
     : wxFrame(NULL, wxID_ANY, wxT("PicoTorrent")),
     session_(session)
 {
+    SetIcon(wxIcon("progicon"));
+
     torrentList_ = new TorrentListCtrl(this,
         1000,
         wxDefaultPosition,
