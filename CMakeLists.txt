@@ -24,6 +24,12 @@ set(PICOTORRENT_SOURCES
     src/ui/torrentdetailsframe
 )
 
+if(WIN32)
+    list(APPEND
+         PICOTORRENT_SOURCES
+         src/_win32/resource.rc)
+endif(WIN32)
+
 include_directories(${includes})
 
 link_directories(

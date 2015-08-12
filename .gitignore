@@ -2,4 +2,5 @@
 
 build/
 tools/Cake
+tools/WiX.Toolset
 tools/nuget.exe
