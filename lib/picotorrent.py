@@ -16,11 +16,11 @@ def on_load():
     t.start()
 
 def check_for_update():
-    pico_api.SetApplicationStatus("Checking for updates...")
+    pico_api.set_application_status("Checking for updates...")
 
     req = urllib2.Request(url)
     opener = urllib2.build_opener()
     f = opener.open(req)
     data = json.loads(f.read())
 
-    pico_api.SetApplicationStatus(str(data["author"]["login"]))
+    pico_api.set_application_status(str(data["author"]["login"]))

@@ -9,7 +9,7 @@ namespace py = boost::python;
 
 BOOST_PYTHON_MODULE(picotorrent_api)
 {
-    py::def("SetApplicationStatus", &PyHost::SetApplicationStatus);
+    py::def("set_application_status", &PyHost::SetApplicationStatus);
 }
 
 std::string parse_python_exception() {
