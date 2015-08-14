@@ -4,11 +4,13 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 # Set dependency directories
 set(BOOST_ROOT      $ENV{BOOST_ROOT})
 set(LIBTORRENT_ROOT $ENV{LIBTORRENT_ROOT})
+set(RAPIDJSON_ROOT  $ENV{RAPIDJSON_ROOT})
 set(WXWIDGETS_ROOT  $ENV{WXWIN})
 
 set(includes
     ${BOOST_ROOT}
     ${LIBTORRENT_ROOT}/include
+    ${RAPIDJSON_ROOT}/include
     ${WXWIDGETS_ROOT}/include
     ${WXWIDGETS_ROOT}/include/msvc
 )
@@ -16,6 +18,7 @@ set(includes
 set(PICOTORRENT_SOURCES
     src/main
     src/common
+    src/config
     src/fsutil
     src/picotorrent
     src/ui/addtorrentdialog
@@ -27,6 +30,7 @@ set(PICOTORRENT_SOURCES
 if(WIN32)
     list(APPEND
          PICOTORRENT_SOURCES
+         src/_win32/platform
          src/_win32/resource.rc)
 endif(WIN32)
 
@@ -45,7 +49,9 @@ add_definitions(
     -DTORRENT_NO_DEPRECATE
     -DWIN32
     -DWIN32_LEAN_AND_MEAN
-    -D_WIN32_WINNT=0x0501
+    -D_WIN32_WINNT=0x0600
+    -D_CRT_SECURE_NO_WARNINGS
+    -DRAPIDJSON_HAS_STDSTRING
     /MP
 )
 

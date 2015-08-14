@@ -28,3 +28,15 @@ free to follow the development.*
   sin and should be avoided. To get code into the `develop` branch, fork this
   project, create a feature branch, then send a pull request. This lets anyone
   comment and review the code.
+
+
+## License
+
+Copyright (c) 2015, Viktor Elofsson and contributors. PicoTorrent is provided
+as-is under the MIT license. For more information see
+[LICENSE](https://github.com/picotorrent/picotorrent/blob/develop/LICENSE).
+
+* For Boost, see http://www.boost.org/LICENSE_1_0.txt
+* For Rasterbar-libtorrent, see https://github.com/arvidn/libtorrent/blob/master/LICENSE
+* For RapidJSON, see https://github.com/miloyip/rapidjson/blob/master/license.txt
+* For wxWidgets, see https://github.com/wxWidgets/wxWidgets/blob/master/docs/licence.txt

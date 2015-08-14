@@ -7,8 +7,6 @@
 class FsUtil
 {
 public:
-    static std::string GetDataPath();
-
     static void ReadFile(std::string path, std::vector<char>& buffer);
 };
 

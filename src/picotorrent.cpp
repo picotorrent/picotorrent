@@ -7,7 +7,9 @@
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/create_torrent.hpp>
 
+#include "config.h"
 #include "fsutil.h"
+#include "platform.h"
 
 namespace fs = boost::filesystem;
 namespace lt = libtorrent;
@@ -38,9 +40,12 @@ bool PicoTorrent::OnInit()
     }
 
     // Set up session
+    Config& cfg = Config::GetInstance();
+    std::pair<std::string, int> iface = cfg.GetListenInterface();
+
     lt::settings_pack settings = session_->get_settings();
     settings.set_int(lt::settings_pack::alert_mask, lt::alert::all_categories);
-    settings.set_str(lt::settings_pack::listen_interfaces, "0.0.0.0:6881");
+    settings.set_str(lt::settings_pack::listen_interfaces, iface.first + ":" + std::to_string(iface.second));
     session_->apply_settings(settings);
 
     LoadState();
@@ -145,9 +150,7 @@ void PicoTorrent::SetApplicationStatusText(const wxString& text)
 
 void PicoTorrent::LoadState()
 {
-    // Load state
-    fs::path dataPath(FsUtil::GetDataPath());
-    fs::path sessionState = dataPath / ".session_state";
+    fs::path sessionState(".session_state");
 
     if (fs::exists(sessionState))
     {
@@ -179,8 +182,7 @@ void PicoTorrent::LoadState()
 
 void PicoTorrent::LoadTorrents()
 {
-    fs::path torrentsPath(FsUtil::GetDataPath());
-    torrentsPath /= "torrents";
+    fs::path torrentsPath("torrents");
 
     if (!fs::exists(torrentsPath)
         || !fs::is_directory(torrentsPath))
@@ -197,7 +199,7 @@ void PicoTorrent::LoadTorrents()
 
         lt::add_torrent_params p;
         p.flags |= lt::add_torrent_params::flag_use_resume_save_path;
-        p.save_path = "C:/Temp";
+        p.save_path = Platform::GetDownloadsPath();
         p.ti = boost::make_shared<lt::torrent_info>(entry.path().string());
 
         fs::path resumeDataPath(entry.path());
@@ -214,28 +216,19 @@ void PicoTorrent::LoadTorrents()
 
 void PicoTorrent::SaveState()
 {
-    fs::path dataPath("C:/ProgramData/PicoTorrent");
-
-    if (!fs::exists(dataPath))
-    {
-        fs::create_directories(dataPath);
-    }
-
-    fs::path sessionState = dataPath / ".session_state";
-
     lt::entry state;
     session_->save_state(state);
 
     std::vector<char> buffer;
     lt::bencode(std::back_inserter(buffer), state);
 
-    std::ofstream output(sessionState.string(), std::ios::binary);
+    std::ofstream output(".session_state", std::ios::binary);
     output.write(&buffer[0], buffer.size());
 }
 
 void PicoTorrent::SaveTorrents()
 {
-    fs::path torrentsPath("C:/ProgramData/PicoTorrent/torrents");
+    fs::path torrentsPath("torrents");
 
     if (!fs::exists(torrentsPath))
     {
@@ -325,8 +318,7 @@ void PicoTorrent::SaveTorrentFile(boost::shared_ptr<const lt::torrent_info> file
     std::vector<char> buffer;
     lt::bencode(std::back_inserter(buffer), encoded);
 
-    fs::path torrentsPath(FsUtil::GetDataPath());
-    torrentsPath /= "torrents";
+    fs::path torrentsPath("torrents");
 
     if (!fs::exists(torrentsPath))
     {
@@ -340,8 +332,7 @@ void PicoTorrent::SaveTorrentFile(boost::shared_ptr<const lt::torrent_info> file
 
 void PicoTorrent::DeleteTorrentFile(const lt::sha1_hash& hash)
 {
-    fs::path torrentsPath(FsUtil::GetDataPath());
-    torrentsPath /= "torrents";
+    fs::path torrentsPath("torrents");
 
     std::string encodedHash = lt::to_hex(hash.to_string());
     fs::path torrentFilePath = torrentsPath / (encodedHash + ".torrent");
@@ -354,8 +345,7 @@ void PicoTorrent::DeleteTorrentFile(const lt::sha1_hash& hash)
 
 void PicoTorrent::DeleteResumeData(const lt::sha1_hash& hash)
 {
-    fs::path torrentsPath(FsUtil::GetDataPath());
-    torrentsPath /= "torrents";
+    fs::path torrentsPath("torrents");
 
     std::string encodedHash = lt::to_hex(hash.to_string());
     fs::path torrentFilePath = torrentsPath / (encodedHash + ".resume");
