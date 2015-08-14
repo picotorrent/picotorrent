@@ -13,6 +13,7 @@
 
 namespace fs = boost::filesystem;
 namespace lt = libtorrent;
+
 typedef boost::function<void()> notify_func_t;
 
 wxBEGIN_EVENT_TABLE(PicoTorrent, wxApp)
@@ -25,6 +26,7 @@ PicoTorrent::PicoTorrent()
     session_ = new lt::session(lt::settings_pack(), 0);
     mainFrame_ = new MainFrame(*session_);
     timer_ = new wxTimer(this, Session_Timer);
+    pyHost_ = std::unique_ptr<PyHost>(new PyHost(this));
 }
 
 PicoTorrent::~PicoTorrent()
@@ -63,11 +65,17 @@ bool PicoTorrent::OnInit()
 
     SetApplicationStatusText("PicoTorrent loaded.");
 
+    // Load the python scripting host as the last thing
+    pyHost_->Load();
+
     return true;
 }
 
 int PicoTorrent::OnExit()
 {
+    // Unload all python things
+    pyHost_->Unload();
+
     session_->set_alert_notify(notify_func_t());
     session_->pause();
 

@@ -13,6 +13,7 @@ set(includes
     ${RAPIDJSON_ROOT}/include
     ${WXWIDGETS_ROOT}/include
     ${WXWIDGETS_ROOT}/include/msvc
+    C:/Python27/include
 )
 
 set(PICOTORRENT_SOURCES
@@ -21,6 +22,7 @@ set(PICOTORRENT_SOURCES
     src/config
     src/fsutil
     src/picotorrent
+    src/scripting/pyhost
     src/ui/addtorrentdialog
     src/ui/mainframe
     src/ui/torrentlistctrl
@@ -40,10 +42,12 @@ link_directories(
     ${BOOST_ROOT}/stage/lib
     ${LIBTORRENT_ROOT}/bin/msvc-14.0/$(ConfigurationName)/boost-source/deprecated-functions-off/link-static/threading-multi
     ${WXWIDGETS_ROOT}/lib/vc_lib
+    C:/Python27/libs
 )
 
 add_definitions(
     -DBOOST_ASIO_SEPARATE_COMPILATION
+    -DBOOST_PYTHON_STATIC_LIB
     -DUNICODE
     -D_UNICODE
     -DTORRENT_NO_DEPRECATE

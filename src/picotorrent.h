@@ -6,6 +6,7 @@
 
 #include <libtorrent/session.hpp>
 
+#include "scripting/pyhost.h"
 #include "ui/mainframe.h"
 
 class PicoTorrent : public wxApp
@@ -18,14 +19,14 @@ public:
 
     virtual int OnExit();
 
-    void OnReadAlerts(wxCommandEvent& event);
+    void SetApplicationStatusText(const wxString& text);
 
 protected:
     void OnSessionAlert();
 
     void OnSessionTimer(wxTimerEvent& event);
 
-    void SetApplicationStatusText(const wxString& text);
+    void OnReadAlerts(wxCommandEvent& event);
 
     enum
     {
@@ -44,6 +45,7 @@ private:
 
     int numOutstandingResumeData = 0;
 
+    std::unique_ptr<PyHost> pyHost_;
     libtorrent::session* session_;
     MainFrame* mainFrame_;
     wxTimer* timer_;

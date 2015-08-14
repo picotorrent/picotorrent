@@ -15,9 +15,7 @@ public:
 
     std::string GetDefaultSavePath();
     std::pair<std::string, int> GetListenInterface();
-
-    void SetDefaultSavePath(std::string value);
-    void SetListenInterface(std::pair<std::string, int> value);
+    std::string GetPyPath();
 
 private:
     Config();

@@ -26,6 +26,7 @@ Config::Config()
     iface.PushBack(6881, alloc);
 
     default_.AddMember("bt.net.interface", iface, alloc);
+    default_.AddMember("py.path", ".", alloc);
     default_.AddMember("savePath", Platform::GetDownloadsPath(), alloc);
 
     Load();
@@ -48,6 +49,11 @@ std::pair<std::string, int> Config::GetListenInterface()
     return std::make_pair(
         it->value[0].GetString(),
         it->value[1].GetInt());
+}
+
+std::string Config::GetPyPath()
+{
+    return FindOrDefault("py.path")->value.GetString();
 }
 
 void Config::Load()
