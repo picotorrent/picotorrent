@@ -1,4 +1,5 @@
 *.aps
+*.pyc
 
 build/
 tools/Cake

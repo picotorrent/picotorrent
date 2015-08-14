@@ -1,6 +1,7 @@
 #include "pyhost.h"
 
 #include <boost/python.hpp>
+#include "scopedgilrelease.h"
 #include "../config.h"
 #include "../picotorrent.h"
 
@@ -104,6 +105,6 @@ void PyHost::Unload()
 
 void PyHost::SetApplicationStatus(std::string status)
 {
-    // TODO: fix issue with deadlock of some sort
-    // pico_->SetApplicationStatusText(status);
+    ScopedGILRelease scope;
+    pico_->SetApplicationStatusText(status);
 }
