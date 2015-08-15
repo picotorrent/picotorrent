@@ -18,6 +18,7 @@ Task("Clean")
     .Does(() =>
 {
     CleanDirectory(buildDir);
+    CleanDirectory(buildDir + Directory("python27"));
 });
 
 Task("Generate-Project")
@@ -47,8 +48,25 @@ Task("Build")
         settings => settings.SetConfiguration(configuration));
 });
 
+Task("Output-Lib-Files")
+    .Does(() =>
+{
+    // Copy all files from lib/ to %buildDir%
+    CopyFiles(GetFiles("./lib/*.py"), buildDir);
+});
+
+Task("Output-Python-Runtime")
+    .Does(() =>
+{
+    // Copy python27.zip and all .pyd files to buildDir
+    CopyFiles(GetFiles("./deps/python27.zip"), buildDir);
+    CopyFiles(GetFiles("./deps/python27/*.*"), buildDir);
+});
+
 Task("Create-Win32-Installer")
     .IsDependentOn("Build")
+    .IsDependentOn("Output-Lib-Files")
+    .IsDependentOn("Output-Python-Runtime")
     .Does(() =>
     {
         WiXCandle("./win32/installer/**/*.wxs", new CandleSettings

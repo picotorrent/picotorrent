@@ -27,6 +27,7 @@ Config::Config()
 
     default_.AddMember("bt.net.interface", iface, alloc);
     default_.AddMember("py.path", ".", alloc);
+    default_.AddMember("py.runtime", "python27", alloc);
     default_.AddMember("savePath", Platform::GetDownloadsPath(), alloc);
 
     Load();
@@ -54,6 +55,11 @@ std::pair<std::string, int> Config::GetListenInterface()
 std::string Config::GetPyPath()
 {
     return FindOrDefault("py.path")->value.GetString();
+}
+
+std::string Config::GetPyRuntimePath()
+{
+    return FindOrDefault("py.runtime")->value.GetString();
 }
 
 void Config::Load()

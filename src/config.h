@@ -15,7 +15,9 @@ public:
 
     std::string GetDefaultSavePath();
     std::pair<std::string, int> GetListenInterface();
+
     std::string GetPyPath();
+    std::string GetPyRuntimePath();
 
 private:
     Config();

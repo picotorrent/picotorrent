@@ -87,15 +87,22 @@ void PyHost::Load()
     py::object module = py::import("__main__");
     py::object ns = module.attr("__dict__");
 
+    std::string bootstrapper = ""
+        "import sys\n"
+        "sys.dont_write_bytecode = True\n"
+
+        // Set up paths
+        "sys.path.insert(0, '" + cfg.GetPyRuntimePath() + ".zip')\n"
+
+        // Import and run picotorrent.on_load
+        "import picotorrent\n"
+        "picotorrent.on_load()"
+        ;
+
     try
     {
-        // Dont write those PYC files... We don't like clutter
-        py::exec("import sys", ns);
-        py::exec("sys.dont_write_bytecode = True", ns);
-
-        ns["pt"] = py::import("picotorrent");
-        py::exec("pt.on_load()", ns);
-
+        // Run our bootstrapper script
+        py::exec(py::str(bootstrapper), ns);
         ts_ = PyEval_SaveThread();
     }
     catch (const py::error_already_set& err)
