@@ -32,11 +32,6 @@ def read_alerts():
 
 def handle_alert(alert):
     alert_type = type(alert).__name__
-    
-    with open("alert_log.txt", "a") as f:
-        f.write(alert_type + "\n")
-        f.flush()
-        os.fsync(f.fileno())
 
     if alert_type == "add_torrent_alert":
         if alert.error.value():
