@@ -11,6 +11,8 @@
 #include "config.h"
 #include "fsutil.h"
 #include "platform.h"
+#include "scripting/pyhost.h"
+#include "ui/mainframe.h"
 
 namespace fs = boost::filesystem;
 namespace lt = libtorrent;
@@ -24,7 +26,7 @@ wxEND_EVENT_TABLE()
 
 PicoTorrent::PicoTorrent()
 {
-    session_ = new lt::session(lt::settings_pack(), 0);
+    session_ = boost::make_shared<lt::session>(lt::settings_pack(), 0);
     mainFrame_ = new MainFrame(*session_);
     timer_ = new wxTimer(this, Session_Timer);
     pyHost_ = std::unique_ptr<PyHost>(new PyHost(this));
@@ -32,7 +34,6 @@ PicoTorrent::PicoTorrent()
 
 PicoTorrent::~PicoTorrent()
 {
-    delete session_;
 }
 
 bool PicoTorrent::OnInit()
@@ -150,6 +151,11 @@ void PicoTorrent::OnSessionTimer(wxTimerEvent& WXUNUSED(event))
     session_->post_dht_stats();
     session_->post_session_stats();
     session_->post_torrent_updates();
+}
+
+boost::shared_ptr<libtorrent::session> PicoTorrent::GetSession()
+{
+    return session_;
 }
 
 bool PicoTorrent::Prompt(const wxString& text)

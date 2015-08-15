@@ -4,13 +4,19 @@
 #include "scopedgilrelease.h"
 #include "../config.h"
 #include "../picotorrent.h"
+#include "bindings/module.h"
 
 namespace py = boost::python;
 
 BOOST_PYTHON_MODULE(picotorrent_api)
 {
+    bind_libtorrent();
+
+    py::def("get_session", &PyHost::GetSession);
     py::def("prompt", &PyHost::Prompt);
     py::def("set_application_status", &PyHost::SetApplicationStatus);
+
+    py::register_ptr_to_python<boost::shared_ptr<libtorrent::session>>();
 }
 
 std::string parse_python_exception() {
@@ -92,7 +98,8 @@ void PyHost::Load()
         "sys.dont_write_bytecode = True\n"
 
         // Set up paths
-        "sys.path.insert(0, '" + cfg.GetPyRuntimePath() + ".zip')\n"
+        "sys.path.insert(0, '" + cfg.GetPyRuntimePath() + "')\n"
+        "sys.path.insert(1, '" + cfg.GetPyRuntimePath() + ".zip')\n"
 
         // Import and run picotorrent.on_load
         "import picotorrent\n"
@@ -113,6 +120,11 @@ void PyHost::Load()
 
 void PyHost::Unload()
 {
+}
+
+boost::shared_ptr<libtorrent::session> PyHost::GetSession()
+{
+    return pico_->GetSession();
 }
 
 bool PyHost::Prompt(std::string message)

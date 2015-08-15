@@ -27,6 +27,28 @@ set(PICOTORRENT_SOURCES
     src/ui/mainframe
     src/ui/torrentlistctrl
     src/ui/torrentdetailsframe
+
+    # libtorrent bindings
+    src/scripting/bindings/module.cpp
+    src/scripting/bindings/big_number.cpp
+    src/scripting/bindings/converters.cpp
+    src/scripting/bindings/create_torrent.cpp
+    src/scripting/bindings/fingerprint.cpp
+    src/scripting/bindings/utility.cpp
+    src/scripting/bindings/session.cpp
+    src/scripting/bindings/entry.cpp
+    src/scripting/bindings/torrent_info.cpp
+    src/scripting/bindings/string.cpp
+    src/scripting/bindings/torrent_handle.cpp
+    src/scripting/bindings/torrent_status.cpp
+    src/scripting/bindings/session_settings.cpp
+    src/scripting/bindings/version.cpp
+    src/scripting/bindings/alert.cpp
+    src/scripting/bindings/datetime.cpp
+    src/scripting/bindings/peer_info.cpp
+    src/scripting/bindings/ip_filter.cpp
+    src/scripting/bindings/magnet_uri.cpp
+    src/scripting/bindings/error_code.cpp
 )
 
 if(WIN32)
@@ -46,7 +68,6 @@ link_directories(
 )
 
 add_definitions(
-    -DBOOST_ASIO_SEPARATE_COMPILATION
     -DBOOST_PYTHON_STATIC_LIB
     -DUNICODE
     -D_UNICODE

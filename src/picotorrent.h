@@ -4,10 +4,11 @@
 #include <wx/app.h>
 #include <wx/timer.h>
 
+#include <boost/shared_ptr.hpp>
 #include <libtorrent/session.hpp>
 
-#include "scripting/pyhost.h"
-#include "ui/mainframe.h"
+class MainFrame;
+class PyHost;
 
 class PicoTorrent : public wxApp
 {
@@ -18,6 +19,8 @@ public:
     virtual bool OnInit();
 
     virtual int OnExit();
+
+    boost::shared_ptr<libtorrent::session> GetSession();
 
     bool Prompt(const wxString& message);
 
@@ -48,7 +51,7 @@ private:
     int numOutstandingResumeData = 0;
 
     std::unique_ptr<PyHost> pyHost_;
-    libtorrent::session* session_;
+    boost::shared_ptr<libtorrent::session> session_;
     MainFrame* mainFrame_;
     wxTimer* timer_;
 
