@@ -39,8 +39,6 @@ protected:
     };
 
 private:
-    void LoadState();
-    void LoadTorrents();
     void SaveState();
     void SaveTorrents();
 

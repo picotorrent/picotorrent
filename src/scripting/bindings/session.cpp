@@ -652,19 +652,6 @@ void bind_session()
     ;
 
     class_<lt::session, boost::noncopyable>("session", no_init)
-        .def(
-            init<settings_pack const&, int>((
-                arg("settings")
-                , arg("flags")=lt::session::start_default_features | lt::session::add_default_plugins))
-        )
-#ifndef TORRENT_NO_DEPRECATE
-        .def(
-            init<fingerprint, int, boost::uint32_t>((
-                arg("fingerprint")=fingerprint("LT",0,1,0,0)
-                , arg("flags")=lt::session::start_default_features | lt::session::add_default_plugins
-                , arg("alert_mask")=int(alert::error_notification)))
-        )
-#endif
         .def("post_torrent_updates", allow_threads(&lt::session::post_torrent_updates))
         .def("outgoing_ports", &outgoing_ports)
         .def("is_listening", allow_threads(&lt::session::is_listening))

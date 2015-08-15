@@ -52,9 +52,6 @@ bool PicoTorrent::OnInit()
     settings.set_str(lt::settings_pack::listen_interfaces, iface.first + ":" + std::to_string(iface.second));
     session_->apply_settings(settings);
 
-    LoadState();
-    LoadTorrents();
-
     // Connect our notify function
     session_->set_alert_notify(std::bind(&PicoTorrent::OnSessionAlert, this));
 
@@ -166,72 +163,6 @@ bool PicoTorrent::Prompt(const wxString& text)
 void PicoTorrent::SetApplicationStatusText(const wxString& text)
 {
     mainFrame_->SetStatusText(text, 0);
-}
-
-void PicoTorrent::LoadState()
-{
-    fs::path sessionState(".session_state");
-
-    if (fs::exists(sessionState))
-    {
-        boost::system::error_code ec;
-        uintmax_t size = fs::file_size(sessionState, ec);
-
-        if (ec)
-        {
-            // Log error
-            return;
-        }
-
-        std::vector<char> buffer;
-        FsUtil::ReadFile(sessionState.string(), buffer);
-
-        lt::bdecode_node node;
-        lt::error_code decodeError;
-        lt::bdecode(&buffer[0], &buffer[0] + buffer.size(), node, decodeError);
-
-        if (decodeError)
-        {
-            // Log error
-            return;
-        }
-
-        session_->load_state(node);
-    }
-}
-
-void PicoTorrent::LoadTorrents()
-{
-    fs::path torrentsPath("torrents");
-
-    if (!fs::exists(torrentsPath)
-        || !fs::is_directory(torrentsPath))
-    {
-        return;
-    }
-
-    for (fs::directory_entry& entry : fs::directory_iterator(torrentsPath))
-    {
-        if (entry.path().extension() != ".torrent")
-        {
-            continue;
-        }
-
-        lt::add_torrent_params p;
-        p.flags |= lt::add_torrent_params::flag_use_resume_save_path;
-        p.save_path = Platform::GetDownloadsPath();
-        p.ti = boost::make_shared<lt::torrent_info>(entry.path().string());
-
-        fs::path resumeDataPath(entry.path());
-        resumeDataPath.replace_extension(".resume");
-
-        if (fs::exists(resumeDataPath))
-        {
-            FsUtil::ReadFile(resumeDataPath.string(), p.resume_data);
-        }
-
-        session_->async_add_torrent(p);
-    }
 }
 
 void PicoTorrent::SaveState()
