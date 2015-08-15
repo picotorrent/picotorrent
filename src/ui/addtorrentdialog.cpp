@@ -25,10 +25,8 @@ wxBEGIN_EVENT_TABLE(AddTorrentDialog, wxFrame)
 wxEND_EVENT_TABLE()
 
 AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
-    lt::session_handle& session,
-    std::vector<boost::shared_ptr<lt::torrent_info>> torrents)
-    : wxFrame(parent, wxID_ANY, wxT("Add torrent(s)"), wxDefaultPosition, wxSize(400, 485), wxCAPTION | wxCLOSE_BOX),
-    session_(session)
+    std::vector<boost::intrusive_ptr<lt::torrent_info>> torrents)
+    : wxFrame(parent, wxID_ANY, wxT("Add torrent(s)"), wxDefaultPosition, wxSize(400, 485), wxCAPTION | wxCLOSE_BOX)
 {
     Config& cfg = Config::GetInstance();
     std::string savePath = cfg.GetDefaultSavePath();
@@ -233,7 +231,7 @@ void AddTorrentDialog::OnAdd(wxCommandEvent& WXUNUSED(event))
 {
     for (auto& item : params_)
     {
-        session_.async_add_torrent(item.second);
+        //session_.async_add_torrent(item.second);
     }
 
     Destroy();

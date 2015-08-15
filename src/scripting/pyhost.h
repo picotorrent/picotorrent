@@ -21,7 +21,6 @@ public:
     void Load();
     void Unload();
 
-    static boost::shared_ptr<libtorrent::session> GetSession();
     static bool Prompt(std::string message);
     static void SetApplicationStatus(std::string status);
 

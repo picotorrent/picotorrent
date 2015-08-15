@@ -2,7 +2,6 @@
 #define _PT_UI_ADDTORRENTDIALOG_H
 
 #include <libtorrent/add_torrent_params.hpp>
-#include <libtorrent/session_handle.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <map>
 #include <vector>
@@ -19,15 +18,14 @@ class AddTorrentDialog : public wxFrame
 {
 public:
     AddTorrentDialog(wxWindow* parent,
-        libtorrent::session_handle& session,
-        std::vector<boost::shared_ptr<libtorrent::torrent_info>> torrents);
+        std::vector<boost::intrusive_ptr<libtorrent::torrent_info>> torrents);
 
 protected:
     void InitTorrentsGroup();
     void InitStorageGroup();
 
 private:
-    typedef boost::shared_ptr<libtorrent::torrent_info> torrent_info_ptr;
+    typedef boost::intrusive_ptr<libtorrent::torrent_info> torrent_info_ptr;
 
     void OnBrowseSavePath(wxCommandEvent& event);
     void OnAdd(wxCommandEvent& event);
@@ -39,7 +37,6 @@ private:
 
     std::string PriorityString(int priority);
 
-    libtorrent::session_handle& session_;
     std::map<libtorrent::sha1_hash, libtorrent::add_torrent_params> params_;
     std::map<int, libtorrent::sha1_hash> items_;
 

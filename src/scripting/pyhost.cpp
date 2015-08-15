@@ -8,15 +8,15 @@
 
 namespace py = boost::python;
 
-BOOST_PYTHON_MODULE(picotorrent_api)
+BOOST_PYTHON_MODULE(libtorrent)
 {
     bind_libtorrent();
+}
 
-    py::def("get_session", &PyHost::GetSession);
+BOOST_PYTHON_MODULE(picotorrent_api)
+{
     py::def("prompt", &PyHost::Prompt);
     py::def("set_application_status", &PyHost::SetApplicationStatus);
-
-    py::register_ptr_to_python<boost::shared_ptr<libtorrent::session>>();
 }
 
 std::string parse_python_exception() {
@@ -81,8 +81,10 @@ void PyHost::Load()
     Config& cfg = Config::GetInstance();
 
     // Init Python
+    PyImport_AppendInittab("libtorrent", initlibtorrent);
     PyImport_AppendInittab("picotorrent_api", initpicotorrent_api);
     Py_InitializeEx(0);
+    PyEval_InitThreads();
 
     std::string sp = cfg.GetPyPath();
     char* sysPath = new char[sp.length() + 1];
@@ -120,13 +122,15 @@ void PyHost::Load()
 
 void PyHost::Unload()
 {
-    PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
-    py::exec("picotorrent.on_unload()", ns_);
-}
-
-boost::shared_ptr<libtorrent::session> PyHost::GetSession()
-{
-    return pico_->GetSession();
+    try
+    {
+        PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
+        py::exec("picotorrent.on_unload()", ns_);
+    }
+    catch (const py::error_already_set& err)
+    {
+        std::string error = parse_python_exception();
+    }
 }
 
 bool PyHost::Prompt(std::string message)

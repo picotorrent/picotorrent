@@ -22,9 +22,8 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_LIST_ITEM_RIGHT_CLICK(1000, MainFrame::OnListItemRightClick)
 wxEND_EVENT_TABLE()
 
-MainFrame::MainFrame(lt::session_handle& session)
-    : wxFrame(NULL, wxID_ANY, wxT("PicoTorrent")),
-    session_(session)
+MainFrame::MainFrame()
+    : wxFrame(NULL, wxID_ANY, wxT("PicoTorrent"))
 {
     SetIcon(wxIcon("progicon"));
 
@@ -183,7 +182,7 @@ void MainFrame::OnFileAddTorrent(wxCommandEvent& WXUNUSED(event))
     for (wxString& path : paths)
     {
         lt::error_code ec;
-        boost::shared_ptr<lt::torrent_info> torrent = boost::make_shared<lt::torrent_info>(path.ToStdString(), ec);
+        //boost::shared_ptr<lt::torrent_info> torrent = boost::make_shared<lt::torrent_info>(path.ToStdString(), ec);
 
         if (ec)
         {
@@ -191,11 +190,11 @@ void MainFrame::OnFileAddTorrent(wxCommandEvent& WXUNUSED(event))
             continue;
         }
 
-        torrents.push_back(torrent);
+        //torrents.push_back(torrent);
     }
 
-    AddTorrentDialog* dlg = new AddTorrentDialog(this, session_, torrents);
-    dlg->Show(true);
+    //AddTorrentDialog* dlg = new AddTorrentDialog(this, session_, torrents);
+    //dlg->Show(true);
 }
 
 void MainFrame::OnFileExit(wxCommandEvent& WXUNUSED(event))
@@ -206,7 +205,7 @@ void MainFrame::OnFileExit(wxCommandEvent& WXUNUSED(event))
 void MainFrame::OnTorrentContextMenu(wxCommandEvent& event)
 {
     long idx = -1;
-
+    /*
     while ((idx = torrentList_->GetNextItem(idx, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND)
     {
         wxListItem item;
@@ -263,10 +262,12 @@ void MainFrame::OnTorrentContextMenu(wxCommandEvent& event)
             break;
         }
     }
+    */
 }
 
 void MainFrame::ShowDetails(const lt::sha1_hash& hash)
 {
+    /*
     lt::torrent_handle handle = session_.find_torrent(hash);
 
     if (!handle.is_valid())
@@ -295,6 +296,7 @@ void MainFrame::ShowDetails(const lt::sha1_hash& hash)
 
     // Store this frame
     details_[hash] = details;
+    */
 }
 
 void MainFrame::OnListItemActivated(wxListEvent& event)
@@ -320,7 +322,7 @@ void MainFrame::OnListItemRightClick(wxListEvent& event)
     torrentList_->GetItem(item);
 
     lt::sha1_hash* hash = (lt::sha1_hash*)item.GetData();
-    lt::torrent_handle handle = session_.find_torrent(*hash);
+    /*lt::torrent_handle handle = session_.find_torrent(*hash);
 
     if (!handle.is_valid())
     {
@@ -344,6 +346,7 @@ void MainFrame::OnListItemRightClick(wxListEvent& event)
     menu.Append(ptID_TORRENT_SHOW_DETAILS, wxT("Details"));
 
     PopupMenu(&menu);
+    */
 }
 
 void MainFrame::OnTorrentDetailsFrameClose(wxCloseEvent& event, lt::sha1_hash hash)

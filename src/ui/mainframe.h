@@ -1,7 +1,6 @@
 #ifndef _PT_UI_MAINFRAME_H
 #define _PT_UI_MAINFRAME_H
 
-#include <libtorrent/session_handle.hpp>
 #include <libtorrent/torrent_handle.hpp>
 #include <map>
 #include <vector>
@@ -14,7 +13,7 @@
 class MainFrame : public wxFrame
 {
 public:
-    MainFrame(libtorrent::session_handle& session);
+    MainFrame();
 
     void AddTorrent(const libtorrent::torrent_status& status);
     void UpdateTorrents(std::vector<libtorrent::torrent_status> status);
@@ -54,7 +53,6 @@ protected:
 private:
     wxString GetTorrentState(const libtorrent::torrent_status& status);
 
-    libtorrent::session_handle& session_;
     std::map<libtorrent::sha1_hash, libtorrent::torrent_status> torrents_;
     std::map<libtorrent::sha1_hash, TorrentDetailsFrame*> details_;
 
