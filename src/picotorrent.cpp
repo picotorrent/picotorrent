@@ -37,8 +37,6 @@ bool PicoTorrent::OnInit()
     // Show our main frame.
     mainFrame_->Show(true);
 
-    SetApplicationStatusText("PicoTorrent loaded.");
-
     // Load the python scripting host as the last thing
     pyHost_->Load();
 

@@ -165,6 +165,8 @@ def on_load():
 
     t.start()
 
+    pico_api.set_application_status("PicoTorrent loaded.")
+
 
 def on_unload():
     global is_running
