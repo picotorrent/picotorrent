@@ -9,6 +9,7 @@ namespace py = boost::python;
 
 BOOST_PYTHON_MODULE(picotorrent_api)
 {
+    py::def("prompt", &PyHost::Prompt);
     py::def("set_application_status", &PyHost::SetApplicationStatus);
 }
 
@@ -88,6 +89,10 @@ void PyHost::Load()
 
     try
     {
+        // Dont write those PYC files... We don't like clutter
+        py::exec("import sys", ns);
+        py::exec("sys.dont_write_bytecode = True", ns);
+
         ns["pt"] = py::import("picotorrent");
         py::exec("pt.on_load()", ns);
 
@@ -101,6 +106,12 @@ void PyHost::Load()
 
 void PyHost::Unload()
 {
+}
+
+bool PyHost::Prompt(std::string message)
+{
+    ScopedGILRelease scope;
+    return pico_->Prompt(message);
 }
 
 void PyHost::SetApplicationStatus(std::string status)

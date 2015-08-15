@@ -6,6 +6,7 @@
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/create_torrent.hpp>
+#include <wx/msgdlg.h>
 
 #include "config.h"
 #include "fsutil.h"
@@ -149,6 +150,11 @@ void PicoTorrent::OnSessionTimer(wxTimerEvent& WXUNUSED(event))
     session_->post_dht_stats();
     session_->post_session_stats();
     session_->post_torrent_updates();
+}
+
+bool PicoTorrent::Prompt(const wxString& text)
+{
+    return wxMessageBox(text, "PicoTorrent", wxOK | wxCANCEL, mainFrame_) == wxOK;
 }
 
 void PicoTorrent::SetApplicationStatusText(const wxString& text)

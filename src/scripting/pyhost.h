@@ -13,6 +13,7 @@ public:
     void Load();
     void Unload();
 
+    static bool Prompt(std::string message);
     static void SetApplicationStatus(std::string status);
 
 private:

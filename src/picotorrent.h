@@ -19,6 +19,8 @@ public:
 
     virtual int OnExit();
 
+    bool Prompt(const wxString& message);
+
     void SetApplicationStatusText(const wxString& text);
 
 protected:
