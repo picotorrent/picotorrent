@@ -79,7 +79,6 @@ int PicoTorrent::OnExit()
     session_->pause();
 
     SaveTorrents();
-    SaveState();
 
     return wxApp::OnExit();
 }
@@ -163,18 +162,6 @@ bool PicoTorrent::Prompt(const wxString& text)
 void PicoTorrent::SetApplicationStatusText(const wxString& text)
 {
     mainFrame_->SetStatusText(text, 0);
-}
-
-void PicoTorrent::SaveState()
-{
-    lt::entry state;
-    session_->save_state(state);
-
-    std::vector<char> buffer;
-    lt::bencode(std::back_inserter(buffer), state);
-
-    std::ofstream output(".session_state", std::ios::binary);
-    output.write(&buffer[0], buffer.size());
 }
 
 void PicoTorrent::SaveTorrents()

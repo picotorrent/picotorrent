@@ -37,6 +37,14 @@ def load_torrents():
 
         session.async_add_torrent(params)
 
+def save_session_state():
+    with open(".session_state", "wb") as f:
+        entry = session.save_state()
+        data = pico_api.bencode(entry)
+        f.write(data)
+        f.flush()
+        os.fsync(f.fileno())
+
 
 def on_load():
     load_session_state()
@@ -45,3 +53,6 @@ def on_load():
     t = Thread(target=update_checker.check_for_update)
     t.daemon = True
     #t.start()
+
+def on_unload():
+    save_session_state()

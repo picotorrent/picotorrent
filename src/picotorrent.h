@@ -39,7 +39,6 @@ protected:
     };
 
 private:
-    void SaveState();
     void SaveTorrents();
 
     void SaveTorrentFile(boost::shared_ptr<const libtorrent::torrent_info> file);

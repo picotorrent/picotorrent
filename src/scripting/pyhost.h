@@ -2,8 +2,13 @@
 #define _PT_SCRIPTING_PYHOST_H
 
 #include <boost/shared_ptr.hpp>
-#include <libtorrent/session.hpp>
+#include <boost/python/object.hpp>
 #include <string>
+
+namespace libtorrent
+{
+    class session;
+}
 
 class PicoTorrent;
 class Session;
@@ -22,6 +27,7 @@ public:
 
 private:
     static PicoTorrent* pico_;
+    boost::python::object ns_;
     void* ts_;
 };
 

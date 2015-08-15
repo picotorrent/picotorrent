@@ -91,7 +91,7 @@ void PyHost::Load()
     delete[] sysPath;
 
     py::object module = py::import("__main__");
-    py::object ns = module.attr("__dict__");
+    ns_ = module.attr("__dict__");
 
     std::string bootstrapper = ""
         "import sys\n"
@@ -109,7 +109,7 @@ void PyHost::Load()
     try
     {
         // Run our bootstrapper script
-        py::exec(py::str(bootstrapper), ns);
+        py::exec(py::str(bootstrapper), ns_);
         ts_ = PyEval_SaveThread();
     }
     catch (const py::error_already_set& err)
@@ -120,6 +120,8 @@ void PyHost::Load()
 
 void PyHost::Unload()
 {
+    PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
+    py::exec("picotorrent.on_unload()", ns_);
 }
 
 boost::shared_ptr<libtorrent::session> PyHost::GetSession()
