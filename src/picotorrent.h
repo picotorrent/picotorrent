@@ -1,12 +1,14 @@
 #ifndef _PT_PICOTORRENT_H
 #define _PT_PICOTORRENT_H
 
+#include <map>
 #include <memory>
 #include <wx/app.h>
 #include <wx/timer.h>
 
 namespace libtorrent
 {
+    class sha1_hash;
     struct torrent_status;
 }
 
@@ -24,6 +26,8 @@ public:
     virtual int OnExit();
 
     void AddTorrent(const libtorrent::torrent_status& status);
+
+    void UpdateTorrents(std::map<libtorrent::sha1_hash, libtorrent::torrent_status> status);
     
     bool Prompt(const wxString& message);
 

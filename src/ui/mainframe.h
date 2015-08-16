@@ -1,14 +1,19 @@
 #ifndef _PT_UI_MAINFRAME_H
 #define _PT_UI_MAINFRAME_H
 
-#include <libtorrent/torrent_handle.hpp>
 #include <map>
 #include <vector>
 #include <wx/frame.h>
+#include <wx/listctrl.h>
 #include <wx/panel.h>
 
 #include "torrentdetailsframe.h"
-#include "torrentlistctrl.h"
+
+namespace libtorrent
+{
+    class sha1_hash;
+    struct torrent_status;
+}
 
 class MainFrame : public wxFrame
 {
@@ -16,7 +21,7 @@ public:
     MainFrame();
 
     void AddTorrent(const libtorrent::torrent_status& status);
-    void UpdateTorrents(std::vector<libtorrent::torrent_status> status);
+    void UpdateTorrents(std::map<libtorrent::sha1_hash, libtorrent::torrent_status> status);
     void RemoveTorrent(const libtorrent::sha1_hash& hash);
 
 protected:
@@ -53,10 +58,9 @@ protected:
 private:
     wxString GetTorrentState(const libtorrent::torrent_status& status);
 
-    std::map<libtorrent::sha1_hash, libtorrent::torrent_status> torrents_;
     std::map<libtorrent::sha1_hash, TorrentDetailsFrame*> details_;
 
-    TorrentListCtrl* torrentList_;
+    wxListCtrl* torrentList_;
 
     wxDECLARE_EVENT_TABLE();
 };

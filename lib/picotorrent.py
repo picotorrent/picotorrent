@@ -2,7 +2,7 @@ import glob
 import libtorrent as lt
 import os, os.path
 import picotorrent_api as pico_api
-from threading import Thread
+from threading import Thread, Timer
 import update_checker
 
 session = lt.session()
@@ -20,7 +20,7 @@ def read_alerts():
     is_running = True
 
     while is_running:
-        if not session.wait_for_alert(1000):
+        if not session.wait_for_alert(250):
             continue
 
         for alert in session.pop_alerts():
@@ -50,6 +50,18 @@ def handle_alert(alert):
         pico_api.add_torrent(status)
         pico_api.set_application_status("%s added." % name)
 
+    elif alert_type == "state_update_alert":
+        torrents = {status.info_hash:status for status in alert.status}
+        pico_api.update_torrents(torrents)
+
+
+def post_updates():
+    global is_running
+    if not is_running: return
+
+    # Restart timer and post our updates
+    Timer(1.0, post_updates).start()
+    session.post_torrent_updates()
 
 def save_torrent_file(torrent_file):
     creator = lt.create_torrent(torrent_file)
@@ -165,6 +177,7 @@ def on_load():
     load_torrents()
 
     t.start()
+    Timer(1.0, post_updates).start()
 
     pico_api.set_application_status("PicoTorrent loaded.")
 

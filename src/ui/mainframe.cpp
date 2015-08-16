@@ -1,6 +1,7 @@
 #include "mainframe.h"
 
 #include <libtorrent/alert_types.hpp>
+#include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/version.hpp>
 #include <wx/dirdlg.h>
 #include <wx/filedlg.h>
@@ -27,7 +28,7 @@ MainFrame::MainFrame()
 {
     SetIcon(wxIcon("progicon"));
 
-    torrentList_ = new TorrentListCtrl(this,
+    torrentList_ = new wxListCtrl(this,
         1000,
         wxDefaultPosition,
         wxDefaultSize,
@@ -68,27 +69,17 @@ MainFrame::MainFrame()
 
 void MainFrame::AddTorrent(const lt::torrent_status& status)
 {
-    if (torrents_.find(status.info_hash) != torrents_.end())
-    {
-        // Log error
-        return;
-    }
-
     wxListItem item;
     item.SetData(new lt::sha1_hash(status.info_hash));
     item.SetId(torrentList_->GetItemCount());
 
     torrentList_->InsertItem(item);
-    UpdateTorrents(std::vector<lt::torrent_status>{status});
+
+    UpdateTorrents(std::map<lt::sha1_hash, lt::torrent_status>{{ status.info_hash, status }});
 }
 
-void MainFrame::UpdateTorrents(std::vector<libtorrent::torrent_status> status)
+void MainFrame::UpdateTorrents(std::map<libtorrent::sha1_hash, libtorrent::torrent_status> status)
 {
-    for (lt::torrent_status& st : status)
-    {
-        torrents_[st.info_hash] = st;
-    }
-
     torrentList_->Freeze();
 
     long idx = -1;
@@ -101,7 +92,7 @@ void MainFrame::UpdateTorrents(std::vector<libtorrent::torrent_status> status)
         torrentList_->GetItem(item);
 
         lt::sha1_hash* hash = (lt::sha1_hash*)item.GetData();
-        lt::torrent_status& st = torrents_[*hash];
+        lt::torrent_status& st = status[*hash];
 
         std::string queuePosition = "";
 
@@ -148,9 +139,6 @@ void MainFrame::RemoveTorrent(const lt::sha1_hash& hash)
         details_[hash]->Destroy();
         details_.erase(hash);
     }
-
-    // Remove from maps
-    torrents_.erase(hash);
 }
 
 void MainFrame::OnSize(wxSizeEvent& event)

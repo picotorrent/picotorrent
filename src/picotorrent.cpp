@@ -52,6 +52,11 @@ void PicoTorrent::AddTorrent(const libtorrent::torrent_status& status)
     mainFrame_->AddTorrent(status);
 }
 
+void PicoTorrent::UpdateTorrents(std::map<libtorrent::sha1_hash, libtorrent::torrent_status> status)
+{
+    mainFrame_->UpdateTorrents(status);
+}
+
 bool PicoTorrent::Prompt(const wxString& text)
 {
     return wxMessageBox(text, "PicoTorrent", wxOK | wxCANCEL, mainFrame_) == wxOK;
