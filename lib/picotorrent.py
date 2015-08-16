@@ -96,6 +96,12 @@ def load_torrents():
         params["flags"] = default_flags
         params["save_path"] = "C:/Downloads"
 
+        resume_file = os.path.splitext(torrent_file)[0] + ".resume"
+
+        if os.path.isfile(resume_file):
+            with open(resume_file, "rb") as f:
+                params["resume_data"] = f.read()
+
         with open(torrent_file, "rb") as f:
             entry = lt.bdecode(f.read())
             params["ti"] = lt.torrent_info(entry)
