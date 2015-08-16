@@ -8,6 +8,7 @@
 namespace libtorrent
 {
     class session;
+    struct torrent_status;
 }
 
 class PicoTorrent;
@@ -21,6 +22,7 @@ public:
     void Load();
     void Unload();
 
+    static void AddTorrent(const libtorrent::torrent_status& status);
     static bool Prompt(std::string message);
     static void SetApplicationStatus(std::string status);
 

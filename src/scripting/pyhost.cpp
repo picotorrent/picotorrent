@@ -1,6 +1,8 @@
 #include "pyhost.h"
 
 #include <boost/python.hpp>
+#include <libtorrent/torrent_handle.hpp>
+
 #include "scopedgilrelease.h"
 #include "../config.h"
 #include "../picotorrent.h"
@@ -15,6 +17,7 @@ BOOST_PYTHON_MODULE(libtorrent)
 
 BOOST_PYTHON_MODULE(picotorrent_api)
 {
+    py::def("add_torrent", &PyHost::AddTorrent);
     py::def("prompt", &PyHost::Prompt);
     py::def("set_application_status", &PyHost::SetApplicationStatus);
 }
@@ -131,6 +134,12 @@ void PyHost::Unload()
     {
         std::string error = parse_python_exception();
     }
+}
+
+void PyHost::AddTorrent(const libtorrent::torrent_status& status)
+{
+    ScopedGILRelease scope;
+    pico_->AddTorrent(status);
 }
 
 bool PyHost::Prompt(std::string message)

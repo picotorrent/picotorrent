@@ -47,6 +47,7 @@ def handle_alert(alert):
 
             save_torrent_file(torrent_file)
 
+        pico_api.add_torrent(status)
         pico_api.set_application_status("%s added." % name)
 
 

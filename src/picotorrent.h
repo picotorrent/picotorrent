@@ -1,11 +1,14 @@
 #ifndef _PT_PICOTORRENT_H
 #define _PT_PICOTORRENT_H
 
+#include <memory>
 #include <wx/app.h>
 #include <wx/timer.h>
 
-#include <boost/shared_ptr.hpp>
-#include <libtorrent/session.hpp>
+namespace libtorrent
+{
+    struct torrent_status;
+}
 
 class MainFrame;
 class PyHost;
@@ -19,6 +22,8 @@ public:
     virtual bool OnInit();
 
     virtual int OnExit();
+
+    void AddTorrent(const libtorrent::torrent_status& status);
     
     bool Prompt(const wxString& message);
 

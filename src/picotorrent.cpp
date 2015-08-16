@@ -3,9 +3,7 @@
 
 #include <boost/filesystem.hpp>
 #include <fstream>
-#include <libtorrent/alert_types.hpp>
-#include <libtorrent/bencode.hpp>
-#include <libtorrent/create_torrent.hpp>
+#include <libtorrent/torrent_handle.hpp>
 #include <wx/msgdlg.h>
 
 #include "config.h"
@@ -47,6 +45,11 @@ int PicoTorrent::OnExit()
 {
     pyHost_->Unload();
     return wxApp::OnExit();
+}
+
+void PicoTorrent::AddTorrent(const libtorrent::torrent_status& status)
+{
+    mainFrame_->AddTorrent(status);
 }
 
 bool PicoTorrent::Prompt(const wxString& text)
