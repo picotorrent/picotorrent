@@ -9,6 +9,7 @@
 #include "config.h"
 #include "platform.h"
 #include "scripting/pyhost.h"
+#include "ui/logframe.h"
 #include "ui/mainframe.h"
 
 namespace lt = libtorrent;
@@ -16,11 +17,15 @@ namespace lt = libtorrent;
 wxBEGIN_EVENT_TABLE(PicoTorrent, wxApp)
     EVT_LIST_ITEM_ACTIVATED(4000, PicoTorrent::OnTorrentItemActivated)
     EVT_LIST_ITEM_SELECTED(4000, PicoTorrent::OnTorrentItemSelected)
+
+    EVT_MENU(5000, PicoTorrent::OnViewLog)
 wxEND_EVENT_TABLE()
 
 PicoTorrent::PicoTorrent()
 {
     mainFrame_ = new MainFrame();
+    logFrame_ = new LogFrame(mainFrame_);
+
     pyHost_ = std::unique_ptr<PyHost>(new PyHost(this));
 }
 
@@ -55,8 +60,8 @@ bool PicoTorrent::OnInit()
         return false;
     }
 
-    // Show our main frame.
     mainFrame_->Show(true);
+    logFrame_->Show(true);
 
     // Load the python scripting host as the last thing
     pyHost_->Load();
@@ -78,6 +83,11 @@ int PicoTorrent::OnExit()
 void PicoTorrent::AddTorrent(const lt::torrent_status& status)
 {
     mainFrame_->AddTorrent(status);
+}
+
+void PicoTorrent::AppendLog(std::string message)
+{
+    logFrame_->AppendLog(message);
 }
 
 void PicoTorrent::UpdateTorrents(std::map<lt::sha1_hash, lt::torrent_status> status)
@@ -108,4 +118,16 @@ void PicoTorrent::OnTorrentItemSelected(wxListEvent& event)
 {
     lt::sha1_hash* hash = (lt::sha1_hash*)event.GetItem().GetData();
     pyHost_->OnTorrentItemSelected(*hash);
+}
+
+void PicoTorrent::OnViewLog(wxCommandEvent& WXUNUSED(event))
+{
+    if (logFrame_->IsShown())
+    {
+        logFrame_->Raise();
+    }
+    else
+    {
+        logFrame_->Show(true);
+    }
 }

@@ -1,7 +1,30 @@
+"""
+This is the main PicoTorrent script and it is responsible for loading and
+unloading the BitTorrent session, among other things. 
+"""
+
+# Import picotorrent_api as soon as possible so we can use all the sweetness
+# it provides.
+import picotorrent_api as pico_api
+import sys
+
+# Redirect stdout and stderr to the API with these small classes.
+class LogStdOut(object):
+    def write(self, text):
+        pico_api.log(text)
+
+class LogStdErr(object):
+    def write(self, text):
+        pico_api.log("ERROR: %s" % text)
+
+sys.stdout = LogStdOut()
+sys.stderr = LogStdErr()
+
+print("Loadin")
+
 import glob
 import libtorrent as lt
 import os, os.path
-import picotorrent_api as pico_api
 from threading import Thread, Timer
 import update_checker
 

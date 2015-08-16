@@ -24,6 +24,7 @@ set(PICOTORRENT_SOURCES
     src/scripting/pyhost
     src/ui/addtorrentdialog
     src/ui/mainframe
+    src/ui/logframe
     src/ui/torrentlistctrl
     src/ui/torrentdetailsframe
 

@@ -14,6 +14,7 @@ namespace libtorrent
     struct torrent_status;
 }
 
+class LogFrame;
 class MainFrame;
 class PyHost;
 
@@ -29,6 +30,8 @@ public:
 
     void AddTorrent(const libtorrent::torrent_status& status);
 
+    void AppendLog(std::string message);
+
     void UpdateTorrents(std::map<libtorrent::sha1_hash, libtorrent::torrent_status> status);
     
     bool Prompt(const wxString& message);
@@ -38,9 +41,11 @@ public:
 protected:
     void OnTorrentItemActivated(wxListEvent& event);
     void OnTorrentItemSelected(wxListEvent& event);
+    void OnViewLog(wxCommandEvent& event);
 
 private:
     std::unique_ptr<PyHost> pyHost_;
+    LogFrame* logFrame_;
     MainFrame* mainFrame_;
     wxSingleInstanceChecker* single_;
 

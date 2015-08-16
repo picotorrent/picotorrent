@@ -33,6 +33,7 @@ public:
 
     static void AddTorrent(const libtorrent::torrent_status& status);
     static boost::python::list GetCmdArguments();
+    static void Log(std::string message);
     static void UpdateTorrents(boost::python::dict torrents);
     static bool Prompt(std::string message);
     static void SetApplicationStatus(std::string status);

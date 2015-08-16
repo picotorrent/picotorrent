@@ -17,7 +17,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
 
     EVT_MENU(ptID_FILE_ADD_TORRENT, MainFrame::OnFileAddTorrent)
     EVT_MENU(ptID_FILE_EXIT, MainFrame::OnFileExit)
-    EVT_MENU(wxID_ANY, MainFrame::OnTorrentContextMenu)
+    //EVT_MENU(wxID_ANY, MainFrame::OnTorrentContextMenu)
 
     EVT_LIST_ITEM_RIGHT_CLICK(1000, MainFrame::OnListItemRightClick)
 wxEND_EVENT_TABLE()
@@ -55,8 +55,12 @@ MainFrame::MainFrame()
     fileMenu->AppendSeparator();
     fileMenu->Append(ptID_FILE_EXIT, wxT("Exit"));
 
+    wxMenu* viewMenu = new wxMenu();
+    viewMenu->Append(5000, wxT("Log"));
+
     wxMenuBar* mainMenu = new wxMenuBar();
     mainMenu->Append(fileMenu, wxT("File"));
+    mainMenu->Append(viewMenu, wxT("View"));
     SetMenuBar(mainMenu);
 
     const int widths[2] = { -2, -1 };

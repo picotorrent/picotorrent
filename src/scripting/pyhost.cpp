@@ -19,6 +19,7 @@ BOOST_PYTHON_MODULE(picotorrent_api)
 {
     py::def("add_torrent", &PyHost::AddTorrent);
     py::def("get_cmd_arguments", &PyHost::GetCmdArguments);
+    py::def("log", &PyHost::Log);
     py::def("update_torrents", &PyHost::UpdateTorrents);
     py::def("prompt", &PyHost::Prompt);
     py::def("set_application_status", &PyHost::SetApplicationStatus);
@@ -185,6 +186,11 @@ py::list PyHost::GetCmdArguments()
     }
 
     return args;
+}
+
+void PyHost::Log(std::string message)
+{
+    pico_->AppendLog(message);
 }
 
 void PyHost::UpdateTorrents(py::dict torrents)
