@@ -21,7 +21,7 @@ Config::Config()
 
     auto& alloc = default_.GetAllocator();
 
-    default_.AddMember("py.path", ".", alloc);
+    default_.AddMember("py.path", "lib.zip", alloc);
     default_.AddMember("py.runtime", "python27", alloc);
 
     Load();

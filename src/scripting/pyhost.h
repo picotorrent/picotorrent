@@ -28,11 +28,12 @@ public:
     void Unload();
 
     void OnInstanceAlreadyRunning();
+    void OnMenuItemClicked(int id);
     void OnTorrentItemActivated(const libtorrent::sha1_hash& hash);
     void OnTorrentItemSelected(const libtorrent::sha1_hash& hash);
 
     static void AddTorrent(const libtorrent::torrent_status& status);
-    static boost::python::list GetCmdArguments();
+    static void Exit();
     static void Log(std::string message);
     static void UpdateTorrents(boost::python::dict torrents);
     static bool Prompt(std::string message);

@@ -15,8 +15,8 @@ namespace lt = libtorrent;
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_SIZE(MainFrame::OnSize)
 
-    EVT_MENU(ptID_FILE_ADD_TORRENT, MainFrame::OnFileAddTorrent)
-    EVT_MENU(ptID_FILE_EXIT, MainFrame::OnFileExit)
+    //EVT_MENU(ptID_FILE_ADD_TORRENT, MainFrame::OnFileAddTorrent)
+    //EVT_MENU(ptID_FILE_EXIT, MainFrame::OnFileExit)
     //EVT_MENU(wxID_ANY, MainFrame::OnTorrentContextMenu)
 
     EVT_LIST_ITEM_RIGHT_CLICK(1000, MainFrame::OnListItemRightClick)
@@ -56,7 +56,7 @@ MainFrame::MainFrame()
     fileMenu->Append(ptID_FILE_EXIT, wxT("Exit"));
 
     wxMenu* viewMenu = new wxMenu();
-    viewMenu->Append(5000, wxT("Log"));
+    viewMenu->Append(ptID_VIEW_LOG, wxT("Log"));
 
     wxMenuBar* mainMenu = new wxMenuBar();
     mainMenu->Append(fileMenu, wxT("File"));

@@ -25,7 +25,6 @@ set(PICOTORRENT_SOURCES
     src/ui/addtorrentdialog
     src/ui/mainframe
     src/ui/logframe
-    src/ui/torrentlistctrl
     src/ui/torrentdetailsframe
 
     # libtorrent bindings

@@ -6,6 +6,14 @@
 
 wxDECLARE_EVENT(SESSION_ALERT, wxCommandEvent);
 
+enum MenuItem
+{
+    ptID_FILE_ADD_TORRENT = 4000,
+    ptID_FILE_EXIT = wxID_EXIT,
+
+    ptID_VIEW_LOG = 4100
+};
+
 class Common
 {
 public:

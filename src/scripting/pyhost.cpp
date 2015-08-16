@@ -4,6 +4,7 @@
 #include <libtorrent/torrent_handle.hpp>
 
 #include "scopedgilrelease.h"
+#include "../common.h"
 #include "../config.h"
 #include "../picotorrent.h"
 #include "bindings/module.h"
@@ -18,11 +19,17 @@ BOOST_PYTHON_MODULE(libtorrent)
 BOOST_PYTHON_MODULE(picotorrent_api)
 {
     py::def("add_torrent", &PyHost::AddTorrent);
-    py::def("get_cmd_arguments", &PyHost::GetCmdArguments);
+    py::def("exit", &PyHost::Exit);
     py::def("log", &PyHost::Log);
     py::def("update_torrents", &PyHost::UpdateTorrents);
     py::def("prompt", &PyHost::Prompt);
     py::def("set_application_status", &PyHost::SetApplicationStatus);
+
+    py::enum_<MenuItem>("menu_item_t")
+        .value("FILE_ADD_TORRENT", ptID_FILE_ADD_TORRENT)
+        .value("FILE_EXIT", ptID_FILE_EXIT)
+        .value("VIEW_LOG", ptID_VIEW_LOG)
+        ;
 }
 
 std::string parse_python_exception() {
@@ -92,11 +99,8 @@ void PyHost::Init()
     Py_InitializeEx(0);
     PyEval_InitThreads();
 
-    std::string sp = cfg.GetPyPath();
-    char* sysPath = new char[sp.length() + 1];
-    strcpy(sysPath, sp.c_str());
-    PySys_SetPath(sysPath);
-    delete[] sysPath;
+    // Set sys.argv
+    PySys_SetArgvEx(pico_->argc, pico_->argv, 0);
 
     py::object module = py::import("__main__");
     ns_ = module.attr("__dict__");
@@ -106,8 +110,9 @@ void PyHost::Init()
         "sys.dont_write_bytecode = True\n"
 
         // Set up paths
-        "sys.path.insert(0, '" + cfg.GetPyRuntimePath() + "')\n"
-        "sys.path.insert(1, '" + cfg.GetPyRuntimePath() + ".zip')\n"
+        "sys.path.append('" + cfg.GetPyRuntimePath() + "')\n"
+        "sys.path.append('" + cfg.GetPyRuntimePath() + ".zip')\n"
+        "sys.path.append('" + cfg.GetPyPath() + "')\n"
         ;
 
     try
@@ -156,6 +161,13 @@ void PyHost::OnInstanceAlreadyRunning()
     ts_ = PyEval_SaveThread();
 }
 
+void PyHost::OnMenuItemClicked(int id)
+{
+    PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
+    pt_.attr("on_menu_item_clicked")(id);
+    ts_ = PyEval_SaveThread();
+}
+
 void PyHost::OnTorrentItemActivated(const libtorrent::sha1_hash& hash)
 {
     PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
@@ -176,20 +188,15 @@ void PyHost::AddTorrent(const libtorrent::torrent_status& status)
     pico_->AddTorrent(status);
 }
 
-py::list PyHost::GetCmdArguments()
+void PyHost::Exit()
 {
-    py::list args;
-
-    for (int i = 0; i < pico_->argc; i++)
-    {
-        args.append(pico_->argv[i].ToStdString());
-    }
-
-    return args;
+    ScopedGILRelease scope;
+    pico_->Exit();
 }
 
 void PyHost::Log(std::string message)
 {
+    ScopedGILRelease scope;
     pico_->AppendLog(message);
 }
 

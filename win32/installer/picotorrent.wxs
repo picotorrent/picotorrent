@@ -54,9 +54,8 @@
 
         <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" />
 
-        <!-- Pythons scripts -->
-        <File Id="F_picotorrent.py" Name="picotorrent.py" />
-        <File Id="F_update_checker.py" Name="update_checker.py" />
+        <!-- Python lib -->
+        <File Id="F_lib.zip" Name="lib.zip" />
 
         <!-- Python runtime -->
         <File Id="F_socket.pyd" Name="_socket.pyd" />
