@@ -20,7 +20,6 @@ set(PICOTORRENT_SOURCES
     src/main
     src/common
     src/config
-    src/fsutil
     src/picotorrent
     src/scripting/pyhost
     src/ui/addtorrentdialog

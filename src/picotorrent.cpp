@@ -7,7 +7,6 @@
 #include <wx/msgdlg.h>
 
 #include "config.h"
-#include "fsutil.h"
 #include "platform.h"
 #include "scripting/pyhost.h"
 #include "ui/mainframe.h"
