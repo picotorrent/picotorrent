@@ -18,6 +18,7 @@ BOOST_PYTHON_MODULE(libtorrent)
 BOOST_PYTHON_MODULE(picotorrent_api)
 {
     py::def("add_torrent", &PyHost::AddTorrent);
+    py::def("get_cmd_arguments", &PyHost::GetCmdArguments);
     py::def("update_torrents", &PyHost::UpdateTorrents);
     py::def("prompt", &PyHost::Prompt);
     py::def("set_application_status", &PyHost::SetApplicationStatus);
@@ -154,6 +155,18 @@ void PyHost::AddTorrent(const libtorrent::torrent_status& status)
 {
     ScopedGILRelease scope;
     pico_->AddTorrent(status);
+}
+
+py::list PyHost::GetCmdArguments()
+{
+    py::list args;
+
+    for (int i = 0; i < pico_->argc; i++)
+    {
+        args.append(pico_->argv[i].ToStdString());
+    }
+
+    return args;
 }
 
 void PyHost::UpdateTorrents(py::dict torrents)

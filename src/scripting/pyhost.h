@@ -3,9 +3,10 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/python/dict.hpp>
+#include <boost/python/list.hpp>
 #include <boost/python/object.hpp>
-#include <map>
 #include <string>
+#include <vector>
 
 namespace libtorrent
 {
@@ -28,6 +29,7 @@ public:
     void OnTorrentItemSelected(const libtorrent::sha1_hash& hash);
 
     static void AddTorrent(const libtorrent::torrent_status& status);
+    static boost::python::list GetCmdArguments();
     static void UpdateTorrents(boost::python::dict torrents);
     static bool Prompt(std::string message);
     static void SetApplicationStatus(std::string status);
