@@ -14,6 +14,7 @@
 namespace lt = libtorrent;
 
 wxBEGIN_EVENT_TABLE(PicoTorrent, wxApp)
+    EVT_LIST_ITEM_ACTIVATED(4000, PicoTorrent::OnTorrentItemActivated)
     EVT_LIST_ITEM_SELECTED(4000, PicoTorrent::OnTorrentItemSelected)
 wxEND_EVENT_TABLE()
 
@@ -70,6 +71,12 @@ void PicoTorrent::SetApplicationStatusText(const wxString& text)
     {
         mainFrame_->SetStatusText(text, 0);
     }
+}
+
+void PicoTorrent::OnTorrentItemActivated(wxListEvent& event)
+{
+    lt::sha1_hash* hash = (lt::sha1_hash*)event.GetItem().GetData();
+    pyHost_->OnTorrentItemActivated(*hash);
 }
 
 void PicoTorrent::OnTorrentItemSelected(wxListEvent& event)

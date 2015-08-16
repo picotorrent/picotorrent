@@ -136,6 +136,13 @@ void PyHost::Unload()
     }
 }
 
+void PyHost::OnTorrentItemActivated(const libtorrent::sha1_hash& hash)
+{
+    PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
+    pt_.attr("on_torrent_item_activated")(hash);
+    ts_ = PyEval_SaveThread();
+}
+
 void PyHost::OnTorrentItemSelected(const libtorrent::sha1_hash& hash)
 {
     PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));

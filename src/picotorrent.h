@@ -35,6 +35,7 @@ public:
     void SetApplicationStatusText(const wxString& text);
 
 protected:
+    void OnTorrentItemActivated(wxListEvent& event);
     void OnTorrentItemSelected(wxListEvent& event);
 
 private:

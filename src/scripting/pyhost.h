@@ -24,6 +24,7 @@ public:
 
     void Load();
     void Unload();
+    void OnTorrentItemActivated(const libtorrent::sha1_hash& hash);
     void OnTorrentItemSelected(const libtorrent::sha1_hash& hash);
 
     static void AddTorrent(const libtorrent::torrent_status& status);
