@@ -19,7 +19,6 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(ptID_FILE_EXIT, MainFrame::OnFileExit)
     EVT_MENU(wxID_ANY, MainFrame::OnTorrentContextMenu)
 
-    EVT_LIST_ITEM_ACTIVATED(1000, MainFrame::OnListItemActivated)
     EVT_LIST_ITEM_RIGHT_CLICK(1000, MainFrame::OnListItemRightClick)
 wxEND_EVENT_TABLE()
 
@@ -29,7 +28,7 @@ MainFrame::MainFrame()
     SetIcon(wxIcon("progicon"));
 
     torrentList_ = new wxListCtrl(this,
-        1000,
+        4000,
         wxDefaultPosition,
         wxDefaultSize,
         wxLC_REPORT);

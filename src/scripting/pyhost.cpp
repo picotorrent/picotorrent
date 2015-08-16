@@ -106,16 +106,15 @@ void PyHost::Load()
         // Set up paths
         "sys.path.insert(0, '" + cfg.GetPyRuntimePath() + "')\n"
         "sys.path.insert(1, '" + cfg.GetPyRuntimePath() + ".zip')\n"
-
-        // Import and run picotorrent.on_load
-        "import picotorrent\n"
-        "picotorrent.on_load()"
         ;
 
     try
     {
-        // Run our bootstrapper script
         py::exec(py::str(bootstrapper), ns_);
+
+        pt_ = py::import("picotorrent");
+        pt_.attr("on_load")();
+
         ts_ = PyEval_SaveThread();
     }
     catch (const py::error_already_set& err)
@@ -129,12 +128,19 @@ void PyHost::Unload()
     try
     {
         PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
-        py::exec("picotorrent.on_unload()", ns_);
+        pt_.attr("on_unload")();
     }
     catch (const py::error_already_set& err)
     {
         std::string error = parse_python_exception();
     }
+}
+
+void PyHost::OnTorrentItemSelected(const libtorrent::sha1_hash& hash)
+{
+    PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
+    pt_.attr("on_torrent_item_selected")(hash);
+    ts_ = PyEval_SaveThread();
 }
 
 void PyHost::AddTorrent(const libtorrent::torrent_status& status)

@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <wx/app.h>
+#include <wx/listctrl.h>
 #include <wx/timer.h>
 
 namespace libtorrent
@@ -32,6 +33,9 @@ public:
     bool Prompt(const wxString& message);
 
     void SetApplicationStatusText(const wxString& text);
+
+protected:
+    void OnTorrentItemSelected(wxListEvent& event);
 
 private:
     std::unique_ptr<PyHost> pyHost_;

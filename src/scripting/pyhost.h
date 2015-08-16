@@ -24,6 +24,7 @@ public:
 
     void Load();
     void Unload();
+    void OnTorrentItemSelected(const libtorrent::sha1_hash& hash);
 
     static void AddTorrent(const libtorrent::torrent_status& status);
     static void UpdateTorrents(boost::python::dict torrents);
@@ -33,6 +34,7 @@ public:
 private:
     static PicoTorrent* pico_;
     boost::python::object ns_;
+    boost::python::object pt_;
     void* ts_;
 };
 

@@ -196,3 +196,13 @@ def on_unload():
 
     save_session_state()
     save_torrents()
+
+
+def on_torrent_item_selected(info_hash):
+    torrent = session.find_torrent(info_hash)
+
+    if not torrent.is_valid():
+        return
+
+    torrent_file = torrent.torrent_file()
+    pico_api.set_application_status("Torrent selected: %s" % torrent_file.name())

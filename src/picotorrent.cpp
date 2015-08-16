@@ -11,7 +11,10 @@
 #include "scripting/pyhost.h"
 #include "ui/mainframe.h"
 
+namespace lt = libtorrent;
+
 wxBEGIN_EVENT_TABLE(PicoTorrent, wxApp)
+    EVT_LIST_ITEM_SELECTED(4000, PicoTorrent::OnTorrentItemSelected)
 wxEND_EVENT_TABLE()
 
 PicoTorrent::PicoTorrent()
@@ -46,12 +49,12 @@ int PicoTorrent::OnExit()
     return wxApp::OnExit();
 }
 
-void PicoTorrent::AddTorrent(const libtorrent::torrent_status& status)
+void PicoTorrent::AddTorrent(const lt::torrent_status& status)
 {
     mainFrame_->AddTorrent(status);
 }
 
-void PicoTorrent::UpdateTorrents(std::map<libtorrent::sha1_hash, libtorrent::torrent_status> status)
+void PicoTorrent::UpdateTorrents(std::map<lt::sha1_hash, lt::torrent_status> status)
 {
     mainFrame_->UpdateTorrents(status);
 }
@@ -67,4 +70,10 @@ void PicoTorrent::SetApplicationStatusText(const wxString& text)
     {
         mainFrame_->SetStatusText(text, 0);
     }
+}
+
+void PicoTorrent::OnTorrentItemSelected(wxListEvent& event)
+{
+    lt::sha1_hash* hash = (lt::sha1_hash*)event.GetItem().GetData();
+    pyHost_->OnTorrentItemSelected(*hash);
 }
