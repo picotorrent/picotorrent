@@ -35,6 +35,26 @@ bool PicoTorrent::OnInit()
         return false;
     }
 
+    // Initialize the Python scripting host. We always do this, even when
+    // an instance of PicoTorrent is already running. We later call
+    // 'picotorrent.on_instance_already_running()' which takes care of passing any args
+    // to the already running instance.
+    pyHost_->Init();
+
+    // Check if we are the only instance of PicoTorrent.
+    single_ = new wxSingleInstanceChecker();
+
+    if (single_->IsAnotherRunning())
+    {
+        delete single_;
+        single_ = NULL;
+
+        // Let Python know and then shut down.
+        pyHost_->OnInstanceAlreadyRunning();
+
+        return false;
+    }
+
     // Show our main frame.
     mainFrame_->Show(true);
 
@@ -47,6 +67,11 @@ bool PicoTorrent::OnInit()
 int PicoTorrent::OnExit()
 {
     pyHost_->Unload();
+    delete single_;
+
+    // Save the configuration
+    Config::GetInstance().Save();
+
     return wxApp::OnExit();
 }
 

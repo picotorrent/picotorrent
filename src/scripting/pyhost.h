@@ -23,8 +23,11 @@ class PyHost
 public:
     PyHost(PicoTorrent* pico);
 
+    void Init();
     void Load();
     void Unload();
+
+    void OnInstanceAlreadyRunning();
     void OnTorrentItemActivated(const libtorrent::sha1_hash& hash);
     void OnTorrentItemSelected(const libtorrent::sha1_hash& hash);
 

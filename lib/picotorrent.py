@@ -5,9 +5,7 @@ import picotorrent_api as pico_api
 from threading import Thread, Timer
 import update_checker
 
-session = lt.session()
-session.set_alert_mask(lt.alert.category_t.all_categories)
-
+session = None
 is_running = False
 
 default_flags = (lt.add_torrent_params_flags_t.flag_paused |
@@ -178,7 +176,23 @@ def save_torrents():
 t = Thread(target=read_alerts)
 t.daemon = True
 
+
+def on_instance_already_running():
+    """Called when an instance of PicoTorrent is already running.
+
+    From here, we will try to connect to the existing PicoTorrent instance and
+    send our command line arguments to it via a TCP socket which PicoTorrent
+    binds to when on_load is called.
+
+    """
+    pass
+
+
 def on_load():
+    global session
+    session = lt.session()
+    session.set_alert_mask(lt.alert.category_t.all_categories)
+
     load_session_state()
     load_torrents()
 

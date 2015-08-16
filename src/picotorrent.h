@@ -5,6 +5,7 @@
 #include <memory>
 #include <wx/app.h>
 #include <wx/listctrl.h>
+#include <wx/snglinst.h>
 #include <wx/timer.h>
 
 namespace libtorrent
@@ -41,6 +42,7 @@ protected:
 private:
     std::unique_ptr<PyHost> pyHost_;
     MainFrame* mainFrame_;
+    wxSingleInstanceChecker* single_;
 
     wxDECLARE_EVENT_TABLE();
 };

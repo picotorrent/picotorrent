@@ -21,35 +21,10 @@ Config::Config()
 
     auto& alloc = default_.GetAllocator();
 
-    rj::Value iface(rj::kArrayType);
-    iface.PushBack("0.0.0.0", alloc);
-    iface.PushBack(6881, alloc);
-
-    default_.AddMember("bt.net.interface", iface, alloc);
     default_.AddMember("py.path", ".", alloc);
     default_.AddMember("py.runtime", "python27", alloc);
-    default_.AddMember("savePath", Platform::GetDownloadsPath(), alloc);
 
     Load();
-}
-
-Config::~Config()
-{
-    Save();
-}
-
-std::string Config::GetDefaultSavePath()
-{
-    return FindOrDefault("savePath")->value.GetString();
-}
-
-std::pair<std::string, int> Config::GetListenInterface()
-{
-    rj::Value::MemberIterator it = FindOrDefault("bt.net.interface");
-
-    return std::make_pair(
-        it->value[0].GetString(),
-        it->value[1].GetInt());
 }
 
 std::string Config::GetPyPath()

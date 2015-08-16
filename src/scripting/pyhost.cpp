@@ -81,7 +81,7 @@ PyHost::PyHost(PicoTorrent* pico)
     PyHost::pico_ = pico;
 }
 
-void PyHost::Load()
+void PyHost::Init()
 {
     Config& cfg = Config::GetInstance();
 
@@ -112,10 +112,21 @@ void PyHost::Load()
     try
     {
         py::exec(py::str(bootstrapper), ns_);
-
         pt_ = py::import("picotorrent");
-        pt_.attr("on_load")();
+        ts_ = PyEval_SaveThread();
+    }
+    catch (const py::error_already_set& err)
+    {
+        std::string error = parse_python_exception();
+    }
+}
 
+void PyHost::Load()
+{
+    try
+    {
+        PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
+        pt_.attr("on_load")();
         ts_ = PyEval_SaveThread();
     }
     catch (const py::error_already_set& err)
@@ -135,6 +146,13 @@ void PyHost::Unload()
     {
         std::string error = parse_python_exception();
     }
+}
+
+void PyHost::OnInstanceAlreadyRunning()
+{
+    PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
+    pt_.attr("on_instance_already_running")();
+    ts_ = PyEval_SaveThread();
 }
 
 void PyHost::OnTorrentItemActivated(const libtorrent::sha1_hash& hash)

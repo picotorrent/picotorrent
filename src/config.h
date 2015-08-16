@@ -13,18 +13,15 @@ public:
         return instance;
     }
 
-    std::string GetDefaultSavePath();
-    std::pair<std::string, int> GetListenInterface();
-
     std::string GetPyPath();
     std::string GetPyRuntimePath();
 
+    void Save();
+
 private:
     Config();
-    ~Config();
 
     void Load();
-    void Save();
 
     rapidjson::Value::MemberIterator FindOrDefault(const char* key);
     rapidjson::Value::MemberIterator FindOrDefault(const char* key, rapidjson::Document& doc);

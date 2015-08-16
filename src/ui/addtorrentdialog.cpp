@@ -29,7 +29,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     : wxFrame(parent, wxID_ANY, wxT("Add torrent(s)"), wxDefaultPosition, wxSize(400, 485), wxCAPTION | wxCLOSE_BOX)
 {
     Config& cfg = Config::GetInstance();
-    std::string savePath = cfg.GetDefaultSavePath();
+    std::string savePath = ""; // cfg.GetDefaultSavePath();
 
     for (torrent_info_ptr torrent : torrents)
     {
