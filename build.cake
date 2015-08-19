@@ -51,15 +51,17 @@ Task("Build")
 Task("Output-Lib-Files")
     .Does(() =>
 {
-    Zip("./lib", buildDir + File("lib.zip"));
+    Zip("./lib",
+        buildDir + File("lib.zip"),
+        GetFiles("./lib/**/*.py"));
 });
 
 Task("Output-Python-Runtime")
     .Does(() =>
 {
     // Copy python27.zip and all .pyd files to buildDir
-    CopyFiles(GetFiles("./deps/python27.zip"), buildDir);
-    CopyFiles(GetFiles("./deps/python27/*.*"), buildDir);
+    CopyFiles(GetFiles("./deps/python34.zip"), buildDir);
+    CopyFiles(GetFiles("./deps/python34/*.*"), buildDir);
 });
 
 Task("Create-Win32-Package")
@@ -72,7 +74,7 @@ Task("Create-Win32-Package")
     files = files.Union(GetFiles(buildDir + File("_socket.pyd")));
     files = files.Union(GetFiles(buildDir + File("_ssl.pyd")));
     files = files.Union(GetFiles(buildDir + File("lib.zip")));
-    files = files.Union(GetFiles(buildDir + File("python27.zip")));
+    files = files.Union(GetFiles(buildDir + File("python34.zip")));
 
     Zip(buildDir,
         binDir + File(baseName + ".zip"),

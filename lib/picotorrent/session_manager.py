@@ -1,24 +1,31 @@
+import asyncio
 import glob
+import functools
 import libtorrent as lt
+import logging
 import os, os.path
 import picotorrent_api as pico_api
-from threading import Thread, Timer
+
+# Out logger.
+logger = logging.getLogger(__name__)
 
 default_flags = (lt.add_torrent_params_flags_t.flag_paused |
                  lt.add_torrent_params_flags_t.flag_auto_managed |
                  lt.add_torrent_params_flags_t.flag_update_subscribe |
                  lt.add_torrent_params_flags_t.flag_apply_ip_filter)
 
+
 class SessionManager(object):
     _is_running = False
+    _loop = None
     _session = None
-    _thread = None
 
-    def __init__(self):
-        self._thread = Thread(target=self._read_alerts)
-        self._thread.daemon = True
+    def __init__(self, loop):
+        self._loop = loop
 
     def load(self):
+        logger.debug("load")
+
         self._session = lt.session()
         self._session.set_alert_mask(lt.alert.category_t.all_categories)
 
@@ -26,34 +33,41 @@ class SessionManager(object):
         self._load_session_state()
         self._load_torrents()
 
+        # Listen
+        self._session.listen_on(6881, 6889)
+
+        # Start our scheduled event calls
+        logger.debug("Scheduling calls.")
+
         self._is_running = True
-        self._thread.start()
+        self._loop.call_soon(self._read_alerts)
+        self._loop.call_later(1.0, self._post_updates)
 
-        Timer(1.0, self._post_updates).start()
 
+    def unload(self):
+        logger.debug("unload")
 
-    def unload():
         self._is_running = False
-        self._thread.join()
-        
+
         self._save_session_state()
         self._save_torrents()
 
 
     def _load_session_state(self):
         if not os.path.isfile(".session_state"):
+            logger.debug("File '.session_state' does not exist.")
             return
 
         with open(".session_state", "rb") as f:
             state = lt.bdecode(f.read())
             self._session.load_state(state)
 
-        # TODO send this to log instead.
-        pico_api.set_application_status("Loaded session state.")
+        logger.info("Session state loaded.")
 
 
     def _load_torrents(self):
         if not os.path.isdir("torrents"):
+            logger.debug("Directory 'torrents' does not exist.")
             return
 
         for torrent_file in glob.glob("torrents/*.torrent"):
@@ -64,6 +78,8 @@ class SessionManager(object):
             resume_file = os.path.splitext(torrent_file)[0] + ".resume"
 
             if os.path.isfile(resume_file):
+                logger.debug("Reading resume file '%s'.", resume_file)
+
                 with open(resume_file, "rb") as f:
                     params["resume_data"] = f.read()
 
@@ -71,10 +87,13 @@ class SessionManager(object):
                 entry = lt.bdecode(f.read())
                 params["ti"] = lt.torrent_info(entry)
 
+            logger.debug("Adding '%s' 'torrents' directory.", torrent_file)
             self._session.async_add_torrent(params)
 
 
     def _save_session_state(self):
+        logger.debug("Saving session state to file '.session_state'.")
+
         with open(".session_state", "wb") as f:
             entry = self._session.save_state()
             data = lt.bencode(entry)
@@ -104,6 +123,8 @@ class SessionManager(object):
 
             torrent.save_resume_data()
             num_outstanding_requests += 1
+
+        logger.debug("Saving state for %d torrents.", num_outstanding_requests)
 
         while num_outstanding_requests:
             if not self._session.wait_for_alert(10*1000):
@@ -135,6 +156,8 @@ class SessionManager(object):
                 resume_path = os.path.join("torrents", torrent_hash + ".resume")
                 data = lt.bencode(alert.resume_data)
 
+                logger.debug("Writing resume data for torrent '%s' to '%s'.", torrent_hash, resume_path)
+
                 with open(resume_path, "wb") as f:
                     f.write(data)
                     f.flush()
@@ -142,25 +165,40 @@ class SessionManager(object):
 
 
     def _read_alerts(self):
-        while self._is_running:
-            # Wait for an alert for 250ms, then restart the wait.
-            if not self._session.wait_for_alert(250):
-                continue
+        logger.debug("_read_alerts (is_running: %r)", self._is_running)
 
-            for alert in self._session.pop_alerts():
-                try:
-                    self._handle_alert(alert)
-                except Exception, e:
-                    raise e
+        if not self._is_running:
+            return
+
+        alert = yield from self._loop.run_in_executor(None, self._wait_for_alert)
+
+        if alert:
+            logger.debug("alert!!")
+            alerts = self._session.pop_alerts()
+            self._handle_alerts(alerts)
+
+        self._loop.call_soon(self._read_alerts)
+
+
+    def _wait_for_alert(self):
+        return self._session.wait_for_alert(250)
+
+
+    def _handle_alerts(self, alerts):
+        for alert in alerts:
+            try:
+                self._handle_alert(alert)
+            except Exception as e:
+                logger.error("Could not handle alert '%s': %s.", type(alert).__name__, e)
 
 
     def _handle_alert(self, alert):
         alert_type = type(alert).__name__
+        logger.debug("alert: %s: %s", alert_type, alert.message())
 
         if alert_type == "add_torrent_alert":
             if alert.error.value():
-                # TOdo implement logging and error handling
-                # ie. notify user.
+                logger.error("Could not add torrent, error %d: %s.", alert.error.value(), alert.error.message())
                 return
 
             status = alert.handle.status()
@@ -177,6 +215,9 @@ class SessionManager(object):
             pico_api.set_application_status("%s added" % name)
 
         elif alert_type == "state_update_alert":
+            if not alert.status:
+                return
+
             torrents = { status.info_hash : status for status in alert.status }
             pico_api.update_torrents(torrents)
 
@@ -188,6 +229,11 @@ class SessionManager(object):
         torrent_hash = str(torrent_file.info_hash())
         torrent_path = os.path.join("torrents", torrent_hash + ".torrent")
 
+        if os.path.isfile(torrent_path):
+            return
+
+        logger.debug("Saving torrent file to '%s'.", torrent_path)
+
         with open(torrent_path, "wb") as f:
             f.write(data)
             f.flush()
@@ -196,7 +242,7 @@ class SessionManager(object):
 
     def _post_updates(self):
         if not self._is_running: return
-
-        # Restart timer and post our updates
-        Timer(1.0, self._post_updates).start()
+        
+        # Re-schedule the call, then post the updates.
+        self._loop.call_later(1.0, self._post_updates)
         self._session.post_torrent_updates()

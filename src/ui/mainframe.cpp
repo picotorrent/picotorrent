@@ -83,6 +83,11 @@ void MainFrame::AddTorrent(const lt::torrent_status& status)
 
 void MainFrame::UpdateTorrents(std::map<libtorrent::sha1_hash, libtorrent::torrent_status> status)
 {
+    if (status.empty())
+    {
+        return;
+    }
+
     torrentList_->Freeze();
 
     long idx = -1;

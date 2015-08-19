@@ -40,6 +40,8 @@ public:
     static void SetApplicationStatus(std::string status);
 
 private:
+    std::string GetPyPath();
+
     static PicoTorrent* pico_;
     boost::python::object ns_;
     boost::python::object pt_;

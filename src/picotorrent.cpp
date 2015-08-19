@@ -6,7 +6,6 @@
 #include <libtorrent/torrent_handle.hpp>
 #include <wx/msgdlg.h>
 
-#include "config.h"
 #include "platform.h"
 #include "scripting/pyhost.h"
 #include "ui/logframe.h"
@@ -72,9 +71,6 @@ int PicoTorrent::OnExit()
 {
     pyHost_->Unload();
     delete single_;
-
-    // Save the configuration
-    Config::GetInstance().Save();
 
     return wxApp::OnExit();
 }
