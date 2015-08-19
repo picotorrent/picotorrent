@@ -8,8 +8,10 @@ var version       = Argument("version", System.IO.File.ReadAllText("VERSION").Tr
 
 // Parameters
 var binDir   = Directory("./bin");
+var depsDir  = Directory("./deps");
 var buildDir = Directory("./build") + Directory(configuration);
 var resDir   = Directory("./win32/res");
+var pyDir    = Directory("C:/Python34");
 var baseName = string.Format("PicoTorrent-{0}", version);
 
 //////////////////////////////////////////////////////////////////////
@@ -21,6 +23,8 @@ Task("Clean")
 {
     CleanDirectory(binDir);
     CleanDirectory(buildDir);
+    CleanDirectory(depsDir);
+    CleanDirectory(depsDir + Directory("python34"));
 });
 
 Task("Generate-Project")
@@ -40,8 +44,29 @@ Task("Generate-Project")
     }
 });
 
+Task("Prepare-Python-Runtime")
+    .Does(() =>
+{
+    Zip(pyDir + Directory("Lib"),
+        "./deps/python34.zip",
+        GetFiles((string)pyDir + "/Lib/**/*.*"));
+
+    CopyFiles(
+        new FilePath[]
+        {
+            pyDir + File("DLLs/_multiprocessing.pyd"),
+            pyDir + File("DLLs/_overlapped.pyd"),
+            pyDir + File("DLLs/_socket.pyd"),
+            pyDir + File("DLLs/_ssl.pyd"),
+            pyDir + File("DLLs/select.pyd"),
+            pyDir + File("DLLs/unicodedata.pyd")
+        },
+        depsDir + Directory("python34"));
+});
+
 Task("Build")
     .IsDependentOn("Generate-Project")
+    .IsDependentOn("Prepare-Python-Runtime")
     .Does(() =>
 {
     MSBuild("./build/PicoTorrent.sln",
@@ -59,7 +84,6 @@ Task("Output-Lib-Files")
 Task("Output-Python-Runtime")
     .Does(() =>
 {
-    // Copy python27.zip and all .pyd files to buildDir
     CopyFiles(GetFiles("./deps/python34.zip"), buildDir);
     CopyFiles(GetFiles("./deps/python34/*.*"), buildDir);
 });
@@ -71,8 +95,7 @@ Task("Create-Win32-Package")
     .Does(() =>
 {
     IEnumerable<FilePath> files = GetFiles(buildDir + File("PicoTorrent.exe"));
-    files = files.Union(GetFiles(buildDir + File("_socket.pyd")));
-    files = files.Union(GetFiles(buildDir + File("_ssl.pyd")));
+    files = files.Union(GetFiles((string)buildDir + "/*.pyd"));
     files = files.Union(GetFiles(buildDir + File("lib.zip")));
     files = files.Union(GetFiles(buildDir + File("python34.zip")));
 
