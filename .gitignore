@@ -1,6 +1,9 @@
 *.aps
 *.pyc
 
+__pycache__
+
+bin/
 build/
 deps/
 tools/Cake

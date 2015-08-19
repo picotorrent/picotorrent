@@ -54,14 +54,17 @@
 
         <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" />
 
-        <!-- Pythons scripts -->
-        <File Id="F_picotorrent.py" Name="picotorrent.py" />
-        <File Id="F_update_checker.py" Name="update_checker.py" />
+        <!-- Python lib -->
+        <File Id="F_lib.zip" Name="lib.zip" />
 
         <!-- Python runtime -->
+        <File Id="F_multiprocessing.pyd" Name="_multiprocessing.pyd" />
+        <File Id="F_overlapped.pyd" Name="_overlapped.pyd" />
         <File Id="F_socket.pyd" Name="_socket.pyd" />
         <File Id="F_ssl.pyd" Name="_ssl.pyd" />
-        <File Id="F_python27.zip" Name="python27.zip" />
+        <File Id="F_select.pyd" Name="select.pyd" />
+        <File Id="F_unicodedata.pyd" Name="unicodedata.pyd" />
+        <File Id="F_python27.zip" Name="python34.zip" />
 
         <Shortcut Id="S_PicoTorrentShortcut"
                   Directory="D_AppShortcut"

@@ -6,7 +6,6 @@
 #include <libtorrent/torrent_handle.hpp>
 #include <wx/msgdlg.h>
 
-#include "config.h"
 #include "platform.h"
 #include "scripting/pyhost.h"
 #include "ui/logframe.h"
@@ -18,7 +17,7 @@ wxBEGIN_EVENT_TABLE(PicoTorrent, wxApp)
     EVT_LIST_ITEM_ACTIVATED(4000, PicoTorrent::OnTorrentItemActivated)
     EVT_LIST_ITEM_SELECTED(4000, PicoTorrent::OnTorrentItemSelected)
 
-    EVT_MENU(5000, PicoTorrent::OnViewLog)
+    EVT_MENU(wxID_ANY, PicoTorrent::OnViewLog)
 wxEND_EVENT_TABLE()
 
 PicoTorrent::PicoTorrent()
@@ -61,7 +60,6 @@ bool PicoTorrent::OnInit()
     }
 
     mainFrame_->Show(true);
-    logFrame_->Show(true);
 
     // Load the python scripting host as the last thing
     pyHost_->Load();
@@ -73,9 +71,6 @@ int PicoTorrent::OnExit()
 {
     pyHost_->Unload();
     delete single_;
-
-    // Save the configuration
-    Config::GetInstance().Save();
 
     return wxApp::OnExit();
 }
@@ -120,14 +115,8 @@ void PicoTorrent::OnTorrentItemSelected(wxListEvent& event)
     pyHost_->OnTorrentItemSelected(*hash);
 }
 
-void PicoTorrent::OnViewLog(wxCommandEvent& WXUNUSED(event))
+void PicoTorrent::OnViewLog(wxCommandEvent& event)
 {
-    if (logFrame_->IsShown())
-    {
-        logFrame_->Raise();
-    }
-    else
-    {
-        logFrame_->Show(true);
-    }
+    int id = event.GetId();
+    pyHost_->OnMenuItemClicked(id);
 }

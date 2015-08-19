@@ -11,7 +11,6 @@
 #include <wx/textdlg.h>
 
 #include "../common.h"
-#include "../config.h"
 
 namespace lt = libtorrent;
 
@@ -28,7 +27,6 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     std::vector<boost::intrusive_ptr<lt::torrent_info>> torrents)
     : wxFrame(parent, wxID_ANY, wxT("Add torrent(s)"), wxDefaultPosition, wxSize(400, 485), wxCAPTION | wxCLOSE_BOX)
 {
-    Config& cfg = Config::GetInstance();
     std::string savePath = ""; // cfg.GetDefaultSavePath();
 
     for (torrent_info_ptr torrent : torrents)

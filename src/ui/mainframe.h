@@ -42,9 +42,6 @@ protected:
     {
         ptID_MAINFRAME = 5999,
 
-        ptID_FILE_ADD_TORRENT = 4000,
-        ptID_FILE_EXIT = wxID_EXIT,
-
         ptID_TORRENT_RESUME = 6000,
         ptID_TORRENT_PAUSE = 6001,
         ptID_TORRENT_AUTO_MANAGE_TOGGLE = 6002,

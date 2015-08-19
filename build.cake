@@ -7,8 +7,10 @@ var configuration = Argument("configuration", "Release");
 var version       = Argument("version", System.IO.File.ReadAllText("VERSION").Trim());
 
 // Parameters
+var binDir   = Directory("./bin");
 var buildDir = Directory("./build") + Directory(configuration);
 var resDir   = Directory("./win32/res");
+var baseName = string.Format("PicoTorrent-{0}", version);
 
 //////////////////////////////////////////////////////////////////////
 // TASKS
@@ -17,16 +19,14 @@ var resDir   = Directory("./win32/res");
 Task("Clean")
     .Does(() =>
 {
+    CleanDirectory(binDir);
     CleanDirectory(buildDir);
-    CleanDirectory(buildDir + Directory("python27"));
 });
 
 Task("Generate-Project")
     .IsDependentOn("Clean")
     .Does(() =>
 {
-    CreateDirectory("build");
-
     var exitCode = StartProcess("cmake",
         new ProcessSettings
         {
@@ -51,16 +51,34 @@ Task("Build")
 Task("Output-Lib-Files")
     .Does(() =>
 {
-    // Copy all files from lib/ to %buildDir%
-    CopyFiles(GetFiles("./lib/*.py"), buildDir);
+    Zip("./lib",
+        buildDir + File("lib.zip"),
+        GetFiles("./lib/**/*.py"));
 });
 
 Task("Output-Python-Runtime")
     .Does(() =>
 {
     // Copy python27.zip and all .pyd files to buildDir
-    CopyFiles(GetFiles("./deps/python27.zip"), buildDir);
-    CopyFiles(GetFiles("./deps/python27/*.*"), buildDir);
+    CopyFiles(GetFiles("./deps/python34.zip"), buildDir);
+    CopyFiles(GetFiles("./deps/python34/*.*"), buildDir);
+});
+
+Task("Create-Win32-Package")
+    .IsDependentOn("Build")
+    .IsDependentOn("Output-Lib-Files")
+    .IsDependentOn("Output-Python-Runtime")
+    .Does(() =>
+{
+    IEnumerable<FilePath> files = GetFiles(buildDir + File("PicoTorrent.exe"));
+    files = files.Union(GetFiles(buildDir + File("_socket.pyd")));
+    files = files.Union(GetFiles(buildDir + File("_ssl.pyd")));
+    files = files.Union(GetFiles(buildDir + File("lib.zip")));
+    files = files.Union(GetFiles(buildDir + File("python34.zip")));
+
+    Zip(buildDir,
+        binDir + File(baseName + ".zip"),
+        files);
 });
 
 Task("Create-Win32-Installer")
@@ -82,7 +100,7 @@ Task("Create-Win32-Installer")
 
         WiXLight("./build/wixobj/*.wixobj", new LightSettings
         {
-            OutputFile = buildDir + File("PicoTorrent.msi"),
+            OutputFile = binDir + File(baseName + ".msi"),
             RawArguments = "-sice:ICE91"
         });
     });
@@ -93,6 +111,7 @@ Task("Create-Win32-Installer")
 
 Task("Default")
     .IsDependentOn("Build")
+    .IsDependentOn("Create-Win32-Package")
     .IsDependentOn("Create-Win32-Installer");
 
 //////////////////////////////////////////////////////////////////////
