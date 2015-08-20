@@ -50,7 +50,6 @@ set(PICOTORRENT_SOURCES
 if(WIN32)
     list(APPEND
          PICOTORRENT_SOURCES
-         src/_win32/platform
          src/_win32/resource.rc)
 endif(WIN32)
 

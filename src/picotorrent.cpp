@@ -6,7 +6,6 @@
 #include <libtorrent/torrent_handle.hpp>
 #include <wx/msgdlg.h>
 
-#include "platform.h"
 #include "scripting/pyhost.h"
 #include "ui/logframe.h"
 #include "ui/mainframe.h"
