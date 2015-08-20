@@ -1,13 +1,13 @@
 #ifndef _PT_UI_ADDTORRENTDIALOG_H
 #define _PT_UI_ADDTORRENTDIALOG_H
 
-#include <libtorrent/add_torrent_params.hpp>
-#include <libtorrent/torrent_info.hpp>
+#include <boost/shared_ptr.hpp>
 #include <map>
 #include <vector>
 #include <wx/frame.h>
 #include <wx/panel.h>
 
+class AddTorrentController;
 class wxComboBox;
 class wxListCtrl;
 class wxListEvent;
@@ -17,15 +17,14 @@ class wxTextCtrl;
 class AddTorrentDialog : public wxFrame
 {
 public:
-    AddTorrentDialog(wxWindow* parent,
-        std::vector<boost::intrusive_ptr<libtorrent::torrent_info>> torrents);
+    AddTorrentDialog(wxWindow* parent, boost::shared_ptr<AddTorrentController> controller);
 
 protected:
     void InitTorrentsGroup();
     void InitStorageGroup();
 
 private:
-    typedef boost::intrusive_ptr<libtorrent::torrent_info> torrent_info_ptr;
+    boost::shared_ptr<AddTorrentController> controller_;
 
     void OnBrowseSavePath(wxCommandEvent& event);
     void OnAdd(wxCommandEvent& event);
@@ -34,11 +33,6 @@ private:
     void OnFileItemRightClick(wxListEvent& event);
     void OnMenu(wxCommandEvent& event);
     void OnSavePathChanged(wxCommandEvent& event);
-
-    std::string PriorityString(int priority);
-
-    std::map<libtorrent::sha1_hash, libtorrent::add_torrent_params> params_;
-    std::map<int, libtorrent::sha1_hash> items_;
 
     // Torrent
     wxComboBox* torrentsCombo_;

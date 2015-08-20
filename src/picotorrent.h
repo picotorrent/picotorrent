@@ -1,6 +1,7 @@
 #ifndef _PT_PICOTORRENT_H
 #define _PT_PICOTORRENT_H
 
+#include <boost/shared_ptr.hpp>
 #include <map>
 #include <memory>
 #include <wx/app.h>
@@ -14,6 +15,7 @@ namespace libtorrent
     struct torrent_status;
 }
 
+class AddTorrentController;
 class LogFrame;
 class MainFrame;
 class PyHost;
@@ -38,10 +40,14 @@ public:
 
     void SetApplicationStatusText(const wxString& text);
 
+    void ShowAddTorrentDialog(boost::shared_ptr<AddTorrentController> controller);
+
+    bool ShowOpenFileDialog(std::vector<std::string>& files);
+
 protected:
+    void OnMenu(wxCommandEvent& event);
     void OnTorrentItemActivated(wxListEvent& event);
     void OnTorrentItemSelected(wxListEvent& event);
-    void OnViewLog(wxCommandEvent& event);
 
 private:
     std::unique_ptr<PyHost> pyHost_;

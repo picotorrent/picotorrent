@@ -5,6 +5,7 @@
 #include <boost/python/dict.hpp>
 #include <boost/python/list.hpp>
 #include <boost/python/object.hpp>
+#include <boost/python/tuple.hpp>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,7 @@ namespace libtorrent
     struct torrent_status;
 }
 
+class AddTorrentController;
 class PicoTorrent;
 class Session;
 
@@ -38,6 +40,8 @@ public:
     static void UpdateTorrents(boost::python::dict torrents);
     static bool Prompt(std::string message);
     static void SetApplicationStatus(std::string status);
+    static void ShowAddTorrentDialog(boost::shared_ptr<AddTorrentController> controller);
+    static boost::python::tuple ShowOpenFileDialog();
 
 private:
     std::string GetPyPath();

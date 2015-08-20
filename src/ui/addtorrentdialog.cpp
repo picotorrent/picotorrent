@@ -11,8 +11,7 @@
 #include <wx/textdlg.h>
 
 #include "../common.h"
-
-namespace lt = libtorrent;
+#include "../controllers/addtorrentcontroller.h"
 
 wxBEGIN_EVENT_TABLE(AddTorrentDialog, wxFrame)
     EVT_BUTTON(wxID_SAVEAS, AddTorrentDialog::OnBrowseSavePath)
@@ -24,23 +23,10 @@ wxBEGIN_EVENT_TABLE(AddTorrentDialog, wxFrame)
 wxEND_EVENT_TABLE()
 
 AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
-    std::vector<boost::intrusive_ptr<lt::torrent_info>> torrents)
-    : wxFrame(parent, wxID_ANY, wxT("Add torrent(s)"), wxDefaultPosition, wxSize(400, 485), wxCAPTION | wxCLOSE_BOX)
+    boost::shared_ptr<AddTorrentController> controller)
+    : wxFrame(parent, wxID_ANY, wxT("Add torrent(s)"), wxDefaultPosition, wxSize(400, 485), wxCAPTION | wxCLOSE_BOX),
+    controller_(controller)
 {
-    std::string savePath = ""; // cfg.GetDefaultSavePath();
-
-    for (torrent_info_ptr torrent : torrents)
-    {
-        lt::add_torrent_params p;
-        p.save_path = savePath;
-        p.ti = torrent;
-
-        p.file_priorities.resize((size_t)torrent->num_files());
-        std::fill(p.file_priorities.begin(), p.file_priorities.end(), 1);
-
-        params_[torrent->info_hash()] = p;
-    }
-
     panel_ = new wxPanel(this, wxID_ANY);
 
     InitTorrentsGroup();
@@ -59,15 +45,9 @@ void AddTorrentDialog::InitTorrentsGroup()
     wxStaticText* torrentName = new wxStaticText(torrentGroup, wxID_ANY, wxT("Name"), wxPoint(10, 25));
     torrentsCombo_ = new wxComboBox(torrentGroup, ptID_TORRENTS_COMBO, wxEmptyString, wxPoint(120, 20), wxSize(260, -1), wxArrayString(), wxCB_READONLY);
 
-    if (params_.size() > 1)
+    for (int i = 0; i < controller_->GetCount(); i++)
     {
-        torrentsCombo_->Insert("All torrents", 0);
-    }
-
-    for (auto& pair : params_)
-    {
-        int idx = torrentsCombo_->Insert(pair.second.ti->name(), torrentsCombo_->GetCount());
-        items_[idx] = pair.second.ti->info_hash();
+        torrentsCombo_->Insert(controller_->GetName(i), torrentsCombo_->GetCount());
     }
 
     // Size
@@ -131,75 +111,29 @@ void AddTorrentDialog::OnComboSelected(wxCommandEvent& event)
 
 void AddTorrentDialog::ShowTorrentInfo(int index)
 {
-    size_t totalSize = 0;
-    std::string comment = "-";
-    std::string creationDate = "-";
-    std::string creator = "-";
-    std::string savePath = "<multiple>";
-
     fileList_->DeleteAllItems();
-    fileList_->Disable();
 
-    if (params_.size() > 1 && index == 0)
+    for (int i = 0; i < controller_->GetFileCount(index); i++)
     {
-        // We selected "All torrents"
-        for (auto& item : params_)
-        {
-            torrent_info_ptr torrent = item.second.ti;
-            totalSize += torrent->total_size();
-        }
-    }
-    else
-    {
-        lt::sha1_hash hash = items_[index];
-        lt::add_torrent_params& p = params_[hash];
-        torrent_info_ptr torrent = p.ti;
+        int prio = controller_->GetFilePriority(index, i);
 
-        totalSize = torrent->total_size();
-        comment = torrent->comment();
-        creator = torrent->creator();
-        savePath = p.save_path;
-
-        if (torrent->creation_date())
-        {
-            char fd[100];
-            std::time_t tm(torrent->creation_date().value());
-            std::strftime(fd, sizeof(fd), "%c", std::localtime(&tm));
-            creationDate = fd;
-        }
-
-        // Update storage
-        const lt::file_storage& storage = torrent->files();
-
-        for (int i = 0; i < storage.num_files(); i++)
-        {
-            int idx = fileList_->InsertItem(fileList_->GetItemCount(), storage.file_name(i));
-            fileList_->SetItem(idx, 1, Common::ToFileSize(storage.file_size(i)));
-            fileList_->SetItem(idx, 2, PriorityString(p.file_priorities[i]));
-        }
-
-        fileList_->Enable();
+        int idx = fileList_->InsertItem(fileList_->GetItemCount(), controller_->GetFileName(index, i));
+        fileList_->SetItem(idx, 1, controller_->GetFileSize(index, i));
+        fileList_->SetItem(idx, 2, controller_->ToFriendlyPriority(prio));
     }
 
     // Update torrent information
-    sizeText_->SetLabel(Common::ToFileSize(totalSize));
-    commentText_->SetLabel(comment);
-    dateText_->SetLabel(creationDate);
-    creatorText_->SetLabel(creator);
-    savePathText_->SetLabel(savePath);
+    sizeText_->SetLabel(controller_->GetSize(index));
+    commentText_->SetLabel(controller_->GetComment(index));
+    dateText_->SetLabel(controller_->GetCreationDate(index));
+    creatorText_->SetLabel(controller_->GetCreator(index));
+    savePathText_->SetLabel(controller_->GetSavePath(index));
 }
 
 void AddTorrentDialog::OnBrowseSavePath(wxCommandEvent& WXUNUSED(event))
 {
     int idx = torrentsCombo_->GetSelection();
-    std::string initialPath = "";
-
-    if (params_.size() > 1 && idx > 0)
-    {
-        lt::sha1_hash hash = items_[idx - 1];
-        lt::add_torrent_params& p = params_[hash];
-        initialPath = p.save_path;
-    }
+    std::string initialPath = controller_->GetSavePath(idx);
 
     wxDirDialog dlg(this, wxT("Browse"), initialPath);
 
@@ -208,48 +142,31 @@ void AddTorrentDialog::OnBrowseSavePath(wxCommandEvent& WXUNUSED(event))
         return;
     }
 
-    if (params_.size() > 1 && idx > 0)
-    {
-        lt::sha1_hash hash = items_[idx - 1];
-        lt::add_torrent_params& p = params_[hash];
-        p.save_path = dlg.GetPath().ToStdString();
-    }
-    else
-    {
-        for (auto& item : params_)
-        {
-            item.second.save_path = dlg.GetPath().ToStdString();
-        }
-    }
-
+    controller_->SetSavePath(idx, dlg.GetPath().ToStdString());
     savePathText_->SetLabel(dlg.GetPath());
 }
 
 void AddTorrentDialog::OnAdd(wxCommandEvent& WXUNUSED(event))
 {
-    for (auto& item : params_)
-    {
-        //session_.async_add_torrent(item.second);
-    }
-
+    controller_->PerformAdd();
     Destroy();
 }
 
 void AddTorrentDialog::OnFileItemRightClick(wxListEvent& event)
 {
-    lt::sha1_hash hash = items_[torrentsCombo_->GetSelection()];
-    lt::add_torrent_params& p = params_[hash];
-    int idx = (int)event.GetIndex();
+    int torrentIndex = torrentsCombo_->GetSelection();
+    int fileIndex = (int)event.GetIndex();
     bool isMulti = (fileList_->GetSelectedItemCount() > 1);
 
-    int currentPriority = p.file_priorities[idx];
+    int currentPriority = controller_->GetFilePriority(torrentIndex, fileIndex);
+    std::string friendlyPriority = controller_->ToFriendlyPriority(currentPriority);
 
     wxMenu* prio = new wxMenu();
-    prio->AppendCheckItem(ptID_PRIO_MAX, PriorityString(PRIO_MAX))->Check(currentPriority == PRIO_MAX);
-    prio->AppendCheckItem(ptID_PRIO_HIGH, PriorityString(PRIO_HIGH))->Check(currentPriority == PRIO_HIGH);
-    prio->AppendCheckItem(ptID_PRIO_NORMAL, PriorityString(PRIO_NORMAL))->Check(currentPriority == PRIO_NORMAL);
+    prio->AppendCheckItem(ptID_PRIO_MAX, controller_->ToFriendlyPriority(PRIO_MAX))->Check(currentPriority == PRIO_MAX);
+    prio->AppendCheckItem(ptID_PRIO_HIGH, controller_->ToFriendlyPriority(PRIO_HIGH))->Check(currentPriority == PRIO_HIGH);
+    prio->AppendCheckItem(ptID_PRIO_NORMAL, controller_->ToFriendlyPriority(PRIO_NORMAL))->Check(currentPriority == PRIO_NORMAL);
     prio->AppendSeparator();
-    prio->AppendCheckItem(ptID_PRIO_SKIP, PriorityString(PRIO_SKIP))->Check(currentPriority == PRIO_SKIP);
+    prio->AppendCheckItem(ptID_PRIO_SKIP, controller_->ToFriendlyPriority(PRIO_SKIP))->Check(currentPriority == PRIO_SKIP);
 
     wxMenu menu;
     menu.AppendSubMenu(prio, "Priority");
@@ -261,9 +178,7 @@ void AddTorrentDialog::OnFileItemRightClick(wxListEvent& event)
 
 void AddTorrentDialog::OnMenu(wxCommandEvent& event)
 {
-    lt::sha1_hash hash = items_[torrentsCombo_->GetSelection()];
-    lt::add_torrent_params& p = params_[hash];
-
+    int torrentIndex = torrentsCombo_->GetSelection();
     long idx = -1;
 
     while ((idx = fileList_->GetNextItem(idx, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND)
@@ -271,19 +186,19 @@ void AddTorrentDialog::OnMenu(wxCommandEvent& event)
         switch (event.GetId())
         {
         case ptID_PRIO_MAX:
-            p.file_priorities[idx] = PRIO_MAX;
+            controller_->SetFilePriority(torrentIndex, idx, PRIO_MAX);
             break;
 
         case ptID_PRIO_HIGH:
-            p.file_priorities[idx] = PRIO_HIGH;
+            controller_->SetFilePriority(torrentIndex, idx, PRIO_HIGH);
             break;
 
         case ptID_PRIO_NORMAL:
-            p.file_priorities[idx] = PRIO_NORMAL;
+            controller_->SetFilePriority(torrentIndex, idx, PRIO_HIGH);
             break;
 
         case ptID_PRIO_SKIP:
-            p.file_priorities[idx] = PRIO_SKIP;
+            controller_->SetFilePriority(torrentIndex, idx, PRIO_HIGH);
             break;
 
         case ptID_RENAME_FILE:
@@ -291,48 +206,24 @@ void AddTorrentDialog::OnMenu(wxCommandEvent& event)
             wxTextEntryDialog dlg(this,
                 "New file name",
                 "Rename file",
-                p.ti->files().file_name(idx));
+                controller_->GetFileName(torrentIndex, idx));
 
             if (dlg.ShowModal() == wxID_OK)
             {
                 std::string newName = dlg.GetValue().ToStdString();
-                p.ti->rename_file(idx, newName);
+                controller_->SetFileName(torrentIndex, idx, newName);
                 fileList_->SetItem(idx, 0, newName);
             }
         }
         break;
         }
 
-        fileList_->SetItem(idx, 2, PriorityString(p.file_priorities[idx]));
+        fileList_->SetItem(idx, 2, controller_->ToFriendlyPriority(controller_->GetFilePriority(torrentIndex, idx)));
     }
 }
 
 void AddTorrentDialog::OnSavePathChanged(wxCommandEvent& WXUNUSED(event))
 {
-    // Do not do anything if we select the "All torrents" option.
-    if (params_.size() > 1 && torrentsCombo_->GetSelection() == 0)
-    {
-        return;
-    }
-
-    lt::sha1_hash hash = items_[torrentsCombo_->GetSelection()];
-    lt::add_torrent_params& p = params_[hash];
-    p.save_path = savePathText_->GetValue().ToStdString();
-}
-
-std::string AddTorrentDialog::PriorityString(int priority)
-{
-    switch (priority)
-    {
-    case PRIO_SKIP:
-        return "Do not download";
-    case PRIO_NORMAL:
-        return "Normal";
-    case PRIO_HIGH:
-        return "High";
-    case PRIO_MAX:
-        return "Maximum";
-    }
-
-    return "<unknown>";
+    int torrentIndex = torrentsCombo_->GetSelection();
+    controller_->SetSavePath(torrentIndex, savePathText_->GetValue().ToStdString());
 }

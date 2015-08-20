@@ -11,11 +11,115 @@
 #include "scopedgilrelease.h"
 #include "../common.h"
 #include "../picotorrent.h"
+#include "../controllers/addtorrentcontroller.h"
+#include "bindings/gil.hpp"
 #include "bindings/module.h"
 
 namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
 namespace py = boost::python;
+
+class AddTorrentControllerWrapper
+    : public AddTorrentController,
+    public py::wrapper<AddTorrentController>
+{
+public:
+    void PerformAdd()
+    {
+        lock_gil lock;
+        get_override("perform_add")();
+    }
+
+    std::string GetName(int index)
+    {
+        lock_gil lock;
+        return get_override("get_name")(index);
+    }
+
+    std::string GetComment(int index)
+    {
+        lock_gil lock;
+        return get_override("get_comment")(index);
+    }
+
+    std::string GetCreationDate(int index)
+    {
+        lock_gil lock;
+        return get_override("get_creation_date")(index);
+    }
+
+    std::string GetCreator(int index)
+    {
+        lock_gil lock;
+        return get_override("get_creator")(index);
+    }
+
+    std::string GetSavePath(int index)
+    {
+        lock_gil lock;
+        return get_override("get_save_path")(index);
+    }
+
+    std::string GetSize(int index)
+    {
+        lock_gil lock;
+        return get_override("get_size")(index);
+    }
+
+    int GetCount()
+    {
+        lock_gil lock;
+        return get_override("get_count")();
+    }
+
+    int GetFileCount(int torrentIndex)
+    {
+        lock_gil lock;
+        return get_override("get_file_count")(torrentIndex);
+    }
+
+    std::string GetFileName(int torrentIndex, int fileIndex)
+    {
+        lock_gil lock;
+        return get_override("get_file_name")(torrentIndex, fileIndex);
+    }
+
+    std::string GetFileSize(int torrentIndex, int fileIndex)
+    {
+        lock_gil lock;
+        return get_override("get_file_size")(torrentIndex, fileIndex);
+    }
+
+    int GetFilePriority(int torrentIndex, int fileIndex)
+    {
+        lock_gil lock;
+        return get_override("get_file_priority")(torrentIndex, fileIndex);
+    }
+
+    void SetSavePath(int torrentIndex, std::string savePath)
+    {
+        lock_gil lock;
+        get_override("set_save_path")(torrentIndex, savePath);
+    }
+
+    void SetFileName(int torrentIndex, int fileIndex, std::string name)
+    {
+        lock_gil lock;
+        get_override("set_file_name")(torrentIndex, fileIndex, name);
+    }
+
+    void SetFilePriority(int torrentIndex, int fileIndex, int prio)
+    {
+        lock_gil lock;
+        get_override("set_file_priority")(torrentIndex, fileIndex, prio);
+    }
+
+    std::string ToFriendlyPriority(int priority)
+    {
+        lock_gil lock;
+        return get_override("to_friendly_priority")(priority);
+    }
+};
 
 BOOST_PYTHON_MODULE(libtorrent)
 {
@@ -30,6 +134,27 @@ BOOST_PYTHON_MODULE(picotorrent_api)
     py::def("update_torrents", &PyHost::UpdateTorrents);
     py::def("prompt", &PyHost::Prompt);
     py::def("set_application_status", &PyHost::SetApplicationStatus);
+    py::def("show_add_torrent_dialog", &PyHost::ShowAddTorrentDialog);
+    py::def("show_open_file_dialog", &PyHost::ShowOpenFileDialog);
+
+    py::class_<AddTorrentControllerWrapper, boost::noncopyable, boost::shared_ptr<AddTorrentControllerWrapper>>("AddTorrentController")
+        .def("perform_add", py::pure_virtual(&AddTorrentController::PerformAdd))
+        .def("get_name", py::pure_virtual(&AddTorrentController::GetName))
+        .def("get_comment", py::pure_virtual(&AddTorrentController::GetComment))
+        .def("get_creation_date", py::pure_virtual(&AddTorrentController::GetCreationDate))
+        .def("get_creator", py::pure_virtual(&AddTorrentController::GetCreator))
+        .def("get_save_path", py::pure_virtual(&AddTorrentController::GetSavePath))
+        .def("get_size", py::pure_virtual(&AddTorrentController::GetSize))
+        .def("get_count", py::pure_virtual(&AddTorrentController::GetCount))
+        .def("get_file_count", py::pure_virtual(&AddTorrentController::GetFileCount))
+        .def("get_file_name", py::pure_virtual(&AddTorrentController::GetFileName))
+        .def("get_file_size", py::pure_virtual(&AddTorrentController::GetFileSize))
+        .def("get_file_priority", py::pure_virtual(&AddTorrentController::GetFilePriority))
+        .def("set_save_path", py::pure_virtual(&AddTorrentController::SetSavePath))
+        .def("set_file_name", py::pure_virtual(&AddTorrentController::SetFileName))
+        .def("set_file_priority", py::pure_virtual(&AddTorrentController::SetFilePriority))
+        .def("to_friendly_priority", py::pure_virtual(&AddTorrentController::ToFriendlyPriority))
+        ;
 
     py::enum_<MenuItem>("menu_item_t")
         .value("FILE_ADD_TORRENT", ptID_FILE_ADD_TORRENT)
@@ -152,30 +277,26 @@ void PyHost::Unload()
 
 void PyHost::OnInstanceAlreadyRunning()
 {
-    PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
+    lock_gil lock;
     pt_.attr("on_instance_already_running")();
-    ts_ = PyEval_SaveThread();
 }
 
 void PyHost::OnMenuItemClicked(int id)
 {
-    PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
+    lock_gil lock;
     pt_.attr("on_menu_item_clicked")(id);
-    ts_ = PyEval_SaveThread();
 }
 
 void PyHost::OnTorrentItemActivated(const libtorrent::sha1_hash& hash)
 {
-    PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
+    lock_gil lock;
     pt_.attr("on_torrent_item_activated")(hash);
-    ts_ = PyEval_SaveThread();
 }
 
 void PyHost::OnTorrentItemSelected(const libtorrent::sha1_hash& hash)
 {
-    PyEval_RestoreThread(static_cast<PyThreadState*>(ts_));
+    lock_gil lock;
     pt_.attr("on_torrent_item_selected")(hash);
-    ts_ = PyEval_SaveThread();
 }
 
 void PyHost::AddTorrent(const libtorrent::torrent_status& status)
@@ -223,6 +344,29 @@ void PyHost::SetApplicationStatus(std::string status)
 {
     ScopedGILRelease scope;
     pico_->SetApplicationStatusText(status);
+}
+
+void PyHost::ShowAddTorrentDialog(boost::shared_ptr<AddTorrentController> controller)
+{
+    pico_->ShowAddTorrentDialog(controller);
+}
+
+py::tuple PyHost::ShowOpenFileDialog()
+{
+    bool result;
+    std::vector<std::string> files;
+    {
+        ScopedGILRelease scope;
+        result = pico_->ShowOpenFileDialog(files);
+    }
+
+    py::list l;
+    for (std::string& file : files)
+    {
+        l.append(file);
+    }
+
+    return py::make_tuple(result, l);
 }
 
 std::string PyHost::GetPyPath()

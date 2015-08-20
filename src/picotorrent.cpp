@@ -4,9 +4,11 @@
 #include <boost/filesystem.hpp>
 #include <fstream>
 #include <libtorrent/torrent_handle.hpp>
+#include <wx/filedlg.h>
 #include <wx/msgdlg.h>
 
 #include "scripting/pyhost.h"
+#include "ui/addtorrentdialog.h"
 #include "ui/logframe.h"
 #include "ui/mainframe.h"
 
@@ -16,7 +18,7 @@ wxBEGIN_EVENT_TABLE(PicoTorrent, wxApp)
     EVT_LIST_ITEM_ACTIVATED(4000, PicoTorrent::OnTorrentItemActivated)
     EVT_LIST_ITEM_SELECTED(4000, PicoTorrent::OnTorrentItemSelected)
 
-    EVT_MENU(wxID_ANY, PicoTorrent::OnViewLog)
+    EVT_MENU(wxID_ANY, PicoTorrent::OnMenu)
 wxEND_EVENT_TABLE()
 
 PicoTorrent::PicoTorrent()
@@ -102,6 +104,45 @@ void PicoTorrent::SetApplicationStatusText(const wxString& text)
     }
 }
 
+void PicoTorrent::ShowAddTorrentDialog(boost::shared_ptr<AddTorrentController> controller)
+{
+    AddTorrentDialog* add = new AddTorrentDialog(mainFrame_, controller);
+    add->Show(true);
+}
+
+bool PicoTorrent::ShowOpenFileDialog(std::vector<std::string>& files)
+{
+    wxFileDialog openFile(mainFrame_,
+        wxT("Select torrent files"),
+        wxEmptyString,
+        wxEmptyString,
+        "Torrent files (*.torrent)|*.torrent",
+        wxFD_OPEN | wxFD_MULTIPLE | wxFD_FILE_MUST_EXIST);
+
+    if (openFile.ShowModal() != wxID_OK)
+    {
+        return false;
+    }
+
+    wxArrayString paths;
+    openFile.GetPaths(paths);
+
+    files.reserve(paths.GetCount());
+    
+    for (wxString& str : paths)
+    {
+        files.push_back(str.ToStdString());
+    }
+
+    return true;
+}
+
+void PicoTorrent::OnMenu(wxCommandEvent& event)
+{
+    int id = event.GetId();
+    pyHost_->OnMenuItemClicked(id);
+}
+
 void PicoTorrent::OnTorrentItemActivated(wxListEvent& event)
 {
     lt::sha1_hash* hash = (lt::sha1_hash*)event.GetItem().GetData();
@@ -112,10 +153,4 @@ void PicoTorrent::OnTorrentItemSelected(wxListEvent& event)
 {
     lt::sha1_hash* hash = (lt::sha1_hash*)event.GetItem().GetData();
     pyHost_->OnTorrentItemSelected(*hash);
-}
-
-void PicoTorrent::OnViewLog(wxCommandEvent& event)
-{
-    int id = event.GetId();
-    pyHost_->OnMenuItemClicked(id);
 }

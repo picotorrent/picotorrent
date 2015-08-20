@@ -18,6 +18,7 @@ picotorrent.logger.setup(loop)
 import logging
 logger = logging.getLogger(__name__)
 
+from picotorrent.add_torrent_controller import AddTorrentControllerFoo
 from picotorrent.session_manager import SessionManager
 import picotorrent_api as pico_api
 from threading import Thread
@@ -54,7 +55,7 @@ def on_load():
     # After loading everything, parse the command line and add any torrents
     # passed.
     cmd_line = parse_command_line(sys.argv);
-    if "files" in cmd_line: pico_api.show_add_torrents(cmd_line["files"])
+    if "files" in cmd_line: pico_api.show_add_torrent_dialog(cmd_line["files"])
 
     t = Thread(target=loop.run_forever)
     t.daemon = True
@@ -73,6 +74,18 @@ def on_menu_item_clicked(item_id):
 
     if item_id == pico_api.menu_item_t.FILE_EXIT:
         pico_api.exit()
+
+    if item_id == pico_api.menu_item_t.FILE_ADD_TORRENT:
+        try:
+            result, files = pico_api.show_open_file_dialog()
+            if not result:
+                return
+
+            controller = AddTorrentControllerFoo()
+            pico_api.show_add_torrent_dialog(controller)
+        except Exception as e:
+            logger.error("Error when adding files: %s.", e);
+        
 
 
 def on_torrent_item_activated(info_hash):
