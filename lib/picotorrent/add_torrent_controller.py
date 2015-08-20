@@ -2,7 +2,10 @@
 Controls the "Add torrents" dialog.
 """
 
+import logging
 import picotorrent_api as pico_api
+
+logger = logging.getLogger(__name__)
 
 class AddTorrentController(pico_api.AddTorrentController):
     def __init__(self, torrents):
@@ -20,6 +23,7 @@ class AddTorrentController(pico_api.AddTorrentController):
 
     def _get_torrent(self, index):
         return self._params[index]["ti"]
+
 
     def perform_add(self):
         pass
@@ -50,6 +54,7 @@ class AddTorrentController(pico_api.AddTorrentController):
 
 
     def get_count(self):
+        logger.debug("get_count")
         return len(self._params)
 
 

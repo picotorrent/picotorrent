@@ -19,6 +19,16 @@ namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
 namespace py = boost::python;
 
+template <typename T>
+struct py_deleter
+{
+    void operator()(T* t)
+    {
+        lock_gil lock;
+        delete t;
+    }
+};
+
 class AddTorrentControllerWrapper
     : public AddTorrentController,
     public py::wrapper<AddTorrentController>
@@ -121,6 +131,13 @@ public:
     }
 };
 
+boost::shared_ptr<AddTorrentController> create_wrapper()
+{
+    return boost::shared_ptr<AddTorrentController>(
+        new AddTorrentControllerWrapper(),
+        py_deleter<AddTorrentController>());
+}
+
 BOOST_PYTHON_MODULE(libtorrent)
 {
     bind_libtorrent();
@@ -137,7 +154,9 @@ BOOST_PYTHON_MODULE(picotorrent_api)
     py::def("show_add_torrent_dialog", &PyHost::ShowAddTorrentDialog);
     py::def("show_open_file_dialog", &PyHost::ShowOpenFileDialog);
 
-    py::class_<AddTorrentControllerWrapper, boost::noncopyable, boost::shared_ptr<AddTorrentControllerWrapper>>("AddTorrentController")
+    py::class_<AddTorrentControllerWrapper, boost::noncopyable, boost::shared_ptr<AddTorrentControllerWrapper>>
+        ("AddTorrentController", py::no_init)
+        .def("__init__", py::make_constructor(&create_wrapper))
         .def("perform_add", py::pure_virtual(&AddTorrentController::PerformAdd))
         .def("get_name", py::pure_virtual(&AddTorrentController::GetName))
         .def("get_comment", py::pure_virtual(&AddTorrentController::GetComment))
