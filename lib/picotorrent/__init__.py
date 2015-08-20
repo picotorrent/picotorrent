@@ -18,7 +18,8 @@ picotorrent.logger.setup(loop)
 import logging
 logger = logging.getLogger(__name__)
 
-from picotorrent.add_torrent_controller import AddTorrentControllerFoo
+import libtorrent as lt
+from picotorrent.add_torrent_controller import AddTorrentController
 from picotorrent.session_manager import SessionManager
 import picotorrent_api as pico_api
 from threading import Thread
@@ -33,6 +34,12 @@ def parse_command_line(arguments):
         pass
 
     return result
+
+
+def parse_torrent_file(file):
+    with open(file, "rb") as f:
+        entry = lt.bdecode(f.read())
+        return lt.torrent_info(entry)
 
 
 def on_instance_already_running():
@@ -81,7 +88,9 @@ def on_menu_item_clicked(item_id):
             if not result:
                 return
 
-            controller = AddTorrentControllerFoo()
+            torrents = [ parse_torrent_file(f) for f in files ]
+            controller = AddTorrentController(torrents)
+
             pico_api.show_add_torrent_dialog(controller)
         except Exception as e:
             logger.error("Error when adding files: %s.", e);

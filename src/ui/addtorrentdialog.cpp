@@ -194,11 +194,11 @@ void AddTorrentDialog::OnMenu(wxCommandEvent& event)
             break;
 
         case ptID_PRIO_NORMAL:
-            controller_->SetFilePriority(torrentIndex, idx, PRIO_HIGH);
+            controller_->SetFilePriority(torrentIndex, idx, PRIO_NORMAL);
             break;
 
         case ptID_PRIO_SKIP:
-            controller_->SetFilePriority(torrentIndex, idx, PRIO_HIGH);
+            controller_->SetFilePriority(torrentIndex, idx, PRIO_SKIP);
             break;
 
         case ptID_RENAME_FILE:
