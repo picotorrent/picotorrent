@@ -2,6 +2,10 @@
 This is the main PicoTorrent script and it is responsible for loading and
 unloading the BitTorrent session, among other things. 
 """
+import os
+import sys
+sys.path.append(os.path.dirname(sys.argv[0]))
+
 import asyncio
 loop = asyncio.get_event_loop()
 
@@ -16,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 from picotorrent.session_manager import SessionManager
 import picotorrent_api as pico_api
-import sys
 from threading import Thread
 
 session = SessionManager(loop)
