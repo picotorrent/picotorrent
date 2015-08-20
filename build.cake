@@ -47,9 +47,11 @@ Task("Generate-Project")
 Task("Prepare-Python-Runtime")
     .Does(() =>
 {
+    // Zip all files in the Python `Lib` directory (and skip __pycache__ dirs).
     Zip(pyDir + Directory("Lib"),
         "./deps/python34.zip",
-        GetFiles((string)pyDir + "/Lib/**/*.*"));
+        GetFiles((string)pyDir + "/Lib/**/*.*",
+                 f => !f.Path.FullPath.Contains("__pycache__")));
 
     CopyFiles(
         new FilePath[]
