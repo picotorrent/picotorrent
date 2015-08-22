@@ -19,10 +19,6 @@ class AddTorrentDialog : public wxFrame
 public:
     AddTorrentDialog(wxWindow* parent, boost::shared_ptr<AddTorrentController> controller);
 
-protected:
-    void InitTorrentsGroup();
-    void InitStorageGroup();
-
 private:
     boost::shared_ptr<AddTorrentController> controller_;
 

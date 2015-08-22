@@ -155,8 +155,8 @@ BOOST_PYTHON_MODULE(picotorrent_api)
     py::def("show_open_file_dialog", &PyHost::ShowOpenFileDialog);
 
     py::class_<AddTorrentControllerWrapper, boost::noncopyable, boost::shared_ptr<AddTorrentControllerWrapper>>
-        ("AddTorrentController", py::no_init)
-        .def("__init__", py::make_constructor(&create_wrapper))
+        ("AddTorrentController")//, py::no_init)
+        //.def("__init__", py::make_constructor(&create_wrapper))
         .def("perform_add", py::pure_virtual(&AddTorrentController::PerformAdd))
         .def("get_name", py::pure_virtual(&AddTorrentController::GetName))
         .def("get_comment", py::pure_virtual(&AddTorrentController::GetComment))

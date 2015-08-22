@@ -5,6 +5,7 @@
 #include <wx/dirdlg.h>
 #include <wx/listctrl.h>
 #include <wx/menu.h>
+#include <wx/sizer.h>
 #include <wx/statbox.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
@@ -24,26 +25,29 @@ wxEND_EVENT_TABLE()
 
 AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     boost::shared_ptr<AddTorrentController> controller)
-    : wxFrame(parent, wxID_ANY, wxT("Add torrent(s)"), wxDefaultPosition, wxSize(400, 485), wxCAPTION | wxCLOSE_BOX),
+    : wxFrame(parent, wxID_ANY, wxT("Add torrent(s)"), wxDefaultPosition, wxSize(400, 500)),
     controller_(controller)
 {
-    panel_ = new wxPanel(this, wxID_ANY);
+    panel_ = new wxPanel(this);
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 
-    InitTorrentsGroup();
-    InitStorageGroup();
+    wxStaticBoxSizer* torrentSizer = new wxStaticBoxSizer(wxVERTICAL,
+        panel_,
+        wxT("Torrents"));
 
-    new wxButton(panel_, wxID_ADD, "Add torrent(s)", wxPoint(300, 420), wxSize(90, 30));
+    /* Set up the "Torrents" box */
+    wxFlexGridSizer* torrentGrid = new wxFlexGridSizer(5, 2, 10, 25);
+    torrentGrid->AddGrowableCol(1, 1);
 
-    torrentsCombo_->Select(0);
-    ShowTorrentInfo(0);
-}
-
-void AddTorrentDialog::InitTorrentsGroup()
-{
-    wxStaticBox* torrentGroup = new wxStaticBox(panel_, wxID_ANY, wxT("Torrent"), wxPoint(5, 5), wxSize(385, 150));
-
-    wxStaticText* torrentName = new wxStaticText(torrentGroup, wxID_ANY, wxT("Name"), wxPoint(10, 25));
-    torrentsCombo_ = new wxComboBox(torrentGroup, ptID_TORRENTS_COMBO, wxEmptyString, wxPoint(120, 20), wxSize(260, -1), wxArrayString(), wxCB_READONLY);
+    torrentGrid->Add(new wxStaticText(panel_, wxID_ANY, wxT("Name")), 1, wxALIGN_CENTER_VERTICAL);
+    torrentsCombo_ = new wxComboBox(panel_,
+        ptID_TORRENTS_COMBO,
+        wxEmptyString,
+        wxPoint(-1, -1),
+        wxSize(-1, -1),
+        wxArrayString(),
+        wxCB_READONLY);
+    torrentGrid->Add(torrentsCombo_, 1, wxEXPAND | wxLEFT | wxRIGHT);
 
     for (int i = 0; i < controller_->GetCount(); i++)
     {
@@ -51,39 +55,50 @@ void AddTorrentDialog::InitTorrentsGroup()
     }
 
     // Size
-    wxStaticText* sizeLabel = new wxStaticText(torrentGroup, wxID_ANY, wxT("Size"), wxPoint(10, 50));
-    sizeText_ = new wxStaticText(torrentGroup, wxID_ANY, wxEmptyString, wxPoint(120, 50));
+    torrentGrid->Add(new wxStaticText(panel_, wxID_ANY, wxT("Size")));
+    sizeText_ = new wxStaticText(panel_, wxID_ANY, wxT("-"));
+    torrentGrid->Add(sizeText_, 1, wxEXPAND);
 
     // Comment
-    wxStaticText* commentLabel = new wxStaticText(torrentGroup, wxID_ANY, wxT("Comment"), wxPoint(10, 75));
-    commentText_ = new wxStaticText(torrentGroup, wxID_ANY, wxEmptyString, wxPoint(120, 75));
+    torrentGrid->Add(new wxStaticText(panel_, wxID_ANY, wxT("Comment")));
+    commentText_ = new wxStaticText(panel_, wxID_ANY, wxT("-"));
+    torrentGrid->Add(commentText_, 1, wxEXPAND);
 
     // Creation date
-    wxStaticText* dateLabel = new wxStaticText(torrentGroup, wxID_ANY, wxT("Creation date"), wxPoint(10, 100));
-    dateText_ = new wxStaticText(torrentGroup, wxID_ANY, wxEmptyString, wxPoint(120, 100));
+    torrentGrid->Add(new wxStaticText(panel_, wxID_ANY, wxT("Creation date")));
+    dateText_ = new wxStaticText(panel_, wxID_ANY, wxT("-"));
+    torrentGrid->Add(dateText_, 1, wxEXPAND);
 
     // Creator
-    wxStaticText* creatorLabel = new wxStaticText(torrentGroup, wxID_ANY, wxT("Creator"), wxPoint(10, 125));
-    creatorText_ = new wxStaticText(torrentGroup, wxID_ANY, wxEmptyString, wxPoint(120, 125));
-}
+    torrentGrid->Add(new wxStaticText(panel_, wxID_ANY, wxT("Creator")));
+    creatorText_ = new wxStaticText(panel_, wxID_ANY, wxT("-"));
+    torrentGrid->Add(creatorText_, 1, wxEXPAND);
 
-void AddTorrentDialog::InitStorageGroup()
-{
-    wxStaticBox* storageGroup = new wxStaticBox(panel_, wxID_ANY, wxT("Storage"), wxPoint(5, 170), wxSize(385, 250));
+    torrentSizer->Add(torrentGrid, 1, wxEXPAND | wxLEFT | wxRIGHT, 5);
+    sizer->Add(torrentSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, 5);
 
-    // save path
-    wxStaticText* savePathLabel = new wxStaticText(storageGroup, wxID_ANY, wxT("Path"), wxPoint(10, 25));
-    savePathText_ = new wxTextCtrl(storageGroup, ptID_SAVE_PATH, wxEmptyString, wxPoint(120, 20), wxSize(230, 22));
+    /* Set up the "Storage" box */
+    wxStaticBoxSizer* storageSizer = new wxStaticBoxSizer(wxVERTICAL,
+        panel_,
+        wxT("Storage"));
 
-    // change save path
-    wxButton* browseSavePath = new wxButton(storageGroup, wxID_SAVEAS, wxT("..."), wxPoint(350, 19), wxSize(30, 24));
+    wxBoxSizer* storageRows = new wxBoxSizer(wxVERTICAL);
+
+    // Save path
+    wxBoxSizer* pathSizer = new wxBoxSizer(wxHORIZONTAL);
+    savePathText_ = new wxTextCtrl(panel_, ptID_SAVE_PATH);
+    pathSizer->Add(savePathText_, 1);
+    pathSizer->Add(new wxButton(panel_, wxID_SAVEAS, wxT("Browse")), 0);
+
+    storageRows->Add(pathSizer, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
 
     // files
-    fileList_ = new wxListCtrl(storageGroup,
+    fileList_ = new wxListCtrl(panel_,
         ptID_TORRENT_FILES_LIST,
-        wxPoint(10, 50),
+        wxDefaultPosition,
         wxSize(370, 190),
-        wxLC_REPORT | wxBORDER);
+        wxLC_REPORT);
+    storageRows->Add(fileList_, 1, wxEXPAND | wxALL);
 
     wxListItem col;
 
@@ -101,6 +116,17 @@ void AddTorrentDialog::InitStorageGroup()
     col.SetText("Priority");
     col.SetWidth(80);
     fileList_->InsertColumn(2, col);
+
+    storageSizer->Add(storageRows, 1, wxEXPAND | wxALL, 5);
+    sizer->Add(storageSizer, 1, wxEXPAND | wxALL, 5);
+
+    /* Button! */
+    sizer->Add(new wxButton(panel_, wxID_ADD, wxT("Add torrent(s)")), 0, wxALIGN_RIGHT | wxALL, 5);
+
+    panel_->SetSizerAndFit(sizer);
+
+    torrentsCombo_->Select(0);
+    ShowTorrentInfo(0);
 }
 
 void AddTorrentDialog::OnComboSelected(wxCommandEvent& event)
