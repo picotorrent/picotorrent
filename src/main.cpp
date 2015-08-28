@@ -1,7 +1,7 @@
 #ifdef _DEBUG
-#pragma comment(lib, "libboost_random-vc140-mt-gd-1_58.lib")
+#pragma comment(lib, "libboost_random-vc140-mt-gd-1_59.lib")
 #else
-#pragma comment(lib, "libboost_random-vc140-mt-1_58.lib")
+#pragma comment(lib, "libboost_random-vc140-mt-1_59.lib")
 #endif
 
 #include <wx/wxprec.h>

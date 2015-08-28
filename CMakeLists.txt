@@ -21,9 +21,9 @@ set(PICOTORRENT_SOURCES
     src/config
     src/fsutil
     src/picotorrent
+    src/controllers/addtorrentcontroller
     src/ui/addtorrentdialog
     src/ui/mainframe
-    src/ui/torrentlistctrl
     src/ui/torrentdetailsframe
 )
 
@@ -38,7 +38,7 @@ include_directories(${includes})
 
 link_directories(
     ${BOOST_ROOT}/stage/lib
-    ${LIBTORRENT_ROOT}/bin/msvc-14.0/$(ConfigurationName)/boost-source/deprecated-functions-off/link-static/threading-multi
+    ${LIBTORRENT_ROOT}/bin/msvc-14.0/$(ConfigurationName)/deprecated-functions-off/link-static/threading-multi
     ${WXWIDGETS_ROOT}/lib/vc_lib
 )
 

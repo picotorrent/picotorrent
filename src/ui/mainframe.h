@@ -6,10 +6,10 @@
 #include <map>
 #include <vector>
 #include <wx/frame.h>
+#include <wx/listctrl.h>
 #include <wx/panel.h>
 
 #include "torrentdetailsframe.h"
-#include "torrentlistctrl.h"
 
 class MainFrame : public wxFrame
 {
@@ -58,7 +58,7 @@ private:
     std::map<libtorrent::sha1_hash, libtorrent::torrent_status> torrents_;
     std::map<libtorrent::sha1_hash, TorrentDetailsFrame*> details_;
 
-    TorrentListCtrl* torrentList_;
+    wxListCtrl* torrentList_;
 
     wxDECLARE_EVENT_TABLE();
 };

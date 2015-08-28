@@ -7,6 +7,8 @@
 #include <wx/menu.h>
 
 #include "../common.h"
+#include "../config.h"
+#include "../controllers/addtorrentcontroller.h"
 #include "addtorrentdialog.h"
 
 namespace lt = libtorrent;
@@ -28,7 +30,7 @@ MainFrame::MainFrame(lt::session_handle& session)
 {
     SetIcon(wxIcon("progicon"));
 
-    torrentList_ = new TorrentListCtrl(this,
+    torrentList_ = new wxListCtrl(this,
         1000,
         wxDefaultPosition,
         wxDefaultSize,
@@ -177,13 +179,16 @@ void MainFrame::OnFileAddTorrent(wxCommandEvent& WXUNUSED(event))
     wxArrayString paths;
     openFile.GetPaths(paths);
 
-    std::vector<boost::shared_ptr<lt::torrent_info>> torrents;
-    torrents.reserve(paths.GetCount());
+    std::vector<lt::add_torrent_params> params;
+    params.reserve(paths.GetCount());
 
     for (wxString& path : paths)
     {
+        lt::add_torrent_params p;
+        p.save_path = Config::GetInstance().GetDefaultSavePath();
+
         lt::error_code ec;
-        boost::shared_ptr<lt::torrent_info> torrent = boost::make_shared<lt::torrent_info>(path.ToStdString(), ec);
+        p.ti = boost::make_shared<lt::torrent_info>(path.ToStdString(), ec);
 
         if (ec)
         {
@@ -191,10 +196,12 @@ void MainFrame::OnFileAddTorrent(wxCommandEvent& WXUNUSED(event))
             continue;
         }
 
-        torrents.push_back(torrent);
+        params.push_back(p);
     }
 
-    AddTorrentDialog* dlg = new AddTorrentDialog(this, session_, torrents);
+    auto controller = boost::make_shared<AddTorrentController>(session_, params);
+
+    AddTorrentDialog* dlg = new AddTorrentDialog(this, controller);
     dlg->Show(true);
 }
 

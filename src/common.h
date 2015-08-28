@@ -10,6 +10,8 @@ class Common
 {
 public:
     static std::string ToFileSize(size_t bytes);
+
+    static std::string ToFriendlyPriority(int priority);
 };
 
 #endif
