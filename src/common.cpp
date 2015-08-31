@@ -24,3 +24,20 @@ std::string Common::ToFileSize(size_t bytes)
     snprintf(res, sizeof(res), "%.2f %s", val, units[i]);
     return res;
 }
+
+std::string Common::ToFriendlyPriority(int prio)
+{
+    switch (prio)
+    {
+    case 0:
+        return "Do not download";
+    case 1:
+        return "Normal";
+    case 6:
+        return "High";
+    case 7:
+        return "Maximum";
+    }
+
+    return "<unknown>";
+}

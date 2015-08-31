@@ -15,20 +15,15 @@ class wxListEvent;
 class wxStaticText;
 class wxTextCtrl;
 
+class AddTorrentController;
+
 class AddTorrentDialog : public wxFrame
 {
 public:
     AddTorrentDialog(wxWindow* parent,
-        libtorrent::session_handle& session,
-        std::vector<boost::shared_ptr<libtorrent::torrent_info>> torrents);
-
-protected:
-    void InitTorrentsGroup();
-    void InitStorageGroup();
+        boost::shared_ptr<AddTorrentController> controller);
 
 private:
-    typedef boost::shared_ptr<libtorrent::torrent_info> torrent_info_ptr;
-
     void OnBrowseSavePath(wxCommandEvent& event);
     void OnAdd(wxCommandEvent& event);
     void OnComboSelected(wxCommandEvent& event);
@@ -37,11 +32,7 @@ private:
     void OnMenu(wxCommandEvent& event);
     void OnSavePathChanged(wxCommandEvent& event);
 
-    std::string PriorityString(int priority);
-
-    libtorrent::session_handle& session_;
-    std::map<libtorrent::sha1_hash, libtorrent::add_torrent_params> params_;
-    std::map<int, libtorrent::sha1_hash> items_;
+    boost::shared_ptr<AddTorrentController> controller_;
 
     // Torrent
     wxComboBox* torrentsCombo_;
