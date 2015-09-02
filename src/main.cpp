@@ -1,15 +1,22 @@
-#ifdef _DEBUG
-#pragma comment(lib, "libboost_random-vc140-mt-gd-1_59.lib")
-#else
-#pragma comment(lib, "libboost_random-vc140-mt-1_59.lib")
-#endif
-
-#include <wx/wxprec.h>
-
-#ifndef WX_PRECOMP
-    #include <wx/wx.h>
-#endif
-
+#include "logging.h"
 #include "picotorrent.h"
 
-IMPLEMENT_APP(PicoTorrent)
+#include <boost/log/trivial.hpp>
+
+int WINAPI wWinMain(
+    _In_     HINSTANCE hInstance,
+    _In_opt_ HINSTANCE hPrevInstance,
+    _In_     LPWSTR    lpCmdLine,
+    _In_     int       nCmdShow)
+{
+    pico::Logging::Init();
+
+    pico::PicoTorrent pt(hInstance);
+
+    if (!pt.Init())
+    {
+        return 0;
+    }
+
+    return pt.Run(nCmdShow);
+}

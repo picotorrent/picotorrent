@@ -1,54 +1,47 @@
-#ifndef _PT_PICOTORRENT_H
-#define _PT_PICOTORRENT_H
+#pragma once
 
-#include <wx/app.h>
-#include <wx/timer.h>
+#include "stdafx.h"
 
-#include <libtorrent/session.hpp>
+#include <boost/shared_ptr.hpp>
+#include <memory>
+#include <mutex>
+#include <thread>
+#include <vector>
 
-#include "ui/mainframe.h"
-
-class PicoTorrent : public wxApp
+namespace libtorrent
 {
-public:
-    PicoTorrent();
-    ~PicoTorrent();
+    class alert;
+    class session;
+    struct stats_metric;
+    class torrent_info;
+}
 
-    virtual bool OnInit();
+namespace pico
+{
+    class MainFrame;
 
-    virtual int OnExit();
-
-    void OnReadAlerts(wxCommandEvent& event);
-
-protected:
-    void OnSessionAlert();
-
-    void OnSessionTimer(wxTimerEvent& event);
-
-    void SetApplicationStatusText(const wxString& text);
-
-    enum
+    class PicoTorrent
     {
-        Session_Timer
+    public:
+        PicoTorrent(HINSTANCE hInstance);
+        ~PicoTorrent();
+
+        bool Init();
+
+        int Run(int nCmdShow = SW_SHOWDEFAULT);
+
+    private:
+        void ReadAlerts();
+        void HandleAlert(libtorrent::alert* a);
+        void SaveTorrent(boost::shared_ptr<const libtorrent::torrent_info> info);
+
+        CMessageLoop loop_;
+        HANDLE singleInstance_;
+
+        std::shared_ptr<MainFrame> frame_;
+        bool shouldRead_;
+        std::thread reader_;
+        std::unique_ptr<libtorrent::session> session_;
+        std::vector<libtorrent::stats_metric> metrics_;
     };
-
-private:
-    void LoadState();
-    void LoadTorrents();
-    void SaveState();
-    void SaveTorrents();
-
-    void SaveTorrentFile(boost::shared_ptr<const libtorrent::torrent_info> file);
-    void DeleteTorrentFile(const libtorrent::sha1_hash& hash);
-    void DeleteResumeData(const libtorrent::sha1_hash& hash);
-
-    int numOutstandingResumeData = 0;
-
-    libtorrent::session* session_;
-    MainFrame* mainFrame_;
-    wxTimer* timer_;
-
-    wxDECLARE_EVENT_TABLE();
-};
-
-#endif
+}

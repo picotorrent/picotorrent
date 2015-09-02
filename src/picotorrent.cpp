@@ -1,357 +1,237 @@
 #include "picotorrent.h"
-#include "common.h"
 
 #include <boost/filesystem.hpp>
-#include <fstream>
+#include <boost/log/trivial.hpp>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/create_torrent.hpp>
+#include <libtorrent/session.hpp>
+#include <libtorrent/session_stats.hpp>
 
-#include "config.h"
-#include "fsutil.h"
-#include "platform.h"
+#include "path.h"
+#include "statemanager.h"
+#include "util.h"
+#include "io/file.h"
+#include "ui/mainframe.h"
 
 namespace fs = boost::filesystem;
 namespace lt = libtorrent;
-typedef boost::function<void()> notify_func_t;
+using namespace pico;
 
-wxBEGIN_EVENT_TABLE(PicoTorrent, wxApp)
-    EVT_COMMAND(wxID_ANY, SESSION_ALERT, PicoTorrent::OnReadAlerts)
-    EVT_TIMER(PicoTorrent::Session_Timer, PicoTorrent::OnSessionTimer)
-wxEND_EVENT_TABLE()
+CAppModule _Module;
 
-PicoTorrent::PicoTorrent()
+PicoTorrent::PicoTorrent(HINSTANCE hInstance)
+    : singleInstance_(NULL)
 {
-    session_ = new lt::session(lt::settings_pack(), 0);
-    mainFrame_ = new MainFrame(*session_);
-    timer_ = new wxTimer(this, Session_Timer);
+    BOOST_LOG_TRIVIAL(info) << "PicoTorrent starting up.";
+
+    SetProcessDPIAware();
+
+    HRESULT hRes = _Module.Init(NULL, hInstance);
+    ATLASSERT(SUCCEEDED(hRes));
+
+    _Module.AddMessageLoop(&loop_);
+
+    lt::settings_pack settings;;
+
+    settings.set_int(lt::settings_pack::alert_mask, lt::alert::all_categories);
+    settings.set_str(lt::settings_pack::listen_interfaces, "0.0.0.0:6881");
+
+    session_ = std::make_unique<lt::session>(settings);
+    metrics_ = lt::session_stats_metrics();
+
+    frame_ = std::make_shared<MainFrame>(*session_);
 }
 
 PicoTorrent::~PicoTorrent()
 {
-    delete session_;
-}
+    _Module.RemoveMessageLoop();
+    _Module.Term();
 
-bool PicoTorrent::OnInit()
-{
-    if(!wxApp::OnInit())
+    if (singleInstance_ != NULL)
     {
-        return false;
+        BOOST_LOG_TRIVIAL(debug) << "Closing single instance mutex.";
+
+        ReleaseMutex(singleInstance_);
+        CloseHandle(singleInstance_);
+        singleInstance_ = NULL;
     }
 
-    // Set up session
-    Config& cfg = Config::GetInstance();
-    std::pair<std::string, int> iface = cfg.GetListenInterface();
+    BOOST_LOG_TRIVIAL(info) << "PicoTorrent shutting down.";
+}
 
-    lt::settings_pack settings = session_->get_settings();
-    settings.set_int(lt::settings_pack::alert_mask, lt::alert::all_categories);
-    settings.set_str(lt::settings_pack::listen_interfaces, iface.first + ":" + std::to_string(iface.second));
-    session_->apply_settings(settings);
+bool PicoTorrent::Init()
+{
+    BOOST_LOG_TRIVIAL(debug) << "Trying to acquire mutex.";
 
-    LoadState();
-    LoadTorrents();
+    singleInstance_ = CreateMutex(NULL, TRUE, L"PicoTorrent/1.0");
+    DWORD err = GetLastError();
 
-    // Connect our notify function
-    session_->set_alert_notify(std::bind(&PicoTorrent::OnSessionAlert, this));
+    if (err == ERROR_ALREADY_EXISTS)
+    {
+        BOOST_LOG_TRIVIAL(debug) << "Mutex already exists.";
 
-    // Show our main frame.
-    mainFrame_->Show(true);
+        CloseHandle(singleInstance_);
+        singleInstance_ = NULL;
 
-    // Start the timer that is responsible for posting
-    // session, torrent and dht stats/metrics.
-    timer_->Start(1000);
+        HWND otherInstance = FindWindow(L"PicoTorrent", NULL);
 
-    SetApplicationStatusText("PicoTorrent loaded.");
+        if (otherInstance == NULL)
+        {
+            err = GetLastError();
+            BOOST_LOG_TRIVIAL(warning)
+                << "Could not find other instance: "
+                << std::hex << err;
+        }
+
+        LPWSTR cmd = GetCommandLine();
+
+        COPYDATASTRUCT cds;
+        cds.cbData = sizeof(TCHAR) * (_tcslen(cmd) + 1);
+        cds.dwData = 1;
+        cds.lpData = cmd;
+
+        BOOST_LOG_TRIVIAL(debug) << "Sending command line to other instance.";
+        SendMessage(otherInstance, WM_COPYDATA, (WPARAM)otherInstance, (LPARAM)(LPVOID)&cds);
+
+        return false;
+    }
 
     return true;
 }
 
-int PicoTorrent::OnExit()
+int PicoTorrent::Run(int nCmdShow)
 {
-    session_->set_alert_notify(notify_func_t());
-    session_->pause();
+    StateManager sm(*session_);
 
-    SaveTorrents();
-    SaveState();
+    frame_->CreateEx();
+    frame_->ShowWindow(nCmdShow);
+    
+    // Start reading the session alerts.
+    reader_ = std::thread(&PicoTorrent::ReadAlerts, this);
 
-    return wxApp::OnExit();
+    int ret = loop_.Run();
+    shouldRead_ = false;
+    reader_.join();
+
+    return ret;
 }
 
-void PicoTorrent::OnReadAlerts(wxCommandEvent& WXUNUSED(event))
+void PicoTorrent::ReadAlerts()
 {
-    std::vector<lt::alert*> alerts;
-    session_->pop_alerts(&alerts);
+    shouldRead_ = true;
 
-    for (lt::alert* alert : alerts)
+    while (shouldRead_)
     {
-        switch (alert->type())
-        {
-        case lt::add_torrent_alert::alert_type:
-        {
-            lt::add_torrent_alert* a = lt::alert_cast<lt::add_torrent_alert>(alert);
-
-            if (a->error)
-            {
-                // Log error and continue
-                continue;
-            }
-
-            lt::torrent_status status = a->handle.status();
-
-            // If the torrent has metadata, save that metadata to the torrents path.
-            if (status.has_metadata)
-            {
-                SaveTorrentFile(status.handle.torrent_file());
-            }
-
-            mainFrame_->AddTorrent(status);
-            SetApplicationStatusText(wxString::Format("%s added.", status.name));
-        }
-        break;
-
-        case lt::state_update_alert::alert_type:
-        {
-            lt::state_update_alert* a = lt::alert_cast<lt::state_update_alert>(alert);
-            mainFrame_->UpdateTorrents(a->status);
-        }
-        break;
-
-        case lt::torrent_removed_alert::alert_type:
-        {
-            lt::torrent_removed_alert* a = lt::alert_cast<lt::torrent_removed_alert>(alert);
-            mainFrame_->RemoveTorrent(a->info_hash);
-
-            // Remove torrent file and resume data
-            DeleteTorrentFile(a->info_hash);
-            DeleteResumeData(a->info_hash);
-        }
-        break;
-        }
-    }
-}
-
-void PicoTorrent::OnSessionAlert()
-{
-    wxCommandEvent* ev = new wxCommandEvent(SESSION_ALERT);
-    wxQueueEvent(this, ev);
-}
-
-void PicoTorrent::OnSessionTimer(wxTimerEvent& WXUNUSED(event))
-{
-    session_->post_dht_stats();
-    session_->post_session_stats();
-    session_->post_torrent_updates();
-}
-
-void PicoTorrent::SetApplicationStatusText(const wxString& text)
-{
-    mainFrame_->SetStatusText(text, 0);
-}
-
-void PicoTorrent::LoadState()
-{
-    fs::path sessionState(".session_state");
-
-    if (fs::exists(sessionState))
-    {
-        boost::system::error_code ec;
-        uintmax_t size = fs::file_size(sessionState, ec);
-
-        if (ec)
-        {
-            // Log error
-            return;
-        }
-
-        std::vector<char> buffer;
-        FsUtil::ReadFile(sessionState.string(), buffer);
-
-        lt::bdecode_node node;
-        lt::error_code decodeError;
-        lt::bdecode(&buffer[0], &buffer[0] + buffer.size(), node, decodeError);
-
-        if (decodeError)
-        {
-            // Log error
-            return;
-        }
-
-        session_->load_state(node);
-    }
-}
-
-void PicoTorrent::LoadTorrents()
-{
-    fs::path torrentsPath("torrents");
-
-    if (!fs::exists(torrentsPath)
-        || !fs::is_directory(torrentsPath))
-    {
-        return;
-    }
-
-    for (fs::directory_entry& entry : fs::directory_iterator(torrentsPath))
-    {
-        if (entry.path().extension() != ".torrent")
+        if (!session_->wait_for_alert(libtorrent::milliseconds(500)))
         {
             continue;
         }
-
-        lt::add_torrent_params p;
-        p.flags |= lt::add_torrent_params::flag_use_resume_save_path;
-        p.save_path = Platform::GetDownloadsPath();
-        p.ti = boost::make_shared<lt::torrent_info>(entry.path().string());
-
-        fs::path resumeDataPath(entry.path());
-        resumeDataPath.replace_extension(".resume");
-
-        if (fs::exists(resumeDataPath))
-        {
-            FsUtil::ReadFile(resumeDataPath.string(), p.resume_data);
-        }
-
-        session_->async_add_torrent(p);
-    }
-}
-
-void PicoTorrent::SaveState()
-{
-    lt::entry state;
-    session_->save_state(state);
-
-    std::vector<char> buffer;
-    lt::bencode(std::back_inserter(buffer), state);
-
-    std::ofstream output(".session_state", std::ios::binary);
-    output.write(&buffer[0], buffer.size());
-}
-
-void PicoTorrent::SaveTorrents()
-{
-    fs::path torrentsPath("torrents");
-
-    if (!fs::exists(torrentsPath))
-    {
-        fs::create_directories(torrentsPath);
-    }
-
-    int numFailed = 0;
-    int numPaused = 0;
-
-    session_->pause();
-
-    std::vector<lt::torrent_status> temp;
-    session_->get_torrent_status(&temp, [](const lt::torrent_status& status) { return true; }, 0);
-
-    for (lt::torrent_status& status : temp)
-    {
-        if (!status.handle.is_valid()
-            || !status.has_metadata
-            || !status.need_save_resume)
-        {
-            // Log (skip file which can't save resume)
-            continue;
-        }
-
-        status.handle.save_resume_data();
-        numOutstandingResumeData++;
-    }
-
-    while (numOutstandingResumeData > 0)
-    {
-        const lt::alert* a = session_->wait_for_alert(lt::seconds(10));
-        if (a == 0) { continue; }
 
         std::vector<lt::alert*> alerts;
         session_->pop_alerts(&alerts);
 
-        for (lt::alert* alert : alerts)
+        for (lt::alert* a : alerts)
         {
-            lt::torrent_paused_alert* tp = lt::alert_cast<lt::torrent_paused_alert>(alert);
-
-            if (tp)
-            {
-                ++numPaused;
-                // Log something
-                continue;
-            }
-
-            if (lt::alert_cast<lt::save_resume_data_failed_alert>(alert))
-            {
-                ++numFailed;
-                --numOutstandingResumeData;
-                continue;
-            }
-
-            lt::save_resume_data_alert* rd = lt::alert_cast<lt::save_resume_data_alert>(alert);
-            if (!rd) { continue; }
-            --numOutstandingResumeData;
-            if (!rd->resume_data) { continue; }
-
-            lt::torrent_handle h = rd->handle;
-            lt::torrent_status st = h.status();
-            std::string hash = lt::to_hex(st.info_hash.to_string());
-
-            std::vector<char> buffer;
-            lt::bencode(std::back_inserter(buffer), *rd->resume_data);
-
-            fs::path resumeDataPath = torrentsPath / (hash + ".resume");
-            std::ofstream output(resumeDataPath.string(), std::ios::binary);
-            output.write(&buffer[0], buffer.size());
+            HandleAlert(a);
         }
     }
 }
 
-void PicoTorrent::SaveTorrentFile(boost::shared_ptr<const lt::torrent_info> file)
+void PicoTorrent::HandleAlert(lt::alert* alert)
 {
-    if (!file)
+    switch (alert->type())
     {
-        // LOg error
+    case lt::add_torrent_alert::alert_type:
+    {
+        lt::add_torrent_alert* a = lt::alert_cast<lt::add_torrent_alert>(alert);
+
+        if (a->error)
+        {
+            BOOST_LOG_TRIVIAL(error)
+                << "Could not add torrent: "
+                << a->error.message();
+            break;
+        }
+
+        SaveTorrent(a->handle.torrent_file());
+        frame_->AddTorrent(a->handle.status());
+        break;
+    }
+
+    case lt::metadata_received_alert::alert_type:
+    {
+        lt::metadata_received_alert* a = lt::alert_cast<lt::metadata_received_alert>(alert);
+        SaveTorrent(a->handle.torrent_file());
+        break;
+    }
+
+    case lt::session_stats_alert::alert_type:
+    {
+        lt::session_stats_alert* a = lt::alert_cast<lt::session_stats_alert>(alert);
+        
+        break;
+    }
+
+    case lt::state_update_alert::alert_type:
+    {
+        lt::state_update_alert* a = lt::alert_cast<lt::state_update_alert>(alert);
+
+        int64_t dl = 0;
+        int64_t ul = 0;
+
+        for (lt::torrent_status& status : a->status)
+        {
+            dl += status.download_payload_rate;
+            ul += status.upload_payload_rate;
+
+            frame_->UpdateTorrent(status);
+        }
+
+        wchar_t title[1024];
+        _snwprintf(title,
+            _ARRAYSIZE(title),
+            L"PicoTorrent [DL:%s] [UL:%s]",
+            Util::ToSpeed(dl).c_str(),
+            Util::ToSpeed(ul).c_str());
+
+        frame_->SetWindowTextW(title);
+
+        break;
+    }
+    }
+}
+
+void PicoTorrent::SaveTorrent(boost::shared_ptr<const lt::torrent_info> info)
+{
+    if (!info->is_valid())
+    {
+        BOOST_LOG_TRIVIAL(error) << "Could not save invalid torrent.";
         return;
     }
 
-    lt::create_torrent creator(*file);
-    lt::entry encoded = creator.generate();
+    fs::path torrents = Path::GetTorrentsPath();
 
-    std::string hash = lt::to_hex(file->info_hash().to_string());
+    if (!fs::exists(torrents))
+    {
+        fs::create_directories(torrents);
+    }
+
+    std::string hash = lt::to_hex(info->info_hash().to_string());
+    fs::path torrentFile = torrents / (hash + ".torrent");
+
+    if (fs::exists(torrentFile))
+    {
+        return;
+    }
+
+    lt::create_torrent c(*info);
+    lt::entry e = c.generate();
 
     std::vector<char> buffer;
-    lt::bencode(std::back_inserter(buffer), encoded);
+    lt::bencode(std::back_inserter(buffer), e);
 
-    fs::path torrentsPath("torrents");
+    io::File::WriteBuffer(torrentFile.string(), buffer);
 
-    if (!fs::exists(torrentsPath))
-    {
-        fs::create_directories(torrentsPath);
-    }
-
-    fs::path resumeDataPath = torrentsPath / (hash + ".torrent");
-    std::ofstream output(resumeDataPath.string(), std::ios::binary);
-    output.write(&buffer[0], buffer.size());
-}
-
-void PicoTorrent::DeleteTorrentFile(const lt::sha1_hash& hash)
-{
-    fs::path torrentsPath("torrents");
-
-    std::string encodedHash = lt::to_hex(hash.to_string());
-    fs::path torrentFilePath = torrentsPath / (encodedHash + ".torrent");
-
-    if (fs::exists(torrentFilePath))
-    {
-        fs::remove(torrentFilePath);
-    }
-}
-
-void PicoTorrent::DeleteResumeData(const lt::sha1_hash& hash)
-{
-    fs::path torrentsPath("torrents");
-
-    std::string encodedHash = lt::to_hex(hash.to_string());
-    fs::path torrentFilePath = torrentsPath / (encodedHash + ".resume");
-
-    if (fs::exists(torrentFilePath))
-    {
-        fs::remove(torrentFilePath);
-    }
+    BOOST_LOG_TRIVIAL(info) << "Saved torrent file " << torrentFile;
 }

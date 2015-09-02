@@ -1,9 +1,7 @@
-#ifndef _PT_CONTROLLERS_ADDTORRENTCONTROLLER_H
-#define _PT_CONTROLLERS_ADDTORRENTCONTROLLER_H
+#pragma once
 
 #include <string>
 #include <vector>
-#include <boost/shared_ptr.hpp>
 
 namespace libtorrent
 {
@@ -11,45 +9,35 @@ namespace libtorrent
     struct session_handle;
 }
 
-class AddTorrentController
+namespace pico
 {
-public:
-    AddTorrentController(const libtorrent::session_handle& session,
-        std::vector<libtorrent::add_torrent_params> params);
+    class AddTorrentController
+    {
+    public:
+        AddTorrentController(libtorrent::session_handle& session,
+            std::vector<libtorrent::add_torrent_params> params);
 
-    void Add();
+        void AddTorrents();
 
-    int GetCount();
+        uint64_t GetCount();
+        std::wstring GetName(uint64_t index);
+        std::wstring GetSize(uint64_t index);
+        std::wstring GetComment(uint64_t index);
+        std::wstring GetCreationDate(uint64_t index);
+        std::wstring GetCreator(uint64_t index);
+        std::wstring GetSavePath(uint64_t index);
 
-    std::string GetName(int index);
+        uint64_t GetFileCount(uint64_t index);
+        std::wstring GetFileName(uint64_t index, int fileIndex);
+        std::wstring GetFileSize(uint64_t index, int fileIndex);
+        int GetFilePriority(uint64_t index, int fileIndex);
 
-    int64_t GetSize(int index);
+        void SetFileName(int64_t index, int fileIndex, const std::wstring& name);
+        void SetFilePriority(int64_t index, int fileIndex, int priority);
+        void SetSavePath(uint64_t index, const std::wstring& path);
 
-    std::string GetComment(int index);
-
-    std::string GetCreationDate(int index);
-
-    std::string GetCreator(int index);
-
-    std::string GetSavePath(int index);
-
-    int GetFileCount(int index);
-
-    int GetFilePriority(int index, int fileIndex);
-
-    std::string GetFileName(int index, int fileIndex);
-
-    int64_t GetFileSize(int index, int fileIndex);
-
-    void SetFileName(int index, int fileIndex, const std::string& name);
-
-    void SetFilePriority(int index, int fileIndex, int prio);
-
-    void SetSavePath(int index, std::string savePath);
-    
-private:
-    const libtorrent::session_handle& session_;
-    std::vector<libtorrent::add_torrent_params> params_;
-};
-
-#endif
+    private:
+        libtorrent::session_handle& session_;
+        std::vector<libtorrent::add_torrent_params> params_;
+    };
+}

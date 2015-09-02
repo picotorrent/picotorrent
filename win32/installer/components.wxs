@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <ComponentGroup Id="CG_PicoTorrent" Directory="INSTALLDIR" Source="$(var.BinariesDirectory)">
+      <Component Id="C_PicoTorrent" Win64="yes">
+        <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" KeyPath="yes" />
+
+        <Shortcut Id="S_PicoTorrent"
+                  Directory="ShortcutDir"
+                  Name="PicoTorrent"
+                  Icon="I_PicoTorrent.exe"
+                  IconIndex="0"
+                  WorkingDirectory="INSTALLDIR"
+                  Advertise="yes" />
+        <RemoveFolder Id="RF_ShortcutDir" Directory="ShortcutDir" On="uninstall" />
+
+        <!-- Set "InstalledVersion" which is used by PicoTorrent to determine if it is installed -->
+        <RegistryValue Root="HKLM" Key="Software\PicoTorrent" Name="InstalledVersion" Value="$(var.BuildVersion)" Type="string" />
+
+        <!-- Capabilities keys for Vista/7 "Set Program Access and Defaults" -->
+        <RegistryValue Root="HKLM" Key="Software\PicoTorrent\Capabilities" Name="ApplicationDescription" Value="A tiny BitTorrent client" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\PicoTorrent\Capabilities" Name="ApplicationIcon" Value="[INSTALLDIR]PicoTorrent.exe,0" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\PicoTorrent\Capabilities" Name="ApplicationName" Value="PicoTorrent" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\PicoTorrent\Capabilities\DefaultIcon" Value="[INSTALLDIR]PicoTorrent.exe,1" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\PicoTorrent\Capabilities\FileAssociations" Name=".torrent" Value="PicoTorrent" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\PicoTorrent\Capabilities\MIMEAssociations" Name="application/x-bittorrent" Value="PicoTorrent" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\PicoTorrent\Capabilities\shell\Open\command" Value="&quot;[INSTALLDIR]PicoTorrent.exe&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\RegisteredApplications" Name="PicoTorrent" Value="Software\PicoTorrent\Capabilities" Type="string" />
+
+        <!-- Extend to the "open with" list + Win7 jump menu pinning  -->
+        <RegistryValue Root="HKCR" Key="Applications\PicoTorrent.exe\SupportedTypes" Name=".torrent" Value="" Type="string" />
+        <RegistryValue Root="HKCR" Key="Applications\PicoTorrent.exe\shell\open" Name="FriendlyAppName" Value="PicoTorrent" Type="string" />
+
+        <ProgId Id="PicoTorrent" Description="Torrent file" Icon="I_PicoTorrent.exe" Advertise="yes">
+          <Extension Id="torrent">
+            <Verb Id="open" Command="Open" Argument="&quot;%1&quot;" />
+            <MIME Advertise="yes" ContentType="application/x-bittorrent" Default="yes" />
+          </Extension>
+        </ProgId>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
