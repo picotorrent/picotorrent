@@ -2,6 +2,11 @@
 
 #include <string>
 
+namespace libtorrent
+{
+    struct torrent_status;
+}
+
 namespace pico
 {
     class Util
@@ -12,6 +17,6 @@ namespace pico
         static std::wstring ToFileSize(int64_t size);
         static std::wstring ToPriority(int prio);
         static std::wstring ToSpeed(int64_t rate);
-        static std::wstring ToState(int state);
+        static std::wstring ToState(libtorrent::torrent_status& status);
     };
 }

@@ -119,7 +119,7 @@ void StateManager::LoadTorrents()
             continue;
         }
 
-        torrentFile.replace_extension(".resume");
+        torrentFile.replace_extension(".dat");
         if (fs::exists(torrentFile))
         {
             io::File::ReadBuffer(torrentFile.string(), p.resume_data);
@@ -218,7 +218,7 @@ void StateManager::SaveTorrents()
             std::vector<char> buffer;
             lt::bencode(std::back_inserter(buffer), *rd->resume_data);
 
-            fs::path resumeDataPath = torrentsPath / (hash + ".resume");
+            fs::path resumeDataPath = torrentsPath / (hash + ".dat");
             io::File::WriteBuffer(resumeDataPath.string(), buffer);
         }
     }
