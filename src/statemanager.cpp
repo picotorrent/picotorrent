@@ -1,10 +1,12 @@
 #include "statemanager.h"
 
+#pragma warning(disable: 4005 4245 4267 4800)
 #include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/session_handle.hpp>
+#pragma warning(default: 4005 4245 4267 4800)
 
 #include "path.h"
 #include "io/file.h"
@@ -158,7 +160,7 @@ void StateManager::SaveTorrents()
     int numPaused = 0;
 
     std::vector<lt::torrent_status> temp;
-    session_.get_torrent_status(&temp, [](const lt::torrent_status& status) { return true; }, 0);
+    session_.get_torrent_status(&temp, [](const lt::torrent_status&) { return true; }, 0);
 
     for (lt::torrent_status& status : temp)
     {

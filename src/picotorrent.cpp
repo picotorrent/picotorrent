@@ -1,5 +1,6 @@
 #include "picotorrent.h"
 
+#pragma warning(disable: 4005 4245 4267 4800)
 #include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
 #include <libtorrent/alert_types.hpp>
@@ -7,6 +8,7 @@
 #include <libtorrent/create_torrent.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/session_stats.hpp>
+#pragma warning(default: 4005 4245 4267 4800)
 
 #include "path.h"
 #include "statemanager.h"
@@ -27,9 +29,7 @@ PicoTorrent::PicoTorrent(HINSTANCE hInstance)
 
     SetProcessDPIAware();
 
-    HRESULT hRes = _Module.Init(NULL, hInstance);
-    ATLASSERT(SUCCEEDED(hRes));
-
+    _Module.Init(NULL, hInstance);
     _Module.AddMessageLoop(&loop_);
 
     lt::settings_pack settings;;
@@ -87,7 +87,7 @@ bool PicoTorrent::Init()
         LPWSTR cmd = GetCommandLine();
 
         COPYDATASTRUCT cds;
-        cds.cbData = sizeof(TCHAR) * (_tcslen(cmd) + 1);
+        cds.cbData = (DWORD)(sizeof(TCHAR) * (_tcslen(cmd) + 1));
         cds.dwData = 1;
         cds.lpData = cmd;
 
@@ -155,7 +155,9 @@ void PicoTorrent::HandleAlert(lt::alert* alert)
         }
 
         SaveTorrent(a->handle.torrent_file());
-        frame_->AddTorrent(a->handle.status());
+
+        lt::torrent_status st = a->handle.status();
+        frame_->AddTorrent(st);
         break;
     }
 
@@ -168,8 +170,6 @@ void PicoTorrent::HandleAlert(lt::alert* alert)
 
     case lt::session_stats_alert::alert_type:
     {
-        lt::session_stats_alert* a = lt::alert_cast<lt::session_stats_alert>(alert);
-        
         break;
     }
 

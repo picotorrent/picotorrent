@@ -27,13 +27,13 @@ namespace pico
         std::wstring GetCreator(uint64_t index);
         std::wstring GetSavePath(uint64_t index);
 
-        uint64_t GetFileCount(uint64_t index);
+        int GetFileCount(uint64_t index);
         std::wstring GetFileName(uint64_t index, int fileIndex);
         std::wstring GetFileSize(uint64_t index, int fileIndex);
-        int GetFilePriority(uint64_t index, int fileIndex);
+        uint8_t GetFilePriority(uint64_t index, int fileIndex);
 
         void SetFileName(int64_t index, int fileIndex, const std::wstring& name);
-        void SetFilePriority(int64_t index, int fileIndex, int priority);
+        void SetFilePriority(int64_t index, int fileIndex, uint8_t priority);
         void SetSavePath(uint64_t index, const std::wstring& path);
 
     private:
