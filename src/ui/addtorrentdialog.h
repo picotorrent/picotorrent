@@ -1,73 +1,58 @@
-#ifndef _PT_UI_ADDTORRENTDIALOG_H
-#define _PT_UI_ADDTORRENTDIALOG_H
+#pragma once
 
-#include <libtorrent/add_torrent_params.hpp>
-#include <libtorrent/session_handle.hpp>
-#include <libtorrent/torrent_info.hpp>
-#include <map>
-#include <vector>
-#include <wx/frame.h>
-#include <wx/panel.h>
+#include <memory>
+#include "../stdafx.h"
 
-class wxComboBox;
-class wxListCtrl;
-class wxListEvent;
-class wxStaticText;
-class wxTextCtrl;
-
-class AddTorrentController;
-
-class AddTorrentDialog : public wxFrame
+namespace pico
 {
-public:
-    AddTorrentDialog(wxWindow* parent,
-        boost::shared_ptr<AddTorrentController> controller);
+    class AddTorrentController;
 
-private:
-    void OnBrowseSavePath(wxCommandEvent& event);
-    void OnAdd(wxCommandEvent& event);
-    void OnComboSelected(wxCommandEvent& event);
-    void ShowTorrentInfo(int index);
-    void OnFileItemRightClick(wxListEvent& event);
-    void OnMenu(wxCommandEvent& event);
-    void OnSavePathChanged(wxCommandEvent& event);
-
-    boost::shared_ptr<AddTorrentController> controller_;
-
-    // Torrent
-    wxComboBox* torrentsCombo_;
-    wxStaticText* sizeText_;
-    wxStaticText* commentText_;
-    wxStaticText* dateText_;
-    wxStaticText* creatorText_;
-
-    // Storage
-    wxTextCtrl* savePathText_;
-    wxListCtrl* fileList_;
-
-    wxPanel* panel_;
-
-    enum
+    class AddTorrentDialog : public CDialogImpl<AddTorrentDialog>, public CDialogResize<AddTorrentDialog>
     {
-        ptID_TORRENTS_COMBO = 1001,
-        ptID_TORRENT_FILES_LIST = 1002,
-        ptID_PRIO_SKIP = 2010,
-        ptID_PRIO_NORMAL = 2011,
-        ptID_PRIO_HIGH = 2016,
-        ptID_PRIO_MAX = 2017,
-        ptID_RENAME_FILE = 2020,
-        ptID_SAVE_PATH = 2021,
+    public:
+        enum { IDD = IDD_ADDTORRENT };
+
+        AddTorrentDialog(std::shared_ptr<AddTorrentController> controller);
+        ~AddTorrentDialog();
+
+        LRESULT OnInit(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+        LRESULT OnClose(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+        LRESULT OnRenameFile(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+        LRESULT OnPrioritizeFile(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+        void OnFinalMessage(HWND hWnd);
+        LRESULT OnTorrentSelected(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+        LRESULT OnContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+        LRESULT BrowseSavePath(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+    private:
+        BEGIN_MSG_MAP(AddTorrentDialog)
+            MESSAGE_HANDLER(WM_INITDIALOG, OnInit)
+            COMMAND_ID_HANDLER(ID_ADDTORRENT_BROWSE, BrowseSavePath)
+            COMMAND_ID_HANDLER(IDCANCEL, OnClose)
+            COMMAND_ID_HANDLER(IDOK, OnClose)
+            COMMAND_ID_HANDLER(ID_ADDTORRENT_RENAME_FILE, OnRenameFile)
+            COMMAND_ID_HANDLER(ID_ADDTORRENT_PRIO_MAX, OnPrioritizeFile)
+            COMMAND_ID_HANDLER(ID_ADDTORRENT_PRIO_HIGH, OnPrioritizeFile)
+            COMMAND_ID_HANDLER(ID_ADDTORRENT_PRIO_NORMAL, OnPrioritizeFile)
+            COMMAND_ID_HANDLER(ID_ADDTORRENT_PRIO_DND, OnPrioritizeFile)
+            COMMAND_HANDLER(ID_ADDTORRENT_TORRENTS, CBN_SELENDOK, OnTorrentSelected)
+            MESSAGE_HANDLER(WM_CONTEXTMENU, OnContextMenu)
+            CHAIN_MSG_MAP(CDialogResize<AddTorrentDialog>)
+        END_MSG_MAP()
+
+        BEGIN_DLGRESIZE_MAP(AddTorrentDialog)
+            DLGRESIZE_CONTROL(ID_ADDTORRENT_GROUP_TORRENTS, DLSZ_SIZE_X)
+            DLGRESIZE_CONTROL(ID_ADDTORRENT_TORRENTS, DLSZ_SIZE_X)
+            DLGRESIZE_CONTROL(ID_ADDTORRENT_GROUP_STORAGE, DLSZ_SIZE_X | DLSZ_SIZE_Y)
+            DLGRESIZE_CONTROL(ID_ADDTORRENT_SAVEPATH, DLSZ_SIZE_X)
+            DLGRESIZE_CONTROL(ID_ADDTORRENT_BROWSE, DLSZ_MOVE_X)
+            DLGRESIZE_CONTROL(ID_ADDTORRENT_FILES, DLSZ_SIZE_X | DLSZ_SIZE_Y)
+            DLGRESIZE_CONTROL(IDOK, DLSZ_MOVE_X | DLSZ_MOVE_Y)
+            DLGRESIZE_CONTROL(IDCANCEL, DLSZ_MOVE_X | DLSZ_MOVE_Y)
+        END_DLGRESIZE_MAP()
+
+        void ShowTorrent(uint64_t index);
+
+        std::shared_ptr<AddTorrentController> controller_;
     };
-
-    enum
-    {
-        PRIO_SKIP = 0,
-        PRIO_NORMAL = 1,
-        PRIO_HIGH = 6,
-        PRIO_MAX = 7
-    };
-
-    wxDECLARE_EVENT_TABLE();
-};
-
-#endif
+}

@@ -2,110 +2,145 @@
 
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/session_handle.hpp>
+#include <libtorrent/torrent_info.hpp>
 
-AddTorrentController::AddTorrentController(const libtorrent::session_handle& session,
-    std::vector<libtorrent::add_torrent_params> params)
+#include "../util.h"
+
+namespace lt = libtorrent;
+using namespace pico;
+
+AddTorrentController::AddTorrentController(lt::session_handle& session,
+    std::vector<lt::add_torrent_params> params)
     : session_(session),
     params_(params)
 {
 }
 
-void AddTorrentController::Add()
+void AddTorrentController::AddTorrents()
 {
+    for (lt::add_torrent_params& p : params_)
+    {
+        session_.async_add_torrent(p);
+    }
 }
 
-int AddTorrentController::GetCount()
+uint64_t AddTorrentController::GetCount()
 {
     return params_.size();
 }
 
-std::string AddTorrentController::GetName(int index)
+std::wstring AddTorrentController::GetName(uint64_t index)
 {
-    return params_[index].ti->name();
+    std::string name = params_[index].ti->name();
+    return Util::ToWideString(name);
 }
 
-int64_t AddTorrentController::GetSize(int index)
+std::wstring AddTorrentController::GetSize(uint64_t index)
 {
-    return params_[index].ti->total_size();
-}
+    int64_t size = params_[index].ti->total_size();
 
-std::string AddTorrentController::GetComment(int index)
-{
-    return params_[index].ti->comment();
-}
-
-std::string AddTorrentController::GetCreationDate(int index)
-{
-    boost::optional<time_t> time = params_[index].ti->creation_date();
-
-    if (!time)
+    if (size < 0)
     {
-        return "-";
+        return L"-";
     }
 
-    char fd[100];
-    std::time_t tm(time.value());
-    std::strftime(fd, sizeof(fd), "%c", std::localtime(&tm));
-
-    return fd;
+    return Util::ToFileSize(size);
 }
 
-std::string AddTorrentController::GetCreator(int index)
+std::wstring AddTorrentController::GetComment(uint64_t index)
 {
-    return params_[index].ti->creator();
+    std::string comment = params_[index].ti->comment();
+
+    if (comment.empty())
+    {
+        return L"-";
+    }
+
+    return Util::ToWideString(comment);
 }
 
-std::string AddTorrentController::GetSavePath(int index)
+std::wstring AddTorrentController::GetCreationDate(uint64_t index)
 {
-    return params_[index].save_path;
+    boost::optional<time_t> t = params_[index].ti->creation_date();
+
+    if (!t.is_initialized())
+    {
+        return L"-";
+    }
+
+    tm* time = localtime(&t.get());
+    
+    char buf[100];
+    strftime(buf, _ARRAYSIZE(buf), "%c", time);
+
+    return Util::ToWideString(buf);
 }
 
-int AddTorrentController::GetFileCount(int index)
+std::wstring AddTorrentController::GetCreator(uint64_t index)
+{
+    std::string creator = params_[index].ti->creator();
+
+    if (creator.empty())
+    {
+        return L"-";
+    }
+
+    return Util::ToWideString(creator);
+}
+
+std::wstring AddTorrentController::GetSavePath(uint64_t index)
+{
+    std::string path = params_[index].save_path;
+    return Util::ToWideString(path);
+}
+
+uint64_t AddTorrentController::GetFileCount(uint64_t index)
 {
     return params_[index].ti->num_files();
 }
 
-int AddTorrentController::GetFilePriority(int index, int fileIndex)
+std::wstring AddTorrentController::GetFileName(uint64_t index, int fileIndex)
 {
-    libtorrent::add_torrent_params& p = params_[index];
+    std::string name = params_[index].ti->files().file_name(fileIndex);
+    return Util::ToWideString(name);
+}
 
-    if (p.file_priorities.size() > 0)
+std::wstring AddTorrentController::GetFileSize(uint64_t index, int fileIndex)
+{
+    int64_t size = params_[index].ti->files().file_size(fileIndex);
+    return Util::ToFileSize(size);
+}
+
+int AddTorrentController::GetFilePriority(uint64_t index, int fileIndex)
+{
+    lt::add_torrent_params& p = params_[index];
+
+    if (p.file_priorities.size() > fileIndex)
     {
         return p.file_priorities[fileIndex];
     }
 
-    return 1; // TODO put in enum
+    return 1; // TODO(enum)
 }
 
-std::string AddTorrentController::GetFileName(int index, int fileIndex)
+void AddTorrentController::SetFileName(int64_t index, int fileIndex, const std::wstring& name)
 {
-    return params_[index].ti->files().file_name(fileIndex);
+    params_[index].ti->rename_file(fileIndex, Util::ToString(name));
 }
 
-int64_t AddTorrentController::GetFileSize(int index, int fileIndex)
+void AddTorrentController::SetFilePriority(int64_t index, int fileIndex, int priority)
 {
-    return params_[index].ti->files().file_size(fileIndex);
-}
+    lt::add_torrent_params& p = params_[index];
 
-void AddTorrentController::SetFileName(int index, int fileIndex, const std::string& name)
-{
-    params_[index].ti->rename_file(fileIndex, name);
-}
-
-void AddTorrentController::SetFilePriority(int index, int fileIndex, int prio)
-{
-    libtorrent::add_torrent_params& p = params_[index];
-
-    if (p.file_priorities.size() == 0)
+    if (fileIndex >= p.file_priorities.size())
     {
-        // Resize the file prio vector with default value of 1.
         p.file_priorities.resize(fileIndex + 1, 1);
     }
 
-    p.file_priorities[fileIndex] = prio;
+    p.file_priorities[fileIndex] = priority;
 }
 
-void AddTorrentController::SetSavePath(int index, std::string savePath)
+void AddTorrentController::SetSavePath(uint64_t index, const std::wstring& path)
 {
-    params_[index].save_path = savePath;
+    params_[index].save_path = Util::ToString(path);
 }

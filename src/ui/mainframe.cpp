@@ -1,394 +1,209 @@
 #include "mainframe.h"
 
-#include <libtorrent/alert_types.hpp>
-#include <libtorrent/version.hpp>
-#include <wx/dirdlg.h>
-#include <wx/filedlg.h>
-#include <wx/menu.h>
+#include <boost/filesystem.hpp>
+#include <boost/log/trivial.hpp>
+#include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/session_handle.hpp>
+#include <libtorrent/torrent_handle.hpp>
+#include <shellapi.h>
 
-#include "../common.h"
-#include "../config.h"
-#include "../controllers/addtorrentcontroller.h"
 #include "addtorrentdialog.h"
+#include "scaler.h"
+#include "../commandline.h"
+#include "../path.h"
+#include "../util.h"
+#include "../controllers/addtorrentcontroller.h"
+#include "../io/file.h"
 
+namespace fs = boost::filesystem;
 namespace lt = libtorrent;
-
-wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
-    EVT_SIZE(MainFrame::OnSize)
-
-    EVT_MENU(ptID_FILE_ADD_TORRENT, MainFrame::OnFileAddTorrent)
-    EVT_MENU(ptID_FILE_EXIT, MainFrame::OnFileExit)
-    EVT_MENU(wxID_ANY, MainFrame::OnTorrentContextMenu)
-
-    EVT_LIST_ITEM_ACTIVATED(1000, MainFrame::OnListItemActivated)
-    EVT_LIST_ITEM_RIGHT_CLICK(1000, MainFrame::OnListItemRightClick)
-wxEND_EVENT_TABLE()
+using namespace pico;
 
 MainFrame::MainFrame(lt::session_handle& session)
-    : wxFrame(NULL, wxID_ANY, wxT("PicoTorrent")),
-    session_(session)
+    : session_(session)
 {
-    SetIcon(wxIcon("progicon"));
-
-    torrentList_ = new wxListCtrl(this,
-        1000,
-        wxDefaultPosition,
-        wxDefaultSize,
-        wxLC_REPORT);
-
-    wxListItem col;
-
-    col.SetAlign(wxListColumnFormat::wxLIST_FORMAT_LEFT);
-    col.SetText("Name");
-    col.SetWidth(200);
-    torrentList_->InsertColumn(0, col);
-    
-    col.SetAlign(wxListColumnFormat::wxLIST_FORMAT_RIGHT);
-    col.SetText("#");
-    col.SetWidth(30);
-    torrentList_->InsertColumn(1, col);
-
-    col.SetAlign(wxListColumnFormat::wxLIST_FORMAT_LEFT);
-    col.SetText("Status");
-    col.SetWidth(150);
-    torrentList_->InsertColumn(2, col);
-
-    wxMenu* fileMenu = new wxMenu();
-    fileMenu->Append(ptID_FILE_ADD_TORRENT, wxT("Add torrent"));
-    fileMenu->AppendSeparator();
-    fileMenu->Append(ptID_FILE_EXIT, wxT("Exit"));
-
-    wxMenuBar* mainMenu = new wxMenuBar();
-    mainMenu->Append(fileMenu, wxT("File"));
-    SetMenuBar(mainMenu);
-
-    const int widths[2] = { -2, -1 };
-
-    CreateStatusBar(2);
-    SetStatusWidths(2, widths);
-    SetStatusText(wxString::Format("libtorrent v%s", LIBTORRENT_VERSION), 1);
 }
 
-void MainFrame::AddTorrent(const lt::torrent_status& status)
+void MainFrame::AddTorrent(lt::torrent_status& status)
 {
-    if (torrents_.find(status.info_hash) != torrents_.end())
-    {
-        // Log error
-        return;
-    }
+    std::wstring name = Util::ToWideString(status.name);
 
-    wxListItem item;
-    item.SetData(new lt::sha1_hash(status.info_hash));
-    item.SetId(torrentList_->GetItemCount());
+    int idx = torrentsList_.AddItem(torrentsList_.GetItemCount(), 0, name.c_str());
+    torrentsList_.AddItem(idx, 1, std::to_wstring(status.queue_position + 1).c_str());
+    torrentsList_.AddItem(idx, 2, Util::ToState(status.state).c_str());
+    torrentsList_.AddItem(idx, 3, Util::ToSpeed(status.download_payload_rate).c_str());
+    torrentsList_.AddItem(idx, 4, Util::ToSpeed(status.upload_payload_rate).c_str());
 
-    torrentList_->InsertItem(item);
-    UpdateTorrents(std::vector<lt::torrent_status>{status});
+    torrents_[status.info_hash] = idx;
 }
 
-void MainFrame::UpdateTorrents(std::vector<libtorrent::torrent_status> status)
+void MainFrame::UpdateTorrent(lt::torrent_status& status)
 {
-    for (lt::torrent_status& st : status)
+    int idx = torrents_[status.info_hash];
+
+    torrentsList_.SetItemText(idx, 0, Util::ToWideString(status.name).c_str());
+    torrentsList_.SetItemText(idx, 1, std::to_wstring(status.queue_position + 1).c_str());
+    torrentsList_.SetItemText(idx, 2, Util::ToState(status.state).c_str());
+    torrentsList_.SetItemText(idx, 3, Util::ToSpeed(status.download_payload_rate).c_str());
+    torrentsList_.SetItemText(idx, 4, Util::ToSpeed(status.upload_payload_rate).c_str());
+}
+
+LRESULT MainFrame::OnCopyData(HWND hWnd, PCOPYDATASTRUCT pCopyData)
+{
+    if (pCopyData->dwData == 1)
     {
-        torrents_[st.info_hash] = st;
+        LPTSTR cmd = (LPTSTR)pCopyData->lpData;
+        ParseCommandLine(cmd);
     }
 
-    torrentList_->Freeze();
+    return 0;
+}
 
-    long idx = -1;
+LRESULT MainFrame::OnCreate(LPCREATESTRUCT)
+{
+    ui::Scaler scaler;
 
-    while ((idx = torrentList_->GetNextItem(idx, wxLIST_NEXT_ALL)) != wxNOT_FOUND)
+    ResizeClient(
+        scaler.GetX(600),
+        scaler.GetY(200));
+
+    SetWindowText(L"PicoTorrent");
+
+    m_hWndClient = torrentsList_.Create(m_hWnd,
+        rcDefault,
+        NULL,
+        WS_CHILD | WS_VISIBLE | LVS_REPORT,
+        WS_EX_CLIENTEDGE);
+
+    torrentsList_.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT);
+
+    torrentsList_.InsertColumn(0, _T("Name"), LVCFMT_LEFT, scaler.GetX(200), 0);
+    torrentsList_.InsertColumn(1, _T("#"), LVCFMT_RIGHT, scaler.GetX(30), 1);
+    torrentsList_.InsertColumn(2, _T("Status"), LVCFMT_LEFT, scaler.GetX(150), 2);
+    torrentsList_.InsertColumn(3, _T("DL"), LVCFMT_RIGHT, scaler.GetX(80), 3);
+    torrentsList_.InsertColumn(4, _T("UL"), LVCFMT_RIGHT, scaler.GetX(80), 4);
+
+    SetTimer(99, 1000);
+
+    ParseCommandLine(GetCommandLine());
+
+    return 0;
+}
+
+LRESULT MainFrame::OnDestroy()
+{
+    KillTimer(99);
+    return 0;
+}
+
+LRESULT MainFrame::OnTimer(UINT timerID)
+{
+    session_.post_dht_stats();
+    session_.post_session_stats();
+    session_.post_torrent_updates();
+
+    return FALSE;
+}
+
+LRESULT MainFrame::OnFileAddTorrent(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    LPCTSTR files =
+        L"Torrent Files (*.torrent)\0*.torrent\0"
+        L"All Files (*.*)\0*.*\0\0";
+
+    CFileDialog dlg(TRUE,
+        NULL,
+        NULL,
+        OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR,
+        files,
+        m_hWnd);
+
+    TCHAR buffer[65535] = { 0 };
+    buffer[0] = _T('\0');
+
+    dlg.m_ofn.lpstrFile = buffer;
+    dlg.m_ofn.nMaxFile = _ARRAYSIZE(buffer);
+
+    if (dlg.DoModal() == IDOK)
     {
-        wxListItem item;
-        item.SetId(idx);
+        std::vector<std::wstring> files;
 
-        torrentList_->GetItem(item);
-
-        lt::sha1_hash* hash = (lt::sha1_hash*)item.GetData();
-        lt::torrent_status& st = torrents_[*hash];
-
-        std::string queuePosition = "";
-
-        if (st.queue_position >= 0)
+        if (dlg.m_ofn.nFileOffset < ::_tcslen(buffer))
         {
-            queuePosition = std::to_string(st.queue_position + 1);
+            files.push_back(buffer);
+        }
+        else
+        {
+            LPTSTR dir = buffer;
+            LPTSTR file = buffer + dlg.m_ofn.nFileOffset;
+
+            TCHAR fullPath[MAX_PATH] = { 0 };
+
+            while (file != NULL && *file != _T('\0'))
+            {
+                fullPath[0] = _T('\0');
+                PathCombine(fullPath, dir, file);
+
+                files.push_back(fullPath);
+                file = file + _tcslen(file) + 1;
+            }
         }
 
-        torrentList_->SetItem(idx, 0, st.name);
-        torrentList_->SetItem(idx, 1, queuePosition);
-        torrentList_->SetItem(idx, 2, GetTorrentState(st));
+        ShowAddTorrentDialog(files);
     }
 
-    torrentList_->Thaw();
+    return 0;
 }
 
-void MainFrame::RemoveTorrent(const lt::sha1_hash& hash)
+void MainFrame::ParseCommandLine(std::wstring cmdLine)
 {
-    long idx = -1;
-
-    while ((idx = torrentList_->GetNextItem(idx, wxLIST_NEXT_ALL)) != wxNOT_FOUND)
-    {
-        wxListItem item;
-        item.SetId(idx);
-
-        torrentList_->GetItem(item);
-
-        lt::sha1_hash* storedHash = (lt::sha1_hash*)item.GetData();
-
-        if (hash == *storedHash)
-        {
-            break;
-        }
-    }
-
-    torrentList_->DeleteItem(idx);
-
-    // TODO: Loop through each item with an index greater than 'idx'
-    // and subtract 1.
-
-    // Close details window (if open)
-    if (details_.find(hash) != details_.end())
-    {
-        details_[hash]->Destroy();
-        details_.erase(hash);
-    }
-
-    // Remove from maps
-    torrents_.erase(hash);
-}
-
-void MainFrame::OnSize(wxSizeEvent& event)
-{
-    wxSize size = GetClientSize();
-    torrentList_->SetSize(0, 0, size.x, size.y);
-}
-
-void MainFrame::OnFileAddTorrent(wxCommandEvent& WXUNUSED(event))
-{
-    wxFileDialog openFile(this,
-        wxT("Open file"),
-        "",
-        "",
-        "Torrent files (*.torrent)|*.torrent|All files (*.*)|*.*",
-        wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
-
-    if (openFile.ShowModal() == wxID_CANCEL)
+    if (cmdLine.empty())
     {
         return;
     }
 
-    wxArrayString paths;
-    openFile.GetPaths(paths);
+    std::unique_ptr<CommandLine> cmd = CommandLine::Parse(cmdLine);
+    std::vector<std::wstring> files = cmd->GetFiles();
 
+    if (files.size() > 0)
+    {
+        ShowAddTorrentDialog(files);
+    }
+}
+
+void MainFrame::ShowAddTorrentDialog(std::vector<std::wstring>& files)
+{
     std::vector<lt::add_torrent_params> params;
-    params.reserve(paths.GetCount());
 
-    for (wxString& path : paths)
+    for (std::wstring& path : files)
     {
         lt::add_torrent_params p;
-        p.save_path = Config::GetInstance().GetDefaultSavePath();
+        p.save_path = Path::GetDefaultDownloadsPath().string();
+
+        std::vector<char> buf;
+        io::File::ReadBuffer(path, buf);
 
         lt::error_code ec;
-        p.ti = boost::make_shared<lt::torrent_info>(path.ToStdString(), ec);
+        lt::bdecode_node node;
+        lt::bdecode(&buf[0], &buf[0] + buf.size(), node, ec);
 
         if (ec)
         {
-            // Log error
+            BOOST_LOG_TRIVIAL(error)
+                << "Could not decode " << path << ": "
+                << ec.message() << ".";
             continue;
         }
 
+        p.ti = boost::make_shared<lt::torrent_info>(node);
         params.push_back(p);
     }
 
-    auto controller = boost::make_shared<AddTorrentController>(session_, params);
+    AddTorrentDialog* addTorrent = new AddTorrentDialog(
+        std::make_shared<AddTorrentController>(session_, params));
 
-    AddTorrentDialog* dlg = new AddTorrentDialog(this, controller);
-    dlg->Show(true);
+    addTorrent->Create(m_hWnd);
+    addTorrent->ShowWindow(SW_SHOW);
+
+    SetForegroundWindow(addTorrent->m_hWnd);
 }
-
-void MainFrame::OnFileExit(wxCommandEvent& WXUNUSED(event))
-{
-    Close(true);
-}
-
-void MainFrame::OnTorrentContextMenu(wxCommandEvent& event)
-{
-    long idx = -1;
-
-    while ((idx = torrentList_->GetNextItem(idx, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND)
-    {
-        wxListItem item;
-        item.SetId(idx);
-
-        torrentList_->GetItem(item);
-
-        lt::sha1_hash* hash = (lt::sha1_hash*)item.GetData();
-        lt::torrent_handle handle = session_.find_torrent(*hash);
-
-        switch (event.GetId())
-        {
-        case ptID_TORRENT_RESUME:
-            handle.resume();
-            break;
-
-        case ptID_TORRENT_PAUSE:
-            handle.pause();
-            break;
-
-        case ptID_TORRENT_AUTO_MANAGE_TOGGLE:
-        {
-            lt::torrent_status st = handle.status(0);
-            handle.auto_managed(!st.auto_managed);
-        }
-            break;
-
-        case ptID_TORRENT_FORCE_RECHECK:
-            handle.force_recheck();
-            break;
-
-        case ptID_TORRENT_MOVE:
-        {
-            lt::torrent_status st = handle.status();
-            wxDirDialog dlg(this, "Select new path", st.save_path);
-
-            if (dlg.ShowModal() == wxID_OK)
-            {
-                handle.move_storage(dlg.GetPath().ToStdString());
-            }
-        }
-            break;
-
-        case ptID_TORRENT_REMOVE:
-            session_.remove_torrent(handle);
-            break;
-
-        case ptID_TORRENT_REMOVE_DATA:
-            session_.remove_torrent(handle, lt::session_handle::delete_files);
-            break;
-
-        case ptID_TORRENT_SHOW_DETAILS:
-            ShowDetails(*hash);
-            break;
-        }
-    }
-}
-
-void MainFrame::ShowDetails(const lt::sha1_hash& hash)
-{
-    lt::torrent_handle handle = session_.find_torrent(hash);
-
-    if (!handle.is_valid())
-    {
-        // Log error (handle is invalid)
-        return;
-    }
-
-    auto existingDetails = details_.find(hash);
-
-    if (existingDetails != details_.end())
-    {
-        existingDetails->second->Raise();
-        return;
-    }
-
-    lt::torrent_status status = handle.status();
-
-    // Show details frame
-    TorrentDetailsFrame* details = new TorrentDetailsFrame(this, wxID_ANY);
-    details->SetTorrent(status);
-    details->Show(true);
-
-    // Bind the close event to a handler which removes the mapping 
-    details->Bind(wxEVT_CLOSE_WINDOW, std::bind(&MainFrame::OnTorrentDetailsFrameClose, this, std::placeholders::_1, hash));
-
-    // Store this frame
-    details_[hash] = details;
-}
-
-void MainFrame::OnListItemActivated(wxListEvent& event)
-{
-    long idx = event.GetIndex();
-
-    wxListItem item;
-    item.SetId(idx);
-
-    torrentList_->GetItem(item);
-
-    lt::sha1_hash* hash = (lt::sha1_hash*)item.GetData();
-    ShowDetails(*hash);
-}
-
-void MainFrame::OnListItemRightClick(wxListEvent& event)
-{
-    long idx = event.GetIndex();
-
-    wxListItem item;
-    item.SetId(idx);
-
-    torrentList_->GetItem(item);
-
-    lt::sha1_hash* hash = (lt::sha1_hash*)item.GetData();
-    lt::torrent_handle handle = session_.find_torrent(*hash);
-
-    if (!handle.is_valid())
-    {
-        // Log error (invalid handle)
-        return;
-    }
-
-    lt::torrent_status status = handle.status();
-
-    wxMenu menu;
-    menu.Append(ptID_TORRENT_RESUME, wxT("Resume"))->Enable(!status.auto_managed && status.paused);
-    menu.Append(ptID_TORRENT_PAUSE, wxT("Pause"))->Enable(!status.auto_managed && !status.paused);
-    menu.AppendCheckItem(ptID_TORRENT_AUTO_MANAGE_TOGGLE, wxT("Auto managed"))->Check(status.auto_managed);
-    menu.AppendSeparator();
-    menu.Append(ptID_TORRENT_FORCE_RECHECK, wxT("Force re-check"))->Enable(status.state != lt::torrent_status::checking_files);
-    menu.Append(ptID_TORRENT_MOVE, wxT("Move torrent"))->Enable(!status.moving_storage);
-    menu.AppendSeparator();
-    menu.Append(ptID_TORRENT_REMOVE, wxT("Remove"));
-    menu.Append(ptID_TORRENT_REMOVE_DATA, wxT("Remove (and remove data)"));
-    menu.AppendSeparator();
-    menu.Append(ptID_TORRENT_SHOW_DETAILS, wxT("Details"));
-
-    PopupMenu(&menu);
-}
-
-void MainFrame::OnTorrentDetailsFrameClose(wxCloseEvent& event, lt::sha1_hash hash)
-{
-    details_.erase(hash);
-    event.Skip();
-}
-
-wxString MainFrame::GetTorrentState(const lt::torrent_status& status)
-{
-    switch (status.state)
-    {
-    case lt::torrent_status::state_t::allocating:
-        return "Allocating files";
-
-    case lt::torrent_status::state_t::checking_files:
-    case lt::torrent_status::state_t::checking_resume_data:
-        return wxString::Format("Checking (%.2f%%)", status.progress * 100);
-
-    case lt::torrent_status::state_t::downloading:
-        return wxString::Format("Downloading (%.2f%%)", status.progress * 100);
-
-    case lt::torrent_status::state_t::downloading_metadata:
-        return "Downloading metadata";
-
-    case lt::torrent_status::state_t::finished:
-    case lt::torrent_status::state_t::seeding:
-    {
-        if (status.paused)
-        {
-            return "Finished";
-        }
-
-        return "Seeding";
-    }
-    break;
-    }
-
-    return "<unknown state>";
-}
-

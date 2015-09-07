@@ -29,7 +29,7 @@ Task("Generate-Project")
     var exitCode = StartProcess("cmake",
         new ProcessSettings
         {
-            Arguments = ".. -G \"Visual Studio 14\" -T \"v140\"",
+            Arguments = ".. -G \"Visual Studio 14 Win64\" -T \"v140\"",
             WorkingDirectory = "./build"
         });
 
