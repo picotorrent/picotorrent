@@ -1,8 +1,10 @@
 #include "addtorrentcontroller.h"
 
+#pragma warning(disable: 4005 4245 4267 4800)
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/session_handle.hpp>
 #include <libtorrent/torrent_info.hpp>
+#pragma warning(default: 4005 4245 4267 4800)
 
 #include "../util.h"
 
@@ -94,7 +96,7 @@ std::wstring AddTorrentController::GetSavePath(uint64_t index)
     return Util::ToWideString(path);
 }
 
-uint64_t AddTorrentController::GetFileCount(uint64_t index)
+int AddTorrentController::GetFileCount(uint64_t index)
 {
     return params_[index].ti->num_files();
 }
@@ -111,7 +113,7 @@ std::wstring AddTorrentController::GetFileSize(uint64_t index, int fileIndex)
     return Util::ToFileSize(size);
 }
 
-int AddTorrentController::GetFilePriority(uint64_t index, int fileIndex)
+uint8_t AddTorrentController::GetFilePriority(uint64_t index, int fileIndex)
 {
     lt::add_torrent_params& p = params_[index];
 
@@ -128,7 +130,7 @@ void AddTorrentController::SetFileName(int64_t index, int fileIndex, const std::
     params_[index].ti->rename_file(fileIndex, Util::ToString(name));
 }
 
-void AddTorrentController::SetFilePriority(int64_t index, int fileIndex, int priority)
+void AddTorrentController::SetFilePriority(int64_t index, int fileIndex, uint8_t priority)
 {
     lt::add_torrent_params& p = params_[index];
 

@@ -51,12 +51,12 @@ LRESULT AddTorrentDialog::OnClose(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
     return TRUE;
 }
 
-void AddTorrentDialog::OnFinalMessage(HWND hWnd)
+void AddTorrentDialog::OnFinalMessage(HWND)
 {
     delete this;
 }
 
-LRESULT AddTorrentDialog::OnTorrentSelected(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT AddTorrentDialog::OnTorrentSelected(WORD /*wNotifyCode*/, WORD, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
     CComboBox torrents = (CComboBox)GetDlgItem(ID_ADDTORRENT_TORRENTS);
     ShowTorrent(torrents.GetCurSel());
@@ -83,7 +83,7 @@ void AddTorrentDialog::ShowTorrent(uint64_t index)
     files.DeleteAllItems();
     files.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT);
 
-    for (uint64_t i = 0; i < controller_->GetFileCount(index); i++)
+    for (int i = 0; i < controller_->GetFileCount(index); i++)
     {
         std::wstring fileName = controller_->GetFileName(index, i);
         std::wstring fileSize = controller_->GetFileSize(index, i);
@@ -95,7 +95,7 @@ void AddTorrentDialog::ShowTorrent(uint64_t index)
     }
 }
 
-LRESULT AddTorrentDialog::OnContextMenu(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+LRESULT AddTorrentDialog::OnContextMenu(UINT, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
     CListViewCtrl files = (CListViewCtrl)GetDlgItem(ID_ADDTORRENT_FILES);
     
@@ -140,7 +140,7 @@ LRESULT AddTorrentDialog::OnContextMenu(UINT uMsg, WPARAM wParam, LPARAM lParam,
     return FALSE;
 }
 
-LRESULT AddTorrentDialog::OnRenameFile(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT AddTorrentDialog::OnRenameFile(WORD /*wNotifyCode*/, WORD, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
     CComboBox torrents = (CComboBox)GetDlgItem(ID_ADDTORRENT_TORRENTS);
     CListViewCtrl files = (CListViewCtrl)GetDlgItem(ID_ADDTORRENT_FILES);
@@ -197,7 +197,7 @@ LRESULT AddTorrentDialog::OnPrioritizeFile(WORD /*wNotifyCode*/, WORD wID, HWND 
     return FALSE;
 }
 
-LRESULT AddTorrentDialog::BrowseSavePath(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT AddTorrentDialog::BrowseSavePath(WORD /*wNotifyCode*/, WORD, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
     CFolderDialog dlg;
 

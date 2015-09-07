@@ -2,8 +2,10 @@
 
 #include <shlwapi.h>
 #define TORRENT_WINDOWS
+#pragma warning(disable: 4005 4245 4267)
 #include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/utf8.hpp>
+#pragma warning(default: 4005 4245 4267)
 
 namespace lt = libtorrent;
 using namespace pico;

@@ -1,10 +1,12 @@
 #include "mainframe.h"
 
+#pragma warning(disable: 4005 4245 4267 4800)
 #include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/session_handle.hpp>
 #include <libtorrent/torrent_handle.hpp>
+#pragma warning(default: 4005 4245 4267 4800)
 #include <shellapi.h>
 
 #include "addtorrentdialog.h"
@@ -48,7 +50,7 @@ void MainFrame::UpdateTorrent(lt::torrent_status& status)
     torrentsList_.SetItemText(idx, 4, Util::ToSpeed(status.upload_payload_rate).c_str());
 }
 
-LRESULT MainFrame::OnCopyData(HWND hWnd, PCOPYDATASTRUCT pCopyData)
+LRESULT MainFrame::OnCopyData(HWND, PCOPYDATASTRUCT pCopyData)
 {
     if (pCopyData->dwData == 1)
     {
@@ -96,7 +98,7 @@ LRESULT MainFrame::OnDestroy()
     return 0;
 }
 
-LRESULT MainFrame::OnTimer(UINT timerID)
+LRESULT MainFrame::OnTimer(UINT_PTR)
 {
     session_.post_dht_stats();
     session_.post_session_stats();
@@ -105,9 +107,9 @@ LRESULT MainFrame::OnTimer(UINT timerID)
     return FALSE;
 }
 
-LRESULT MainFrame::OnFileAddTorrent(UINT uNotifyCode, int nID, CWindow wndCtl)
+LRESULT MainFrame::OnFileAddTorrent(UINT, int, CWindow)
 {
-    LPCTSTR files =
+    LPCTSTR filter =
         L"Torrent Files (*.torrent)\0*.torrent\0"
         L"All Files (*.*)\0*.*\0\0";
 
@@ -115,7 +117,7 @@ LRESULT MainFrame::OnFileAddTorrent(UINT uNotifyCode, int nID, CWindow wndCtl)
         NULL,
         NULL,
         OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR,
-        files,
+        filter,
         m_hWnd);
 
     TCHAR buffer[65535] = { 0 };

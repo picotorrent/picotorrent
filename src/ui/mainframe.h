@@ -9,7 +9,7 @@
 namespace libtorrent
 {
     struct session_handle;
-    struct sha1_hash;
+    class sha1_hash;
     struct torrent_status;
 }
 
@@ -29,7 +29,7 @@ namespace pico
         LRESULT OnCopyData(HWND, PCOPYDATASTRUCT);
         LRESULT OnCreate(LPCREATESTRUCT);
         LRESULT OnDestroy();
-        LRESULT OnTimer(UINT);
+        LRESULT OnTimer(UINT_PTR);
         LRESULT OnFileAddTorrent(UINT uNotifyCode, int nID, CWindow wndCtl);
 
         void ParseCommandLine(std::wstring cmdLine);

@@ -14,6 +14,7 @@
                             language='*'\"")
 
 #include <windows.h>
+#pragma warning(disable: 4458 4838)
 #include <atlbase.h>
 #include <atlapp.h>
 
@@ -24,5 +25,6 @@ extern CAppModule _Module;
 #include <atlframe.h>
 #include <atlstr.h>
 #include <atlcrack.h>
+#pragma warning(default: 4458 4838)
 
 #include "resources.h"

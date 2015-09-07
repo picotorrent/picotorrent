@@ -5,8 +5,8 @@
 
 int WINAPI wWinMain(
     _In_     HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_     LPWSTR    lpCmdLine,
+    _In_opt_ HINSTANCE,
+    _In_     LPWSTR,
     _In_     int       nCmdShow)
 {
     pico::Logging::Init();
