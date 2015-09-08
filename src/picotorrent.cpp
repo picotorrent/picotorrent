@@ -161,9 +161,25 @@ void PicoTorrent::HandleAlert(lt::alert* alert)
         break;
     }
 
+    case lt::fastresume_rejected_alert::alert_type:
+    {
+        lt::fastresume_rejected_alert* a = lt::alert_cast<lt::fastresume_rejected_alert>(alert);
+        
+        BOOST_LOG_TRIVIAL(error)
+            << "Fast-resume data rejected: "
+            << a->error.message();
+
+        break;
+    }
+
     case lt::metadata_received_alert::alert_type:
     {
         lt::metadata_received_alert* a = lt::alert_cast<lt::metadata_received_alert>(alert);
+
+        BOOST_LOG_TRIVIAL(info)
+            << "Metadata received for "
+            << "'" << lt::to_hex(a->handle.info_hash().to_string()) << "'";
+
         SaveTorrent(a->handle.torrent_file());
         break;
     }
@@ -179,6 +195,8 @@ void PicoTorrent::HandleAlert(lt::alert* alert)
 
         int64_t dl = 0;
         int64_t ul = 0;
+
+        std::map<lt::sha1_hash, lt::torrent_status> m;
 
         for (lt::torrent_status& status : a->status)
         {
@@ -199,6 +217,32 @@ void PicoTorrent::HandleAlert(lt::alert* alert)
 
         break;
     }
+
+    case lt::torrent_removed_alert::alert_type:
+    {
+        lt::torrent_removed_alert* a = lt::alert_cast<lt::torrent_removed_alert>(alert);
+        DeleteTorrent(a->info_hash);
+        frame_->RemoveTorrent(a->info_hash);
+    }
+    }
+}
+
+void PicoTorrent::DeleteTorrent(const lt::sha1_hash& h)
+{
+    std::string hash = lt::to_hex(h.to_string());
+    fs::path torrents = Path::GetTorrentsPath();
+    fs::path torrentFile = torrents / (hash + ".torrent");
+
+    if (fs::exists(torrentFile))
+    {
+        fs::remove(torrentFile);
+    }
+
+    torrentFile.replace_extension(".dat");
+
+    if (fs::exists(torrentFile))
+    {
+        fs::remove(torrentFile);
     }
 }
 

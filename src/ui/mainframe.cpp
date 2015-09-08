@@ -28,26 +28,165 @@ MainFrame::MainFrame(lt::session_handle& session)
 
 void MainFrame::AddTorrent(lt::torrent_status& status)
 {
-    std::wstring name = Util::ToWideString(status.name);
-
-    int idx = torrentsList_.AddItem(torrentsList_.GetItemCount(), 0, name.c_str());
-    torrentsList_.AddItem(idx, 1, std::to_wstring(status.queue_position + 1).c_str());
-    torrentsList_.AddItem(idx, 2, Util::ToState(status.state).c_str());
-    torrentsList_.AddItem(idx, 3, Util::ToSpeed(status.download_payload_rate).c_str());
-    torrentsList_.AddItem(idx, 4, Util::ToSpeed(status.upload_payload_rate).c_str());
-
-    torrents_[status.info_hash] = idx;
+    std::lock_guard<std::mutex> lock(mtx_);
+    AddTorrentUnsafe(status);
+    UpdateTorrentUnsafe(status);
 }
 
 void MainFrame::UpdateTorrent(lt::torrent_status& status)
 {
+    std::lock_guard<std::mutex> lock(mtx_);
+    UpdateTorrentUnsafe(status);
+}
+
+void MainFrame::RemoveTorrent(lt::sha1_hash& hash)
+{
+    std::lock_guard<std::mutex> lock(mtx_);
+    RemoveTorrentUnsafe(hash);
+}
+
+void MainFrame::AddTorrentUnsafe(lt::torrent_status& status)
+{
+    LVITEM item = { 0 };
+    item.iItem = torrentsList_.GetItemCount();
+    item.lParam = (LPARAM)new lt::sha1_hash(status.info_hash);
+    item.mask = LVIF_PARAM | LVFIF_TEXT;
+    item.pszText = L"";
+
+    torrents_[status.info_hash] = item.iItem;
+    torrentsList_.InsertItem(&item);
+}
+
+void MainFrame::RemoveTorrentUnsafe(lt::sha1_hash& hash)
+{
+    int idx = torrents_[hash];
+
+    // Loop through each item that has an index greater
+    // than the one we removed, and subtract one.
+
+    for (int i = (idx + 1); i < torrentsList_.GetItemCount(); i++)
+    {
+        DWORD_PTR data = torrentsList_.GetItemData(i);
+        lt::sha1_hash* h = reinterpret_cast<lt::sha1_hash*>(data);
+
+        torrents_[*h] -= 1;
+    }
+
+    torrentsList_.DeleteItem(idx);
+    torrents_.erase(hash);
+}
+
+void MainFrame::UpdateTorrentUnsafe(lt::torrent_status& status)
+{
     int idx = torrents_[status.info_hash];
 
     torrentsList_.SetItemText(idx, 0, Util::ToWideString(status.name).c_str());
-    torrentsList_.SetItemText(idx, 1, std::to_wstring(status.queue_position + 1).c_str());
-    torrentsList_.SetItemText(idx, 2, Util::ToState(status.state).c_str());
+    torrentsList_.SetItemText(idx, 1, std::to_wstring(status.queue_position).c_str());
+    torrentsList_.SetItemText(idx, 2, Util::ToState(status).c_str());
     torrentsList_.SetItemText(idx, 3, Util::ToSpeed(status.download_payload_rate).c_str());
     torrentsList_.SetItemText(idx, 4, Util::ToSpeed(status.upload_payload_rate).c_str());
+}
+
+LRESULT MainFrame::OnContextMenu(CWindow cWindow, CPoint cPoint)
+{
+    if (cWindow != torrentsList_)
+    {
+        return FALSE;
+    }
+
+    torrentsList_.ScreenToClient(&cPoint);
+
+    LVHITTESTINFO ht = { 0 };
+    ht.pt = cPoint;
+    torrentsList_.HitTest(&ht);
+
+    if (!(ht.flags & LVHT_ONITEM))
+    {
+        return FALSE;
+    }
+
+    torrentsList_.ClientToScreen(&cPoint);
+    DWORD_PTR data = torrentsList_.GetItemData(ht.iItem);
+    lt::sha1_hash* hash = reinterpret_cast<lt::sha1_hash*>(data);
+    lt::torrent_handle h = session_.find_torrent(*hash);
+
+    if (!h.is_valid())
+    {
+        return FALSE;
+    }
+
+    lt::torrent_status status = h.status();
+
+    HMENU hMenu = LoadMenu(NULL, MAKEINTRESOURCE(1300));
+    hMenu = GetSubMenu(hMenu, 0);
+
+    UINT checked = MF_CHECKED | MF_BYCOMMAND;
+    UINT unchecked = MF_UNCHECKED | MF_BYCOMMAND;
+    UINT disabled = MF_GRAYED | MF_BYCOMMAND;
+    UINT enabled = MF_ENABLED | MF_BYCOMMAND;
+
+    CMenu cm = (CMenu)hMenu;
+
+    if (status.auto_managed)
+    {
+        cm.EnableMenuItem(ID_TORRENTCTX_PAUSE, disabled);
+        cm.EnableMenuItem(ID_TORRENTCTX_RESUME, disabled);
+    }
+    else
+    {
+        cm.EnableMenuItem(ID_TORRENTCTX_PAUSE, status.paused ? disabled : enabled);
+        cm.EnableMenuItem(ID_TORRENTCTX_RESUME, status.paused ? enabled : disabled);
+    }
+
+    cm.CheckMenuItem(ID_TORRENTCTX_MANAGED, status.auto_managed ? checked : unchecked);
+
+    TrackPopupMenu(cm, TPM_LEFTALIGN | TPM_LEFTBUTTON, cPoint.x, cPoint.y, 0, m_hWnd, NULL);
+
+    return FALSE;
+}
+
+LRESULT MainFrame::OnContextMenuCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    int idx = -1;
+    while ((idx = torrentsList_.GetNextItem(idx, LVNI_SELECTED)) > -1)
+    {
+        DWORD_PTR data = torrentsList_.GetItemData(idx);
+        lt::sha1_hash* hash = reinterpret_cast<lt::sha1_hash*>(data);
+        lt::torrent_handle h = session_.find_torrent(*hash);
+
+        if (!h.is_valid())
+        {
+            continue;
+        }
+
+        switch (wID)
+        {
+        case ID_TORRENTCTX_PAUSE:
+            h.pause();
+            break;
+
+        case ID_TORRENTCTX_RESUME:
+            h.resume();
+            break;
+
+        case ID_TORRENTCTX_MANAGED:
+        {
+            lt::torrent_status st = h.status();
+            h.auto_managed(!st.auto_managed);
+            break;
+        }
+
+        case ID_TORRENTCTX_RECHECK:
+            h.force_recheck();
+            break;
+
+        case ID_TORRENTCTX_REMOVE:
+            session_.remove_torrent(h);
+            break;
+        }
+    }
+
+    return FALSE;
 }
 
 LRESULT MainFrame::OnCopyData(HWND, PCOPYDATASTRUCT pCopyData)
@@ -154,7 +293,13 @@ LRESULT MainFrame::OnFileAddTorrent(UINT, int, CWindow)
         ShowAddTorrentDialog(files);
     }
 
-    return 0;
+    return FALSE;
+}
+
+LRESULT MainFrame::OnFileExit(UINT, int, CWindow)
+{
+    PostMessage(WM_CLOSE);
+    return FALSE;
 }
 
 void MainFrame::ParseCommandLine(std::wstring cmdLine)

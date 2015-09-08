@@ -58,25 +58,50 @@ std::wstring Util::ToSpeed(int64_t rate)
     return ToFileSize(rate) + L"/s";
 }
 
-std::wstring Util::ToState(int state)
+std::wstring Util::ToState(lt::torrent_status& status)
 {
-    switch (state)
+    TCHAR buf[512];
+
+    switch (status.state)
     {
     case lt::torrent_status::state_t::allocating:
         return L"Allocating";
     case lt::torrent_status::state_t::checking_files:
-        return L"Checking files";
-    case lt::torrent_status::state_t::checking_resume_data:
-        return L"Checking resume data";
-    case lt::torrent_status::state_t::downloading:
-        return L"Downloading";
-    case lt::torrent_status::state_t::downloading_metadata:
-        return L"Downloading metadata";
-    case lt::torrent_status::state_t::finished:
-        return L"Finished";
-    case lt::torrent_status::state_t::seeding:
-        return L"Seeding";
-    default:
-        return L"Unknown";
+    {
+        _snwprintf(buf, _ARRAYSIZE(buf), L"Checking files (%.2f%%)", status.progress * 100);
+        break;
     }
+    case lt::torrent_status::state_t::checking_resume_data:
+    {
+        _snwprintf(buf, _ARRAYSIZE(buf), L"Checking resume data");
+        break;
+    }
+    case lt::torrent_status::state_t::downloading:
+    {
+        _snwprintf(buf, _ARRAYSIZE(buf), L"Downloading (%.2f%%)", status.progress * 100);
+        break;
+    }
+    case lt::torrent_status::state_t::downloading_metadata:
+    {
+        _snwprintf(buf, _ARRAYSIZE(buf), L"Waiting for metadata");
+        break;
+    }
+    case lt::torrent_status::state_t::finished:
+    {
+        _snwprintf(buf, _ARRAYSIZE(buf), L"Finished");
+        break;
+    }
+    case lt::torrent_status::state_t::seeding:
+    {
+        _snwprintf(buf, _ARRAYSIZE(buf), L"Seeding");
+        break;
+    }
+    default:
+    {
+        _snwprintf(buf, _ARRAYSIZE(buf), L"Unknown (%d)", status.state);
+        break;
+    }
+    }
+
+    return buf;
 }

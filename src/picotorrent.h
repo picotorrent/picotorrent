@@ -12,6 +12,7 @@ namespace libtorrent
 {
     class alert;
     class session;
+    class sha1_hash;
     struct stats_metric;
     class torrent_info;
 }
@@ -33,6 +34,7 @@ namespace pico
     private:
         void ReadAlerts();
         void HandleAlert(libtorrent::alert* a);
+        void DeleteTorrent(const libtorrent::sha1_hash& hash);
         void SaveTorrent(boost::shared_ptr<const libtorrent::torrent_info> info);
 
         CMessageLoop loop_;

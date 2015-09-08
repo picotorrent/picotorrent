@@ -29,7 +29,7 @@ set(PICOTORRENT_SOURCES
     src/ui/scaler
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4714 /W4 /WX")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /wd4714 /W4 /WX")
 
 include_directories(${includes})
 
@@ -60,5 +60,6 @@ target_link_libraries(
     dbghelp
     libtorrent
     iphlpapi
+    rpcrt4
 )
 
