@@ -1,11 +1,15 @@
 # PicoTorrent
 
-PicoTorrent is a cross-platform BitTorrent client written in C++. As the name
-implies, PicoTorrent is a small and efficient alternative to other BitTorrent
-clients.
+PicoTorrent is a tiny, hackable BitTorrent client for Windows with low memory
+usage and high performance.
 
 *It is currently in its early stages of becoming something usable, but feel
 free to follow the development.*
+
+
+## Building PicoTorrent
+
+See [Building PicoTorrent](docs/Building-PicoTorrent.md).
 
 
 ## Goals
@@ -36,7 +40,6 @@ Copyright (c) 2015, Viktor Elofsson and contributors. PicoTorrent is provided
 as-is under the MIT license. For more information see
 [LICENSE](https://github.com/picotorrent/picotorrent/blob/develop/LICENSE).
 
+* For OpenSSL, see https://openssl.org/source/license.txt
 * For Boost, see http://www.boost.org/LICENSE_1_0.txt
 * For Rasterbar-libtorrent, see https://github.com/arvidn/libtorrent/blob/master/LICENSE
-* For RapidJSON, see https://github.com/miloyip/rapidjson/blob/master/license.txt
-* For wxWidgets, see https://github.com/wxWidgets/wxWidgets/blob/master/docs/licence.txt
