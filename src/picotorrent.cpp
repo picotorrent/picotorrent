@@ -1,7 +1,6 @@
 #include "picotorrent.h"
 
 #pragma warning(disable: 4005 4245 4267 4800)
-#include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/bencode.hpp>
@@ -10,13 +9,13 @@
 #include <libtorrent/session_stats.hpp>
 #pragma warning(default: 4005 4245 4267 4800)
 
-#include "path.h"
 #include "statemanager.h"
 #include "util.h"
+#include "io/directory.h"
 #include "io/file.h"
+#include "io/path.h"
 #include "ui/mainframe.h"
 
-namespace fs = boost::filesystem;
 namespace lt = libtorrent;
 using namespace pico;
 
@@ -230,19 +229,19 @@ void PicoTorrent::HandleAlert(lt::alert* alert)
 void PicoTorrent::DeleteTorrent(const lt::sha1_hash& h)
 {
     std::string hash = lt::to_hex(h.to_string());
-    fs::path torrents = Path::GetTorrentsPath();
-    fs::path torrentFile = torrents / (hash + ".torrent");
+    std::wstring torrents = io::Path::GetTorrentsPath();
+    std::wstring torrentFile = io::Path::Combine(torrents, Util::ToWideString((hash + ".torrent")));
 
-    if (fs::exists(torrentFile))
+    if (io::File::Exists(torrentFile))
     {
-        fs::remove(torrentFile);
+        io::File::Delete(torrentFile);
     }
 
-    torrentFile.replace_extension(".dat");
+    std::wstring resumeFile = io::Path::ChangeExtension(torrentFile, L".dat");
 
-    if (fs::exists(torrentFile))
+    if (io::File::Exists(resumeFile))
     {
-        fs::remove(torrentFile);
+        io::File::Delete(resumeFile);
     }
 }
 
@@ -254,17 +253,17 @@ void PicoTorrent::SaveTorrent(boost::shared_ptr<const lt::torrent_info> info)
         return;
     }
 
-    fs::path torrents = Path::GetTorrentsPath();
+    std::wstring torrents = io::Path::GetTorrentsPath();
 
-    if (!fs::exists(torrents))
+    if (!io::Directory::Exists(torrents))
     {
-        fs::create_directories(torrents);
+        io::Directory::CreateDirectories(torrents);
     }
 
     std::string hash = lt::to_hex(info->info_hash().to_string());
-    fs::path torrentFile = torrents / (hash + ".torrent");
+    std::wstring torrentFile = io::Path::Combine(torrents, Util::ToWideString((hash + ".torrent")));
 
-    if (fs::exists(torrentFile))
+    if (io::File::Exists(torrentFile))
     {
         return;
     }
@@ -275,7 +274,7 @@ void PicoTorrent::SaveTorrent(boost::shared_ptr<const lt::torrent_info> info)
     std::vector<char> buffer;
     lt::bencode(std::back_inserter(buffer), e);
 
-    io::File::WriteBuffer(torrentFile.string(), buffer);
+    io::File::WriteBuffer(torrentFile, buffer);
 
     BOOST_LOG_TRIVIAL(info) << "Saved torrent file " << torrentFile;
 }

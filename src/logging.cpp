@@ -1,22 +1,25 @@
 #include "logging.h"
 
-#include <boost/filesystem.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
+#include <boost/log/sinks/sync_frontend.hpp>
 #include <boost/log/sinks/text_ostream_backend.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/log/support/date_time.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/from_stream.hpp>
+#include <fstream>
 #include <windows.h>
 
-#include "path.h"
+#include "util.h"
+#include "io/directory.h"
+#include "io/path.h"
 
 namespace expr = boost::log::expressions;
-namespace fs = boost::filesystem;
 namespace sinks = boost::log::sinks;
 using namespace pico;
 
@@ -28,17 +31,17 @@ void Logging::Init()
     boost::shared_ptr<sinks::text_ostream_backend> backend = boost::make_shared<sinks::text_ostream_backend>();
 
     // Create 'logs' dir
-    fs::path logs = Path::GetLogPath();
+    std::wstring logs = io::Path::GetLogPath();
 
-    if (!fs::exists(logs))
+    if (!io::Directory::Exists(logs))
     {
-        fs::create_directories(logs);
+        io::Directory::CreateDirectories(logs);
     }
 
     // Get process id
     int pid = GetCurrentProcessId();
-    fs::path logFile = logs / ("PicoTorrent." + std::to_string(pid) + ".log");
-    backend->add_stream(boost::make_shared<std::ofstream>(logFile.string()));
+    std::wstring logFile = io::Path::Combine(logs, (L"PicoTorrent." + std::to_wstring(pid) + L".log"));
+    backend->add_stream(boost::make_shared<std::ofstream>(Util::ToString(logFile)));
 
     // Enable auto-flushing
     backend->auto_flush(true);

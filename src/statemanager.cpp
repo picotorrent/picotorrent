@@ -1,17 +1,17 @@
 #include "statemanager.h"
 
 #pragma warning(disable: 4005 4245 4267 4800)
-#include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/session_handle.hpp>
 #pragma warning(default: 4005 4245 4267 4800)
 
-#include "path.h"
+#include "util.h"
+#include "io/directory.h"
 #include "io/file.h"
+#include "io/path.h"
 
-namespace fs = boost::filesystem;
 namespace lt = libtorrent;
 using namespace pico;
 
@@ -48,9 +48,9 @@ StateManager::~StateManager()
 
 void StateManager::LoadState()
 {
-    fs::path sessionState = Path::GetStatePath();
+    std::wstring sessionState = io::Path::GetStatePath();
 
-    if (!fs::exists(sessionState))
+    if (!io::File::Exists(sessionState))
     {
         return;
     }
@@ -60,7 +60,7 @@ void StateManager::LoadState()
         << sessionState << ".";
 
     std::vector<char> buffer;
-    io::File::ReadBuffer(sessionState.string(), buffer);
+    io::File::ReadBuffer(sessionState, buffer);
 
     lt::bdecode_node node;
     lt::error_code ec;
@@ -79,9 +79,9 @@ void StateManager::LoadState()
 
 void StateManager::LoadTorrents()
 {
-    fs::path torrents = Path::GetTorrentsPath();
+    std::wstring torrents = io::Path::GetTorrentsPath();
 
-    if (!fs::exists(torrents) || !fs::is_directory(torrents))
+    if (!io::Directory::Exists(torrents))
     {
         return;
     }
@@ -90,21 +90,14 @@ void StateManager::LoadTorrents()
         << "Loading torrents from "
         << torrents << ".";
 
-    for (fs::directory_entry& entry : fs::directory_iterator(torrents))
+    for (std::wstring& file : io::Directory::GetFiles(torrents, L"*.torrent"))
     {
-        fs::path torrentFile = entry.path();
-
-        if (torrentFile.extension() != ".torrent")
-        {
-            continue;
-        }
-
         lt::add_torrent_params p;
         p.flags |= lt::add_torrent_params::flag_use_resume_save_path;
-        p.save_path = Path::GetDefaultDownloadsPath().string();
+        p.save_path = Util::ToString(io::Path::GetDefaultDownloadsPath());
 
         std::vector<char> buffer;
-        io::File::ReadBuffer(torrentFile.string(), buffer);
+        io::File::ReadBuffer(file, buffer);
 
         lt::bdecode_node node;
         lt::error_code ec;
@@ -114,18 +107,18 @@ void StateManager::LoadTorrents()
         {
             BOOST_LOG_TRIVIAL(error)
                 << "Could not load torrent "
-                << entry << ": "
-                << ec;
+                << file << ": " << ec;
             continue;
         }
 
-        torrentFile.replace_extension(".dat");
-        if (fs::exists(torrentFile))
+        std::wstring resumeFile = io::Path::ChangeExtension(file, L".dat");
+
+        if (io::File::Exists(resumeFile))
         {
-            io::File::ReadBuffer(torrentFile.string(), p.resume_data);
+            io::File::ReadBuffer(resumeFile, p.resume_data);
         }
 
-        p.ti = boost::make_shared<lt::torrent_info>(entry.path().string());
+        p.ti = boost::make_shared<lt::torrent_info>(node);
         session_.async_add_torrent(p);
     }
 }
@@ -138,8 +131,8 @@ void StateManager::SaveState()
     std::vector<char> buffer;
     lt::bencode(std::back_inserter(buffer), state);
 
-    fs::path sessionState = Path::GetStatePath();
-    io::File::WriteBuffer(sessionState.string(), buffer);
+    std::wstring sessionState = io::Path::GetStatePath();
+    io::File::WriteBuffer(sessionState, buffer);
 
     BOOST_LOG_TRIVIAL(info)
         << "Saved session state to "
@@ -148,11 +141,11 @@ void StateManager::SaveState()
 
 void StateManager::SaveTorrents()
 {
-    fs::path torrentsPath = Path::GetTorrentsPath();
+    std::wstring torrentsPath = io::Path::GetTorrentsPath();
 
-    if (!fs::exists(torrentsPath))
+    if (!io::Directory::Exists(torrentsPath))
     {
-        fs::create_directories(torrentsPath);
+        io::Directory::CreateDirectories(torrentsPath);
     }
 
     int numOutstandingResumeData = 0;
@@ -218,8 +211,8 @@ void StateManager::SaveTorrents()
             std::vector<char> buffer;
             lt::bencode(std::back_inserter(buffer), *rd->resume_data);
 
-            fs::path resumeDataPath = torrentsPath / (hash + ".dat");
-            io::File::WriteBuffer(resumeDataPath.string(), buffer);
+            std::wstring resumeDataPath = io::Path::Combine(torrentsPath, Util::ToWideString(hash + ".dat"));
+            io::File::WriteBuffer(resumeDataPath, buffer);
         }
     }
 }

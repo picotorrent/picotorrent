@@ -18,20 +18,21 @@ set(PICOTORRENT_SOURCES
     src/env
     src/logging
     src/main
-    src/path
     src/picotorrent
     src/resources.rc
     src/statemanager
     src/util
     src/controllers/addtorrentcontroller
+    src/io/directory
     src/io/file
+    src/io/path
     src/ui/addtorrentdialog
     src/ui/mainframe
     src/ui/renamefiledialog
     src/ui/scaler
 )
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /wd4714 /W4 /WX")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Ox /wd4714 /W4 /WX")
 
 include_directories(${includes})
 
@@ -42,6 +43,7 @@ link_directories(
 )
 
 add_definitions(
+    -DBOOST_ALL_NO_LIB
     -DBOOST_ASIO_SEPARATE_COMPILATION
     -DUNICODE
     -D_UNICODE
@@ -64,6 +66,22 @@ target_link_libraries(
     dbghelp
     libtorrent
     iphlpapi
+
+    # Boost.Log
+    debug libboost_log-vc140-mt-gd-1_59.lib
+    optimized libboost_log-vc140-mt-1_59.lib
+
+    # Boost.Random
+    debug libboost_random-vc140-mt-gd-1_59.lib
+    optimized libboost_random-vc140-mt-1_59.lib
+
+    # Boost.System
+    debug libboost_system-vc140-mt-gd-1_59.lib
+    optimized libboost_system-vc140-mt-1_59.lib
+
+    # Boost.Thread
+    debug libboost_thread-vc140-mt-gd-1_59.lib
+    optimized libboost_thread-vc140-mt-1_59.lib
     
     # OpenSSL libs
     libeay32

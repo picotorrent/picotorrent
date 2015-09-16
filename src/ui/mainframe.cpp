@@ -1,7 +1,6 @@
 #include "mainframe.h"
 
 #pragma warning(disable: 4005 4245 4267 4800)
-#include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/session_handle.hpp>
@@ -12,12 +11,11 @@
 #include "addtorrentdialog.h"
 #include "scaler.h"
 #include "../commandline.h"
-#include "../path.h"
 #include "../util.h"
 #include "../controllers/addtorrentcontroller.h"
 #include "../io/file.h"
+#include "../io/path.h"
 
-namespace fs = boost::filesystem;
 namespace lt = libtorrent;
 using namespace pico;
 
@@ -322,10 +320,12 @@ void MainFrame::ShowAddTorrentDialog(std::vector<std::wstring>& files)
 {
     std::vector<lt::add_torrent_params> params;
 
+    std::wstring defaultSavePath = io::Path::GetDefaultDownloadsPath();
+
     for (std::wstring& path : files)
     {
         lt::add_torrent_params p;
-        p.save_path = Path::GetDefaultDownloadsPath().string();
+        p.save_path = Util::ToString(defaultSavePath);
 
         std::vector<char> buf;
         io::File::ReadBuffer(path, buf);

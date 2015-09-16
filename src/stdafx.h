@@ -1,11 +1,5 @@
 #pragma once
 
-#ifdef _DEBUG
-#pragma comment(lib, "libboost_random-vc140-mt-gd-1_59.lib")
-#else
-#pragma comment(lib, "libboost_random-vc140-mt-1_59.lib")
-#endif
-
 #pragma comment(linker, "\"/manifestdependency:type='win32' \
                             name='Microsoft.Windows.Common-Controls' \
                             version='6.0.0.0' \

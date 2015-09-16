@@ -1,8 +1,6 @@
 #include "logging.h"
 #include "picotorrent.h"
 
-#include <boost/log/trivial.hpp>
-
 int WINAPI wWinMain(
     _In_     HINSTANCE hInstance,
     _In_opt_ HINSTANCE,
