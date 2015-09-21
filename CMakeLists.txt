@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+
+project("PicoTorrent")
+
+set(PICOTORRENT_SOURCES
+    src/main
+)
+
+add_executable(
+    PicoTorrent
+    WIN32
+    ${PICOTORRENT_SOURCES}
+)
