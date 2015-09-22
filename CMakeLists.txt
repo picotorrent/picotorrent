@@ -3,7 +3,10 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project("PicoTorrent")
 
 set(PICOTORRENT_SOURCES
+    src/application
     src/main
+    src/mainwindow
+    src/torrentlistview
 )
 
 add_executable(
