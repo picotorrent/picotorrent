@@ -11,3 +11,8 @@ add_executable(
     WIN32
     ${PICOTORRENT_SOURCES}
 )
+
+target_link_libraries(
+    PicoTorrent
+    comctl32
+)

@@ -1,9 +1,32 @@
 #include <windows.h>
+#include <commctrl.h>
+
+// Enable visual styles
+#pragma comment(linker, "\"/manifestdependency:type='win32' \
+                        name='Microsoft.Windows.Common-Controls' \
+                        version='6.0.0.0' \
+                        processorArchitecture='*' \
+                        publicKeyToken='6595b64144ccf1df' \
+                        language='*'\"")
 
 class MainWindow
 {
 public:
-    void Create(HINSTANCE hInstance)
+    MainWindow(HINSTANCE hInstance)
+        : hInstance_(hInstance)
+    {
+        // Initialize common controls
+        INITCOMMONCONTROLSEX icex = { 0 };
+        icex.dwICC = ICC_LISTVIEW_CLASSES;
+        icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+
+        if (!InitCommonControlsEx(&icex))
+        {
+            DWORD err = GetLastError();
+        }
+    }
+
+    void Create()
     {
         WNDCLASSEX wnd = { 0 };
         wnd.cbSize = sizeof(WNDCLASSEX);
@@ -16,7 +39,7 @@ public:
 
         RegisterClassEx(&wnd);
 
-        HWND hWnd = CreateWindowEx(
+        hWnd_ = CreateWindowEx(
             WS_EX_ACCEPTFILES,
             wnd.lpszClassName,
             TEXT("PicoTorrent"),
@@ -27,8 +50,43 @@ public:
             300,
             NULL,
             NULL,
-            hInstance,
+            hInstance_,
             static_cast<LPVOID>(this));
+
+        RECT rcClient;
+        GetClientRect(hWnd_, &rcClient);
+
+        HWND hWnd_ListView = CreateWindowEx(
+            0,
+            WC_LISTVIEW,
+            0,
+            WS_CHILD | LVS_REPORT | WS_VISIBLE,
+            0,
+            0,
+            rcClient.right - rcClient.left,
+            rcClient.bottom - rcClient.top,
+            hWnd_,
+            NULL,
+            hInstance_,
+            NULL);
+
+        if (hWnd_ListView == NULL)
+        {
+            DWORD err = GetLastError();
+        }
+
+        // Add columns
+        LVCOLUMN col;
+        col.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+        col.iSubItem = 0;
+        col.pszText = TEXT("Name");
+        col.cx = 100;
+        col.fmt = LVCFMT_LEFT;
+
+        if (ListView_InsertColumn(hWnd_ListView, 0, &col) == -1)
+        {
+            DWORD err = GetLastError();
+        }
     }
 
 private:
@@ -66,6 +124,9 @@ private:
         MainWindow* pWnd = reinterpret_cast<MainWindow*>(GetWindowLongPtr(hWnd, 0));
         return pWnd->WndProc(hWnd, uMsg, wParam, lParam);
     }
+
+    HINSTANCE hInstance_;
+    HWND hWnd_;
 };
 
 int WINAPI WinMain(
@@ -74,8 +135,8 @@ int WINAPI WinMain(
     _In_ LPSTR,
     _In_ int nCmdShow)
 {
-    MainWindow win;
-    win.Create(hInstance);
+    MainWindow win(hInstance);
+    win.Create();
 
     MSG msg;
     BOOL ret;
