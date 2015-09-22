@@ -6,6 +6,7 @@ set(PICOTORRENT_SOURCES
     src/application
     src/main
     src/mainwindow
+    src/scaler
     src/torrentlistview
 )
 

@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 
+#include "scaler.h"
 #include "torrentlistview.h"
 
 using pico::MainWindow;
@@ -14,6 +15,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::Create()
 {
+    pico::Scaler scaler;
+
     WNDCLASSEX wnd = { 0 };
     wnd.cbSize = sizeof(WNDCLASSEX);
     wnd.cbWndExtra = sizeof(MainWindow*);
@@ -32,8 +35,8 @@ void MainWindow::Create()
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        600,
-        200,
+        scaler.GetX(600),
+        scaler.GetY(200),
         NULL,
         NULL,
         GetModuleHandle(NULL),
@@ -43,12 +46,12 @@ void MainWindow::Create()
     torrentsView_->Create();
 
     // Set up torrent list view (columns etc)
-    torrentsView_->AddColumn(TEXT("Name"), 150, LVCFMT_LEFT);
-    torrentsView_->AddColumn(TEXT("#"), 30, LVCFMT_RIGHT);
-    torrentsView_->AddColumn(TEXT("Size"), 80, LVCFMT_RIGHT);
-    torrentsView_->AddColumn(TEXT("Status"), 100, LVCFMT_LEFT);
-    torrentsView_->AddColumn(TEXT("DL"), 80, LVCFMT_RIGHT);
-    torrentsView_->AddColumn(TEXT("UL"), 80, LVCFMT_RIGHT);
+    torrentsView_->AddColumn(TEXT("Name"), scaler.GetX(150), LVCFMT_LEFT);
+    torrentsView_->AddColumn(TEXT("#"), scaler.GetX(30), LVCFMT_RIGHT);
+    torrentsView_->AddColumn(TEXT("Size"), scaler.GetX(80), LVCFMT_RIGHT);
+    torrentsView_->AddColumn(TEXT("Status"), scaler.GetX(100), LVCFMT_LEFT);
+    torrentsView_->AddColumn(TEXT("DL"), scaler.GetX(80), LVCFMT_RIGHT);
+    torrentsView_->AddColumn(TEXT("UL"), scaler.GetX(80), LVCFMT_RIGHT);
 }
 
 LRESULT MainWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

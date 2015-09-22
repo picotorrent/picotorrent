@@ -6,6 +6,9 @@ using pico::Application;
 
 bool Application::Initialize()
 {
+    // Set DPI awareness
+    SetProcessDPIAware();
+    
     // Initialize common controls
     INITCOMMONCONTROLSEX icex = { 0 };
     icex.dwICC = ICC_LISTVIEW_CLASSES;
