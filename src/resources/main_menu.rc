@@ -1,6 +1,4 @@
-#include "resource.h"
-
-IDI_APPICON ICON "../res/app.ico"
+#include <picotorrent/ui/resources.hpp>
 
 IDR_MAINMENU MENU
 {

@@ -6,20 +6,58 @@ set(BOOST_ROOT      $ENV{BOOST_ROOT})
 set(LIBTORRENT_ROOT $ENV{LIBTORRENT_ROOT})
 set(OPENSSL_ROOT    $ENV{OPENSSL_ROOT})
 
-set(PICOTORRENT_SOURCES
-    src/application
-    src/main
-    src/mainwindow
-    src/resource.rc
-    src/scaler
-    src/torrentitem
-    src/torrentlistview
+set(PICOAPP_SOURCES
+    src/app/application
+    src/app/message_loop
+    src/app/controllers/add_torrent_controller
+    src/app/controllers/unhandled_exception_controller
 )
+
+set(PICOCORE_SOURCES
+    src/core/add_request
+    src/core/env
+    src/core/is_valid_torrent_file
+    src/core/session
+    src/core/timer
+    src/core/torrent
+    src/core/torrent_file
+)
+
+set(PICOFS_SOURCES
+    src/filesystem/directory
+    src/filesystem/file
+    src/filesystem/path
+)
+
+set(PICOLOGGING_SOURCES
+    src/logging/log
+    src/logging/log_record
+)
+
+set(PICONET_SOURCES
+    src/net/http_client
+)
+
+set(PICOUI_SOURCES
+    src/ui/file_dialog_callback
+    src/ui/main_window
+    src/ui/open_file_dialog
+    src/ui/open_torrent_dialog
+    src/ui/scaler
+    src/ui/sort
+    src/ui/task_dialog
+    src/ui/torrent_list_item
+    src/ui/torrent_list_view
+)
+
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /MAP /OPT:REF /OPT:ICF")
 
 include_directories(
     ${BOOST_ROOT}
     ${LIBTORRENT_ROOT}/include
     ${OPENSSL_ROOT}/inc32
+    include/
 )
 
 link_directories(
@@ -39,20 +77,67 @@ add_definitions(
     -DWIN32_LEAN_AND_MEAN
 )
 
+add_library(
+    PicoApp
+    STATIC
+    ${PICOAPP_SOURCES}
+)
+
+add_library(
+    PicoFileSystem
+    STATIC
+    ${PICOFS_SOURCES}
+)
+
+add_library(
+    PicoCore
+    STATIC
+    ${PICOCORE_SOURCES}
+)
+
+add_library(
+    PicoLogging
+    STATIC
+    ${PICOLOGGING_SOURCES}
+)
+
+add_library(
+    PicoNet
+    STATIC
+    ${PICONET_SOURCES}
+)
+
+add_library(
+    PicoUI
+    STATIC
+    ${PICOUI_SOURCES}
+)
+
 add_executable(
     PicoTorrent
     WIN32
-    ${PICOTORRENT_SOURCES}
+    src/main
+
+    # The resources belong to the application itself
+    # to avoid linker issues.
+    src/resources/app_icon.rc
+    src/resources/main_menu.rc
 )
 
 target_link_libraries(
-    PicoTorrent
+    PicoApp
+    PicoCore
+    PicoFileSystem
+    PicoUI
     comctl32
-    iphlpapi
-    shlwapi
-    uxtheme
+)
 
-    debug dbghelp
+target_link_libraries(
+    PicoCore
+    PicoLogging
+
+    dbghelp
+    iphlpapi
 
     # Boost.Random
     debug     libboost_random-vc140-mt-gd-1_59
@@ -68,4 +153,26 @@ target_link_libraries(
 
     # Rasterbar-libtorrent
     libtorrent
+)
+
+target_link_libraries(
+    PicoFileSystem
+    shlwapi
+)
+
+target_link_libraries(
+    PicoNet
+    winhttp
+)
+
+target_link_libraries(
+    PicoUI
+    PicoNet
+
+    UxTheme
+)
+
+target_link_libraries(
+    PicoTorrent
+    PicoApp
 )
