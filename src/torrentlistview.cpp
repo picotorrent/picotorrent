@@ -1,8 +1,10 @@
 #include "torrentlistview.h"
 
+#include <libtorrent/sha1_hash.hpp>
 #include <stdexcept>
 #include <string>
 
+namespace lt = libtorrent;
 using pico::TorrentListView;
 
 TorrentListView::TorrentListView(HWND hWndParent)
@@ -11,7 +13,7 @@ TorrentListView::TorrentListView(HWND hWndParent)
 {
 }
 
-void TorrentListView::AddColumn(LPSTR text, int width, int format)
+void TorrentListView::AddColumn(LPTSTR text, int width, int format)
 {
     HWND header = ListView_GetHeader(hWnd_);
     int count = Header_GetItemCount(header);
@@ -36,10 +38,10 @@ void TorrentListView::Create()
     GetClientRect(hWndParent_, &rcClient);
 
     hWnd_ = CreateWindowEx(
-        LVS_EX_FULLROWSELECT,
+        0,
         WC_LISTVIEW,
         0,
-        WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SINGLESEL,
+        WS_CHILD | WS_VISIBLE | LVS_OWNERDATA | LVS_REPORT | LVS_SINGLESEL,
         0,
         0,
         rcClient.right - rcClient.left,
@@ -54,6 +56,8 @@ void TorrentListView::Create()
         DWORD err = GetLastError();
         throw new std::runtime_error(std::to_string(err));
     }
+
+    ListView_SetExtendedListViewStyle(hWnd_, LVS_EX_FULLROWSELECT);
 }
 
 HWND TorrentListView::GetWindowHandle()
@@ -70,4 +74,18 @@ void TorrentListView::Resize(int width, int height)
         width,
         height,
         SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void TorrentListView::SetItemCount(int count)
+{
+    ListView_SetItemCountEx(hWnd_, count, LVSICF_NOINVALIDATEALL);
+}
+
+void TorrentListView::Refresh()
+{
+    int idx = ListView_GetTopIndex(hWnd_);
+    int bottom = std::min(ListView_GetItemCount(hWnd_), 100);
+
+    ListView_RedrawItems(hWnd_, idx, bottom);
+    ::UpdateWindow(hWnd_);
 }
