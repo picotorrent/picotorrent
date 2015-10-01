@@ -1,3 +1,5 @@
+#r "./tools/Cake.CMake/lib/net45/Cake.CMake.dll"
+
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
 //////////////////////////////////////////////////////////////////////
@@ -24,17 +26,11 @@ Task("Generate-Project")
 {
     CreateDirectory("build");
 
-    var exitCode = StartProcess("cmake",
-        new ProcessSettings
-        {
-            Arguments = ".. -G \"Visual Studio 14 Win64\" -T \"v140\"",
-            WorkingDirectory = "./build"
-        });
-
-    if(exitCode != 0)
-    {
-        throw new CakeException("Failed to run CMake. Exit code: " + exitCode);
-    }
+    CMake("./", new CMakeSettings {
+      OutputPath = "./build",
+      Generator = "Visual Studio 14 Win64",
+      Toolset = "v140"
+    });
 });
 
 Task("Build")

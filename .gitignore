@@ -1,3 +1,4 @@
 build/
 tools/Cake
+tools/Cake.CMake
 tools/nuget.exe
