@@ -11,11 +11,21 @@ set(PICOAPP_SOURCES
     src/app/message_loop
     src/app/controllers/add_torrent_controller
     src/app/controllers/unhandled_exception_controller
+    src/app/controllers/view_preferences_controller
+)
+
+set(PICOCOMMON_SOURCES
+    src/common/environment
+    src/common/string_operations
+    #src/common/timer
+)
+
+set(PICOCONFIG_SOURCES
+    src/config/configuration
 )
 
 set(PICOCORE_SOURCES
     src/core/add_request
-    src/core/env
     src/core/is_valid_torrent_file
     src/core/session
     src/core/timer
@@ -43,6 +53,7 @@ set(PICOUI_SOURCES
     src/ui/main_window
     src/ui/open_file_dialog
     src/ui/open_torrent_dialog
+    src/ui/preferences_dialog
     src/ui/scaler
     src/ui/sort
     src/ui/task_dialog
@@ -70,6 +81,7 @@ add_definitions(
     -D_UNICODE
     -D_WIN32
     -DBOOST_ALL_NO_LIB
+    -DPICOJSON_USE_INT64
     -DTORRENT_NO_DEPRECATE
     -DTORRENT_USE_OPENSSL
     -DUNICODE
@@ -81,6 +93,18 @@ add_library(
     PicoApp
     STATIC
     ${PICOAPP_SOURCES}
+)
+
+add_library(
+    PicoCommon
+    STATIC
+    ${PICOCOMMON_SOURCES}
+)
+
+add_library(
+    PicoConfig
+    STATIC
+    ${PICOCONFIG_SOURCES}
 )
 
 add_library(
@@ -122,6 +146,7 @@ add_executable(
     # to avoid linker issues.
     src/resources/app_icon.rc
     src/resources/main_menu.rc
+    src/resources/preferences_dialog.rc
 )
 
 target_link_libraries(
@@ -134,6 +159,8 @@ target_link_libraries(
 
 target_link_libraries(
     PicoCore
+    PicoCommon
+    PicoConfig
     PicoLogging
 
     dbghelp

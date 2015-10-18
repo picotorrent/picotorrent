@@ -7,6 +7,8 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 
+#include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/config/configuration.hpp>
 #include <picotorrent/core/add_request.hpp>
 #include <picotorrent/core/timer.hpp>
 #include <picotorrent/core/torrent.hpp>
@@ -17,6 +19,8 @@
 
 namespace fs = picotorrent::filesystem;
 namespace lt = libtorrent;
+using namespace picotorrent::common;
+using picotorrent::config::configuration;
 using picotorrent::core::add_request;
 using picotorrent::core::session;
 using picotorrent::core::timer;
@@ -40,9 +44,14 @@ void session::load()
 {
     LOG(info) << "Loading session";
 
+    configuration &cfg = configuration::instance();
+    std::wstring iface(cfg.listen_interface() + L":" + std::to_wstring(cfg.listen_port()));
+
     lt::settings_pack settings;
     settings.set_int(lt::settings_pack::alert_mask, lt::alert::all_categories);
-    settings.set_int(lt::settings_pack::stop_tracker_timeout, 1);
+    settings.set_int(lt::settings_pack::alert_queue_size, cfg.alert_queue_size());
+    settings.set_str(lt::settings_pack::listen_interfaces, to_string(iface));
+    settings.set_int(lt::settings_pack::stop_tracker_timeout, cfg.stop_tracker_timeout());
 
     sess_ = std::make_unique<lt::session>(settings);
 

@@ -4,9 +4,11 @@
 #include <boost/shared_ptr.hpp>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/torrent_info.hpp>
+#include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/torrent_file.hpp>
 
 namespace lt = libtorrent;
+using namespace picotorrent::common;
 using picotorrent::core::add_request;
 using picotorrent::core::torrent_file;
 
@@ -21,7 +23,7 @@ add_request::~add_request()
 
 std::wstring add_request::save_path()
 {
-    return L"";
+    return to_wstring(params_->save_path);
 }
 
 std::shared_ptr<picotorrent::core::torrent_file> add_request::torrent_file()
@@ -36,12 +38,7 @@ std::shared_ptr<picotorrent::core::torrent_file> add_request::torrent_file()
 
 void add_request::set_save_path(const std::wstring &path)
 {
-    // TODO: move conversion to util function
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, &path[0], (int)path.size(), NULL, 0, NULL, NULL);
-    std::string strTo(size_needed, 0);
-    WideCharToMultiByte(CP_UTF8, 0, &path[0], (int)path.size(), &strTo[0], size_needed, NULL, NULL);
-    
-    params_->save_path = strTo;
+    params_->save_path = to_string(path);
 }
 
 void add_request::set_torrent_file(const std::shared_ptr<picotorrent::core::torrent_file> &file)

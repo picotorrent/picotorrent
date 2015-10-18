@@ -3,6 +3,7 @@
 #include <picotorrent/app/message_loop.hpp>
 #include <picotorrent/app/controllers/add_torrent_controller.hpp>
 #include <picotorrent/app/controllers/unhandled_exception_controller.hpp>
+#include <picotorrent/app/controllers/view_preferences_controller.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/logging/log.hpp>
 #include <picotorrent/ui/main_window.hpp>
@@ -25,6 +26,7 @@ application::application()
     log::instance().set_unhandled_exception_callback(std::bind(&application::on_unhandled_exception, this, std::placeholders::_1));
 
     main_window_->on_command(ID_FILE_ADDTORRENT, std::bind(&application::on_file_add_torrent, this));
+    main_window_->on_command(ID_VIEW_PREFERENCES, std::bind(&application::on_view_preferences, this));
 
     sess_->on_torrent_added(std::bind(&application::torrent_added, this, std::placeholders::_1));
     sess_->on_torrent_updated(std::bind(&application::torrent_updated, this, std::placeholders::_1));
@@ -104,6 +106,12 @@ void application::on_file_add_torrent()
 {
     controllers::add_torrent_controller add_controller(sess_, main_window_);
     add_controller.execute();
+}
+
+void application::on_view_preferences()
+{
+    controllers::view_preferences_controller view_prefs(main_window_);
+    view_prefs.execute();
 }
 
 void application::on_unhandled_exception(const std::string &stacktrace)
