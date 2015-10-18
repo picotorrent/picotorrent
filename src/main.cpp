@@ -10,13 +10,19 @@
 
 #include <picotorrent/app/application.hpp>
 
-int WINAPI WinMain(
+int WINAPI wWinMain(
     _In_ HINSTANCE     hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPSTR         lpCmdLine,
+    _In_ LPTSTR        lpCmdLine,
     _In_ int           nCmdShow)
 {
     picotorrent::app::application app;
+
+    if (!app.is_single_instance())
+    {
+        app.activate_other_instance(lpCmdLine);
+        return -33;
+    }
 
     if (!app.init())
     {

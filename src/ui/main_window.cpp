@@ -129,6 +129,15 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         break;
     }
 
+    case WM_COPYDATA:
+    {
+        COPYDATASTRUCT *cds = reinterpret_cast<COPYDATASTRUCT*>(lParam);
+        wchar_t *ptr = reinterpret_cast<wchar_t*>(cds->lpData);
+        std::wstring args(ptr);
+        // TODO: handle arguments
+        break;
+    }
+
     case WM_CREATE:
     {
         list_view_ = std::make_unique<torrent_list_view>(hWnd);

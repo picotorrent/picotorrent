@@ -9,6 +9,8 @@
 #include <picotorrent/ui/resources.hpp>
 #include <windows.h>
 #include <commctrl.h>
+#include <strsafe.h>
+#include <string.h>
 
 namespace core = picotorrent::core;
 namespace ui = picotorrent::ui;
@@ -16,7 +18,8 @@ using picotorrent::app::application;
 using picotorrent::logging::log;
 
 application::application()
-    : main_window_(std::make_shared<ui::main_window>()),
+    : mtx_(NULL),
+    main_window_(std::make_shared<ui::main_window>()),
     sess_(std::make_shared<core::session>())
 {
     log::instance().set_unhandled_exception_callback(std::bind(&application::on_unhandled_exception, this, std::placeholders::_1));
@@ -29,6 +32,27 @@ application::application()
 
 application::~application()
 {
+    if (mtx_ != NULL)
+    {
+        CloseHandle(mtx_);
+        mtx_ = NULL;
+    }
+}
+
+void application::activate_other_instance(const std::wstring &args)
+{
+    HWND otherWindow = FindWindow(L"PicoTorrent/MainWindow", NULL);
+
+    COPYDATASTRUCT cds;
+    cds.cbData = sizeof(wchar_t) * (args.size() + 1);
+    cds.dwData = 1;
+    cds.lpData = (PVOID)&args[0];
+
+    // Activate other window
+    SetForegroundWindow(otherWindow);
+    ShowWindow(otherWindow, SW_RESTORE);
+
+    SendMessage(otherWindow, WM_COPYDATA, NULL, (LPARAM)&cds);
 }
 
 bool application::init()
@@ -45,6 +69,20 @@ bool application::init()
 
     if (!InitCommonControlsEx(&icex))
     {
+        return false;
+    }
+
+    return true;
+}
+
+bool application::is_single_instance()
+{
+    mtx_ = CreateMutex(NULL, FALSE, L"PicoTorrent/1.0");
+    DWORD err = GetLastError();
+
+    if (err == ERROR_ALREADY_EXISTS)
+    {
+        LOG(info) << "PicoTorrent is already running";
         return false;
     }
 

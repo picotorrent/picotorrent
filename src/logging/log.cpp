@@ -1,15 +1,19 @@
 #include <picotorrent/logging/log.hpp>
 
+#include <picotorrent/filesystem/directory.hpp>
+#include <picotorrent/filesystem/file.hpp>
+#include <picotorrent/filesystem/path.hpp>
+
 #include <commctrl.h>
 #include <dbghelp.h>
 #include <fstream>
 #include <sstream>
 #include <windows.h>
 
+namespace fs = picotorrent::filesystem;
 using picotorrent::logging::log;
 
 log::log()
-    : out_(std::make_unique<std::ofstream>("PicoTorrent.log"))
 {
     init();
 }
@@ -26,6 +30,18 @@ picotorrent::logging::log& log::instance()
 
 void log::init()
 {
+    DWORD pid = GetCurrentProcessId();
+
+    fs::directory logs(L"Logs");
+
+    if (!logs.path().exists())
+    {
+        logs.create();
+    }
+
+    fs::path logFile = logs.path().combine(L"PicoTorrent." + std::to_wstring(pid) + L".log");
+    out_ = std::make_unique<std::ofstream>(logFile.to_string());
+
     SetUnhandledExceptionFilter(
         &log::on_unhandled_exception);
 }
