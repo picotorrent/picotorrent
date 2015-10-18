@@ -11,6 +11,9 @@
 #include <libtorrent/create_torrent.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
+#include <picotorrent/filesystem/directory.hpp>
+#include <picotorrent/filesystem/file.hpp>
+#include <picotorrent/filesystem/path.hpp>
 #include <shobjidl.h>
 #include <shlwapi.h>
 #include <strsafe.h>
@@ -18,6 +21,7 @@
 
 #define WM_PT_ALERT WM_USER + 1
 
+namespace fs = picotorrent::filesystem;
 namespace lt = libtorrent;
 using pico::MainWindow;
 
@@ -71,9 +75,21 @@ void MainWindow::Create()
 
 void MainWindow::LoadState()
 {
+    fs::path p(L"Session.dat");
+
+    if (!p.exists())
+    {
+        return;
+    }
+
+    fs::file state(p);
     std::vector<char> buf;
 
-    if (!ReadFile(buf, TEXT("Session.dat")))
+    try
+    {
+        state.read_all(buf);
+    }
+    catch (const std::exception &e)
     {
         return;
     }
@@ -93,29 +109,28 @@ void MainWindow::LoadState()
 
 void MainWindow::LoadTorrents()
 {
-    WIN32_FIND_DATA ffd;
-    HANDLE hFind = FindFirstFileEx(
-        TEXT("Torrents\\*.torrent"),
-        FindExInfoBasic,
-        &ffd,
-        FindExSearchNameMatch,
-        NULL,
-        FIND_FIRST_EX_LARGE_FETCH);
+    fs::path torrents(L"Torrents");
 
-    if (hFind == INVALID_HANDLE_VALUE)
+    if (!torrents.exists())
     {
         return;
     }
 
-    do
-    {
-        TCHAR path[MAX_PATH];
-        PathCombine(path, TEXT("Torrents"), ffd.cFileName);
+    fs::directory dir(torrents);
+    std::vector<fs::path> files = dir.get_files(torrents.combine(fs::path(L"*.torrent")));
 
+    for (fs::path &p : files)
+    {
+        fs::file torrent(p);
         std::vector<char> buf;
 
-        if (!ReadFile(buf, path))
+        try
         {
+            torrent.read_all(buf);
+        }
+        catch (const std::exception&)
+        {
+            // TODO(log)
             continue;
         }
 
@@ -129,22 +144,28 @@ void MainWindow::LoadTorrents()
             continue;
         }
 
-        lt::add_torrent_params p;
-        p.save_path = "C:\\Users\\Viktor\\Downloads";
-        p.ti = boost::make_shared<lt::torrent_info>(node);
+        lt::add_torrent_params params;
+        params.save_path = "C:\\Users\\Viktor\\Downloads";
+        params.ti = boost::make_shared<lt::torrent_info>(node);
 
-        PathRemoveExtension(path);
-        PathAddExtension(path, TEXT(".dat"));
+        fs::path resumePath = p.replace_extension(L".dat");
+        fs::file resume(resumePath);
 
-        if (ReadFile(buf, path))
+        if (resumePath.exists())
         {
-            p.resume_data = buf;
+            try
+            {
+                resume.read_all(buf);
+                params.resume_data = buf;
+            }
+            catch (const std::exception&)
+            {
+                // TODO(log)
+            }
         }
 
-        session_->async_add_torrent(p);
-    } while (FindNextFile(hFind, &ffd) != 0);
-    
-    FindClose(hFind);
+        session_->async_add_torrent(params);
+    }
 }
 
 void MainWindow::OnAlertNotify(HWND target)
@@ -156,49 +177,26 @@ void MainWindow::OnAlertNotify(HWND target)
 
 void MainWindow::AddTorrent(std::wstring const& file)
 {
-    // Open and read file
-    HANDLE hFile = CreateFileW(
-        file.c_str(),
-        GENERIC_READ,
-        FILE_SHARE_READ,
-        NULL,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        NULL);
-
-    if (hFile == INVALID_HANDLE_VALUE)
+    fs::path p(file);
+    
+    if (!p.exists())
     {
         // TODO(log)
         return;
     }
 
+    fs::file f(p);
     std::vector<char> buffer;
-    DWORD read = 0;
 
-    do
+    try
     {
-        char tmp[1024];
-        read = 0;
-
-        if (!::ReadFile(hFile, &tmp, _ARRAYSIZE(tmp), &read, NULL))
-        {
-            // TODO(log)
-            CloseHandle(hFile);
-            return;
-        }
-
-        buffer.insert(buffer.end(), tmp, tmp + read);
-    } while (read > 0);
-
-    if (buffer.size() <= 0)
+        f.read_all(buffer);
+    }
+    catch (const std::exception&)
     {
         // TODO(log)
-        CloseHandle(hFile);
         return;
     }
-
-    // Close the file handle since we have the file contents in our buffer.
-    CloseHandle(hFile);
 
     lt::bdecode_node node;
     lt::error_code ec;
@@ -210,11 +208,11 @@ void MainWindow::AddTorrent(std::wstring const& file)
         return;
     }
 
-    lt::add_torrent_params p;
-    p.save_path = "C:\\Users\\Viktor\\Downloads";
-    p.ti = boost::make_shared<lt::torrent_info>(node);
+    lt::add_torrent_params params;
+    params.save_path = "C:\\Users\\Viktor\\Downloads";
+    params.ti = boost::make_shared<lt::torrent_info>(node);
 
-    session_->async_add_torrent(p);
+    session_->async_add_torrent(params);
 }
 
 void MainWindow::OnDestroy()
@@ -237,35 +235,17 @@ void MainWindow::OnDestroy()
     std::vector<char> buf;
     lt::bencode(std::back_inserter(buf), e);
 
-    HANDLE hFile = CreateFile(
-        TEXT("Session.dat"),
-        GENERIC_WRITE,
-        FILE_SHARE_READ,
-        NULL,
-        CREATE_ALWAYS,
-        FILE_ATTRIBUTE_NORMAL,
-        NULL);
+    fs::path statePath(L"Session.dat");
+    fs::file state(statePath);
 
-    if (hFile == INVALID_HANDLE_VALUE)
+    try
+    {
+        state.write_all(buf);
+    }
+    catch (const std::exception&)
     {
         // TODO(log)
-        return;
     }
-
-    if (!WriteFile(
-        hFile,
-        &buf[0],
-        buf.size(),
-        NULL,
-        NULL))
-    {
-        // TODO(log)
-        CloseHandle(hFile);
-        return;
-    }
-
-    CloseHandle(hFile);
-    hFile = NULL;
 
     // Pause the session (and indirectly, all torrents)
     session_->pause();
@@ -304,13 +284,11 @@ void MainWindow::OnDestroy()
 
     // TODO(log) outstanding resume data
 
-    // Create the path to "Torrents/" if it does not exist
-    DWORD torrentAttrs = GetFileAttributes(TEXT("Torrents"));
-    
-    if (torrentAttrs == INVALID_FILE_ATTRIBUTES
-        || !(torrentAttrs & FILE_ATTRIBUTE_DIRECTORY))
+    fs::directory dir(L"Torrents");
+
+    if (!dir.path().exists())
     {
-        CreateDirectory(TEXT("Torrents"), NULL);
+        dir.create();
     }
 
     while (numOutstandingResumeData > 0)
@@ -349,34 +327,16 @@ void MainWindow::OnDestroy()
             lt::bencode(std::back_inserter(buf), *rd->resume_data);
 
             std::wstring hash = lt::convert_to_wstring(lt::to_hex(rd->handle.info_hash().to_string()));
-            std::wstring fileName = TEXT("Torrents\\") + hash + TEXT(".dat");
+            fs::file torrentFile(dir.path().combine((hash + L".dat")));
 
-            hFile = CreateFile(
-                fileName.c_str(),
-                GENERIC_WRITE,
-                FILE_SHARE_READ,
-                NULL,
-                CREATE_ALWAYS,
-                FILE_ATTRIBUTE_NORMAL,
-                NULL);
-             
-            if (hFile == INVALID_HANDLE_VALUE)
+            try
             {
-                // TODO(log)
-                continue;
+                torrentFile.write_all(buf);
             }
-
-            if (!WriteFile(
-                hFile,
-                &buf[0],
-                buf.size(),
-                NULL,
-                NULL))
+            catch (const std::exception&)
             {
                 // TODO(log)
             }
-
-            CloseHandle(hFile);
         }
     }
 }
@@ -433,50 +393,6 @@ void MainWindow::OnFileAddTorrent()
 
     items->Release();
     dialog->Release();
-}
-
-bool MainWindow::ReadFile(std::vector<char> &buf, LPCTSTR path)
-{
-    buf.clear();
-
-    HANDLE hFile = CreateFile(
-        path,
-        GENERIC_READ,
-        FILE_SHARE_READ,
-        NULL,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        NULL);
-
-    if (hFile == INVALID_HANDLE_VALUE)
-    {
-        // TODO(log)
-        return false;
-    }
-
-    DWORD read = 0;
-
-    do
-    {
-        TCHAR tmp[1024];
-        read = 0;
-
-        if (!::ReadFile(
-            hFile,
-            tmp,
-            _ARRAYSIZE(tmp),
-            &read,
-            NULL))
-        {
-            // TODO(log)
-            CloseHandle(hFile);
-            return false;
-        }
-
-        buf.insert(buf.end(), tmp, tmp + read);
-    } while (read > 0);
-
-    return true;
 }
 
 LRESULT MainWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -740,39 +656,25 @@ LRESULT MainWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     lt::bencode(std::back_inserter(buf), e);
 
                     std::wstring hash = lt::convert_to_wstring(lt::to_hex(al->handle.info_hash().to_string()));
-                    std::wstring fileName = TEXT("Torrents\\") + hash + TEXT(".torrent");
+                    fs::directory dir(L"Torrents");
+                    fs::file torrentFile(dir.path().combine((hash + L".dat")));
 
                     // Create the path to "Torrents/" if it does not exist
-                    DWORD torrentAttrs = GetFileAttributes(TEXT("Torrents"));
-
-                    if (torrentAttrs == INVALID_FILE_ATTRIBUTES
-                        || !(torrentAttrs & FILE_ATTRIBUTE_DIRECTORY))
+                    if (!dir.path().exists())
                     {
-                        CreateDirectory(TEXT("Torrents"), NULL);
+                        dir.create();
                     }
 
-                    HANDLE hFile = CreateFile(
-                        fileName.c_str(),
-                        GENERIC_WRITE,
-                        FILE_SHARE_READ,
-                        NULL,
-                        CREATE_ALWAYS,
-                        FILE_ATTRIBUTE_NORMAL,
-                        NULL);
-
-                    if (hFile != INVALID_HANDLE_VALUE)
+                    if (!torrentFile.path().exists())
                     {
-                        if (!WriteFile(
-                            hFile,
-                            &buf[0],
-                            buf.size(),
-                            NULL,
-                            NULL))
+                        try
+                        {
+                            torrentFile.write_all(buf);
+                        }
+                        catch (const std::exception&)
                         {
                             // TODO(log)
                         }
-
-                        CloseHandle(hFile);
                     }
                 }
 

@@ -35,7 +35,6 @@ namespace pico
         void OnAlertNotify(HWND target);
         void OnDestroy();
         void OnFileAddTorrent();
-        bool ReadFile(std::vector<char> &buf, LPCTSTR path);
         LRESULT CALLBACK WndProc(_In_ HWND, _In_ UINT, _In_ WPARAM, _In_ LPARAM);
         static LRESULT CALLBACK WndProcProxy(_In_ HWND, _In_ UINT, _In_ WPARAM, _In_ LPARAM);
 
