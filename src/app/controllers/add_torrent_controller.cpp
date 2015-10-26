@@ -1,7 +1,7 @@
 #include <picotorrent/app/controllers/add_torrent_controller.hpp>
 
+#include <picotorrent/config/configuration.hpp>
 #include <picotorrent/core/add_request.hpp>
-#include <picotorrent/core/env.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent_file.hpp>
 #include <picotorrent/filesystem/file.hpp>
@@ -14,6 +14,7 @@ namespace core = picotorrent::core;
 namespace fs = picotorrent::filesystem;
 namespace ui = picotorrent::ui;
 using picotorrent::app::controllers::add_torrent_controller;
+using picotorrent::config::configuration;
 
 add_torrent_controller::add_torrent_controller(
     const std::shared_ptr<core::session> &sess,
@@ -44,9 +45,10 @@ void add_torrent_controller::execute()
         }
 
         core::torrent_file_ptr torrent = std::make_shared<core::torrent_file>(buf);
+        configuration &cfg = configuration::instance();
 
         core::add_request req;
-        req.set_save_path(core::env::get_user_downloads_directory().to_string());
+        req.set_save_path(cfg.default_save_path());
         req.set_torrent_file(torrent);
 
         sess_->add_torrent(req);

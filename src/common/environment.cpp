@@ -1,13 +1,12 @@
-#include <picotorrent/core/env.hpp>
+#include <picotorrent/common/environment.hpp>
 
 #include <picotorrent/filesystem/path.hpp>
-#include <windows.h>
 #include <shlobj.h>
 
 namespace fs = picotorrent::filesystem;
-using picotorrent::core::env;
+using picotorrent::common::environment;
 
-fs::path env::get_user_downloads_directory()
+fs::path environment::get_special_folder(picotorrent::common::special_folder folder)
 {
     PWSTR buf;
 

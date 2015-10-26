@@ -32,6 +32,7 @@ namespace app
 
     private:
         void on_file_add_torrent();
+        void on_view_preferences();
 
         void on_unhandled_exception(const std::string& stacktrace);
         void torrent_added(const std::shared_ptr<core::torrent> &torrent);

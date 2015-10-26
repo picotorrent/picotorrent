@@ -1,6 +1,7 @@
 #include <picotorrent/app/controllers/unhandled_exception_controller.hpp>
 
 #include <picotorrent/picojson.hpp>
+#include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/net/http_client.hpp>
 #include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/task_dialog.hpp>
@@ -8,6 +9,7 @@
 #include <shellapi.h>
 
 namespace ui = picotorrent::ui;
+using namespace picotorrent::common;
 using picotorrent::app::controllers::unhandled_exception_controller;
 
 unhandled_exception_controller::unhandled_exception_controller(
@@ -57,11 +59,7 @@ void unhandled_exception_controller::execute()
         return false;
     });
 
-    int wchars_num = MultiByteToWideChar(CP_UTF8, 0, stacktrace_.c_str(), -1, NULL, 0);
-    std::wstring f(wchars_num, '\0');
-    MultiByteToWideChar(CP_UTF8, 0, stacktrace_.c_str(), -1, &f[0], wchars_num);
-    dlg.set_content(f.c_str());
-
+    dlg.set_content(to_wstring(stacktrace_).c_str());
     dlg.set_main_icon(TD_ERROR_ICON);
     dlg.set_main_instruction(L"Unhandled exception occured");
     dlg.set_parent(wnd_->handle());
