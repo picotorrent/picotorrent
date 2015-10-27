@@ -8,7 +8,10 @@ var target        = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 
 // Parameters
-var buildDir = Directory("./build") + Directory(configuration);
+var BuildDirectory     = Directory("./build") + Directory(configuration);
+var ResourceDirectory  = Directory("./res");
+var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
+var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
 
 //////////////////////////////////////////////////////////////////////
 // TASKS
@@ -17,7 +20,7 @@ var buildDir = Directory("./build") + Directory(configuration);
 Task("Clean")
     .Does(() =>
 {
-    CleanDirectory(buildDir);
+    CleanDirectory(BuildDirectory);
 });
 
 Task("Generate-Project")
@@ -41,12 +44,66 @@ Task("Build")
         settings => settings.SetConfiguration(configuration));
 });
 
+Task("Build-Installer")
+    .IsDependentOn("Build")
+    .Does(() =>
+{
+    WiXCandle("./installer/PicoTorrent.wxs", new CandleSettings
+    {
+        Architecture = Architecture.X64,
+        Defines = new Dictionary<string, string>
+        {
+            { "BuildDirectory", BuildDirectory },
+            { "ResourceDirectory", ResourceDirectory },
+            { "Version", "0.0.1" }
+        },
+        OutputDirectory = BuildDirectory
+    });
+
+    WiXLight(BuildDirectory + File("PicoTorrent.wixobj"), new LightSettings
+    {
+        OutputFile = BuildDirectory + File("PicoTorrent.msi")
+    });
+});
+
+Task("Sign")
+    .IsDependentOn("Build")
+    .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
+    .Does(() =>
+{
+    Sign(BuildDirectory + File("PicoTorrent.exe"), new SignToolSignSettings
+    {
+        CertPath = SigningCertificate,
+        TimeStampUri = new Uri("http://timestamp.digicert.com"),
+        Password = SigningPassword
+    });
+});
+
+Task("Sign-Installer")
+    .IsDependentOn("Build-Installer")
+    .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
+    .Does(() =>
+{
+    Sign(BuildDirectory + File("PicoTorrent.msi"), new SignToolSignSettings
+    {
+        CertPath = SigningCertificate,
+        TimeStampUri = new Uri("http://timestamp.digicert.com"),
+        Password = SigningPassword
+    });
+});
+
 //////////////////////////////////////////////////////////////////////
 // TASK TARGETS
 //////////////////////////////////////////////////////////////////////
 
 Task("Default")
-    .IsDependentOn("Build");
+    .IsDependentOn("Build-Installer");
+
+Task("Publish")
+    .IsDependentOn("Build")
+    .IsDependentOn("Sign")
+    .IsDependentOn("Build-Installer")
+    .IsDependentOn("Sign-Installer");
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION

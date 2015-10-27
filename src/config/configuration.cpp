@@ -3,6 +3,7 @@
 #include <picotorrent/picojson.hpp>
 #include <picotorrent/common/environment.hpp>
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/filesystem/directory.hpp>
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
 
@@ -122,7 +123,8 @@ void configuration::set<std::wstring>(const char *name, std::wstring value)
 
 void configuration::load()
 {
-    fs::file cfg(L"PicoTorrent.json");
+    fs::path data = environment::get_data_path();
+    fs::file cfg = data.combine(L"PicoTorrent.json");
 
     if (!cfg.path().exists())
     {
@@ -145,6 +147,13 @@ void configuration::save()
     std::string json = v.serialize(true);
     std::vector<char> buf(json.begin(), json.end());
 
-    fs::file cfg(L"PicoTorrent.json");
+    fs::directory data = environment::get_data_path();
+
+    if (!data.path().exists())
+    {
+        data.create();
+    }
+
+    fs::file cfg = data.path().combine(L"PicoTorrent.json");
     cfg.write_all(buf);
 }

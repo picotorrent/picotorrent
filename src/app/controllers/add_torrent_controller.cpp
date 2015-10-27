@@ -29,8 +29,18 @@ void add_torrent_controller::execute()
     ui::open_torrent_dialog dlg;
     dlg.show(wnd_->handle());
 
-    for (fs::path &p : dlg.get_paths())
+    execute(dlg.get_paths());
+}
+
+void add_torrent_controller::execute(const std::vector<fs::path> &files)
+{
+    for (const fs::path &p : files)
     {
+        if (!p.exists())
+        {
+            continue;
+        }
+
         fs::file f(p);
         std::vector<char> buf;
 

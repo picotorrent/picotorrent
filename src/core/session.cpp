@@ -7,6 +7,7 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 
+#include <picotorrent/common/environment.hpp>
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/config/configuration.hpp>
 #include <picotorrent/core/add_request.hpp>
@@ -113,7 +114,8 @@ void session::on_torrent_updated(const std::function<void(const torrent_ptr&)> &
 
 void session::load_state()
 {
-    fs::file state(L"Session.dat");
+    fs::directory data = environment::get_data_path();
+    fs::file state = data.path().combine(L"Session.dat");
     std::vector<char> buffer;
 
     if (!state.path().exists())
@@ -148,7 +150,8 @@ void session::load_state()
 
 void session::load_torrents()
 {
-    fs::directory torrents(L"Torrents");
+    fs::path data = environment::get_data_path();
+    fs::directory torrents = data.combine(L"Torrents");
 
     if (!torrents.path().exists())
     {
@@ -281,6 +284,12 @@ void session::read_alerts()
                     continue;
                 }
 
+                if (torrents_.find(al->handle.info_hash()) != torrents_.end())
+                {
+                    LOG(warning) << "Torrent already in session: " << lt::to_hex(al->handle.info_hash().to_string());
+                    continue;
+                }
+
                 if (al->handle.torrent_file())
                 {
                     save_torrent(*al->handle.torrent_file());
@@ -331,7 +340,14 @@ void session::save_state()
     std::vector<char> buf;
     lt::bencode(std::back_inserter(buf), e);
 
-    fs::file state(L"Session.dat");
+    fs::directory data = environment::get_data_path();
+
+    if (!data.path().exists())
+    {
+        data.create();
+    }
+
+    fs::file state = data.path().combine(L"Session.dat");
 
     try
     {
@@ -347,7 +363,8 @@ void session::save_state()
 
 void session::save_torrent(const lt::torrent_info &ti)
 {
-    fs::directory dir(L"Torrents");
+    fs::path data = environment::get_data_path();
+    fs::directory dir = data.combine(L"Torrents");
 
     if (!dir.path().exists())
     {
@@ -412,7 +429,8 @@ void session::save_torrents()
     // TODO(log) outstanding resume data
     LOG(info) << "Saving resume data for " << numOutstandingResumeData << " torrent(s)";
 
-    fs::directory dir(L"Torrents");
+    fs::path data = environment::get_data_path();
+    fs::directory dir = data.combine(L"Torrents");
 
     if (!dir.path().exists())
     {

@@ -28,9 +28,10 @@ namespace app
         void activate_other_instance(const std::wstring &args);
         bool init();
         bool is_single_instance();
-        int run();
+        int run(const std::wstring &args);
 
     private:
+        void on_command_line_args(const std::wstring &args);
         void on_file_add_torrent();
         void on_view_preferences();
 
