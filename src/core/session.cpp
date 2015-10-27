@@ -17,6 +17,8 @@
 #include <picotorrent/filesystem/path.hpp>
 #include <picotorrent/logging/log.hpp>
 
+#include <queue>
+
 namespace fs = picotorrent::filesystem;
 namespace lt = libtorrent;
 using namespace picotorrent::common;
@@ -25,6 +27,18 @@ using picotorrent::core::add_request;
 using picotorrent::core::session;
 using picotorrent::core::timer;
 using picotorrent::core::torrent;
+
+struct load_item
+{
+    load_item(const fs::path &p)
+        : path(p)
+    {
+    }
+
+    fs::path path;
+    lt::bdecode_node node;
+    std::vector<char> buffer;
+};
 
 session::session()
     : timer_(std::make_unique<timer>(std::bind(&session::timer_callback, this), 1000))
@@ -142,22 +156,79 @@ void session::load_torrents()
         return;
     }
 
-    std::vector<fs::path> files = torrents.get_files(torrents.path().combine(L"*.torrent"));
+    std::vector<fs::path> files = torrents.get_files(torrents.path().combine(L"*.dat"));
 
     LOG(info) << "Loading " << files.size() << " torrent(s)";
 
+    typedef std::pair<int64_t, load_item> prio_item_t;
+    auto comparer = [](const prio_item_t &lhs, const prio_item_t &rhs)
+    {
+        return lhs.first > rhs.first;
+    };
+
+    std::priority_queue<prio_item_t, std::vector<prio_item_t>, decltype(comparer)> queue(comparer);
+    int64_t maxPosition = std::numeric_limits<int64_t>::max();
+
     for (fs::path &path : files)
     {
-        fs::file torrent(path);
+        load_item item(path);
+        fs::file resumeFile(path);
+
+        try
+        {
+            resumeFile.read_all(item.buffer);
+        }
+        catch (const std::exception& e)
+        {
+            LOG(error) << "Error when reading file: " << e.what();
+            continue;
+        }
+
+        lt::error_code ec;
+        lt::bdecode(&item.buffer[0], &item.buffer[0] + item.buffer.size(), item.node, ec);
+
+        if (ec)
+        {
+            LOG(error) << "Error when bdecoding buffer: " << ec.message();
+            continue;
+        }
+
+        if (item.node.type() != lt::bdecode_node::type_t::dict_t)
+        {
+            LOG(error) << "Resume file not a bencoded dictionary (" << item.node.type() << ")";
+            continue;
+        }
+
+        int64_t queuePosition = item.node.dict_find_int_value("pT-queuePosition", maxPosition);
+        if (queuePosition < 0) { queuePosition = maxPosition; }
+
+        queue.push({ queuePosition, item });
+    }
+
+    while (!queue.empty())
+    {
+        load_item item = queue.top().second;
+        queue.pop();
+
+        fs::path torrentPath = item.path.replace_extension(L".torrent");
+
+        if (!torrentPath.exists())
+        {
+            LOG(error) << "Torrent does not exist (although resume file does)";
+            // TODO(remove resume file)
+            continue;
+        }
+
+        fs::file torrent(torrentPath);
         std::vector<char> buffer;
 
         try
         {
             torrent.read_all(buffer);
         }
-        catch (const std::exception& e)
+        catch (const std::exception &ex)
         {
-            LOG(error) << "Error when reading file: " << e.what();
+            LOG(error) << "Error when reading file: " << ex.what();
             continue;
         }
 
@@ -172,24 +243,13 @@ void session::load_torrents()
         }
 
         lt::add_torrent_params params;
-        params.save_path = "C:\\Users\\Viktor\\Downloads";
+        params.flags |= lt::add_torrent_params::flags_t::flag_use_resume_save_path;
+        params.save_path = "C:\\Downloads";
         params.ti = boost::make_shared<lt::torrent_info>(node);
 
-        fs::path resumePath = path.replace_extension(L".dat");
-        fs::file resume(resumePath);
-
-        if (resumePath.exists())
+        if(!item.buffer.empty())
         {
-            try
-            {
-                resume.read_all(buffer);
-                params.resume_data = buffer;
-            }
-            catch (const std::exception& e)
-            {
-                LOG(error) << "Error when reading resume data: " << e.what();
-                continue;
-            }
+            params.resume_data = item.buffer;
         }
 
         LOG(info) << "Adding torrent " << params.ti->name();
@@ -390,6 +450,9 @@ void session::save_torrents()
             if (!rd) { continue; }
             --numOutstandingResumeData;
             if (!rd->resume_data) { continue; }
+
+            // Insert PicoTorrent-specific state
+            rd->resume_data->dict().insert({ "pT-queuePosition", rd->handle.status().queue_position });
 
             std::vector<char> buffer;
             lt::bencode(std::back_inserter(buffer), *rd->resume_data);
