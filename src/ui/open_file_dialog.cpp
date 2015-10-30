@@ -83,6 +83,23 @@ DWORD open_file_dialog::options()
     return flags;
 }
 
+void open_file_dialog::set_folder(const fs::path &path)
+{
+    IShellItem *folder;
+    HRESULT res = SHCreateItemFromParsingName(path.to_string().c_str(), NULL, IID_PPV_ARGS(&folder));
+
+    if (SUCCEEDED(res))
+    {
+        dlg_->SetFolder(folder);
+        folder->Release();
+    }
+}
+
+void open_file_dialog::set_guid(const GUID &guid)
+{
+    dlg_->SetClientGuid(guid);
+}
+
 void open_file_dialog::set_ok_button_label(LPCTSTR label)
 {
     dlg_->SetOkButtonLabel(label);

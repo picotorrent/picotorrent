@@ -2,6 +2,7 @@
 
 #include <picotorrent/app/message_loop.hpp>
 #include <picotorrent/app/controllers/add_torrent_controller.hpp>
+#include <picotorrent/app/controllers/torrent_context_menu_controller.hpp>
 #include <picotorrent/app/controllers/unhandled_exception_controller.hpp>
 #include <picotorrent/app/controllers/view_preferences_controller.hpp>
 #include <picotorrent/core/session.hpp>
@@ -31,8 +32,10 @@ application::application()
     main_window_->on_command(ID_FILE_ADDTORRENT, std::bind(&application::on_file_add_torrent, this));
     main_window_->on_command(ID_VIEW_PREFERENCES, std::bind(&application::on_view_preferences, this));
     main_window_->on_copydata(std::bind(&application::on_command_line_args, this, std::placeholders::_1));
+    main_window_->on_torrent_context_menu(std::bind(&application::on_torrent_context_menu, this, std::placeholders::_1, std::placeholders::_2));
 
     sess_->on_torrent_added(std::bind(&application::torrent_added, this, std::placeholders::_1));
+    sess_->on_torrent_removed(std::bind(&application::torrent_removed, this, std::placeholders::_1));
     sess_->on_torrent_updated(std::bind(&application::torrent_updated, this, std::placeholders::_1));
 }
 
@@ -133,6 +136,12 @@ void application::on_file_add_torrent()
     add_controller.execute();
 }
 
+void application::on_torrent_context_menu(const POINT &p, const std::shared_ptr<core::torrent> &torrent)
+{
+    controllers::torrent_context_menu_controller menu_controller(sess_, torrent, main_window_);
+    menu_controller.execute(p);
+}
+
 void application::on_view_preferences()
 {
     controllers::view_preferences_controller view_prefs(main_window_);
@@ -148,6 +157,11 @@ void application::on_unhandled_exception(const std::string &stacktrace)
 void application::torrent_added(const std::shared_ptr<core::torrent> &torrent)
 {
     main_window_->post_message(WM_TORRENT_ADDED, NULL, (LPARAM)&torrent);
+}
+
+void application::torrent_removed(const std::shared_ptr<core::torrent> &torrent)
+{
+    main_window_->post_message(WM_TORRENT_REMOVED, NULL, (LPARAM)&torrent);
 }
 
 void application::torrent_updated(const std::shared_ptr<core::torrent> &torrent)

@@ -12,6 +12,7 @@ namespace picotorrent
 {
 namespace core
 {
+    class hash;
     class session;
     class torrent;
 
@@ -29,12 +30,16 @@ namespace core
         torrent(const torrent &that) = delete;
 
         int download_rate();
+        std::shared_ptr<hash> info_hash();
+        bool is_paused() const;
         bool is_valid();
+        void move_storage(const std::string &path);
         std::string& name() const;
         void pause();
         float progress() const;
         int queue_position();
         void resume();
+        std::string save_path() const;
         int64_t size();
         int upload_rate();
 

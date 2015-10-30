@@ -10,6 +10,9 @@ set(PICOAPP_SOURCES
     src/app/application
     src/app/message_loop
     src/app/controllers/add_torrent_controller
+    src/app/controllers/move_torrent_controller
+    src/app/controllers/remove_torrent_controller
+    src/app/controllers/torrent_context_menu_controller
     src/app/controllers/unhandled_exception_controller
     src/app/controllers/view_preferences_controller
 )
@@ -27,6 +30,7 @@ set(PICOCONFIG_SOURCES
 set(PICOCORE_SOURCES
     src/core/add_request
     src/core/is_valid_torrent_file
+    src/core/hash
     src/core/session
     src/core/timer
     src/core/torrent
@@ -54,9 +58,11 @@ set(PICOUI_SOURCES
     src/ui/open_file_dialog
     src/ui/open_torrent_dialog
     src/ui/preferences_dialog
+    src/ui/remove_torrent_dialog
     src/ui/scaler
     src/ui/sort
     src/ui/task_dialog
+    src/ui/torrent_context_menu
     src/ui/torrent_list_item
     src/ui/torrent_list_view
 )
@@ -147,6 +153,7 @@ add_executable(
     src/resources/app_icon.rc
     src/resources/main_menu.rc
     src/resources/preferences_dialog.rc
+    src/resources/torrent_context_menu.rc
 )
 
 target_link_libraries(

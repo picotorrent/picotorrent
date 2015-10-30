@@ -31,6 +31,8 @@ namespace controllers
         void execute(const std::vector<filesystem::path> &files);
 
     private:
+        std::wstring get_save_path();
+
         std::shared_ptr<core::session> sess_;
         std::shared_ptr<ui::main_window> wnd_;
     };

@@ -9,6 +9,11 @@ namespace core = picotorrent::core;
 using namespace picotorrent::common;
 using picotorrent::ui::torrent_list_item;
 
+bool picotorrent::ui::operator==(const torrent_list_item &i1, const torrent_list_item &i2)
+{
+    return i1.torrent_ == i2.torrent_;
+}
+
 torrent_list_item::torrent_list_item(const std::shared_ptr<core::torrent> &torrent)
     : torrent_(torrent)
 {
@@ -100,4 +105,9 @@ std::wstring torrent_list_item::get_speed(int rate) const
         result.size());
 
     return result + L"/s";
+}
+
+std::shared_ptr<core::torrent> torrent_list_item::torrent() const
+{
+    return torrent_;
 }

@@ -2,8 +2,10 @@
 
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
+#include <picotorrent/core/hash.hpp>
 
 namespace lt = libtorrent;
+using picotorrent::core::hash;
 using picotorrent::core::torrent;
 
 torrent::torrent(const lt::torrent_status &st)
@@ -16,9 +18,24 @@ int torrent::download_rate()
     return status_->download_payload_rate;
 }
 
+std::shared_ptr<hash> torrent::info_hash()
+{
+    return std::make_shared<hash>(status_->info_hash);
+}
+
+bool torrent::is_paused() const
+{
+    return status_->paused;
+}
+
 bool torrent::is_valid()
 {
     return status_->handle.is_valid();
+}
+
+void torrent::move_storage(const std::string &path)
+{
+    status_->handle.move_storage(path);
 }
 
 std::string& torrent::name() const
@@ -56,6 +73,11 @@ void torrent::resume()
     }
 
     status_->handle.resume();
+}
+
+std::string torrent::save_path() const
+{
+    return status_->save_path;
 }
 
 int64_t torrent::size()

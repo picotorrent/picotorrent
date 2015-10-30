@@ -18,6 +18,7 @@ namespace filesystem
 
         fs::path& path();
         void read_all(std::vector<char> &buf);
+        void remove();
         void write_all(const std::vector<char> &buf);
 
     private:

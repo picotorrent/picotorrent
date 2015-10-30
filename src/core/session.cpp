@@ -98,13 +98,19 @@ void session::unload()
     save_torrents();
 }
 
+void session::remove_torrent(const torrent_ptr &torrent, bool remove_data)
+{
+    sess_->remove_torrent(torrent->status_->handle, remove_data ? lt::session::delete_files : 0);
+}
+
 void session::on_torrent_added(const std::function<void(const torrent_ptr&)> &callback)
 {
     torrent_added_cb_ = callback;
 }
 
-void session::on_torrent_removed(const std::function<void()> &callback)
+void session::on_torrent_removed(const std::function<void(const torrent_ptr&)> &callback)
 {
+    torrent_removed_cb_ = callback;
 }
 
 void session::on_torrent_updated(const std::function<void(const torrent_ptr&)> &callback)
@@ -325,8 +331,41 @@ void session::read_alerts()
 
                 break;
             }
+            case lt::torrent_removed_alert::alert_type:
+            {
+                lt::torrent_removed_alert *al = lt::alert_cast<lt::torrent_removed_alert>(alert);
+                torrent_ptr &torrent = torrents_.at(al->info_hash);
+
+                remove_torrent_files(torrent);
+
+                if (torrent_removed_cb_)
+                {
+                    torrent_removed_cb_(torrent);
+                }
+                break;
+            }
             }
         }
+    }
+}
+
+void session::remove_torrent_files(const torrent_ptr &torrent)
+{
+    std::wstring hash = lt::convert_to_wstring(lt::to_hex(torrent->status_->info_hash.to_string()));
+
+    fs::path data = environment::get_data_path();
+    fs::file file = data.combine(L"Torrents").combine((hash + L".torrent"));
+
+    if (file.path().exists())
+    {
+        file.remove();
+    }
+
+    file = file.path().replace_extension(L".dat");
+
+    if (file.path().exists())
+    {
+        file.remove();
     }
 }
 
