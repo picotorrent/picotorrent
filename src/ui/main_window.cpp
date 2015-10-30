@@ -69,6 +69,11 @@ void main_window::on_command(int id, const command_func_t &callback)
     commands_.insert({ id, callback });
 }
 
+void main_window::on_copydata(const std::function<void(const std::wstring&)> &callback)
+{
+    copydata_cb_ = callback;
+}
+
 void main_window::post_message(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     PostMessage(hWnd_, uMsg, wParam, lParam);
@@ -134,7 +139,12 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         COPYDATASTRUCT *cds = reinterpret_cast<COPYDATASTRUCT*>(lParam);
         wchar_t *ptr = reinterpret_cast<wchar_t*>(cds->lpData);
         std::wstring args(ptr);
-        // TODO: handle arguments
+
+        if (copydata_cb_)
+        {
+            copydata_cb_(args);
+        }
+
         break;
     }
 

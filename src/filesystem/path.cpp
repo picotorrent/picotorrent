@@ -22,7 +22,7 @@ path path::combine(const path &p) const
     return path(combined);
 }
 
-bool path::exists()
+bool path::exists() const
 {
     return PathFileExists(p_.c_str());
 }

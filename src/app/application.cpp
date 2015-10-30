@@ -5,15 +5,18 @@
 #include <picotorrent/app/controllers/unhandled_exception_controller.hpp>
 #include <picotorrent/app/controllers/view_preferences_controller.hpp>
 #include <picotorrent/core/session.hpp>
+#include <picotorrent/filesystem/path.hpp>
 #include <picotorrent/logging/log.hpp>
 #include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/resources.hpp>
 #include <windows.h>
 #include <commctrl.h>
 #include <strsafe.h>
+#include <shellapi.h>
 #include <string.h>
 
 namespace core = picotorrent::core;
+namespace fs = picotorrent::filesystem;
 namespace ui = picotorrent::ui;
 using picotorrent::app::application;
 using picotorrent::logging::log;
@@ -27,6 +30,7 @@ application::application()
 
     main_window_->on_command(ID_FILE_ADDTORRENT, std::bind(&application::on_file_add_torrent, this));
     main_window_->on_command(ID_VIEW_PREFERENCES, std::bind(&application::on_view_preferences, this));
+    main_window_->on_copydata(std::bind(&application::on_command_line_args, this, std::placeholders::_1));
 
     sess_->on_torrent_added(std::bind(&application::torrent_added, this, std::placeholders::_1));
     sess_->on_torrent_updated(std::bind(&application::torrent_updated, this, std::placeholders::_1));
@@ -91,15 +95,36 @@ bool application::is_single_instance()
     return true;
 }
 
-int application::run()
+int application::run(const std::wstring &args)
 {
     main_window_->create();
     sess_->load();
+
+    if (!args.empty())
+    {
+        on_command_line_args(args);
+    }
 
     int result = message_loop::run();
 
     sess_->unload();
     return result;
+}
+
+void application::on_command_line_args(const std::wstring &args)
+{
+    int argv;
+    LPWSTR *argc = CommandLineToArgvW(args.c_str(), &argv);
+
+    std::vector<fs::path> files;
+
+    for (int i = 0; i < argv; i++)
+    {
+        files.push_back(argc[i]);
+    }
+
+    controllers::add_torrent_controller add_controller(sess_, main_window_);
+    add_controller.execute(files);
 }
 
 void application::on_file_add_torrent()

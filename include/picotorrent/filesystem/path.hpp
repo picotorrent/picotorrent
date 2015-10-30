@@ -13,7 +13,7 @@ namespace filesystem
         path(const wchar_t *p);
 
         path combine(const path &p) const;
-        bool exists();
+        bool exists() const;
         path filename() const;
         bool is_directory();
         bool is_file();

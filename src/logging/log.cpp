@@ -1,5 +1,6 @@
 #include <picotorrent/logging/log.hpp>
 
+#include <picotorrent/common/environment.hpp>
 #include <picotorrent/filesystem/directory.hpp>
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
@@ -11,6 +12,7 @@
 #include <windows.h>
 
 namespace fs = picotorrent::filesystem;
+using picotorrent::common::environment;
 using picotorrent::logging::log;
 
 log::log()
@@ -32,7 +34,8 @@ void log::init()
 {
     DWORD pid = GetCurrentProcessId();
 
-    fs::directory logs(L"Logs");
+    fs::path data = environment::get_data_path();
+    fs::directory logs = data.combine(L"Logs");
 
     if (!logs.path().exists())
     {

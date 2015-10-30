@@ -29,5 +29,5 @@ int WINAPI wWinMain(
         return 0;
     }
 
-    return app.run();
+    return app.run(lpCmdLine);
 }

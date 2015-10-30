@@ -1,6 +1,7 @@
 #include <picotorrent/filesystem/file.hpp>
 
 #include <picotorrent/filesystem/path.hpp>
+#include <picotorrent/logging/log.hpp>
 #include <windows.h>
 
 namespace fs = picotorrent::filesystem;
@@ -74,11 +75,13 @@ void file::write_all(const std::vector<char> &buf)
         throw new std::runtime_error("Could not open file for writing.");
     }
 
+    DWORD written;
+
     if (!WriteFile(
         hFile,
         &buf[0],
         buf.size(),
-        NULL,
+        &written,
         NULL))
     {
         CloseHandle(hFile);
