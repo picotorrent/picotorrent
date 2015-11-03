@@ -59,6 +59,11 @@ void file::read_all(std::vector<char> &buf)
     CloseHandle(hFile);
 }
 
+void file::remove()
+{
+    DeleteFile(p_.to_string().c_str());
+}
+
 void file::write_all(const std::vector<char> &buf)
 {
     HANDLE hFile = CreateFile(

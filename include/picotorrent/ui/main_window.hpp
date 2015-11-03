@@ -12,6 +12,10 @@
 
 namespace picotorrent
 {
+namespace core
+{
+    class torrent;
+}
 namespace ui
 {
     class torrent_list_item;
@@ -31,6 +35,7 @@ namespace ui
         void hide();
         void on_command(int id, const command_func_t &callback);
         void on_copydata(const std::function<void(const std::wstring&)> &callback);
+        void on_torrent_context_menu(const std::function<void(const POINT &p, const std::shared_ptr<core::torrent>&)> &callback);
         void post_message(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     private:
@@ -40,6 +45,7 @@ namespace ui
         HWND hWnd_;
         command_map_t commands_;
         std::function<void(const std::wstring&)> copydata_cb_;
+        std::function<void(const POINT &p, const std::shared_ptr<core::torrent>&)> torrent_context_cb_;
         std::function<void()> sort_items_;
         std::vector<torrent_list_item> items_;
         std::unique_ptr<torrent_list_view> list_view_;

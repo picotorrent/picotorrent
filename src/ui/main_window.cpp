@@ -18,6 +18,7 @@ namespace fs = picotorrent::filesystem;
 using picotorrent::ui::main_window;
 using picotorrent::ui::open_file_dialog;
 using picotorrent::ui::scaler;
+using picotorrent::ui::torrent_list_item;
 using picotorrent::ui::torrent_list_view;
 
 main_window::main_window()
@@ -74,6 +75,11 @@ void main_window::on_copydata(const std::function<void(const std::wstring&)> &ca
     copydata_cb_ = callback;
 }
 
+void main_window::on_torrent_context_menu(const std::function<void(const POINT &p, const std::shared_ptr<core::torrent>&)> &callback)
+{
+    torrent_context_cb_ = callback;
+}
+
 void main_window::post_message(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     PostMessage(hWnd_, uMsg, wParam, lParam);
@@ -94,6 +100,20 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
         torrent_list_item list_item(t);
         items_.push_back(list_item);
+
+        list_view_->set_item_count((int)items_.size());
+        break;
+    }
+
+    case WM_TORRENT_REMOVED:
+    {
+        const core::torrent_ptr &t = *(core::torrent_ptr*)lParam;
+        auto f = std::find(items_.begin(), items_.end(), torrent_list_item(t));
+
+        if (f != items_.end())
+        {
+            items_.erase(f);
+        }
 
         list_view_->set_item_count((int)items_.size());
         break;
@@ -271,6 +291,33 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             const torrent_list_item &item = items_.at(lpCD->nmcd.dwItemSpec);
 
             return list_view_->on_custom_draw(lpCD, item);
+        }
+        case NM_RCLICK:
+        {
+            if (nmhdr->hwndFrom == list_view_->handle())
+            {
+                LVHITTESTINFO hit = { 0 };
+                GetCursorPos(&hit.pt);
+                ScreenToClient(nmhdr->hwndFrom, &hit.pt);
+
+                ListView_HitTest(nmhdr->hwndFrom, &hit);
+
+                ClientToScreen(nmhdr->hwndFrom, &hit.pt);
+
+                if (hit.iItem < 0)
+                {
+                    break;
+                }
+
+                const torrent_list_item &item = items_.at(hit.iItem);
+
+                if (torrent_context_cb_)
+                {
+                    core::torrent_ptr t = item.torrent();
+                    torrent_context_cb_(hit.pt, item.torrent());
+                }
+            }
+            break;
         }
         }
 
