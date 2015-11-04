@@ -20,6 +20,8 @@ namespace ui
 }
 namespace app
 {
+    class command_line;
+
 namespace controllers
 {
     class add_torrent_controller
@@ -28,9 +30,10 @@ namespace controllers
         add_torrent_controller(const std::shared_ptr<core::session> &sess, const std::shared_ptr<ui::main_window> &wnd_ptr);
 
         void execute();
-        void execute(const std::vector<filesystem::path> &files);
+        void execute(const command_line &cmd);
 
     private:
+        void add_files(const std::vector<filesystem::path> &files, const std::wstring &save_path);
         std::wstring get_save_path();
 
         std::shared_ptr<core::session> sess_;

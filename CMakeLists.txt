@@ -8,6 +8,7 @@ set(OPENSSL_ROOT    $ENV{OPENSSL_ROOT})
 
 set(PICOAPP_SOURCES
     src/app/application
+    src/app/command_line
     src/app/message_loop
     src/app/controllers/add_torrent_controller
     src/app/controllers/move_torrent_controller

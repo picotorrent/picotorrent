@@ -1,5 +1,6 @@
 #include <picotorrent/app/application.hpp>
 
+#include <picotorrent/app/command_line.hpp>
 #include <picotorrent/app/message_loop.hpp>
 #include <picotorrent/app/controllers/add_torrent_controller.hpp>
 #include <picotorrent/app/controllers/torrent_context_menu_controller.hpp>
@@ -20,6 +21,7 @@ namespace core = picotorrent::core;
 namespace fs = picotorrent::filesystem;
 namespace ui = picotorrent::ui;
 using picotorrent::app::application;
+using picotorrent::app::command_line;
 using picotorrent::logging::log;
 
 application::application()
@@ -116,18 +118,10 @@ int application::run(const std::wstring &args)
 
 void application::on_command_line_args(const std::wstring &args)
 {
-    int argv;
-    LPWSTR *argc = CommandLineToArgvW(args.c_str(), &argv);
-
-    std::vector<fs::path> files;
-
-    for (int i = 0; i < argv; i++)
-    {
-        files.push_back(argc[i]);
-    }
+    command_line cmd = command_line::parse(args);
 
     controllers::add_torrent_controller add_controller(sess_, main_window_);
-    add_controller.execute(files);
+    add_controller.execute(cmd);
 }
 
 void application::on_file_add_torrent()
