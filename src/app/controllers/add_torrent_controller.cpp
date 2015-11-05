@@ -1,5 +1,6 @@
 #include <picotorrent/app/controllers/add_torrent_controller.hpp>
 
+#include <picotorrent/app/command_line.hpp>
 #include <picotorrent/config/configuration.hpp>
 #include <picotorrent/core/add_request.hpp>
 #include <picotorrent/core/session.hpp>
@@ -20,6 +21,7 @@ const GUID DLG_SAVE = { 0x7D5FE367, 0xE148, 0x4A96,{ 0xB3, 0x26, 0x42, 0xEF, 0x2
 namespace core = picotorrent::core;
 namespace fs = picotorrent::filesystem;
 namespace ui = picotorrent::ui;
+using picotorrent::app::command_line;
 using picotorrent::app::controllers::add_torrent_controller;
 using picotorrent::config::configuration;
 
@@ -37,23 +39,31 @@ void add_torrent_controller::execute()
     dlg.set_guid(DLG_OPEN);
     dlg.show(wnd_->handle());
 
-    execute(dlg.get_paths());
+    add_files(dlg.get_paths(), get_save_path());
 }
 
-void add_torrent_controller::execute(const std::vector<fs::path> &files)
+void add_torrent_controller::execute(const command_line &cmd)
 {
-    if (files.empty())
+    if (cmd.files().empty() && cmd.magnet_links().empty())
     {
         return;
     }
 
-    std::wstring save_path = get_save_path();
+    std::wstring sp = get_save_path();
+    add_files(cmd.files(), sp);
 
-    if (save_path.empty())
+    for (const std::wstring &magnet : cmd.magnet_links())
     {
-        return;
-    }
+        core::add_request req;
+        req.set_save_path(sp);
+        req.set_url(magnet);
 
+        sess_->add_torrent(req);
+    }
+}
+
+void add_torrent_controller::add_files(const std::vector<fs::path> &files, const std::wstring &save_path)
+{
     for (const fs::path &p : files)
     {
         if (!p.exists())

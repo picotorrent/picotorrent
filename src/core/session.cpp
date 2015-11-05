@@ -37,8 +37,9 @@ struct load_item
     }
 
     fs::path path;
-    lt::bdecode_node node;
     std::vector<char> buffer;
+    std::string magnet_uri;
+    std::string save_path;
 };
 
 session::session()
@@ -194,7 +195,8 @@ void session::load_torrents()
         }
 
         lt::error_code ec;
-        lt::bdecode(&item.buffer[0], &item.buffer[0] + item.buffer.size(), item.node, ec);
+        lt::bdecode_node node;
+        lt::bdecode(&item.buffer[0], &item.buffer[0] + item.buffer.size(), node, ec);
 
         if (ec)
         {
@@ -202,13 +204,16 @@ void session::load_torrents()
             continue;
         }
 
-        if (item.node.type() != lt::bdecode_node::type_t::dict_t)
+        if (node.type() != lt::bdecode_node::type_t::dict_t)
         {
-            LOG(error) << "Resume file not a bencoded dictionary (" << item.node.type() << ")";
+            LOG(error) << "Resume file not a bencoded dictionary (" << node.type() << ")";
             continue;
         }
 
-        int64_t queuePosition = item.node.dict_find_int_value("pT-queuePosition", maxPosition);
+        item.magnet_uri = node.dict_find_string_value("pT-url");
+        item.save_path = node.dict_find_string_value("pT-savePath", "C:\\Downloads");
+
+        int64_t queuePosition = node.dict_find_int_value("pT-queuePosition", maxPosition);
         if (queuePosition < 0) { queuePosition = maxPosition; }
 
         queue.push({ queuePosition, item });
@@ -221,47 +226,52 @@ void session::load_torrents()
 
         fs::path torrentPath = item.path.replace_extension(L".torrent");
 
-        if (!torrentPath.exists())
+        if (!torrentPath.exists() && item.magnet_uri.empty())
         {
             LOG(error) << "Torrent does not exist (although resume file does)";
-            // TODO(remove resume file)
-            continue;
-        }
-
-        fs::file torrent(torrentPath);
-        std::vector<char> buffer;
-
-        try
-        {
-            torrent.read_all(buffer);
-        }
-        catch (const std::exception &ex)
-        {
-            LOG(error) << "Error when reading file: " << ex.what();
-            continue;
-        }
-
-        lt::bdecode_node node;
-        lt::error_code ec;
-        lt::bdecode(&buffer[0], &buffer[0] + buffer.size(), node, ec);
-
-        if (ec)
-        {
-            LOG(error) << "Error when bdecoding buffer: " << ec.message();
+            fs::file(item.path).remove();
             continue;
         }
 
         lt::add_torrent_params params;
+
+        if (torrentPath.exists())
+        {
+            fs::file torrent(torrentPath);
+            std::vector<char> buffer;
+
+            try
+            {
+                torrent.read_all(buffer);
+            }
+            catch (const std::exception &ex)
+            {
+                LOG(error) << "Error when reading file: " << ex.what();
+                continue;
+            }
+
+            lt::bdecode_node node;
+            lt::error_code ec;
+            lt::bdecode(&buffer[0], &buffer[0] + buffer.size(), node, ec);
+
+            if (ec)
+            {
+                LOG(error) << "Error when bdecoding buffer: " << ec.message();
+                continue;
+            }
+
+            params.ti = boost::make_shared<lt::torrent_info>(node);
+        }
+
         params.flags |= lt::add_torrent_params::flags_t::flag_use_resume_save_path;
-        params.save_path = "C:\\Downloads";
-        params.ti = boost::make_shared<lt::torrent_info>(node);
+        params.save_path = item.save_path;
+        params.url = item.magnet_uri;
 
         if(!item.buffer.empty())
         {
             params.resume_data = item.buffer;
         }
 
-        LOG(info) << "Adding torrent " << params.ti->name();
         sess_->async_add_torrent(params);
     }
 }
@@ -300,6 +310,35 @@ void session::read_alerts()
                 {
                     save_torrent(*al->handle.torrent_file());
                 }
+                else if(!al->params.url.empty())
+                {
+                    lt::entry::dictionary_type e;
+                    e.insert({ "pT-queuePosition", al->handle.status().queue_position });
+                    e.insert({ "pT-url", al->params.url });
+
+                    std::vector<char> buf;
+                    lt::bencode(std::back_inserter(buf), e);
+
+                    fs::path data = environment::get_data_path();
+                    fs::directory dir = data.combine(L"Torrents");
+
+                    if (!dir.path().exists())
+                    {
+                        dir.create();
+                    }
+
+                    std::wstring hash = lt::convert_to_wstring(lt::to_hex(al->handle.info_hash().to_string()));
+                    fs::file torrentFile(dir.path().combine((hash + L".dat")));
+
+                    try
+                    {
+                        torrentFile.write_all(buf);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        LOG(error) << "Error when writing resume data file: " << e.what();
+                    }
+                }
 
                 torrents_.insert(
                     std::make_pair(
@@ -311,6 +350,16 @@ void session::read_alerts()
                 {
                     const torrent_ptr &t = torrents_.find(al->handle.info_hash())->second;
                     torrent_added_cb_(t);
+                }
+                break;
+            }
+            case lt::metadata_received_alert::alert_type:
+            {
+                lt::metadata_received_alert *al = lt::alert_cast<lt::metadata_received_alert>(alert);
+
+                if (al->handle.torrent_file())
+                {
+                    save_torrent(*al->handle.torrent_file());
                 }
                 break;
             }
@@ -328,7 +377,6 @@ void session::read_alerts()
                         torrent_updated_cb_(t);
                     }
                 }
-
                 break;
             }
             case lt::torrent_removed_alert::alert_type:
@@ -465,7 +513,6 @@ void session::save_torrents()
         ++numOutstandingResumeData;
     }
 
-    // TODO(log) outstanding resume data
     LOG(info) << "Saving resume data for " << numOutstandingResumeData << " torrent(s)";
 
     fs::path data = environment::get_data_path();

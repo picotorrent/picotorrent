@@ -133,6 +133,28 @@
                                 <MIME Advertise="yes" ContentType="application/x-bittorrent" Default="yes" />
                             </Extension>
                         </ProgId>
+
+                        <!-- Magnet URI schema registration -->
+                        <RegistryValue Root="HKCR"
+                                       Key="magnet"
+                                       Value="PicoTorrent magnet link"
+                                       Type="string" />
+
+                        <RegistryValue Root="HKCR"
+                                       Key="magnet"
+                                       Name="URL Protocol"
+                                       Value=""
+                                       Type="string" />
+
+                        <RegistryValue Root="HKCR"
+                                       Key="magnet\DefaultIcon"
+                                       Value="[INSTALLDIR]PicoTorrent.exe,0"
+                                       Type="string" />
+
+                        <RegistryValue Root="HKCR"
+                                       Key="magnet\shell\open\command"
+                                       Value="&quot;[INSTALLDIR]PicoTorrent.exe&quot; &quot;%1&quot;"
+                                       Type="string" />
                     </Component>
                 </Directory>
             </Directory>
