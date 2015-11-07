@@ -52,7 +52,7 @@ void main_window::create()
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        scaler::x(700),
+        scaler::x(800),
         scaler::y(200),
         NULL,
         NULL,
@@ -174,10 +174,11 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         list_view_->create();
 
         // Add columns
-        list_view_->add_column(TEXT("Name"), scaler::x(300), LVCFMT_LEFT);
+        list_view_->add_column(TEXT("Name"), scaler::x(280), LVCFMT_LEFT);
         list_view_->add_column(TEXT("#"), scaler::x(30), LVCFMT_RIGHT);
         list_view_->add_column(TEXT("Size"), scaler::x(80), LVCFMT_RIGHT);
-        list_view_->add_column(TEXT("Status"), scaler::x(100), LVCFMT_LEFT);
+        list_view_->add_column(TEXT("Status"), scaler::x(120), LVCFMT_LEFT);
+        list_view_->add_column(TEXT("Progress"), scaler::x(100), LVCFMT_LEFT);
         list_view_->add_column(TEXT("DL"), scaler::x(80), LVCFMT_RIGHT);
         list_view_->add_column(TEXT("UL"), scaler::x(80), LVCFMT_RIGHT);
 

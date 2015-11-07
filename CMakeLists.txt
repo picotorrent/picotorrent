@@ -36,6 +36,7 @@ set(PICOCORE_SOURCES
     src/core/timer
     src/core/torrent
     src/core/torrent_file
+    src/core/torrent_state
 )
 
 set(PICOFS_SOURCES

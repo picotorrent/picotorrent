@@ -4,6 +4,7 @@
 #include <picotorrent/core/torrent.hpp>
 #include <windows.h>
 #include <shlwapi.h>
+#include <strsafe.h>
 
 namespace core = picotorrent::core;
 using namespace picotorrent::common;
@@ -37,6 +38,13 @@ std::wstring torrent_list_item::name() const
 float torrent_list_item::progress() const
 {
     return torrent_->progress();
+}
+
+std::wstring torrent_list_item::progress_str() const
+{
+    TCHAR p[100];
+    StringCchPrintf(p, ARRAYSIZE(p), TEXT("%.2f%%"), torrent_->progress() * 100);
+    return p;
 }
 
 int torrent_list_item::queue_position() const
@@ -79,6 +87,12 @@ std::wstring torrent_list_item::size_str() const
     return result;
 }
 
+std::wstring torrent_list_item::state_str() const
+{
+    // TODO: translations
+    return torrent_->state().to_string();
+}
+
 int torrent_list_item::upload_rate() const
 {
     return torrent_->upload_rate();
@@ -96,15 +110,16 @@ std::wstring torrent_list_item::get_speed(int rate) const
         return L"-";
     }
 
-    std::wstring result;
-    result.resize(128);
+    TCHAR result[100];
 
     StrFormatByteSize64(
         rate,
-        &result[0],
-        result.size());
+        result,
+        ARRAYSIZE(result));
 
-    return result + L"/s";
+    StringCchPrintf(result, ARRAYSIZE(result), TEXT("%s/s"), result);
+
+    return result;
 }
 
 std::shared_ptr<core::torrent> torrent_list_item::torrent() const

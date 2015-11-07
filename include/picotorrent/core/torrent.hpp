@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 
+#include <picotorrent/core/torrent_state.hpp>
+
 namespace libtorrent
 {
     struct torrent_status;
@@ -30,8 +32,13 @@ namespace core
         torrent(const torrent &that) = delete;
 
         int download_rate();
+        bool has_error() const;
         std::shared_ptr<hash> info_hash();
+        bool is_checking() const;
+        bool is_forced() const;
         bool is_paused() const;
+        bool is_queued() const;
+        bool is_seeding() const;
         bool is_valid();
         void move_storage(const std::string &path);
         std::string& name() const;
@@ -41,12 +48,15 @@ namespace core
         void resume();
         std::string save_path() const;
         int64_t size();
+        torrent_state state();
         int upload_rate();
 
-    protected:
-
     private:
+        void update(std::unique_ptr<libtorrent::torrent_status> status);
+        void update_state();
+
         std::unique_ptr<libtorrent::torrent_status> status_;
+        torrent_state state_;
     };
 }
 }

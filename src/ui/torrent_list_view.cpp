@@ -133,7 +133,7 @@ LRESULT torrent_list_view::on_custom_draw(LPNMLVCUSTOMDRAW lpCustomDraw, const t
         return CDRF_NOTIFYSUBITEMDRAW;
     case (CDDS_ITEMPREPAINT | CDDS_SUBITEM):
     {
-        if(lpCustomDraw->iSubItem != 3)
+        if(lpCustomDraw->iSubItem != COL_PROGRESS)
         {
             break;
         }
@@ -178,6 +178,16 @@ LRESULT torrent_list_view::on_custom_draw(LPNMLVCUSTOMDRAW lpCustomDraw, const t
             &rc,
             NULL);
 
+        RECT text = { 0 };
+        ListView_GetSubItemRect(
+            hWnd_,
+            lpCustomDraw->nmcd.dwItemSpec,
+            lpCustomDraw->iSubItem,
+            LVIR_BOUNDS,
+            &text);
+
+        DrawText(hDc, item.progress_str().c_str(), -1, &text, DT_CENTER);
+
         return CDRF_SKIPDEFAULT;
     }
     }
@@ -204,6 +214,11 @@ void torrent_list_view::on_getdispinfo(NMLVDISPINFO* inf, const torrent_list_ite
         case COL_SIZE:
         {
             StringCchCopy(inf->item.pszText, inf->item.cchTextMax, item.size_str().c_str());
+            break;
+        }
+        case COL_STATE:
+        {
+            StringCchCopy(inf->item.pszText, inf->item.cchTextMax, item.state_str().c_str());
             break;
         }
         case COL_DOWNLOAD_RATE:
