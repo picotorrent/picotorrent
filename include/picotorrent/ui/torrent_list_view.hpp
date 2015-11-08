@@ -8,9 +8,10 @@
 #define COL_NAME 0
 #define COL_QUEUE_POSITION 1
 #define COL_SIZE 2
-#define COL_PROGRESS 3
-#define COL_DOWNLOAD_RATE 4
-#define COL_UPLOAD_RATE 5
+#define COL_STATE 3
+#define COL_PROGRESS 4
+#define COL_DOWNLOAD_RATE 5
+#define COL_UPLOAD_RATE 6
 
 namespace picotorrent
 {

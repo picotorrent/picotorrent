@@ -370,7 +370,7 @@ void session::read_alerts()
                 for (lt::torrent_status &st : al->status)
                 {
                     const torrent_ptr &t = torrents_.find(st.info_hash)->second;
-                    t->status_ = std::make_unique<lt::torrent_status>(st);
+                    t->update(std::make_unique<lt::torrent_status>(st));
 
                     if (torrent_updated_cb_)
                     {
