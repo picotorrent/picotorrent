@@ -14,6 +14,29 @@ var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
 var Version            = System.IO.File.ReadAllText("VERSION").Trim();
 
+public void SignTool(FilePath file)
+{
+    var signTool = "C:\\Program Files (x86)\\Windows Kits\\8.1\\bin\\x64\\signtool.exe";
+    var argsBuilder = new ProcessArgumentBuilder();
+
+    argsBuilder.Append("sign");
+    argsBuilder.Append("/d {0}", "PicoTorrent");
+    argsBuilder.Append("/f {0}", SigningCertificate);
+    argsBuilder.AppendSecret("/p {0}", SigningPassword);
+    argsBuilder.Append("/t http://timestamp.digicert.com");
+    argsBuilder.AppendQuoted("{0}", file);
+
+    int exitCode = StartProcess(signTool, new ProcessSettings
+    {
+        Arguments = argsBuilder
+    });
+
+    if(exitCode != 0)
+    {
+        throw new CakeException("SignTool exited with error: " + exitCode);
+    }
+}
+
 //////////////////////////////////////////////////////////////////////
 // TASKS
 //////////////////////////////////////////////////////////////////////
@@ -72,12 +95,8 @@ Task("Sign")
     .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
     .Does(() =>
 {
-    Sign(BuildDirectory + File("PicoTorrent.exe"), new SignToolSignSettings
-    {
-        CertPath = SigningCertificate,
-        TimeStampUri = new Uri("http://timestamp.digicert.com"),
-        Password = SigningPassword
-    });
+    var file = BuildDirectory + File("PicoTorrent.exe");
+    SignTool(file);
 });
 
 Task("Sign-Installer")
@@ -85,12 +104,8 @@ Task("Sign-Installer")
     .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
     .Does(() =>
 {
-    Sign(BuildDirectory + File("PicoTorrent.msi"), new SignToolSignSettings
-    {
-        CertPath = SigningCertificate,
-        TimeStampUri = new Uri("http://timestamp.digicert.com"),
-        Password = SigningPassword
-    });
+    var file = BuildDirectory + File("PicoTorrent.msi");
+    SignTool(file);
 });
 
 //////////////////////////////////////////////////////////////////////
