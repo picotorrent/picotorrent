@@ -12,6 +12,7 @@ var BuildDirectory     = Directory("./build") + Directory(configuration);
 var ResourceDirectory  = Directory("./res");
 var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
+var Version            = System.IO.File.ReadAllText("VERSION").Trim();
 
 //////////////////////////////////////////////////////////////////////
 // TASKS
@@ -55,7 +56,7 @@ Task("Build-Installer")
         {
             { "BuildDirectory", BuildDirectory },
             { "ResourceDirectory", ResourceDirectory },
-            { "Version", "0.0.1" }
+            { "Version", Version }
         },
         OutputDirectory = BuildDirectory
     });
