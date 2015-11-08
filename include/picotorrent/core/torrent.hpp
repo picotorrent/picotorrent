@@ -45,7 +45,7 @@ namespace core
         void pause();
         float progress() const;
         int queue_position();
-        void resume();
+        void resume(bool force);
         std::string save_path() const;
         int64_t size();
         torrent_state state();
