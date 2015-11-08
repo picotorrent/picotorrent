@@ -50,7 +50,11 @@ void torrent_context_menu_controller::execute(const POINT &p)
         break;
 
     case TORRENT_CONTEXT_MENU_RESUME:
-        torrent_->resume();
+        torrent_->resume(false);
+        break;
+
+    case TORRENT_CONTEXT_MENU_RESUME_FORCE:
+        torrent_->resume(true);
         break;
 
     case TORRENT_CONTEXT_MENU_MOVE:

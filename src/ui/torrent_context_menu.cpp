@@ -28,6 +28,7 @@ void torrent_context_menu::remove_pause()
 void torrent_context_menu::remove_resume()
 {
     RemoveMenu(menu_, TORRENT_CONTEXT_MENU_RESUME, MF_BYCOMMAND);
+    RemoveMenu(menu_, TORRENT_CONTEXT_MENU_RESUME_FORCE, MF_BYCOMMAND);
 }
 
 int torrent_context_menu::show(HWND parent, const POINT &p)

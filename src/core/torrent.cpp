@@ -75,12 +75,12 @@ std::string& torrent::name() const
 
 void torrent::pause()
 {
-    if (!is_valid())
+    if (is_paused())
     {
-        // TODO(log)
         return;
     }
 
+    status_->handle.auto_managed(false);
     status_->handle.pause();
 }
 
@@ -94,14 +94,15 @@ int torrent::queue_position()
     return status_->queue_position;
 }
 
-void torrent::resume()
+void torrent::resume(bool force)
 {
-    if (!is_valid())
+    if (has_error())
     {
-        // TODO(log)
-        return;
+        status_->handle.clear_error();
     }
 
+    status_->handle.set_upload_mode(false);
+    status_->handle.auto_managed(!force);
     status_->handle.resume();
 }
 
