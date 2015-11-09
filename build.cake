@@ -13,6 +13,7 @@ var ResourceDirectory  = Directory("./res");
 var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
 var Version            = System.IO.File.ReadAllText("VERSION").Trim();
+var Installer          = string.Format("PicoTorrent-{0}-x64.msi", Version);
 
 public void SignTool(FilePath file)
 {
@@ -86,8 +87,31 @@ Task("Build-Installer")
 
     WiXLight(BuildDirectory + File("PicoTorrent.wixobj"), new LightSettings
     {
-        OutputFile = BuildDirectory + File("PicoTorrent.msi")
+        OutputFile = BuildDirectory + File(Installer)
     });
+});
+
+Task("Build-Chocolatey-Package")
+    .IsDependentOn("Build-Installer")
+    .Does(() =>
+{
+    TransformTextFile("./chocolatey/tools/chocolateyinstall.ps1.template", "%{", "}")
+        .WithToken("Installer", Installer)
+        .WithToken("Version", Version)
+        .Save("./chocolatey/tools/chocolateyinstall.ps1");
+
+    var currentDirectory = MakeAbsolute(Directory("."));
+    var cd = MakeAbsolute(BuildDirectory);
+    var nuspec = MakeAbsolute(File("./chocolatey/picotorrent.nuspec"));
+
+    System.IO.Directory.SetCurrentDirectory(cd.ToString());
+
+    ChocolateyPack(nuspec, new ChocolateyPackSettings
+    {
+        Version = Version
+    });
+
+    System.IO.Directory.SetCurrentDirectory(currentDirectory.ToString());
 });
 
 Task("Sign")
@@ -104,7 +128,7 @@ Task("Sign-Installer")
     .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
     .Does(() =>
 {
-    var file = BuildDirectory + File("PicoTorrent.msi");
+    var file = BuildDirectory + File(Installer);
     SignTool(file);
 });
 
@@ -113,13 +137,15 @@ Task("Sign-Installer")
 //////////////////////////////////////////////////////////////////////
 
 Task("Default")
-    .IsDependentOn("Build-Installer");
+    .IsDependentOn("Build-Installer")
+    .IsDependentOn("Build-Chocolatey-Package");
 
 Task("Publish")
     .IsDependentOn("Build")
     .IsDependentOn("Sign")
     .IsDependentOn("Build-Installer")
-    .IsDependentOn("Sign-Installer");
+    .IsDependentOn("Sign-Installer")
+    .IsDependentOn("Build-Chocolatey-Package");
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION

@@ -1,0 +1,8 @@
+﻿$packageName = 'picotorrent'
+$installerType = 'msi'
+$url = ''
+$url64 = 'https://github.com/picotorrent/picotorrent/releases/download/v%{Version}/%{Installer}'
+$silentArgs = '/quiet'
+$validExitCodes = @(0,3010)
+
+Install-ChocolateyPackage $packageName $installerType $silentArgs $url $url64 -validExitCodes $validExitCodes
