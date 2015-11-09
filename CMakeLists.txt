@@ -73,16 +73,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /MAP /OPT:REF /OPT:ICF")
 
 include_directories(
-    ${BOOST_ROOT}
-    ${LIBTORRENT_ROOT}/include
-    ${OPENSSL_ROOT}/inc32
     include/
+    tools/PicoTorrent.Libs/include
 )
 
 link_directories(
-    ${BOOST_ROOT}/stage/lib
-    ${LIBTORRENT_ROOT}/bin/msvc-14.0/$(ConfigurationName)/address-model-64/crypto-openssl/deprecated-functions-off/link-static/threading-multi
-    ${OPENSSL_ROOT}/out32
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/libs
 )
 
 add_definitions(
@@ -188,7 +184,8 @@ target_link_libraries(
     ssleay32
 
     # Rasterbar-libtorrent
-    libtorrent
+    debug     libtorrent-vc140-mt-gd
+    optimized libtorrent-vc140-mt
 )
 
 target_link_libraries(

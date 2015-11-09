@@ -23,7 +23,7 @@ int torrent::download_rate()
 
 bool torrent::has_error() const
 {
-    return status_->paused && !status_->error.empty();
+    return status_->paused && status_->errc;
 }
 
 std::shared_ptr<hash> torrent::info_hash()

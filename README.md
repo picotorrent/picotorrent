@@ -3,6 +3,13 @@
 A tiny, hackable BitTorrent client written in modern C++. Based on
 Rasterbar-libtorrent to provide high performance and low memory usage.
 
+## Building PicoTorrent
+
+From the repository root, run
+
+```
+PS> .\build.ps1
+```
 
 ## License
 
