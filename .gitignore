@@ -1,4 +1,5 @@
 build/
+chocolatey/tools/chocolateyinstall.ps1
 tools/Cake
 tools/Cake.CMake
 tools/nuget.exe
