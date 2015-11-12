@@ -18,6 +18,7 @@ notify_icon::notify_icon(HWND parent)
 
 notify_icon::~notify_icon()
 {
+    DestroyIcon(icon_);
 }
 
 void notify_icon::add()
