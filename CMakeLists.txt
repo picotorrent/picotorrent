@@ -57,6 +57,7 @@ set(PICONET_SOURCES
 set(PICOUI_SOURCES
     src/ui/file_dialog_callback
     src/ui/main_window
+    src/ui/notify_icon
     src/ui/open_file_dialog
     src/ui/open_torrent_dialog
     src/ui/preferences_dialog

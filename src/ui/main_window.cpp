@@ -4,6 +4,7 @@
 #include <commctrl.h>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/filesystem/path.hpp>
+#include <picotorrent/ui/notify_icon.hpp>
 #include <picotorrent/ui/open_file_dialog.hpp>
 #include <picotorrent/ui/resources.hpp>
 #include <picotorrent/ui/scaler.hpp>
@@ -16,6 +17,7 @@
 namespace core = picotorrent::core;
 namespace fs = picotorrent::filesystem;
 using picotorrent::ui::main_window;
+using picotorrent::ui::notify_icon;
 using picotorrent::ui::open_file_dialog;
 using picotorrent::ui::scaler;
 using picotorrent::ui::torrent_list_item;
@@ -182,11 +184,16 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         list_view_->add_column(TEXT("DL"), scaler::x(80), LVCFMT_RIGHT);
         list_view_->add_column(TEXT("UL"), scaler::x(80), LVCFMT_RIGHT);
 
+        noticon_ = std::make_shared<notify_icon>(hWnd);
+        noticon_->add();
+
         break;
     }
 
     case WM_DESTROY:
     {
+        noticon_->remove();
+
         PostQuitMessage(0);
         break;
     }

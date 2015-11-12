@@ -18,6 +18,7 @@ namespace core
 }
 namespace ui
 {
+    class notify_icon;
     class torrent_list_item;
     class torrent_list_view;
 
@@ -48,6 +49,7 @@ namespace ui
         std::function<void(const POINT &p, const std::shared_ptr<core::torrent>&)> torrent_context_cb_;
         std::function<void()> sort_items_;
         std::vector<torrent_list_item> items_;
+        std::shared_ptr<notify_icon> noticon_;
         std::unique_ptr<torrent_list_view> list_view_;
     };
 }
