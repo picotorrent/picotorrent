@@ -9,6 +9,7 @@
 #define WM_TORRENT_ADDED WM_USER+1
 #define WM_TORRENT_REMOVED WM_USER+2
 #define WM_TORRENT_UPDATED WM_USER+3
+#define WM_TORRENT_FINISHED WM_USER+4
 
 namespace picotorrent
 {

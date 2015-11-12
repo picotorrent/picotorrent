@@ -37,6 +37,7 @@ application::application()
     main_window_->on_torrent_context_menu(std::bind(&application::on_torrent_context_menu, this, std::placeholders::_1, std::placeholders::_2));
 
     sess_->on_torrent_added(std::bind(&application::torrent_added, this, std::placeholders::_1));
+    sess_->on_torrent_finished(std::bind(&application::torrent_finished, this, std::placeholders::_1));
     sess_->on_torrent_removed(std::bind(&application::torrent_removed, this, std::placeholders::_1));
     sess_->on_torrent_updated(std::bind(&application::torrent_updated, this, std::placeholders::_1));
 }
@@ -151,6 +152,11 @@ void application::on_unhandled_exception(const std::string &stacktrace)
 void application::torrent_added(const std::shared_ptr<core::torrent> &torrent)
 {
     main_window_->post_message(WM_TORRENT_ADDED, NULL, (LPARAM)&torrent);
+}
+
+void application::torrent_finished(const std::shared_ptr<core::torrent> &torrent)
+{
+    main_window_->post_message(WM_TORRENT_FINISHED, NULL, (LPARAM)&torrent);
 }
 
 void application::torrent_removed(const std::shared_ptr<core::torrent> &torrent)

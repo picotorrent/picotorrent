@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <commctrl.h>
+#include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/filesystem/path.hpp>
 #include <picotorrent/ui/notify_icon.hpp>
@@ -16,6 +17,7 @@
 
 namespace core = picotorrent::core;
 namespace fs = picotorrent::filesystem;
+using picotorrent::common::to_wstring;
 using picotorrent::ui::main_window;
 using picotorrent::ui::notify_icon;
 using picotorrent::ui::open_file_dialog;
@@ -132,6 +134,13 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
         list_view_->refresh();
 
+        break;
+    }
+
+    case WM_TORRENT_FINISHED:
+    {
+        const core::torrent_ptr &t = *(core::torrent_ptr*)lParam;
+        noticon_->show_balloon(TEXT("Torrent finished"), to_wstring(t->name()));
         break;
     }
 

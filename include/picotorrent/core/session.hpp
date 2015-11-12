@@ -35,6 +35,7 @@ namespace core
         void remove_torrent(const std::shared_ptr<torrent> &torrent, bool remove_data = false);
 
         void on_torrent_added(const std::function<void(const std::shared_ptr<torrent>&)> &callback);
+        void on_torrent_finished(const std::function<void(const std::shared_ptr<torrent>&)> &callback);
         void on_torrent_removed(const std::function<void(const std::shared_ptr<torrent>&)> &callback);
         void on_torrent_updated(const std::function<void(const std::shared_ptr<torrent>&)> &callback);
 
@@ -60,6 +61,7 @@ namespace core
 
         // Callbacks
         std::function<void(const torrent_ptr&)> torrent_added_cb_;
+        std::function<void(const torrent_ptr&)> torrent_finished_cb_;
         std::function<void(const torrent_ptr&)> torrent_removed_cb_;
         std::function<void(const torrent_ptr&)> torrent_updated_cb_;
     };
