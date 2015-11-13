@@ -1,5 +1,7 @@
 # PicoTorrent
 
+[![Join the chat at https://gitter.im/picotorrent/picotorrent](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/picotorrent/picotorrent?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 A tiny, hackable BitTorrent client written in modern C++. Based on
 Rasterbar-libtorrent to provide high performance and low memory usage.
 
