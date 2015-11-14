@@ -33,11 +33,13 @@ namespace app
     private:
         void on_command_line_args(const std::wstring &args);
         void on_file_add_torrent();
+        void on_notifyicon_context_menu(const POINT &p);
         void on_torrent_context_menu(const POINT &p, const std::shared_ptr<core::torrent> &torrent);
         void on_view_preferences();
 
         void on_unhandled_exception(const std::string& stacktrace);
         void torrent_added(const std::shared_ptr<core::torrent> &torrent);
+        void torrent_finished(const std::shared_ptr<core::torrent> &torrent);
         void torrent_removed(const std::shared_ptr<core::torrent> &torrent);
         void torrent_updated(const std::shared_ptr<core::torrent> &torrent);
 

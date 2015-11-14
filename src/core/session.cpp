@@ -109,6 +109,11 @@ void session::on_torrent_added(const std::function<void(const torrent_ptr&)> &ca
     torrent_added_cb_ = callback;
 }
 
+void session::on_torrent_finished(const std::function<void(const torrent_ptr&)> &callback)
+{
+    torrent_finished_cb_ = callback;
+}
+
 void session::on_torrent_removed(const std::function<void(const torrent_ptr&)> &callback)
 {
     torrent_removed_cb_ = callback;
@@ -376,6 +381,19 @@ void session::read_alerts()
                     {
                         torrent_updated_cb_(t);
                     }
+                }
+                break;
+            }
+            case lt::torrent_finished_alert::alert_type:
+            {
+                lt::torrent_finished_alert *al = lt::alert_cast<lt::torrent_finished_alert>(alert);
+                torrent_ptr &torrent = torrents_.at(al->handle.info_hash());
+
+                // Check `total_download` to see if we have a real finished torrent or one that
+                // was finished when we added it and just completed the hash check.
+                if (torrent_finished_cb_ && al->handle.status().total_download > 0)
+                {
+                    torrent_finished_cb_(torrent);
                 }
                 break;
             }

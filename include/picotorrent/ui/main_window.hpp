@@ -9,6 +9,7 @@
 #define WM_TORRENT_ADDED WM_USER+1
 #define WM_TORRENT_REMOVED WM_USER+2
 #define WM_TORRENT_UPDATED WM_USER+3
+#define WM_TORRENT_FINISHED WM_USER+4
 
 namespace picotorrent
 {
@@ -18,6 +19,7 @@ namespace core
 }
 namespace ui
 {
+    class notify_icon;
     class torrent_list_item;
     class torrent_list_view;
 
@@ -31,10 +33,12 @@ namespace ui
         ~main_window();
 
         void create();
+        void exit();
         HWND handle();
         void hide();
         void on_command(int id, const command_func_t &callback);
         void on_copydata(const std::function<void(const std::wstring&)> &callback);
+        void on_notifyicon_context_menu(const std::function<void(const POINT &p)> &callback);
         void on_torrent_context_menu(const std::function<void(const POINT &p, const std::shared_ptr<core::torrent>&)> &callback);
         void post_message(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -45,10 +49,13 @@ namespace ui
         HWND hWnd_;
         command_map_t commands_;
         std::function<void(const std::wstring&)> copydata_cb_;
+        std::function<void(const POINT &p)> notifyicon_context_cb_;
         std::function<void(const POINT &p, const std::shared_ptr<core::torrent>&)> torrent_context_cb_;
         std::function<void()> sort_items_;
         std::vector<torrent_list_item> items_;
+        std::shared_ptr<notify_icon> noticon_;
         std::unique_ptr<torrent_list_view> list_view_;
+        std::wstring last_finished_save_path_;
     };
 }
 }
