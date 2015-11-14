@@ -151,6 +151,7 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     case WM_TORRENT_FINISHED:
     {
         const core::torrent_ptr &t = *(core::torrent_ptr*)lParam;
+        last_finished_save_path_ = to_wstring(t->save_path());
         noticon_->show_balloon(TEXT("Torrent finished"), to_wstring(t->name()));
         break;
     }
@@ -170,6 +171,12 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
                 notifyicon_context_cb_(pt);
             }
+            break;
+        }
+
+        case NIN_BALLOONUSERCLICK:
+        {
+            ShellExecute(handle(), TEXT("open"), last_finished_save_path_.c_str(), NULL, NULL, SW_SHOWNORMAL);
             break;
         }
         }

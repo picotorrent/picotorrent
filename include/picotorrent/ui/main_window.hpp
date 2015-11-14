@@ -55,6 +55,7 @@ namespace ui
         std::vector<torrent_list_item> items_;
         std::shared_ptr<notify_icon> noticon_;
         std::unique_ptr<torrent_list_view> list_view_;
+        std::wstring last_finished_save_path_;
     };
 }
 }
