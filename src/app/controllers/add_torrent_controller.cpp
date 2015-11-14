@@ -39,6 +39,11 @@ void add_torrent_controller::execute()
     dlg.set_guid(DLG_OPEN);
     dlg.show(wnd_->handle());
 
+    if (dlg.get_paths().empty())
+    {
+        return;
+    }
+
     add_files(dlg.get_paths(), get_save_path());
 }
 
