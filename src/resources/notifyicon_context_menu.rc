@@ -1,0 +1,11 @@
+#include <picotorrent/ui/resources.hpp>
+
+IDR_NOTIFYICON_CONTEXT_MENU MENU DISCARDABLE
+{
+    POPUP ""
+    {
+        MENUITEM "&Add torrent", ID_NOTIFYICON_ADD
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit", ID_NOTIFYICON_EXIT
+    }
+}

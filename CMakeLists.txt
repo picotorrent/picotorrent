@@ -12,6 +12,7 @@ set(PICOAPP_SOURCES
     src/app/message_loop
     src/app/controllers/add_torrent_controller
     src/app/controllers/move_torrent_controller
+    src/app/controllers/notifyicon_context_menu_controller
     src/app/controllers/remove_torrent_controller
     src/app/controllers/torrent_context_menu_controller
     src/app/controllers/unhandled_exception_controller
@@ -58,6 +59,7 @@ set(PICOUI_SOURCES
     src/ui/file_dialog_callback
     src/ui/main_window
     src/ui/notify_icon
+    src/ui/notifyicon_context_menu
     src/ui/open_file_dialog
     src/ui/open_torrent_dialog
     src/ui/preferences_dialog
@@ -151,6 +153,7 @@ add_executable(
     # to avoid linker issues.
     src/resources/app_icon.rc
     src/resources/main_menu.rc
+    src/resources/notifyicon_context_menu.rc
     src/resources/preferences_dialog.rc
     src/resources/torrent_context_menu.rc
 )

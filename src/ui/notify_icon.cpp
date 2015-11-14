@@ -26,9 +26,9 @@ void notify_icon::add()
     NOTIFYICONDATA nid = { 0 };
     nid.cbSize = sizeof(NOTIFYICONDATA);
     nid.hWnd = parent_;
-    nid.uFlags = NIF_ICON | NIF_TIP;
+    nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     nid.uID = WM_USER + 1;
-    nid.uCallbackMessage = WM_USER + 2;
+    nid.uCallbackMessage = WM_NOTIFYICON;
     nid.hIcon = icon_;
 
     // Set icon tooltip
@@ -37,6 +37,13 @@ void notify_icon::add()
     if (!Shell_NotifyIcon(NIM_ADD, &nid))
     {
         LOG(error) << "Failed to add notify icon: " << GetLastError();
+    }
+
+    nid.uVersion = NOTIFYICON_VERSION_4;
+
+    if (!Shell_NotifyIcon(NIM_SETVERSION, &nid))
+    {
+        LOG(error) << "Failed to set notify icon verion: " << GetLastError();
     }
 }
 

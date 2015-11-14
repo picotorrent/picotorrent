@@ -13,6 +13,7 @@
 #include <picotorrent/ui/task_dialog.hpp>
 #include <picotorrent/ui/torrent_list_item.hpp>
 #include <picotorrent/ui/torrent_list_view.hpp>
+#include <shellapi.h>
 #include <strsafe.h>
 
 namespace core = picotorrent::core;
@@ -64,6 +65,11 @@ void main_window::create()
         static_cast<LPVOID>(this));
 }
 
+void main_window::exit()
+{
+    DestroyWindow(handle());
+}
+
 HWND main_window::handle()
 {
     return hWnd_;
@@ -77,6 +83,11 @@ void main_window::on_command(int id, const command_func_t &callback)
 void main_window::on_copydata(const std::function<void(const std::wstring&)> &callback)
 {
     copydata_cb_ = callback;
+}
+
+void main_window::on_notifyicon_context_menu(const std::function<void(const POINT &p)> &callback)
+{
+    notifyicon_context_cb_ = callback;
 }
 
 void main_window::on_torrent_context_menu(const std::function<void(const POINT &p, const std::shared_ptr<core::torrent>&)> &callback)
@@ -141,6 +152,28 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     {
         const core::torrent_ptr &t = *(core::torrent_ptr*)lParam;
         noticon_->show_balloon(TEXT("Torrent finished"), to_wstring(t->name()));
+        break;
+    }
+
+    case WM_NOTIFYICON:
+    {
+        DWORD ev = LOWORD(lParam);
+        
+        switch (ev)
+        {
+        case WM_CONTEXTMENU:
+        {
+            if (notifyicon_context_cb_)
+            {
+                POINT pt;
+                GetCursorPos(&pt);
+
+                notifyicon_context_cb_(pt);
+            }
+            break;
+        }
+        }
+
         break;
     }
 
@@ -215,6 +248,8 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
         case LVN_COLUMNCLICK:
         {
+            noticon_->show_balloon(TEXT("HEj"), TEXT("HEHE"));
+
             LPNMLISTVIEW lv = reinterpret_cast<LPNMLISTVIEW>(nmhdr);
             int colIndex = lv->iSubItem;
             torrent_list_view::sort_order currentOrder = list_view_->get_column_sort(colIndex);

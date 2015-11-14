@@ -3,6 +3,7 @@
 #include <picotorrent/app/command_line.hpp>
 #include <picotorrent/app/message_loop.hpp>
 #include <picotorrent/app/controllers/add_torrent_controller.hpp>
+#include <picotorrent/app/controllers/notifyicon_context_menu_controller.hpp>
 #include <picotorrent/app/controllers/torrent_context_menu_controller.hpp>
 #include <picotorrent/app/controllers/unhandled_exception_controller.hpp>
 #include <picotorrent/app/controllers/view_preferences_controller.hpp>
@@ -34,6 +35,7 @@ application::application()
     main_window_->on_command(ID_FILE_ADDTORRENT, std::bind(&application::on_file_add_torrent, this));
     main_window_->on_command(ID_VIEW_PREFERENCES, std::bind(&application::on_view_preferences, this));
     main_window_->on_copydata(std::bind(&application::on_command_line_args, this, std::placeholders::_1));
+    main_window_->on_notifyicon_context_menu(std::bind(&application::on_notifyicon_context_menu, this, std::placeholders::_1));
     main_window_->on_torrent_context_menu(std::bind(&application::on_torrent_context_menu, this, std::placeholders::_1, std::placeholders::_2));
 
     sess_->on_torrent_added(std::bind(&application::torrent_added, this, std::placeholders::_1));
@@ -129,6 +131,12 @@ void application::on_file_add_torrent()
 {
     controllers::add_torrent_controller add_controller(sess_, main_window_);
     add_controller.execute();
+}
+
+void application::on_notifyicon_context_menu(const POINT &p)
+{
+    controllers::notifyicon_context_menu_controller notify_controller(sess_, main_window_);
+    notify_controller.execute(p);
 }
 
 void application::on_torrent_context_menu(const POINT &p, const std::shared_ptr<core::torrent> &torrent)

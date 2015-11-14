@@ -3,6 +3,8 @@
 #include <string>
 #include <windows.h>
 
+#define WM_NOTIFYICON WM_USER + 10
+
 namespace picotorrent
 {
 namespace ui
