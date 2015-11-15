@@ -2,13 +2,17 @@
 
 #include <picotorrent/app/controllers/move_torrent_controller.hpp>
 #include <picotorrent/app/controllers/remove_torrent_controller.hpp>
+#include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/hash.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/resources.hpp>
 #include <picotorrent/ui/torrent_context_menu.hpp>
+#include <shlobj.h>
+#include <shlwapi.h>
 
+using picotorrent::common::to_wstring;
 using picotorrent::core::session;
 using picotorrent::core::torrent;
 using picotorrent::ui::main_window;
@@ -81,6 +85,13 @@ void torrent_context_menu_controller::execute(const POINT &p)
         copy_to_clipboard(torrent_->info_hash()->to_string());
         break;
     }
+    case TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER:
+    {
+        open_and_select_item(
+            to_wstring(torrent_->save_path()),
+            to_wstring(torrent_->name()));
+        break;
+    }
     }
 }
 
@@ -94,4 +105,26 @@ void torrent_context_menu_controller::copy_to_clipboard(const std::string &text)
     EmptyClipboard();
     SetClipboardData(CF_TEXT, hMem);
     CloseClipboard();
+}
+
+void torrent_context_menu_controller::open_and_select_item(const std::wstring &path, const std::wstring &item)
+{
+    LPITEMIDLIST dir = ILCreateFromPath(path.c_str());
+
+    TCHAR p[MAX_PATH];
+    PathCombine(p, path.c_str(), item.c_str());
+
+    LPITEMIDLIST i1 = ILCreateFromPath(p);
+
+    // Items to select
+    const ITEMIDLIST* selection[] = {i1};
+
+    SHOpenFolderAndSelectItems(
+        dir,
+        ARRAYSIZE(selection),
+        selection,
+        0);
+
+    ILFree(i1);
+    ILFree(dir);
 }
