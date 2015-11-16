@@ -30,6 +30,7 @@ void view_preferences_controller::init_dlg(preferences_dialog &dlg)
 
     dlg.set_text(ID_PREFS_DEFSAVEPATH, cfg.default_save_path());
     dlg.set_text(ID_PREFS_LISTENPORT, std::to_wstring(cfg.listen_port()));
+    dlg.set_checked(ID_PREFS_PROMPTFORSAVEPATH, cfg.prompt_for_save_path());
 }
 
 void view_preferences_controller::ok_dlg(preferences_dialog &dlg)
@@ -39,7 +40,9 @@ void view_preferences_controller::ok_dlg(preferences_dialog &dlg)
     std::wstring savePath = dlg.get_text(ID_PREFS_DEFSAVEPATH);
     std::wstring listenPortText = dlg.get_text(ID_PREFS_LISTENPORT);
     int listenPort = std::stoi(listenPortText);
+    bool promptForSavePath = dlg.get_checked(ID_PREFS_PROMPTFORSAVEPATH);
 
     cfg.set_default_save_path(savePath);
     cfg.set_listen_port(listenPort);
+    cfg.set_prompt_for_save_path(promptForSavePath);
 }

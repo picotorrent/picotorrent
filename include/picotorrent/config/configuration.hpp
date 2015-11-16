@@ -32,6 +32,9 @@ namespace config
         int listen_port();
         void set_listen_port(int port);
 
+        bool prompt_for_save_path();
+        void set_prompt_for_save_path(bool value);
+
         int stop_tracker_timeout();
 
     private:

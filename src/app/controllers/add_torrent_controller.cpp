@@ -103,6 +103,11 @@ std::wstring add_torrent_controller::get_save_path()
 {
     configuration &cfg = configuration::instance();
 
+    if (!cfg.prompt_for_save_path())
+    {
+        return cfg.default_save_path();
+    }
+
     ui::open_file_dialog dlg;
     dlg.set_guid(DLG_SAVE);
     dlg.set_folder(cfg.default_save_path());
