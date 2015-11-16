@@ -87,6 +87,7 @@ Task("Build-Installer")
 
     WiXLight(BuildDirectory + File("PicoTorrent.wixobj"), new LightSettings
     {
+        Extensions = new [] { "WixUIExtension", "WixUtilExtension" },
         OutputFile = BuildDirectory + File(Installer)
     });
 });

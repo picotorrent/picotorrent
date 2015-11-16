@@ -11,7 +11,8 @@
         <Package Id="*"
             Description="PicoTorrent installer"
             Compressed="yes"
-            InstallScope="perMachine" />
+            InstallScope="perMachine"
+            InstallerVersion="301" />
 
         <Media Id="1" Cabinet="PicoTorrent.cab" EmbedCab="yes" />
         <Icon Id="I_PicoTorrent.ico" SourceFile="$(var.ResourceDirectory)\app.ico" />
@@ -21,7 +22,6 @@
                 <Directory Id="INSTALLDIR" Name="PicoTorrent">
                     <Component Id="C_PicoTorrent" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205" Win64="yes">
                         <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" Source="$(var.BuildDirectory)\PicoTorrent.exe" KeyPath="yes" />
-                        <File Id="F_PicoTorrent.pdb" Name="PicoTorrent.pdb" Source="$(var.BuildDirectory)\PicoTorrent.pdb" />
 
                         <!-- Shortcut -->
                         <Shortcut Id="S_PicoTorrent"
@@ -156,14 +156,67 @@
                                        Value="&quot;[INSTALLDIR]PicoTorrent.exe&quot; &quot;%1&quot;"
                                        Type="string" />
                     </Component>
+
+                    <Component Id="C_DebugSymbols" Guid="501628a2-baa0-4a6e-a1ad-cd6b8de5f32f" Win64="yes">
+                        <File Id="F_PicoTorrent.pdb" Name="PicoTorrent.pdb" Source="$(var.BuildDirectory)\PicoTorrent.pdb" />
+                    </Component>
                 </Directory>
             </Directory>
 
             <Directory Id="ProgramMenuFolder" />
+
+            <!-- Visual C++ 2015 redistributable -->
+            <Merge Id="VCRedist" SourceFile="$(var.ResourceDirectory)\Microsoft_VC140_CRT_x64.msm" DiskId="1" Language="0"/>
         </Directory>
 
-        <Feature Id="F_Complete" Level="1">
+        <Feature Id="F_Complete"
+                 Title="PicoTorrent"
+                 Absent="disallow"
+                 ConfigurableDirectory="INSTALLDIR"
+                 Display="expand"
+                 Level="1">
+
             <ComponentRef Id="C_PicoTorrent" />
+
+            <Feature Id="F_DebugSymbols"
+                     Title="PDB files"
+                     Description="The PDB files contains symbols which are helpful when debugging issues with PicoTorrent."
+                     Level="1">
+
+                <ComponentRef Id="C_DebugSymbols" />
+            </Feature>
         </Feature>
+
+        <Feature Id="F_VCRedist"
+                 Title="Visual C++ 2015 Runtime"
+                 Description="The Microsoft Visual C++ 2015 Runtime is required to run PicoTorrent."
+                 Level="1">
+
+            <MergeRef Id="VCRedist" />
+        </Feature>
+
+        <WixVariable Id="WixUILicenseRtf" Value="LICENSE.rtf" />
+
+        <Property Id="ARPPRODUCTICON" Value="I_PicoTorrent.ico" />
+        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch PicoTorrent" />
+        <Property Id="WixShellExecTarget" Value="[#F_PicoTorrent.exe]" />
+
+        <UI>
+            <UIRef Id="WixUI_FeatureTree" />
+            <UIRef Id="WixUI_ErrorProgressText" />
+
+            <Publish Dialog="ExitDialog"
+                     Control="Finish"
+                     Event="DoAction"
+                     Value="LaunchApplication">
+
+                WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed
+            </Publish>
+        </UI>
+
+        <CustomAction Id="LaunchApplication"
+                      BinaryKey="WixCA"
+                      DllEntry="WixShellExec"
+                      Impersonate="yes" />
     </Product>
 </Wix>
