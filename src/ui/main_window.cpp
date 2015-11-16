@@ -100,6 +100,11 @@ void main_window::post_message(UINT uMsg, WPARAM wParam, LPARAM lParam)
     PostMessage(hWnd_, uMsg, wParam, lParam);
 }
 
+void main_window::send_message(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    SendMessage(hWnd_, uMsg, wParam, lParam);
+}
+
 void main_window::hide()
 {
     ::ShowWindow(hWnd_, SW_HIDE);
@@ -255,8 +260,6 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
         case LVN_COLUMNCLICK:
         {
-            noticon_->show_balloon(TEXT("HEj"), TEXT("HEHE"));
-
             LPNMLISTVIEW lv = reinterpret_cast<LPNMLISTVIEW>(nmhdr);
             int colIndex = lv->iSubItem;
             torrent_list_view::sort_order currentOrder = list_view_->get_column_sort(colIndex);

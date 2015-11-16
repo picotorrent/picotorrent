@@ -169,7 +169,7 @@ void application::torrent_finished(const std::shared_ptr<core::torrent> &torrent
 
 void application::torrent_removed(const std::shared_ptr<core::torrent> &torrent)
 {
-    main_window_->post_message(WM_TORRENT_REMOVED, NULL, (LPARAM)&torrent);
+    main_window_->send_message(WM_TORRENT_REMOVED, NULL, (LPARAM)&torrent);
 }
 
 void application::torrent_updated(const std::shared_ptr<core::torrent> &torrent)

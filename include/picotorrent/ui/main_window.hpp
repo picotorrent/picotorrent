@@ -41,6 +41,7 @@ namespace ui
         void on_notifyicon_context_menu(const std::function<void(const POINT &p)> &callback);
         void on_torrent_context_menu(const std::function<void(const POINT &p, const std::shared_ptr<core::torrent>&)> &callback);
         void post_message(UINT uMsg, WPARAM wParam, LPARAM lParam);
+        void send_message(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     private:
         LRESULT CALLBACK wnd_proc(_In_ HWND, _In_ UINT, _In_ WPARAM, _In_ LPARAM);

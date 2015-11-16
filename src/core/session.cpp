@@ -408,6 +408,8 @@ void session::read_alerts()
                 {
                     torrent_removed_cb_(torrent);
                 }
+
+                torrents_.erase(al->info_hash);
                 break;
             }
             }
