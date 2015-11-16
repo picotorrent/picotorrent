@@ -14,9 +14,11 @@ namespace ui
         preferences_dialog(HWND hParent);
 
         int do_modal();
+        bool get_checked(int controlId);
         std::wstring get_text(int controlId);
         void on_ok(const std::function<void(preferences_dialog&)> &callback);
         void on_init(const std::function<void(preferences_dialog&)> &callback);
+        void set_checked(int controlId, bool checked);
         void set_text(int controlId, const std::wstring &text);
 
     private:

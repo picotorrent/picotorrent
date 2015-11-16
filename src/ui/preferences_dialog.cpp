@@ -21,6 +21,11 @@ int preferences_dialog::do_modal()
     return (int)result;
 }
 
+bool preferences_dialog::get_checked(int controlId)
+{
+    return IsDlgButtonChecked(hWnd_, controlId);
+}
+
 std::wstring preferences_dialog::get_text(int controlId)
 {
     HWND hItem = GetDlgItem(hWnd_, controlId);
@@ -39,6 +44,11 @@ void preferences_dialog::on_init(const std::function<void(preferences_dialog&)> 
 void preferences_dialog::on_ok(const std::function<void(preferences_dialog&)> &callback)
 {
     ok_cb_ = callback;
+}
+
+void preferences_dialog::set_checked(int controlId, bool checked)
+{
+    CheckDlgButton(hWnd_, controlId, checked ? BST_CHECKED : BST_UNCHECKED);
 }
 
 void preferences_dialog::set_text(int controlId, const std::wstring &text)
@@ -65,6 +75,12 @@ INT_PTR preferences_dialog::dlg_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 
             EndDialog(hwndDlg, wParam);
             return TRUE;
+        }
+        
+        case ID_PREFS_PROMPTFORSAVEPATH:
+        {
+            set_checked(ID_PREFS_PROMPTFORSAVEPATH, !get_checked(ID_PREFS_PROMPTFORSAVEPATH));
+            break;
         }
         }
 

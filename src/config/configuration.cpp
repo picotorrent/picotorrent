@@ -59,6 +59,16 @@ void configuration::set_listen_port(int port)
     set("listen_port", port);
 }
 
+bool configuration::prompt_for_save_path()
+{
+    return get_or_default("prompt_for_save_path", true);
+}
+
+void configuration::set_prompt_for_save_path(bool value)
+{
+    set("prompt_for_save_path", value);
+}
+
 int configuration::stop_tracker_timeout()
 {
     return get_or_default("stop_tracker_timeout", 1);

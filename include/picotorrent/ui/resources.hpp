@@ -15,6 +15,7 @@
 // Preferences dialog
 #define ID_PREFS_DEFSAVEPATH 9101
 #define ID_PREFS_LISTENPORT 9102
+#define ID_PREFS_PROMPTFORSAVEPATH 9103
 
 // Torrent context menu
 #define IDR_TORRENT_CONTEXT_MENU 4100
