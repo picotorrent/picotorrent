@@ -1,8 +1,13 @@
 #include <picotorrent/ui/preferences_dialog.hpp>
 
+#include <picotorrent/filesystem/path.hpp>
+#include <picotorrent/ui/open_file_dialog.hpp>
 #include <picotorrent/ui/resources.hpp>
 
+namespace fs = picotorrent::filesystem;
 using picotorrent::ui::preferences_dialog;
+
+const GUID DLG_BROWSE = { 0x7D5FE367, 0xE148, 0x4A96,{ 0xB3, 0x26, 0x42, 0xEF, 0x23, 0x7A, 0x36, 0x62 } };
 
 preferences_dialog::preferences_dialog(HWND hParent)
     : hParent_(hParent)
@@ -75,6 +80,26 @@ INT_PTR preferences_dialog::dlg_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 
             EndDialog(hwndDlg, wParam);
             return TRUE;
+        }
+
+        case ID_PREFS_DEFSAVEPATH_BROWSE:
+        {
+            ui::open_file_dialog dlg;
+            dlg.set_guid(DLG_BROWSE);
+            dlg.set_folder(get_text(ID_PREFS_DEFSAVEPATH));
+            dlg.set_options(dlg.options() | FOS_PICKFOLDERS);
+            dlg.set_title(TEXT("Choose save path"));
+
+            dlg.show(hWnd_);
+
+            std::vector<fs::path> paths = dlg.get_paths();
+
+            if (paths.size() > 0)
+            {
+                set_text(ID_PREFS_DEFSAVEPATH, paths[0].to_string());
+            }
+
+            break;
         }
         
         case ID_PREFS_PROMPTFORSAVEPATH:
