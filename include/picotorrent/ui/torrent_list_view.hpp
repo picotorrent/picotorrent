@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <windows.h>
 #include <commctrl.h>
 #include <uxtheme.h>
@@ -36,6 +37,7 @@ namespace ui
         void create();
         int get_column_count();
         sort_order get_column_sort(int colIndex);
+        std::vector<int> get_selected_items();
         HWND handle();
         LRESULT on_custom_draw(LPNMLVCUSTOMDRAW lpCustomDraw, const torrent_list_item&);
         void on_getdispinfo(NMLVDISPINFO*, const torrent_list_item&);

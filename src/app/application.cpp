@@ -139,9 +139,9 @@ void application::on_notifyicon_context_menu(const POINT &p)
     notify_controller.execute(p);
 }
 
-void application::on_torrent_context_menu(const POINT &p, const std::shared_ptr<core::torrent> &torrent)
+void application::on_torrent_context_menu(const POINT &p, const std::vector<std::shared_ptr<core::torrent>> &torrents)
 {
-    controllers::torrent_context_menu_controller menu_controller(sess_, torrent, main_window_);
+    controllers::torrent_context_menu_controller menu_controller(sess_, torrents, main_window_);
     menu_controller.execute(p);
 }
 

@@ -50,7 +50,7 @@ void torrent_list_view::create()
         0,
         WC_LISTVIEW,
         0,
-        WS_CHILD | WS_VISIBLE | LVS_OWNERDATA | LVS_REPORT | LVS_SINGLESEL,
+        WS_CHILD | WS_VISIBLE | LVS_OWNERDATA | LVS_REPORT,
         0,
         0,
         rcClient.right - rcClient.left,
@@ -116,6 +116,20 @@ torrent_list_view::sort_order torrent_list_view::get_column_sort(int colIndex)
     }
 
     return torrent_list_view::sort_order::none;
+}
+
+std::vector<int> torrent_list_view::get_selected_items()
+{
+    std::vector<int> itms;
+    int pos = ListView_GetNextItem(hWnd_, -1, LVNI_SELECTED);
+
+    while (pos != -1)
+    {
+        itms.push_back(pos);
+        pos = ListView_GetNextItem(hWnd_, pos, LVNI_SELECTED);
+    }
+
+    return itms;
 }
 
 HWND torrent_list_view::handle()

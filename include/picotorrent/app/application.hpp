@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 #include <windows.h>
 
 namespace picotorrent
@@ -34,7 +35,7 @@ namespace app
         void on_command_line_args(const std::wstring &args);
         void on_file_add_torrent();
         void on_notifyicon_context_menu(const POINT &p);
-        void on_torrent_context_menu(const POINT &p, const std::shared_ptr<core::torrent> &torrent);
+        void on_torrent_context_menu(const POINT &p, const std::vector<std::shared_ptr<core::torrent>> &torrents);
         void on_view_preferences();
 
         void on_unhandled_exception(const std::string& stacktrace);

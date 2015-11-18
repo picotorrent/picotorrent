@@ -14,8 +14,8 @@ using picotorrent::ui::main_window;
 
 move_torrent_controller::move_torrent_controller(
     const std::shared_ptr<main_window> &wnd,
-    const std::shared_ptr<torrent> &torrent)
-    : torrent_(torrent),
+    const std::vector<std::shared_ptr<torrent>> &torrents)
+    : torrents_(torrents),
     wnd_(wnd)
 {
 }
@@ -26,10 +26,15 @@ move_torrent_controller::~move_torrent_controller()
 
 void move_torrent_controller::execute()
 {
-    std::wstring s = to_wstring(torrent_->save_path());
 
     ui::open_file_dialog dlg;
-    dlg.set_folder(s);
+
+    if (torrents_.size() == 1)
+    {
+        std::wstring s = to_wstring(torrents_[0]->save_path());
+        dlg.set_folder(s);
+    }
+    
     dlg.set_options(dlg.options() | FOS_PICKFOLDERS);
     dlg.set_title(TEXT("Select destination"));
 
@@ -39,6 +44,9 @@ void move_torrent_controller::execute()
 
     if (paths.size() > 0)
     {
-        torrent_->move_storage(to_string(paths[0].to_string()));
+        for (const std::shared_ptr<torrent> &t : torrents_)
+        {
+            t->move_storage(to_string(paths[0].to_string()));
+        }
     }
 }

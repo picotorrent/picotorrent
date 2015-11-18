@@ -1,5 +1,6 @@
 #include <picotorrent/app/controllers/remove_torrent_controller.hpp>
 
+#include <algorithm>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/ui/remove_torrent_dialog.hpp>
@@ -14,10 +15,10 @@ using picotorrent::ui::main_window;
 remove_torrent_controller::remove_torrent_controller(
     const std::shared_ptr<main_window> &wnd,
     const std::shared_ptr<session> &session,
-    const std::shared_ptr<torrent> &torrent)
+    const std::vector<std::shared_ptr<torrent>> &torrents)
     : wnd_(wnd),
     session_(session),
-    torrent_(torrent)
+    torrents_(torrents)
 {
 }
 
@@ -33,13 +34,19 @@ void remove_torrent_controller::execute()
     {
     case ID_REMOVE_DATA:
     {
-        session_->remove_torrent(torrent_, true);
+        for (const std::shared_ptr<torrent> &t : torrents_)
+        {
+            session_->remove_torrent(t, true);
+        }
         break;
     }
 
     case ID_KEEP_DATA:
     {
-        session_->remove_torrent(torrent_, false);
+        for (const std::shared_ptr<torrent> &t : torrents_)
+        {
+            session_->remove_torrent(t, false);
+        }
         break;
     }
     }

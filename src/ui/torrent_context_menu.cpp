@@ -10,6 +10,11 @@ torrent_context_menu::torrent_context_menu()
     menu_ = GetSubMenu(menu_, 0);
 }
 
+void torrent_context_menu::disable_open_in_explorer()
+{
+    EnableMenuItem(menu_, TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER, MF_BYCOMMAND | MF_DISABLED);
+}
+
 void torrent_context_menu::highlight_pause()
 {
     SetMenuDefaultItem(menu_, TORRENT_CONTEXT_MENU_PAUSE, FALSE);
