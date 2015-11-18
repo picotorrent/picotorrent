@@ -11,6 +11,7 @@ set(PICOAPP_SOURCES
     src/app/command_line
     src/app/message_loop
     src/app/controllers/add_torrent_controller
+    src/app/controllers/application_update_controller
     src/app/controllers/move_torrent_controller
     src/app/controllers/notifyicon_context_menu_controller
     src/app/controllers/remove_torrent_controller
