@@ -241,6 +241,22 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         noticon_ = std::make_shared<notify_icon>(hWnd);
         noticon_->add();
 
+        // Set up keyboard shortcuts
+        RegisterHotKey(hWnd, IDHOT_SELECT_ALL, MOD_CONTROL | MOD_NOREPEAT, 0x41);
+
+        break;
+    }
+
+    case WM_HOTKEY:
+    {
+        switch (wParam)
+        {
+        case IDHOT_SELECT_ALL:
+        {
+            ListView_SetItemState(list_view_->handle(), -1, LVIS_SELECTED, 2);
+            break;
+        }
+        }
         break;
     }
 
