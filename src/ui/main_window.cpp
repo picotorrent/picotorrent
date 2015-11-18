@@ -90,7 +90,7 @@ void main_window::on_notifyicon_context_menu(const std::function<void(const POIN
     notifyicon_context_cb_ = callback;
 }
 
-void main_window::on_torrent_context_menu(const std::function<void(const POINT &p, const std::shared_ptr<core::torrent>&)> &callback)
+void main_window::on_torrent_context_menu(const std::function<void(const POINT &p, const std::vector<std::shared_ptr<core::torrent>>&)> &callback)
 {
     torrent_context_cb_ = callback;
 }
@@ -241,6 +241,22 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         noticon_ = std::make_shared<notify_icon>(hWnd);
         noticon_->add();
 
+        // Set up keyboard shortcuts
+        RegisterHotKey(hWnd, IDHOT_SELECT_ALL, MOD_CONTROL | MOD_NOREPEAT, 0x41);
+
+        break;
+    }
+
+    case WM_HOTKEY:
+    {
+        switch (wParam)
+        {
+        case IDHOT_SELECT_ALL:
+        {
+            ListView_SetItemState(list_view_->handle(), -1, LVIS_SELECTED, 2);
+            break;
+        }
+        }
         break;
     }
 
@@ -358,25 +374,26 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
             if (nmhdr->hwndFrom == list_view_->handle())
             {
-                LVHITTESTINFO hit = { 0 };
-                GetCursorPos(&hit.pt);
-                ScreenToClient(nmhdr->hwndFrom, &hit.pt);
+                std::vector<int> selectedItems = list_view_->get_selected_items();
 
-                ListView_HitTest(nmhdr->hwndFrom, &hit);
-
-                ClientToScreen(nmhdr->hwndFrom, &hit.pt);
-
-                if (hit.iItem < 0)
+                if (selectedItems.size() == 0)
                 {
                     break;
                 }
 
-                const torrent_list_item &item = items_.at(hit.iItem);
+                std::vector<core::torrent_ptr> selectedTorrents;
+
+                for (int i : selectedItems)
+                {
+                    selectedTorrents.push_back(items_.at(i).torrent());
+                }
 
                 if (torrent_context_cb_)
                 {
-                    core::torrent_ptr t = item.torrent();
-                    torrent_context_cb_(hit.pt, item.torrent());
+                    POINT pt;
+                    GetCursorPos(&pt);
+
+                    torrent_context_cb_(pt, selectedTorrents);
                 }
             }
             break;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 namespace picotorrent
 {
@@ -23,7 +24,7 @@ namespace controllers
         explicit remove_torrent_controller(
             const std::shared_ptr<ui::main_window> &wnd,
             const std::shared_ptr<core::session> &session,
-            const std::shared_ptr<core::torrent> &torrent);
+            const std::vector<std::shared_ptr<core::torrent>> &torrent);
 
         ~remove_torrent_controller();
 
@@ -32,7 +33,7 @@ namespace controllers
     private:
         std::shared_ptr<ui::main_window> wnd_;
         std::shared_ptr<core::session> session_;
-        std::shared_ptr<core::torrent> torrent_;
+        std::vector<std::shared_ptr<core::torrent>> torrents_;
     };
 }
 }
