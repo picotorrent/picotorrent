@@ -55,6 +55,7 @@ set(PICOLOGGING_SOURCES
 set(PICONET_SOURCES
     src/net/http_client
     src/net/http_request
+    src/net/http_response
     src/net/uri
 )
 
@@ -91,6 +92,7 @@ add_definitions(
     -D_UNICODE
     -D_WIN32
     -DBOOST_ALL_NO_LIB
+    -DNOMINMAX
     -DPICOJSON_USE_INT64
     -DTORRENT_NO_DEPRECATE
     -DTORRENT_USE_OPENSSL

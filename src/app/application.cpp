@@ -114,8 +114,8 @@ int application::run(const std::wstring &args)
         on_command_line_args(args);
     }
 
-    controllers::application_update_controller update_controller(main_window_);
-    update_controller.execute();
+    updater_ = std::make_shared<controllers::application_update_controller>(main_window_);
+    updater_->execute();
 
     int result = message_loop::run();
 

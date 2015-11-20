@@ -6,6 +6,11 @@
 
 namespace picotorrent
 {
+namespace net
+{
+    class http_client;
+    class http_response;
+}
 namespace ui
 {
     class main_window;
@@ -18,12 +23,15 @@ namespace controllers
     {
     public:
         application_update_controller(const std::shared_ptr<ui::main_window> &wnd);
+        ~application_update_controller();
+
         void execute();
 
     protected:
-        void on_response(std::wstring content);
+        void on_response(const net::http_response &response);
 
     private:
+        std::shared_ptr<net::http_client> http_;
         std::shared_ptr<ui::main_window> wnd_;
     };
 }
