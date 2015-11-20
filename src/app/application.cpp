@@ -3,6 +3,7 @@
 #include <picotorrent/app/command_line.hpp>
 #include <picotorrent/app/message_loop.hpp>
 #include <picotorrent/app/controllers/add_torrent_controller.hpp>
+#include <picotorrent/app/controllers/application_update_controller.hpp>
 #include <picotorrent/app/controllers/notifyicon_context_menu_controller.hpp>
 #include <picotorrent/app/controllers/torrent_context_menu_controller.hpp>
 #include <picotorrent/app/controllers/unhandled_exception_controller.hpp>
@@ -112,6 +113,9 @@ int application::run(const std::wstring &args)
     {
         on_command_line_args(args);
     }
+
+    controllers::application_update_controller update_controller(main_window_);
+    update_controller.execute();
 
     int result = message_loop::run();
 

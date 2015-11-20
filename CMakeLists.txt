@@ -54,6 +54,8 @@ set(PICOLOGGING_SOURCES
 
 set(PICONET_SOURCES
     src/net/http_client
+    src/net/http_request
+    src/net/uri
 )
 
 set(PICOUI_SOURCES
