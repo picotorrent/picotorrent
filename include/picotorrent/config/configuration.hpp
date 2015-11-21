@@ -27,6 +27,9 @@ namespace config
         std::wstring default_save_path();
         void set_default_save_path(const std::wstring &path);
 
+        std::wstring ignored_update();
+        void set_ignored_update(const std::wstring &version);
+
         std::wstring listen_interface();
         
         int listen_port();

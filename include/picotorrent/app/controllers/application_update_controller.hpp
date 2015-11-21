@@ -10,6 +10,7 @@ namespace net
 {
     class http_client;
     class http_response;
+    class uri;
 }
 namespace ui
 {
@@ -28,6 +29,7 @@ namespace controllers
         void execute();
 
     protected:
+        void notify(const std::wstring &title, const net::uri &uri, const std::wstring &version);
         void on_response(const net::http_response &response);
 
     private:

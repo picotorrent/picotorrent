@@ -6,6 +6,7 @@
 using picotorrent::net::uri;
 
 uri::uri(const std::wstring &url)
+    : raw_(url)
 {
     URL_COMPONENTS components = { 0 };
     components.dwStructSize = sizeof(URL_COMPONENTS);
@@ -33,6 +34,11 @@ std::wstring uri::host_name() const
 int uri::port() const
 {
     return port_;
+}
+
+std::wstring uri::raw() const
+{
+    return raw_;
 }
 
 std::wstring uri::url_path() const

@@ -44,6 +44,16 @@ void configuration::set_default_save_path(const std::wstring &path)
     set("default_save_path", path);
 }
 
+std::wstring configuration::ignored_update()
+{
+    return get_or_default<std::wstring>("ignored_update", L"");
+}
+
+void configuration::set_ignored_update(const std::wstring &version)
+{
+    set("ignored_update", version);
+}
+
 std::wstring configuration::listen_interface()
 {
     return get_or_default<std::wstring>("listen_interface", L"0.0.0.0");
@@ -128,7 +138,10 @@ void configuration::set<int>(const char *name, int value)
 template<>
 void configuration::set<std::wstring>(const char *name, std::wstring value)
 {
-    (*value_)[name] = pj::value(to_string(value));
+    std::string s = to_string(value);
+    if (s[s.size() - 1] == '\0') { s = s.substr(0, s.size() - 1); }
+
+    (*value_)[name] = pj::value(s);
 }
 
 void configuration::load()

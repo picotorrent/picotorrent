@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 project("PicoTorrent")
 
+# Generate version information file
+file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
+configure_file("${CMAKE_SOURCE_DIR}/src/common/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/common/version_info.cpp" @ONLY)
+
+
 set(BOOST_ROOT      $ENV{BOOST_ROOT})
 set(LIBTORRENT_ROOT $ENV{LIBTORRENT_ROOT})
 set(OPENSSL_ROOT    $ENV{OPENSSL_ROOT})
@@ -23,7 +28,7 @@ set(PICOAPP_SOURCES
 set(PICOCOMMON_SOURCES
     src/common/environment
     src/common/string_operations
-    #src/common/timer
+    src/common/version_info
 )
 
 set(PICOCONFIG_SOURCES

@@ -13,6 +13,7 @@ namespace net
 
         std::wstring host_name() const;
         int port() const;
+        std::wstring raw() const;
         std::wstring url_path() const;
 
     private:
@@ -20,6 +21,7 @@ namespace net
         std::wstring hostName_;
         std::wstring urlPath_;
         int port_;
+        std::wstring raw_;
     };
 }
 }
