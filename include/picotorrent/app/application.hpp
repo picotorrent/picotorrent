@@ -20,6 +20,11 @@ namespace ui
 
 namespace app
 {
+    namespace controllers
+    {
+        class application_update_controller;
+    }
+
     class application
     {
     public:
@@ -47,6 +52,8 @@ namespace app
         HANDLE mtx_;
         std::shared_ptr<ui::main_window> main_window_;
         std::shared_ptr<core::session> sess_;
+
+        std::shared_ptr<controllers::application_update_controller> updater_;
     };
 }
 }

@@ -33,6 +33,11 @@ int configuration::alert_queue_size()
     return get_or_default("alert_queue_size", 500);
 }
 
+bool configuration::check_for_updates()
+{
+    return get_or_default("check_for_updates", true);
+}
+
 std::wstring configuration::default_save_path()
 {
     fs::path defaultPath = environment::get_special_folder(special_folder::user_downloads);
@@ -42,6 +47,16 @@ std::wstring configuration::default_save_path()
 void configuration::set_default_save_path(const std::wstring &path)
 {
     set("default_save_path", path);
+}
+
+std::wstring configuration::ignored_update()
+{
+    return get_or_default<std::wstring>("ignored_update", L"");
+}
+
+void configuration::set_ignored_update(const std::wstring &version)
+{
+    set("ignored_update", version);
 }
 
 std::wstring configuration::listen_interface()
@@ -72,6 +87,11 @@ void configuration::set_prompt_for_save_path(bool value)
 int configuration::stop_tracker_timeout()
 {
     return get_or_default("stop_tracker_timeout", 1);
+}
+
+std::wstring configuration::update_url()
+{
+    return get_or_default<std::wstring>("update_url", L"https://api.github.com/repos/picotorrent/picotorrent/releases/latest");
 }
 
 template<typename T>
@@ -128,7 +148,10 @@ void configuration::set<int>(const char *name, int value)
 template<>
 void configuration::set<std::wstring>(const char *name, std::wstring value)
 {
-    (*value_)[name] = pj::value(to_string(value));
+    std::string s = to_string(value);
+    if (s[s.size() - 1] == '\0') { s = s.substr(0, s.size() - 1); }
+
+    (*value_)[name] = pj::value(s);
 }
 
 void configuration::load()

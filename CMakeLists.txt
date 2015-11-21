@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 project("PicoTorrent")
 
+# Generate version information file
+file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
+configure_file("${CMAKE_SOURCE_DIR}/src/common/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/common/version_info.cpp" @ONLY)
+
+
 set(BOOST_ROOT      $ENV{BOOST_ROOT})
 set(LIBTORRENT_ROOT $ENV{LIBTORRENT_ROOT})
 set(OPENSSL_ROOT    $ENV{OPENSSL_ROOT})
@@ -11,6 +16,7 @@ set(PICOAPP_SOURCES
     src/app/command_line
     src/app/message_loop
     src/app/controllers/add_torrent_controller
+    src/app/controllers/application_update_controller
     src/app/controllers/move_torrent_controller
     src/app/controllers/notifyicon_context_menu_controller
     src/app/controllers/remove_torrent_controller
@@ -22,7 +28,7 @@ set(PICOAPP_SOURCES
 set(PICOCOMMON_SOURCES
     src/common/environment
     src/common/string_operations
-    #src/common/timer
+    src/common/version_info
 )
 
 set(PICOCONFIG_SOURCES
@@ -53,6 +59,9 @@ set(PICOLOGGING_SOURCES
 
 set(PICONET_SOURCES
     src/net/http_client
+    src/net/http_request
+    src/net/http_response
+    src/net/uri
 )
 
 set(PICOUI_SOURCES
@@ -88,6 +97,7 @@ add_definitions(
     -D_UNICODE
     -D_WIN32
     -DBOOST_ALL_NO_LIB
+    -DNOMINMAX
     -DPICOJSON_USE_INT64
     -DTORRENT_NO_DEPRECATE
     -DTORRENT_USE_OPENSSL

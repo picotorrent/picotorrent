@@ -23,9 +23,14 @@ namespace config
         static configuration &instance();
 
         int alert_queue_size();
+
+        bool check_for_updates();
         
         std::wstring default_save_path();
         void set_default_save_path(const std::wstring &path);
+
+        std::wstring ignored_update();
+        void set_ignored_update(const std::wstring &version);
 
         std::wstring listen_interface();
         
@@ -36,6 +41,7 @@ namespace config
         void set_prompt_for_save_path(bool value);
 
         int stop_tracker_timeout();
+        std::wstring update_url();
 
     private:
         template<typename T>

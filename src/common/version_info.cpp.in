@@ -1,0 +1,8 @@
+#include <picotorrent/common/version_info.hpp>
+
+using picotorrent::common::version_info;
+
+std::string version_info::current_version()
+{
+    return "@VERSION@";
+}
