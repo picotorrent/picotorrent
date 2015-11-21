@@ -33,6 +33,11 @@ int configuration::alert_queue_size()
     return get_or_default("alert_queue_size", 500);
 }
 
+bool configuration::check_for_updates()
+{
+    return get_or_default("check_for_updates", true);
+}
+
 std::wstring configuration::default_save_path()
 {
     fs::path defaultPath = environment::get_special_folder(special_folder::user_downloads);
@@ -82,6 +87,11 @@ void configuration::set_prompt_for_save_path(bool value)
 int configuration::stop_tracker_timeout()
 {
     return get_or_default("stop_tracker_timeout", 1);
+}
+
+std::wstring configuration::update_url()
+{
+    return get_or_default<std::wstring>("update_url", L"https://api.github.com/repos/picotorrent/picotorrent/releases/latest");
 }
 
 template<typename T>

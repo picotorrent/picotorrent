@@ -39,7 +39,9 @@ application_update_controller::~application_update_controller()
 
 void application_update_controller::execute()
 {
-    uri api(L"https://api.github.com/repos/picotorrent/picotorrent/releases/latest");
+    configuration &cfg = configuration::instance();
+
+    uri api(cfg.update_url());
     http_->get_async(api, std::bind(&application_update_controller::on_response, this, std::placeholders::_1));
 }
 

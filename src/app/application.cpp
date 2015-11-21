@@ -8,6 +8,7 @@
 #include <picotorrent/app/controllers/torrent_context_menu_controller.hpp>
 #include <picotorrent/app/controllers/unhandled_exception_controller.hpp>
 #include <picotorrent/app/controllers/view_preferences_controller.hpp>
+#include <picotorrent/config/configuration.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/filesystem/path.hpp>
 #include <picotorrent/logging/log.hpp>
@@ -24,6 +25,7 @@ namespace fs = picotorrent::filesystem;
 namespace ui = picotorrent::ui;
 using picotorrent::app::application;
 using picotorrent::app::command_line;
+using picotorrent::config::configuration;
 using picotorrent::logging::log;
 
 application::application()
@@ -115,7 +117,11 @@ int application::run(const std::wstring &args)
     }
 
     updater_ = std::make_shared<controllers::application_update_controller>(main_window_);
-    updater_->execute();
+
+    if (configuration::instance().check_for_updates())
+    {
+        updater_->execute();
+    }
 
     int result = message_loop::run();
 
