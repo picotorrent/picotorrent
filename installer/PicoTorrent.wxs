@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <Product Id="6011e05c-dc40-40cf-812a-551373e07eab"
+    <Product Id="*"
         UpgradeCode="e8ab3252-b12e-4fca-b4c0-ff723283e7dc"
         Name="PicoTorrent"
         Manufacturer="PicoTorrent contributors"
