@@ -14,6 +14,8 @@
             InstallScope="perMachine"
             InstallerVersion="301" />
 
+        <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit." />
+
         <Media Id="1" Cabinet="PicoTorrent.cab" EmbedCab="yes" />
         <Icon Id="I_PicoTorrent.ico" SourceFile="$(var.ResourceDirectory)\app.ico" />
 
