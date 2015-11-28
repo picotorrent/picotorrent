@@ -4,8 +4,24 @@ project("PicoTorrent")
 
 # Generate version information file
 file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
-configure_file("${CMAKE_SOURCE_DIR}/src/common/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/common/version_info.cpp" @ONLY)
 
+# Get the current working branch
+execute_process(
+  COMMAND git rev-parse --abbrev-ref HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_BRANCH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash of the working branch
+execute_process(
+  COMMAND git log -1 --format=%h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+configure_file("${CMAKE_SOURCE_DIR}/src/common/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/common/version_info.cpp" @ONLY)
 
 set(BOOST_ROOT      $ENV{BOOST_ROOT})
 set(LIBTORRENT_ROOT $ENV{LIBTORRENT_ROOT})
@@ -65,6 +81,7 @@ set(PICONET_SOURCES
 )
 
 set(PICOUI_SOURCES
+    src/ui/about_dialog
     src/ui/file_dialog_callback
     src/ui/main_window
     src/ui/notify_icon
@@ -161,11 +178,7 @@ add_executable(
 
     # The resources belong to the application itself
     # to avoid linker issues.
-    src/resources/app_icon.rc
-    src/resources/main_menu.rc
-    src/resources/notifyicon_context_menu.rc
-    src/resources/preferences_dialog.rc
-    src/resources/torrent_context_menu.rc
+    src/resources/pico.rc
 )
 
 target_link_libraries(
