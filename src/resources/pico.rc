@@ -1,0 +1,92 @@
+#include <picotorrent/ui/resources.hpp>
+#include <windows.h>
+
+IDI_APPICON     ICON    "..\\res\\app.ico"
+
+// Main menu
+IDR_MAINMENU MENU
+{
+    POPUP "&File"
+    {
+        MENUITEM "&Add torrent", ID_FILE_ADDTORRENT
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit", ID_FILE_EXIT
+    }
+
+    POPUP "&View"
+    {
+        MENUITEM "&Preferences", ID_VIEW_PREFERENCES
+    }
+
+    POPUP "&Help"
+    {
+        MENUITEM "&About", ID_HELP_ABOUT
+    }
+}
+
+// Notify icon context menu
+IDR_NOTIFYICON_CONTEXT_MENU MENU DISCARDABLE
+{
+    POPUP ""
+    {
+        MENUITEM "&Add torrent", ID_NOTIFYICON_ADD
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit", ID_NOTIFYICON_EXIT
+    }
+}
+
+// Torrent context menu
+IDR_TORRENT_CONTEXT_MENU MENU DISCARDABLE
+{
+    POPUP ""
+    {
+        MENUITEM "Pause", TORRENT_CONTEXT_MENU_PAUSE
+        MENUITEM "Resume", TORRENT_CONTEXT_MENU_RESUME
+        MENUITEM "Resume (force)", TORRENT_CONTEXT_MENU_RESUME_FORCE
+        MENUITEM SEPARATOR
+        MENUITEM "Move", TORRENT_CONTEXT_MENU_MOVE
+        MENUITEM "Remove", TORRENT_CONTEXT_MENU_REMOVE
+        MENUITEM SEPARATOR
+        MENUITEM "Copy info hash", TORRENT_CONTEXT_MENU_COPY_SHA
+        MENUITEM "Open in Explorer", TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER
+    }
+}
+
+// Preferences dialog
+IDD_PREFERENCES DIALOGEX 0, 0, 200, 109
+CAPTION "Preferences"
+FONT 8, "MS Shell Dlg"
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE
+{
+    GROUPBOX "Connection", -1, 5, 5, 190, 30
+
+    LTEXT "Listen port", -1, 10, 20, 80, 10
+    EDITTEXT ID_PREFS_LISTENPORT, 90, 19, 25, 11
+
+    GROUPBOX "Downloads", -1, 5, 40, 190, 45
+
+    LTEXT "Default save path", -1, 10, 55, 80, 10
+    EDITTEXT ID_PREFS_DEFSAVEPATH, 90, 54, 80, 11
+    PUSHBUTTON "...", ID_PREFS_DEFSAVEPATH_BROWSE, 172, 52, 18, 14
+
+    LTEXT "Prompt for save path", -1, 10, 70, 80, 10
+    CHECKBOX "", ID_PREFS_PROMPTFORSAVEPATH, 90, 69, 15, 11
+
+    DEFPUSHBUTTON "OK", IDOK, 145, 90, 50, 14
+}
+
+// About dialog
+IDD_ABOUT DIALOGEX 0, 0, 200, 200
+CAPTION "About PicoTorrent"
+FONT 8, "MS Shell Dlg"
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE
+{
+    ICON IDI_APPICON, 4654, 10, 10, 0, 0
+
+    CTEXT "", 1011, 10, 100, 180, 20 
+    CTEXT "", 1012, 10, 120, 180, 20
+
+    LTEXT "Built with love, using Boost, Rasterbar-libtorrent and OpenSSL.", -1, 10, 150, 180, 40
+
+    CONTROL "", 1013, "SysLink", WS_CHILD, 10, 185, 180, 12
+}

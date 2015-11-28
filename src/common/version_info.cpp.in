@@ -2,6 +2,16 @@
 
 using picotorrent::common::version_info;
 
+std::string version_info::git_branch()
+{
+    return "@GIT_BRANCH@";
+}
+
+std::string version_info::git_commit_hash()
+{
+    return "@GIT_COMMIT_HASH@";
+}
+
 std::string version_info::current_version()
 {
     return "@VERSION@";

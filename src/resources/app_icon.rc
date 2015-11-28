@@ -1,3 +1,0 @@
-#include <picotorrent/ui/resources.hpp>
-
-IDI_APPICON ICON "../res/app.ico"

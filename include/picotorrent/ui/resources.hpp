@@ -1,16 +1,20 @@
 #pragma once
 
+#define IDC_STATIC -1
+
 // Application
 #define IDR_MAINMENU 101
 #define IDI_APPICON  201
 
 // Dialogs
 #define IDD_PREFERENCES 301
+#define IDD_ABOUT 302
 
 // Menus
 #define ID_FILE_ADDTORRENT 9001
 #define ID_FILE_EXIT 9002
 #define ID_VIEW_PREFERENCES 9101
+#define ID_HELP_ABOUT 9201
 
 // Preferences dialog
 #define ID_PREFS_DEFSAVEPATH 9101
@@ -33,6 +37,9 @@
 #define IDR_NOTIFYICON_CONTEXT_MENU 4200
 #define ID_NOTIFYICON_ADD 4201
 #define ID_NOTIFYICON_EXIT 4202
+
+// About dialog
+#define ID_ABOUT_ICON 4300
 
 // Keyboard shortcuts
 #define IDHOT_SELECT_ALL 1001

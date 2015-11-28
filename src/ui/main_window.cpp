@@ -5,6 +5,7 @@
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/filesystem/path.hpp>
+#include <picotorrent/ui/about_dialog.hpp>
 #include <picotorrent/ui/notify_icon.hpp>
 #include <picotorrent/ui/open_file_dialog.hpp>
 #include <picotorrent/ui/resources.hpp>
@@ -19,6 +20,7 @@
 namespace core = picotorrent::core;
 namespace fs = picotorrent::filesystem;
 using picotorrent::common::to_wstring;
+using picotorrent::ui::about_dialog;
 using picotorrent::ui::main_window;
 using picotorrent::ui::notify_icon;
 using picotorrent::ui::open_file_dialog;
@@ -206,6 +208,12 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         case ID_FILE_EXIT:
             PostMessage(hWnd_, WM_CLOSE, 0, 0);
             break;
+        case ID_HELP_ABOUT:
+        {
+            about_dialog dlg(hWnd_);
+            dlg.show_modal();
+            break;
+        }
         }
         break;
     }
