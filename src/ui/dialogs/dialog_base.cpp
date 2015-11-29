@@ -17,6 +17,32 @@ HWND dialog_base::handle()
     return handle_;
 }
 
+std::wstring dialog_base::get_dlg_item_text(int controlId)
+{
+    HWND hItem = GetDlgItem(handle(), controlId);
+
+    TCHAR t[1024];
+    GetWindowText(hItem, t, ARRAYSIZE(t));
+
+    return t;
+}
+
+bool dialog_base::is_dlg_button_checked(int controlId)
+{
+    return IsDlgButtonChecked(handle(), controlId);
+}
+
+void dialog_base::set_dlg_button_checked(int controlId, bool checked)
+{
+    CheckDlgButton(handle(), controlId, checked ? BST_CHECKED : BST_UNCHECKED);
+}
+
+void dialog_base::set_dlg_item_text(int controlId, const std::wstring &text)
+{
+    HWND hItem = GetDlgItem(handle(), controlId);
+    SetWindowText(hItem, text.c_str());
+}
+
 BOOL dialog_base::on_command(int, WPARAM, LPARAM)
 {
     return FALSE;

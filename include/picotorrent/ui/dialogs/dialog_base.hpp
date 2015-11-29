@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <windows.h>
 
 namespace picotorrent
@@ -17,6 +18,11 @@ namespace dialogs
         int show_modal(HWND parent);
 
     protected:
+        std::wstring get_dlg_item_text(int controlId);
+        bool is_dlg_button_checked(int controlId);
+        void set_dlg_button_checked(int controlId, bool checked);
+        void set_dlg_item_text(int controlId, const std::wstring &text);
+
         HWND handle();
         virtual BOOL on_command(int id, WPARAM, LPARAM);
         virtual BOOL on_init_dialog();
