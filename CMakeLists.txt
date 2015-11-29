@@ -81,7 +81,8 @@ set(PICONET_SOURCES
 )
 
 set(PICOUI_SOURCES
-    src/ui/about_dialog
+    src/ui/dialogs/dialog_base
+    src/ui/dialogs/about_dialog
     src/ui/file_dialog_callback
     src/ui/main_window
     src/ui/notify_icon
