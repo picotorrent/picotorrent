@@ -11,21 +11,27 @@ namespace libtorrent
 
 namespace picotorrent
 {
+namespace filesystem
+{
+    class path;
+}
 namespace core
 {
     class add_request;
-    class torrent_file;
+    class torrent_info;
 
-    typedef std::shared_ptr<torrent_file> torrent_file_ptr;
+    typedef std::shared_ptr<torrent_info> torrent_info_ptr;
 
-    class torrent_file
+    class torrent_info
     {
         friend class add_request;
 
     public:
-        torrent_file(const std::vector<char> &buf);
-        torrent_file(const libtorrent::torrent_info &info);
-        ~torrent_file();
+        torrent_info(const std::vector<char> &buf);
+        torrent_info(const libtorrent::torrent_info &info);
+        ~torrent_info();
+
+        static torrent_info_ptr try_load(const filesystem::path &p);
 
         std::string name();
         int64_t total_size();

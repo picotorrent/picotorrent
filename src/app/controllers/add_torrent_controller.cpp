@@ -5,7 +5,7 @@
 #include <picotorrent/config/configuration.hpp>
 #include <picotorrent/core/add_request.hpp>
 #include <picotorrent/core/session.hpp>
-#include <picotorrent/core/torrent_file.hpp>
+#include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
 #include <picotorrent/logging/log.hpp>
@@ -56,8 +56,11 @@ void add_torrent_controller::execute()
 
     for (fs::path &p : dlg.get_paths())
     {
+        auto ti = core::torrent_info::try_load(p);
+        if(!ti) { continue; }
+
         auto r = std::make_shared<core::add_request>();
-        r->set_torrent_file(get_torrent_file(p));
+        r->set_torrent_info(ti);
         r->set_save_path(save_path);
 
         requests_.push_back(r);
@@ -90,7 +93,7 @@ void add_torrent_controller::on_dialog_init()
 {
     for (auto &req : requests_)
     {
-        dlg_->add_torrent(to_wstring(req->torrent_file()->name()));
+        dlg_->add_torrent(to_wstring(req->torrent_info()->name()));
     }
 
     dlg_->set_selected_item(0);
@@ -102,7 +105,7 @@ void add_torrent_controller::show_torrent(int index)
     std::shared_ptr<core::add_request> &req = requests_[index];
 
     std::wstring friendly_size(L"\0", 64);
-    StrFormatByteSize64(req->torrent_file()->total_size(), &friendly_size[0], friendly_size.size());
+    StrFormatByteSize64(req->torrent_info()->total_size(), &friendly_size[0], friendly_size.size());
 
     dlg_->set_save_path(req->save_path());
     dlg_->set_size(friendly_size);
@@ -130,37 +133,14 @@ void add_torrent_controller::add_files(const std::vector<fs::path> &files, const
             continue;
         }
 
-        core::torrent_file_ptr torrent = std::make_shared<core::torrent_file>(buf);
+        core::torrent_info_ptr torrent = std::make_shared<core::torrent_info>(buf);
 
         core::add_request req;
         req.set_save_path(save_path);
-        req.set_torrent_file(torrent);
+        req.set_torrent_info(torrent);
 
         sess_->add_torrent(req);
     }
-}
-
-core::torrent_file_ptr add_torrent_controller::get_torrent_file(const fs::path &path)
-{
-    if (!path.exists())
-    {
-        return nullptr;
-    }
-
-    fs::file f(path);
-    std::vector<char> buf;
-
-    try
-    {
-        f.read_all(buf);
-    }
-    catch (const std::exception &e)
-    {
-        LOG(error) << "Error when reading file: " << e.what();
-        return nullptr;
-    }
-
-    return std::make_shared<core::torrent_file>(buf);
 }
 
 std::wstring add_torrent_controller::get_save_path()

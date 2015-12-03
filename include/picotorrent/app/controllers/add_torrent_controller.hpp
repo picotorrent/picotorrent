@@ -10,7 +10,6 @@ namespace core
 {
     class add_request;
     class session;
-    class torrent_file;
 }
 namespace filesystem
 {
@@ -44,7 +43,6 @@ namespace controllers
 
     private:
         void add_files(const std::vector<filesystem::path> &files, const std::wstring &save_path);
-        std::shared_ptr<core::torrent_file> get_torrent_file(const filesystem::path &path);
 
         std::wstring get_save_path();
 

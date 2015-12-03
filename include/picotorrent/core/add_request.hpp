@@ -13,7 +13,7 @@ namespace picotorrent
 namespace core
 {
     class session;
-    class torrent_file;
+    class torrent_info;
 
     class add_request
     {
@@ -24,10 +24,10 @@ namespace core
         ~add_request();
 
         std::wstring save_path();
-        std::shared_ptr<torrent_file> torrent_file();
+        std::shared_ptr<torrent_info> torrent_info();
         std::wstring url();
         void set_save_path(const std::wstring &path);
-        void set_torrent_file(const std::shared_ptr<core::torrent_file> &file);
+        void set_torrent_info(const std::shared_ptr<core::torrent_info> &file);
         void set_url(const std::wstring &url);
 
     private:

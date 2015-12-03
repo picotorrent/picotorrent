@@ -58,7 +58,7 @@ set(PICOCORE_SOURCES
     src/core/session
     src/core/timer
     src/core/torrent
-    src/core/torrent_file
+    src/core/torrent_info
     src/core/torrent_state
 )
 
