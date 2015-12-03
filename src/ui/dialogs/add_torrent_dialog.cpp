@@ -1,6 +1,8 @@
 #include <picotorrent/ui/dialogs/add_torrent_dialog.hpp>
 
 #include <picotorrent/ui/resources.hpp>
+#include <picotorrent/ui/controls/list_view.hpp>
+#include <commctrl.h>
 #include <windowsx.h>
 
 using picotorrent::ui::dialogs::add_torrent_dialog;
@@ -71,6 +73,12 @@ BOOL add_torrent_dialog::on_init_dialog()
     combo_ = GetDlgItem(handle(), 5001);
     size_ = GetDlgItem(handle(), 5002);
     save_path_ = GetDlgItem(handle(), 5003);
+    files_ = std::make_shared<controls::list_view>(GetDlgItem(handle(), 5004));
+
+    // Set up the files list view
+    files_->add_column(L"Name", 200, LVCFMT_LEFT);
+    files_->add_column(L"Size", 80, LVCFMT_RIGHT);
+    files_->add_column(L"Priority", 120, LVCFMT_LEFT);
 
     if (init_cb_)
     {

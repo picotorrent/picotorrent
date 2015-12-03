@@ -3,12 +3,17 @@
 #include <picotorrent/ui/dialogs/dialog_base.hpp>
 
 #include <functional>
+#include <memory>
 #include <string>
 
 namespace picotorrent
 {
 namespace ui
 {
+namespace controls
+{
+    class list_view;
+}
 namespace dialogs
 {
     class add_torrent_dialog : public dialog_base
@@ -28,10 +33,10 @@ namespace dialogs
 
     private:
         std::function<void()> init_cb_;
+        std::shared_ptr<controls::list_view> files_;
         HWND combo_;
         HWND save_path_;
         HWND size_;
-        HWND files_;
     };
 }
 }
