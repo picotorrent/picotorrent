@@ -8,7 +8,9 @@ namespace picotorrent
 {
 namespace core
 {
+    class add_request;
     class session;
+    class torrent_file;
 }
 namespace filesystem
 {
@@ -16,6 +18,10 @@ namespace filesystem
 }
 namespace ui
 {
+namespace dialogs
+{
+    class add_torrent_dialog;
+}
     class main_window;
 }
 namespace app
@@ -32,12 +38,20 @@ namespace controllers
         void execute();
         void execute(const command_line &cmd);
 
+    protected:
+        void on_dialog_init();
+        void show_torrent(int index);
+
     private:
         void add_files(const std::vector<filesystem::path> &files, const std::wstring &save_path);
+        std::shared_ptr<core::torrent_file> get_torrent_file(const filesystem::path &path);
+
         std::wstring get_save_path();
 
         std::shared_ptr<core::session> sess_;
+        std::shared_ptr<ui::dialogs::add_torrent_dialog> dlg_;
         std::shared_ptr<ui::main_window> wnd_;
+        std::vector<std::shared_ptr<core::add_request>> requests_;
     };
 }
 }

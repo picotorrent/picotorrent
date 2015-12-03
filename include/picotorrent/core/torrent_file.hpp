@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace libtorrent
@@ -25,6 +26,9 @@ namespace core
         torrent_file(const std::vector<char> &buf);
         torrent_file(const libtorrent::torrent_info &info);
         ~torrent_file();
+
+        std::string name();
+        int64_t total_size();
 
     private:
         std::unique_ptr<libtorrent::torrent_info> info_;

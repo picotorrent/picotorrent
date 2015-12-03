@@ -9,6 +9,7 @@
 // Dialogs
 #define IDD_PREFERENCES 301
 #define IDD_ABOUT 302
+#define IDD_ADD_TORRENT 303
 
 // Menus
 #define ID_FILE_ADDTORRENT 9001

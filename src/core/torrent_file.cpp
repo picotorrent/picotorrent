@@ -18,3 +18,13 @@ torrent_file::torrent_file(const lt::torrent_info &info)
 torrent_file::~torrent_file()
 {
 }
+
+std::string torrent_file::name()
+{
+    return info_->name();
+}
+
+int64_t torrent_file::total_size()
+{
+    return info_->total_size();
+}

@@ -1,5 +1,6 @@
 #include <picotorrent/ui/resources.hpp>
 #include <windows.h>
+#include <commctrl.h>
 
 IDI_APPICON     ICON    "..\\res\\app.ico"
 
@@ -89,4 +90,26 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE
     LTEXT "Built with love, using Boost, Rasterbar-libtorrent and OpenSSL.", -1, 10, 150, 180, 40
 
     CONTROL "", 1013, "SysLink", WS_CHILD, 10, 185, 180, 12
+}
+
+// Add torrent dialog
+IDD_ADD_TORRENT DIALOGEX 0, 0, 300, 215
+CAPTION "Add torrent(s)"
+FONT 9, "MS Shell Dlg"
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+{
+    LTEXT "Torrent", -1, 10, 10, 80, 10
+    COMBOBOX 5001, 100, 10, 190, 10, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP 
+
+    LTEXT "Size", -1, 10, 25, 80, 10
+    LTEXT "500MiB", 5002, 100, 25, 80, 10
+
+    GROUPBOX "Storage" -1, 10, 40, 280, 150
+    LTEXT "Save path", -1, 15, 50, 40, 10
+    EDITTEXT 5003, 100, 50, 160, 10
+    PUSHBUTTON "...", -1, 265, 50, 20, 10
+
+    CONTROL "", -1, WC_LISTVIEW, LVS_REPORT | WS_BORDER, 15, 65, 270, 120
+
+    PUSHBUTTON "Add torrent(s)", -1, 240, 195, 55, 14
 }

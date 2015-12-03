@@ -1,6 +1,7 @@
 #include <picotorrent/app/controllers/add_torrent_controller.hpp>
 
 #include <picotorrent/app/command_line.hpp>
+#include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/config/configuration.hpp>
 #include <picotorrent/core/add_request.hpp>
 #include <picotorrent/core/session.hpp>
@@ -8,12 +9,14 @@
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
 #include <picotorrent/logging/log.hpp>
+#include <picotorrent/ui/dialogs/add_torrent_dialog.hpp>
 #include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/open_file_dialog.hpp>
 #include <picotorrent/ui/open_torrent_dialog.hpp>
 
 #include <windows.h>
 #include <shobjidl.h>
+#include <shlwapi.h>
 
 const GUID DLG_OPEN = { 0x7D5FE367, 0xE148, 0x4A96,{ 0xB3, 0x26, 0x42, 0xEF, 0x23, 0x7A, 0x36, 0x60 } };
 const GUID DLG_SAVE = { 0x7D5FE367, 0xE148, 0x4A96,{ 0xB3, 0x26, 0x42, 0xEF, 0x23, 0x7A, 0x36, 0x61 } };
@@ -23,14 +26,18 @@ namespace fs = picotorrent::filesystem;
 namespace ui = picotorrent::ui;
 using picotorrent::app::command_line;
 using picotorrent::app::controllers::add_torrent_controller;
+using picotorrent::common::to_wstring;
 using picotorrent::config::configuration;
+using picotorrent::ui::dialogs::add_torrent_dialog;
 
 add_torrent_controller::add_torrent_controller(
     const std::shared_ptr<core::session> &sess,
     const std::shared_ptr<ui::main_window> &wnd_ptr)
     : sess_(sess),
+    dlg_(std::make_shared<add_torrent_dialog>()),
     wnd_(wnd_ptr)
 {
+    dlg_->set_init_callback(std::bind(&add_torrent_controller::on_dialog_init, this));
 }
 
 void add_torrent_controller::execute()
@@ -44,7 +51,19 @@ void add_torrent_controller::execute()
         return;
     }
 
-    add_files(dlg.get_paths(), get_save_path());
+    configuration &cfg = configuration::instance();
+    std::wstring save_path = cfg.default_save_path();
+
+    for (fs::path &p : dlg.get_paths())
+    {
+        auto r = std::make_shared<core::add_request>();
+        r->set_torrent_file(get_torrent_file(p));
+        r->set_save_path(save_path);
+
+        requests_.push_back(r);
+    }
+
+    dlg_->show_modal(wnd_->handle());
 }
 
 void add_torrent_controller::execute(const command_line &cmd)
@@ -65,6 +84,28 @@ void add_torrent_controller::execute(const command_line &cmd)
 
         sess_->add_torrent(req);
     }
+}
+
+void add_torrent_controller::on_dialog_init()
+{
+    for (auto &req : requests_)
+    {
+        dlg_->add_torrent(to_wstring(req->torrent_file()->name()));
+    }
+
+    dlg_->set_selected_item(0);
+    show_torrent(0);
+}
+
+void add_torrent_controller::show_torrent(int index)
+{
+    std::shared_ptr<core::add_request> &req = requests_[index];
+
+    std::wstring friendly_size(L"\0", 64);
+    StrFormatByteSize64(req->torrent_file()->total_size(), &friendly_size[0], friendly_size.size());
+
+    dlg_->set_save_path(req->save_path());
+    dlg_->set_size(friendly_size);
 }
 
 void add_torrent_controller::add_files(const std::vector<fs::path> &files, const std::wstring &save_path)
@@ -97,6 +138,29 @@ void add_torrent_controller::add_files(const std::vector<fs::path> &files, const
 
         sess_->add_torrent(req);
     }
+}
+
+core::torrent_file_ptr add_torrent_controller::get_torrent_file(const fs::path &path)
+{
+    if (!path.exists())
+    {
+        return nullptr;
+    }
+
+    fs::file f(path);
+    std::vector<char> buf;
+
+    try
+    {
+        f.read_all(buf);
+    }
+    catch (const std::exception &e)
+    {
+        LOG(error) << "Error when reading file: " << e.what();
+        return nullptr;
+    }
+
+    return std::make_shared<core::torrent_file>(buf);
 }
 
 std::wstring add_torrent_controller::get_save_path()
