@@ -14,7 +14,7 @@ namespace dialogs
     public:
         dialog_base(int id);
         ~dialog_base();
-
+        HWND handle();
         int show_modal(HWND parent);
 
     protected:
@@ -23,7 +23,6 @@ namespace dialogs
         void set_dlg_button_checked(int controlId, bool checked);
         void set_dlg_item_text(int controlId, const std::wstring &text);
 
-        HWND handle();
         virtual BOOL on_command(int id, WPARAM, LPARAM);
         virtual BOOL on_init_dialog();
         virtual BOOL on_notify(LPARAM);

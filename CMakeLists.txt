@@ -83,6 +83,7 @@ set(PICONET_SOURCES
 set(PICOUI_SOURCES
     src/ui/controls/control_base
     src/ui/controls/list_view
+    src/ui/controls/menu
     src/ui/dialogs/dialog_base
     src/ui/dialogs/about_dialog
     src/ui/dialogs/add_torrent_dialog

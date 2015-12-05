@@ -15,10 +15,21 @@ using picotorrent::core::torrent_info;
 add_request::add_request()
     : params_(std::make_unique<lt::add_torrent_params>())
 {   
+    params_->file_priorities = std::vector<uint8_t>();
 }
 
 add_request::~add_request()
 {
+}
+
+int add_request::file_priority(int file_index)
+{
+    if (params_->file_priorities.size() < file_index + 1)
+    {
+        return 1;
+    }
+
+    return params_->file_priorities[file_index];
 }
 
 std::wstring add_request::save_path()
@@ -39,6 +50,16 @@ std::shared_ptr<picotorrent::core::torrent_info> add_request::torrent_info()
 std::wstring add_request::url()
 {
     return to_wstring(params_->url);
+}
+
+void add_request::set_file_priority(int file_index, int priority)
+{
+    if (params_->file_priorities.size() < file_index + 1)
+    {
+        params_->file_priorities.resize(file_index + 1, 1);
+    }
+
+    params_->file_priorities[file_index] = priority;
 }
 
 void add_request::set_save_path(const std::wstring &path)

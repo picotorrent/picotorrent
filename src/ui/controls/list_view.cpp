@@ -3,6 +3,7 @@
 #include <commctrl.h>
 #include <picotorrent/ui/scaler.hpp>
 #include <strsafe.h>
+#include <vector>
 
 using picotorrent::ui::scaler;
 using picotorrent::ui::controls::list_view;
@@ -47,9 +48,18 @@ int list_view::get_item_count()
     return ListView_GetItemCount(handle());
 }
 
-int list_view::get_selected_index()
+std::vector<int> list_view::get_selected_items()
 {
-    return ListView_GetNextItem(handle(), -1, LVNI_SELECTED);
+    std::vector<int> items;
+    int item = ListView_GetNextItem(handle(), -1, LVNI_SELECTED);
+
+    while (item > -1)
+    {
+        items.push_back(item);
+        item = ListView_GetNextItem(handle(), item, LVNI_SELECTED);
+    }
+
+    return items;
 }
 
 void list_view::insert_item(int index, const std::wstring &text)

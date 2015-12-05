@@ -1,5 +1,6 @@
 #include <picotorrent/app/controllers/add_torrent_controller.hpp>
 
+#include <algorithm>
 #include <picotorrent/app/command_line.hpp>
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/config/configuration.hpp>
@@ -9,10 +10,12 @@
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
 #include <picotorrent/logging/log.hpp>
+#include <picotorrent/ui/controls/menu.hpp>
 #include <picotorrent/ui/dialogs/add_torrent_dialog.hpp>
 #include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/open_file_dialog.hpp>
 #include <picotorrent/ui/open_torrent_dialog.hpp>
+#include <picotorrent/ui/resources.hpp>
 
 #include <windows.h>
 #include <shobjidl.h>
@@ -39,6 +42,7 @@ add_torrent_controller::add_torrent_controller(
 {
     dlg_->set_init_callback(std::bind(&add_torrent_controller::on_dialog_init, this));
     dlg_->set_change_callback(std::bind(&add_torrent_controller::on_torrent_change, this, std::placeholders::_1));
+    dlg_->set_file_context_menu_callback(std::bind(&add_torrent_controller::on_torrent_files_context_menu, this, std::placeholders::_1));
 }
 
 void add_torrent_controller::execute()
@@ -106,6 +110,69 @@ void add_torrent_controller::on_torrent_change(int index)
     show_torrent(index);
 }
 
+void add_torrent_controller::on_torrent_files_context_menu(const std::vector<int> &files)
+{
+    if (files.empty())
+    {
+        return;
+    }
+
+    ui::controls::menu menu(IDR_TORRENT_FILE_MENU);
+    ui::controls::menu sub = menu.get_sub_menu(0);
+
+    auto &req = requests_[dlg_->get_selected_torrent()];
+
+    // If only one file is selected, check that files priority
+    if (files.size() == 1)
+    {
+        int prio = req->file_priority(files[0]);
+        
+        switch (prio)
+        {
+        case 0:
+            sub.check_item(TORRENT_FILE_PRIO_SKIP);
+            break;
+        case 1:
+            sub.check_item(TORRENT_FILE_PRIO_NORMAL);
+            break;
+        case 2:
+            sub.check_item(TORRENT_FILE_PRIO_HIGH);
+            break;
+        case 7:
+            sub.check_item(TORRENT_FILE_PRIO_MAX);
+            break;
+        }
+    }
+
+    POINT p;
+    GetCursorPos(&p);
+
+    int res = sub.show(dlg_->handle(), p);
+
+    for (int i : files)
+    {
+        switch (res)
+        {
+        case TORRENT_FILE_PRIO_SKIP:
+            req->set_file_priority(i, 0);
+            dlg_->set_file_priority(i, get_prio_str(0));
+            break;
+        case TORRENT_FILE_PRIO_NORMAL:
+            req->set_file_priority(i, 1);
+            dlg_->set_file_priority(i, get_prio_str(1));
+            break;
+        case TORRENT_FILE_PRIO_HIGH:
+            req->set_file_priority(i, 2);
+            dlg_->set_file_priority(i, get_prio_str(2));
+            break;
+        case TORRENT_FILE_PRIO_MAX:
+            req->set_file_priority(i, 7);
+            dlg_->set_file_priority(i, get_prio_str(7));
+            break;
+        }
+    }
+}
+
 void add_torrent_controller::show_torrent(int index)
 {
     std::shared_ptr<core::add_request> &req = requests_[index];
@@ -126,7 +193,7 @@ void add_torrent_controller::show_torrent(int index)
         dlg_->add_torrent_file(
             to_wstring(req->torrent_info()->file_name(i)),
             file_size,
-            L"Normal");
+            get_prio_str(req->file_priority(i)));
     }
 }
 
@@ -187,4 +254,21 @@ std::wstring add_torrent_controller::get_save_path()
     }
 
     return L"";
+}
+
+std::wstring add_torrent_controller::get_prio_str(int prio)
+{
+    switch (prio)
+    {
+    case 0:
+        return L"Do not download";
+    case 1:
+        return L"Normal";
+    case 2:
+        return L"High";
+    case 7:
+        return L"Maximum";
+    default:
+        return L"Unknown priority";
+    }
 }

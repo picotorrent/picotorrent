@@ -35,6 +35,16 @@ void add_torrent_dialog::clear_torrent_files()
     files_->clear();
 }
 
+int add_torrent_dialog::get_selected_torrent()
+{
+    return ComboBox_GetCurSel(combo_);
+}
+
+void add_torrent_dialog::set_file_priority(int index, const std::wstring &prio)
+{
+    files_->set_item(index, 2, prio);
+}
+
 void add_torrent_dialog::set_init_callback(const std::function<void()> &callback)
 {
     init_cb_ = callback;
@@ -43,6 +53,11 @@ void add_torrent_dialog::set_init_callback(const std::function<void()> &callback
 void add_torrent_dialog::set_change_callback(const std::function<void(int)> &callback)
 {
     change_cb_ = callback;
+}
+
+void add_torrent_dialog::set_file_context_menu_callback(const std::function<void(const std::vector<int> &files)> &callback)
+{
+    files_context_cb_ = callback;
 }
 
 void add_torrent_dialog::set_save_path(const std::wstring &path)
@@ -110,4 +125,31 @@ BOOL add_torrent_dialog::on_init_dialog()
     }
 
     return TRUE;
+}
+
+BOOL add_torrent_dialog::on_notify(LPARAM lParam)
+{
+    LPNMHDR nmhdr = reinterpret_cast<LPNMHDR>(lParam);
+
+    switch (nmhdr->code)
+    {
+    case NM_RCLICK:
+    {
+        if (nmhdr->hwndFrom != files_->handle())
+        {
+            break;
+        }
+
+        if (!files_context_cb_)
+        {
+            break;
+        }
+
+        std::vector<int> selectedFiles = files_->get_selected_items();
+        files_context_cb_(selectedFiles);
+        break;
+    }
+    }
+
+    return FALSE;
 }

@@ -53,6 +53,22 @@ IDR_TORRENT_CONTEXT_MENU MENU DISCARDABLE
     }
 }
 
+// Torrent file context menu
+IDR_TORRENT_FILE_MENU MENU DISCARDABLE
+{
+    POPUP ""
+    {
+        POPUP "Priority"
+        {
+            MENUITEM "Maximum", TORRENT_FILE_PRIO_MAX
+            MENUITEM "High", TORRENT_FILE_PRIO_HIGH
+            MENUITEM "Normal", TORRENT_FILE_PRIO_NORMAL
+            MENUITEM SEPARATOR
+            MENUITEM "Do not download", TORRENT_FILE_PRIO_SKIP
+        }
+    }
+}
+
 // Preferences dialog
 IDD_PREFERENCES DIALOGEX 0, 0, 200, 109
 CAPTION "Preferences"
