@@ -39,6 +39,7 @@ namespace controllers
 
     protected:
         void on_dialog_init();
+        void on_torrent_change(int index);
         void show_torrent(int index);
 
     private:

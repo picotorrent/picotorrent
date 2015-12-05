@@ -38,6 +38,7 @@ add_torrent_controller::add_torrent_controller(
     wnd_(wnd_ptr)
 {
     dlg_->set_init_callback(std::bind(&add_torrent_controller::on_dialog_init, this));
+    dlg_->set_change_callback(std::bind(&add_torrent_controller::on_torrent_change, this, std::placeholders::_1));
 }
 
 void add_torrent_controller::execute()
@@ -100,6 +101,11 @@ void add_torrent_controller::on_dialog_init()
     show_torrent(0);
 }
 
+void add_torrent_controller::on_torrent_change(int index)
+{
+    show_torrent(index);
+}
+
 void add_torrent_controller::show_torrent(int index)
 {
     std::shared_ptr<core::add_request> &req = requests_[index];
@@ -109,6 +115,19 @@ void add_torrent_controller::show_torrent(int index)
 
     dlg_->set_save_path(req->save_path());
     dlg_->set_size(friendly_size);
+
+    dlg_->clear_torrent_files();
+
+    for (int i = 0; i < req->torrent_info()->num_files(); i++)
+    {
+        std::wstring file_size(L"\0", 64);
+        StrFormatByteSize64(req->torrent_info()->file_size(i), &file_size[0], file_size.size());
+
+        dlg_->add_torrent_file(
+            to_wstring(req->torrent_info()->file_name(i)),
+            file_size,
+            L"Normal");
+    }
 }
 
 void add_torrent_controller::add_files(const std::vector<fs::path> &files, const std::wstring &save_path)
