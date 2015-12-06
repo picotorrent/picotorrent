@@ -24,6 +24,7 @@ namespace core
         ~add_request();
 
         int file_priority(int file_index);
+        std::wstring name();
         std::wstring save_path();
         std::shared_ptr<torrent_info> torrent_info();
         std::wstring url();

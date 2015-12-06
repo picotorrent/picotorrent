@@ -44,7 +44,8 @@ namespace controllers
         void show_torrent(int index);
 
     private:
-        void add_files(const std::vector<filesystem::path> &files, const std::wstring &save_path);
+        void add_files(const std::vector<filesystem::path> &paths);
+        void show_add_dialog();
 
         std::wstring get_save_path();
         std::wstring get_prio_str(int prio);

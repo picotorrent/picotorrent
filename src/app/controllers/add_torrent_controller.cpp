@@ -51,27 +51,8 @@ void add_torrent_controller::execute()
     dlg.set_guid(DLG_OPEN);
     dlg.show(wnd_->handle());
 
-    if (dlg.get_paths().empty())
-    {
-        return;
-    }
-
-    configuration &cfg = configuration::instance();
-    std::wstring save_path = cfg.default_save_path();
-
-    for (fs::path &p : dlg.get_paths())
-    {
-        auto ti = core::torrent_info::try_load(p);
-        if(!ti) { continue; }
-
-        auto r = std::make_shared<core::add_request>();
-        r->set_torrent_info(ti);
-        r->set_save_path(save_path);
-
-        requests_.push_back(r);
-    }
-
-    dlg_->show_modal(wnd_->handle());
+    add_files(dlg.get_paths());
+    show_add_dialog();
 }
 
 void add_torrent_controller::execute(const command_line &cmd)
@@ -81,16 +62,56 @@ void add_torrent_controller::execute(const command_line &cmd)
         return;
     }
 
-    std::wstring sp = get_save_path();
-    add_files(cmd.files(), sp);
+    add_files(cmd.files());
+
+    configuration &cfg = configuration::instance();
+    std::wstring default_save_path = cfg.default_save_path();
 
     for (const std::wstring &magnet : cmd.magnet_links())
     {
-        core::add_request req;
-        req.set_save_path(sp);
-        req.set_url(magnet);
+        auto req = std::make_shared<core::add_request>();
+        req->set_save_path(default_save_path);
+        req->set_url(magnet);
 
-        sess_->add_torrent(req);
+        requests_.push_back(req);
+    }
+
+    show_add_dialog();
+}
+
+void add_torrent_controller::add_files(const std::vector<fs::path> &paths)
+{
+    configuration &cfg = configuration::instance();
+    std::wstring save_path = cfg.default_save_path();
+
+    for (const fs::path &p : paths)
+    {
+        auto ti = core::torrent_info::try_load(p);
+        if (!ti) { continue; }
+
+        auto r = std::make_shared<core::add_request>();
+        r->set_torrent_info(ti);
+        r->set_save_path(save_path);
+
+        requests_.push_back(r);
+    }
+}
+
+void add_torrent_controller::show_add_dialog()
+{
+    if (requests_.empty())
+    {
+        return;
+    }
+
+    switch (dlg_->show_modal(wnd_->handle()))
+    {
+    case IDOK:
+        for (auto &req : requests_)
+        {
+            sess_->add_torrent(req);
+        }
+        break;
     }
 }
 
@@ -98,7 +119,18 @@ void add_torrent_controller::on_dialog_init()
 {
     for (auto &req : requests_)
     {
-        dlg_->add_torrent(to_wstring(req->torrent_info()->name()));
+        std::wstring name = L"Unknown name";
+
+        if (req->torrent_info())
+        {
+            name = to_wstring(req->torrent_info()->name());
+        }
+        else if(!req->name().empty())
+        {
+            name = req->name();
+        }
+
+        dlg_->add_torrent(name);
     }
 
     dlg_->set_selected_item(0);
@@ -177,56 +209,34 @@ void add_torrent_controller::show_torrent(int index)
 {
     std::shared_ptr<core::add_request> &req = requests_[index];
 
-    std::wstring friendly_size(L"\0", 64);
-    StrFormatByteSize64(req->torrent_info()->total_size(), &friendly_size[0], friendly_size.size());
+    if (req->torrent_info())
+    {
+        std::wstring friendly_size(L"\0", 64);
+        StrFormatByteSize64(req->torrent_info()->total_size(), &friendly_size[0], friendly_size.size());
+        dlg_->set_size(friendly_size);
+
+        dlg_->clear_torrent_files();
+        dlg_->enable_files();
+
+        for (int i = 0; i < req->torrent_info()->num_files(); i++)
+        {
+            std::wstring file_size(L"\0", 64);
+            StrFormatByteSize64(req->torrent_info()->file_size(i), &file_size[0], file_size.size());
+
+            dlg_->add_torrent_file(
+                to_wstring(req->torrent_info()->file_name(i)),
+                file_size,
+                get_prio_str(req->file_priority(i)));
+        }
+    }
+    else
+    {
+        dlg_->clear_torrent_files();
+        dlg_->disable_files();
+        dlg_->set_size(L"Unknown size");
+    }
 
     dlg_->set_save_path(req->save_path());
-    dlg_->set_size(friendly_size);
-
-    dlg_->clear_torrent_files();
-
-    for (int i = 0; i < req->torrent_info()->num_files(); i++)
-    {
-        std::wstring file_size(L"\0", 64);
-        StrFormatByteSize64(req->torrent_info()->file_size(i), &file_size[0], file_size.size());
-
-        dlg_->add_torrent_file(
-            to_wstring(req->torrent_info()->file_name(i)),
-            file_size,
-            get_prio_str(req->file_priority(i)));
-    }
-}
-
-void add_torrent_controller::add_files(const std::vector<fs::path> &files, const std::wstring &save_path)
-{
-    for (const fs::path &p : files)
-    {
-        if (!p.exists())
-        {
-            continue;
-        }
-
-        fs::file f(p);
-        std::vector<char> buf;
-
-        try
-        {
-            f.read_all(buf);
-        }
-        catch (const std::exception &e)
-        {
-            LOG(error) << "Error when reading file: " << e.what();
-            continue;
-        }
-
-        core::torrent_info_ptr torrent = std::make_shared<core::torrent_info>(buf);
-
-        core::add_request req;
-        req.set_save_path(save_path);
-        req.set_torrent_info(torrent);
-
-        sess_->add_torrent(req);
-    }
 }
 
 std::wstring add_torrent_controller::get_save_path()

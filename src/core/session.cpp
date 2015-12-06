@@ -51,9 +51,9 @@ session::~session()
 {
 }
 
-void session::add_torrent(const add_request &add)
+void session::add_torrent(const std::shared_ptr<add_request> &add)
 {
-    sess_->async_add_torrent(*add.params_);
+    sess_->async_add_torrent(*add->params_);
 }
 
 void session::load()

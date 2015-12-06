@@ -25,6 +25,8 @@ namespace dialogs
         void add_torrent(const std::wstring &name);
         void add_torrent_file(const std::wstring &name, const std::wstring &friendly_size, const std::wstring &priority);
         void clear_torrent_files();
+        void enable_files();
+        void disable_files();
         int get_selected_torrent();
         void set_file_priority(int index, const std::wstring &prio);
         void set_init_callback(const std::function<void()> &callback);

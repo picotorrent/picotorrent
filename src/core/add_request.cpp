@@ -3,6 +3,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/torrent_info.hpp>
@@ -30,6 +31,11 @@ int add_request::file_priority(int file_index)
     }
 
     return params_->file_priorities[file_index];
+}
+
+std::wstring add_request::name()
+{
+    return to_wstring(params_->name);
 }
 
 std::wstring add_request::save_path()
@@ -74,5 +80,16 @@ void add_request::set_torrent_info(const std::shared_ptr<picotorrent::core::torr
 
 void add_request::set_url(const std::wstring &url)
 {
-    params_->url = to_string(url);
+    if (url.substr(0, 10) == L"magnet:?xt")
+    {
+        lt::error_code ec;
+        lt::parse_magnet_uri(
+            to_string(url),
+            *params_,
+            ec);
+    }
+    else
+    {
+        params_->url = to_string(url);
+    }
 }

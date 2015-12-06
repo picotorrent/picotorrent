@@ -35,6 +35,16 @@ void add_torrent_dialog::clear_torrent_files()
     files_->clear();
 }
 
+void add_torrent_dialog::disable_files()
+{
+    EnableWindow(files_->handle(), FALSE);
+}
+
+void add_torrent_dialog::enable_files()
+{
+    EnableWindow(files_->handle(), TRUE);
+}
+
 int add_torrent_dialog::get_selected_torrent()
 {
     return ComboBox_GetCurSel(combo_);
