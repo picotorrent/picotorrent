@@ -31,6 +31,7 @@ namespace dialogs
         void set_file_priority(int index, const std::wstring &prio);
         void set_init_callback(const std::function<void()> &callback);
         void set_change_callback(const std::function<void(int)> &callback);
+        void set_edit_save_path_callback(const std::function<void()> &callback);
         void set_file_context_menu_callback(const std::function<void(const std::vector<int> &files)> &callback);
         void set_save_path(const std::wstring &path);
         void set_selected_item(int item);
@@ -45,6 +46,7 @@ namespace dialogs
         std::function<void()> init_cb_;
         std::function<void(int)> change_cb_;
         std::function<void(const std::vector<int> &files)> files_context_cb_;
+        std::function<void()> save_path_cb_;
         std::shared_ptr<controls::list_view> files_;
         HWND combo_;
         HWND save_path_;

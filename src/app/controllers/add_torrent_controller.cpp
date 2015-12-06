@@ -42,6 +42,7 @@ add_torrent_controller::add_torrent_controller(
 {
     dlg_->set_init_callback(std::bind(&add_torrent_controller::on_dialog_init, this));
     dlg_->set_change_callback(std::bind(&add_torrent_controller::on_torrent_change, this, std::placeholders::_1));
+    dlg_->set_edit_save_path_callback(std::bind(&add_torrent_controller::on_edit_save_path, this));
     dlg_->set_file_context_menu_callback(std::bind(&add_torrent_controller::on_torrent_files_context_menu, this, std::placeholders::_1));
 }
 
@@ -135,6 +136,20 @@ void add_torrent_controller::on_dialog_init()
 
     dlg_->set_selected_item(0);
     show_torrent(0);
+}
+
+void add_torrent_controller::on_edit_save_path()
+{
+    std::wstring sp = get_save_path();
+
+    if (sp.empty())
+    {
+        return;
+    }
+
+    auto &req = requests_[dlg_->get_selected_torrent()];
+    dlg_->set_save_path(sp);
+    req->set_save_path(sp);
 }
 
 void add_torrent_controller::on_torrent_change(int index)

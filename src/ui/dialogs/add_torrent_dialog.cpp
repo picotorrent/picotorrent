@@ -65,6 +65,11 @@ void add_torrent_dialog::set_change_callback(const std::function<void(int)> &cal
     change_cb_ = callback;
 }
 
+void add_torrent_dialog::set_edit_save_path_callback(const std::function<void()> &callback)
+{
+    save_path_cb_ = callback;
+}
+
 void add_torrent_dialog::set_file_context_menu_callback(const std::function<void(const std::vector<int> &files)> &callback)
 {
     files_context_cb_ = callback;
@@ -110,6 +115,16 @@ BOOL add_torrent_dialog::on_command(int controlId, WPARAM wParam, LPARAM lParam)
             break;
         }
         }
+        break;
+    }
+
+    case 5005:
+    {
+        if (save_path_cb_)
+        {
+            save_path_cb_();
+        }
+        break;
     }
     }
 
