@@ -27,7 +27,7 @@ namespace core
         session();
         ~session();
 
-        void add_torrent(const add_request &add);
+        void add_torrent(const std::shared_ptr<add_request> &add);
 
         void load();
         void unload();

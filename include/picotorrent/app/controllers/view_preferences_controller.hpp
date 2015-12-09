@@ -19,8 +19,6 @@ namespace controllers
     public:
         view_preferences_controller(const std::shared_ptr<ui::main_window> &wnd);
         void execute();
-        void init_dlg(ui::preferences_dialog &dlg);
-        void ok_dlg(ui::preferences_dialog &dlg);
 
     private:
         std::shared_ptr<ui::main_window> wnd_;
