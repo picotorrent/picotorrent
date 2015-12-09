@@ -50,6 +50,7 @@ void add_torrent_controller::execute()
 {
     ui::open_torrent_dialog dlg;
     dlg.set_guid(DLG_OPEN);
+	dlg.set_options(dlg.options() | FOS_ALLOWMULTISELECT | FOS_FILEMUSTEXIST);
     dlg.show(wnd_->handle());
 
     add_files(dlg.get_paths());
