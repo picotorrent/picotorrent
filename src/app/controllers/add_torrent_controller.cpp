@@ -105,15 +105,21 @@ void add_torrent_controller::show_add_dialog()
         return;
     }
 
-    switch (dlg_->show_modal(wnd_->handle()))
-    {
-    case IDOK:
-        for (auto &req : requests_)
-        {
-            sess_->add_torrent(req);
-        }
-        break;
-    }
+	configuration &cfg = configuration::instance();
+	int res = IDOK;
+
+	if (cfg.prompt_for_save_path())
+	{
+		res = dlg_->show_modal(wnd_->handle());
+	}
+
+	if (res == IDOK)
+	{
+		for (auto &req : requests_)
+		{
+			sess_->add_torrent(req);
+		}
+	}
 }
 
 void add_torrent_controller::on_dialog_init()
