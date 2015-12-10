@@ -21,6 +21,23 @@ int torrent::download_rate()
     return status_->download_payload_rate;
 }
 
+int torrent::eta() const
+{
+	if (is_paused())
+	{
+		return -1;
+	}
+
+	int64_t remaining = status_->total_wanted - status_->total_wanted_done;
+
+	if (remaining > 0 && status_->download_payload_rate > 0)
+	{
+		return remaining / status_->download_payload_rate;
+	}
+
+	return -1;
+}
+
 bool torrent::has_error() const
 {
     return status_->paused && status_->errc;

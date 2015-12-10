@@ -235,6 +235,11 @@ void torrent_list_view::on_getdispinfo(NMLVDISPINFO* inf, const torrent_list_ite
             StringCchCopy(inf->item.pszText, inf->item.cchTextMax, item.state_str().c_str());
             break;
         }
+		case COL_ETA:
+		{
+			StringCchCopy(inf->item.pszText, inf->item.cchTextMax, item.eta_str().c_str());
+			break;
+		}
         case COL_DOWNLOAD_RATE:
         case COL_UPLOAD_RATE:
         {

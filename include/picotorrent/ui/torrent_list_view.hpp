@@ -11,8 +11,9 @@
 #define COL_SIZE 2
 #define COL_STATE 3
 #define COL_PROGRESS 4
-#define COL_DOWNLOAD_RATE 5
-#define COL_UPLOAD_RATE 6
+#define COL_ETA 5
+#define COL_DOWNLOAD_RATE 6
+#define COL_UPLOAD_RATE 7
 
 namespace picotorrent
 {
