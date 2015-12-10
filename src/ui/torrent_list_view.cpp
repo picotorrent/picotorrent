@@ -66,7 +66,7 @@ void torrent_list_view::create()
         throw new std::runtime_error(std::to_string(err));
     }
 
-    ListView_SetExtendedListViewStyle(hWnd_, LVS_EX_FULLROWSELECT);
+    ListView_SetExtendedListViewStyle(hWnd_, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
     hWnd_progress_ = CreateWindowEx(
         0,
