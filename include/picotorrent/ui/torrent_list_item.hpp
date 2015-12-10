@@ -21,6 +21,8 @@ namespace ui
 
         int download_rate() const;
         std::wstring download_rate_str() const;
+		int eta() const;
+		std::wstring eta_str() const;
         std::wstring name() const;
         float progress() const;
         std::wstring progress_str() const;

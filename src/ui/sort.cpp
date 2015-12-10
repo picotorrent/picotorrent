@@ -18,6 +18,19 @@ sort::sort_func_t sort::by_download_rate(bool ascending)
     };
 }
 
+sort::sort_func_t sort::by_eta(bool ascending)
+{
+	return [ascending](const torrent_list_item &lhs, const torrent_list_item &rhs)
+	{
+		if (ascending)
+		{
+			return lhs.eta() < rhs.eta();
+		}
+
+		return lhs.eta() > rhs.eta();
+	};
+}
+
 sort::sort_func_t sort::by_name(bool ascending)
 {
     return [ascending](const torrent_list_item &lhs, const torrent_list_item &rhs)

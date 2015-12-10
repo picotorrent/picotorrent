@@ -30,6 +30,56 @@ std::wstring torrent_list_item::download_rate_str() const
     return get_speed(torrent_->download_rate());
 }
 
+int torrent_list_item::eta() const
+{
+	return torrent_->eta();
+}
+
+std::wstring torrent_list_item::eta_str() const
+{
+	int seconds = torrent_->eta();
+
+	if (seconds < 0)
+	{
+		return L"-";
+	}
+
+	if(seconds == 0)
+	{
+		return L"0";
+	}
+
+	if (seconds < 60)
+	{
+		return L"< 1m";
+	}
+
+	int minutes = seconds / 60;
+
+	if (minutes < 60)
+	{
+		return std::to_wstring(minutes) + L"m";
+	}
+
+	int hours = minutes / 60;
+	minutes = minutes - hours * 60;
+
+	if (hours < 24)
+	{
+		return std::to_wstring(hours) + L"h " + std::to_wstring(minutes) + L"m";
+	}
+
+	int days = hours / 24;
+	hours = hours - days * 24;
+
+	if (days < 100)
+	{
+		return std::to_wstring(days) + L"d " + std::to_wstring(hours) + L"h";
+	}
+
+	return L"-";
+}
+
 std::wstring torrent_list_item::name() const
 {
     return to_wstring(torrent_->name());

@@ -32,6 +32,7 @@ namespace core
         torrent(const torrent &that) = delete;
 
         int download_rate();
+		int eta() const;
         bool has_error() const;
         std::shared_ptr<hash> info_hash();
         bool is_checking() const;

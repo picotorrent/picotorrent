@@ -243,6 +243,7 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         list_view_->add_column(TEXT("Size"), scaler::x(80), LVCFMT_RIGHT);
         list_view_->add_column(TEXT("Status"), scaler::x(120), LVCFMT_LEFT);
         list_view_->add_column(TEXT("Progress"), scaler::x(100), LVCFMT_LEFT);
+		list_view_->add_column(TEXT("ETA"), scaler::x(80), LVCFMT_RIGHT);
         list_view_->add_column(TEXT("DL"), scaler::x(80), LVCFMT_RIGHT);
         list_view_->add_column(TEXT("UL"), scaler::x(80), LVCFMT_RIGHT);
 
@@ -326,6 +327,14 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                     std::sort(items_.begin(), items_.end(), sort::by_progress(isAscending));
                 };
                 break;
+			case COL_ETA:
+			{
+				sort_items_ = [this, isAscending]()
+				{
+					std::sort(items_.begin(), items_.end(), sort::by_eta(isAscending));
+				};
+				break;
+			}
             case COL_DOWNLOAD_RATE:
                 sort_items_ = [this, isAscending]()
                 {
