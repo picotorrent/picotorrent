@@ -4,7 +4,7 @@
 
 using picotorrent::app::message_loop;
 
-int message_loop::run()
+int message_loop::run(HWND handle, HACCEL accel)
 {
     MSG msg;
     BOOL ret;
@@ -17,7 +17,11 @@ int message_loop::run()
         }
         else
         {
-            DispatchMessage(&msg);
+            if (TranslateAccelerator(handle, accel, &msg) == 0)
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
         }
     }
 

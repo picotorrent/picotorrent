@@ -34,6 +34,7 @@ namespace ui
 
         void create();
         void exit();
+        std::vector<std::shared_ptr<core::torrent>> get_selected_torrents();
         HWND handle();
         void hide();
         void on_command(int id, const command_func_t &callback);
@@ -42,6 +43,7 @@ namespace ui
         void on_torrent_context_menu(const std::function<void(const POINT &p, const std::vector<std::shared_ptr<core::torrent>>&)> &callback);
         void post_message(UINT uMsg, WPARAM wParam, LPARAM lParam);
         void send_message(UINT uMsg, WPARAM wParam, LPARAM lParam);
+        void select_all_torrents();
 
     private:
         LRESULT CALLBACK wnd_proc(_In_ HWND, _In_ UINT, _In_ WPARAM, _In_ LPARAM);

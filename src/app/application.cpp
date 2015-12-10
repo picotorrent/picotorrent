@@ -5,6 +5,7 @@
 #include <picotorrent/app/controllers/add_torrent_controller.hpp>
 #include <picotorrent/app/controllers/application_update_controller.hpp>
 #include <picotorrent/app/controllers/notifyicon_context_menu_controller.hpp>
+#include <picotorrent/app/controllers/remove_torrent_controller.hpp>
 #include <picotorrent/app/controllers/torrent_context_menu_controller.hpp>
 #include <picotorrent/app/controllers/unhandled_exception_controller.hpp>
 #include <picotorrent/app/controllers/view_preferences_controller.hpp>
@@ -31,12 +32,16 @@ using picotorrent::logging::log;
 application::application()
     : mtx_(NULL),
     main_window_(std::make_shared<ui::main_window>()),
-    sess_(std::make_shared<core::session>())
+    sess_(std::make_shared<core::session>()),
+    accelerators_(LoadAccelerators(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_PICO_ACCELERATORS)))
 {
     log::instance().set_unhandled_exception_callback(std::bind(&application::on_unhandled_exception, this, std::placeholders::_1));
 
     main_window_->on_command(ID_FILE_ADDTORRENT, std::bind(&application::on_file_add_torrent, this));
+    main_window_->on_command(IDA_REMOVE_TORRENTS, std::bind(&application::on_remove_torrents_accelerator, this));
+    main_window_->on_command(IDA_SELECT_ALL, std::bind(&application::on_select_all_accelerator, this));
     main_window_->on_command(ID_VIEW_PREFERENCES, std::bind(&application::on_view_preferences, this));
+
     main_window_->on_copydata(std::bind(&application::on_command_line_args, this, std::placeholders::_1));
     main_window_->on_notifyicon_context_menu(std::bind(&application::on_notifyicon_context_menu, this, std::placeholders::_1));
     main_window_->on_torrent_context_menu(std::bind(&application::on_torrent_context_menu, this, std::placeholders::_1, std::placeholders::_2));
@@ -123,7 +128,7 @@ int application::run(const std::wstring &args)
         updater_->execute();
     }
 
-    int result = message_loop::run();
+    int result = message_loop::run(main_window_->handle(), accelerators_);
 
     sess_->unload();
     return result;
@@ -147,6 +152,21 @@ void application::on_notifyicon_context_menu(const POINT &p)
 {
     controllers::notifyicon_context_menu_controller notify_controller(sess_, main_window_);
     notify_controller.execute(p);
+}
+
+void application::on_select_all_accelerator()
+{
+    main_window_->select_all_torrents();
+}
+
+void application::on_remove_torrents_accelerator()
+{
+    controllers::remove_torrent_controller remove_controller(
+        main_window_,
+        sess_,
+        main_window_->get_selected_torrents());
+
+    remove_controller.execute();
 }
 
 void application::on_torrent_context_menu(const POINT &p, const std::vector<std::shared_ptr<core::torrent>> &torrents)

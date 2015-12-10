@@ -2,6 +2,11 @@
 
 #define IDC_STATIC -1
 
+// Keyboard accelerators
+#define IDR_PICO_ACCELERATORS 8000
+#define IDA_SELECT_ALL 8001
+#define IDA_REMOVE_TORRENTS 8002
+
 // Application
 #define IDR_MAINMENU 101
 #define IDI_APPICON  201

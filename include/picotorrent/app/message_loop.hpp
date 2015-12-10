@@ -1,5 +1,7 @@
 #pragma once
 
+#include <windows.h>
+
 namespace picotorrent
 {
 namespace app
@@ -7,7 +9,7 @@ namespace app
     class message_loop
     {
     public:
-        static int run();
+        static int run(HWND handle, HACCEL accel);
     };
 }
 }

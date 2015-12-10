@@ -40,6 +40,8 @@ namespace app
         void on_command_line_args(const std::wstring &args);
         void on_file_add_torrent();
         void on_notifyicon_context_menu(const POINT &p);
+        void on_remove_torrents_accelerator();
+        void on_select_all_accelerator();
         void on_torrent_context_menu(const POINT &p, const std::vector<std::shared_ptr<core::torrent>> &torrents);
         void on_view_preferences();
 
@@ -50,6 +52,7 @@ namespace app
         void torrent_updated(const std::shared_ptr<core::torrent> &torrent);
 
         HANDLE mtx_;
+        HACCEL accelerators_;
         std::shared_ptr<ui::main_window> main_window_;
         std::shared_ptr<core::session> sess_;
 
