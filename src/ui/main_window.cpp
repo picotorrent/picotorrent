@@ -72,6 +72,18 @@ void main_window::exit()
     DestroyWindow(handle());
 }
 
+std::vector<std::shared_ptr<core::torrent>> main_window::get_selected_torrents()
+{
+    std::vector<core::torrent_ptr> torrents;
+
+    for (int i : list_view_->get_selected_items())
+    {
+        torrents.push_back(items_.at(i).torrent());
+    }
+
+    return torrents;
+}
+
 HWND main_window::handle()
 {
     return hWnd_;
@@ -105,6 +117,11 @@ void main_window::post_message(UINT uMsg, WPARAM wParam, LPARAM lParam)
 void main_window::send_message(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     SendMessage(hWnd_, uMsg, wParam, lParam);
+}
+
+void main_window::select_all_torrents()
+{
+    ListView_SetItemState(list_view_->handle(), -1, LVIS_SELECTED, 2);
 }
 
 void main_window::hide()
@@ -250,22 +267,6 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         noticon_ = std::make_shared<notify_icon>(hWnd);
         noticon_->add();
 
-        // Set up keyboard shortcuts
-        RegisterHotKey(hWnd, IDHOT_SELECT_ALL, MOD_CONTROL | MOD_NOREPEAT, 0x41);
-
-        break;
-    }
-
-    case WM_HOTKEY:
-    {
-        switch (wParam)
-        {
-        case IDHOT_SELECT_ALL:
-        {
-            ListView_SetItemState(list_view_->handle(), -1, LVIS_SELECTED, 2);
-            break;
-        }
-        }
         break;
     }
 
@@ -391,26 +392,12 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
             if (nmhdr->hwndFrom == list_view_->handle())
             {
-                std::vector<int> selectedItems = list_view_->get_selected_items();
-
-                if (selectedItems.size() == 0)
-                {
-                    break;
-                }
-
-                std::vector<core::torrent_ptr> selectedTorrents;
-
-                for (int i : selectedItems)
-                {
-                    selectedTorrents.push_back(items_.at(i).torrent());
-                }
-
                 if (torrent_context_cb_)
                 {
                     POINT pt;
                     GetCursorPos(&pt);
 
-                    torrent_context_cb_(pt, selectedTorrents);
+                    torrent_context_cb_(pt, get_selected_torrents());
                 }
             }
             break;

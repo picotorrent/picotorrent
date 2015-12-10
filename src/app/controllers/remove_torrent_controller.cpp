@@ -28,6 +28,11 @@ remove_torrent_controller::~remove_torrent_controller()
 
 void remove_torrent_controller::execute()
 {
+    if (torrents_.empty())
+    {
+        return;
+    }
+
     remove_torrent_dialog dlg;
 
     switch (dlg.show(wnd_->handle()))
