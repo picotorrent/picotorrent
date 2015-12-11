@@ -186,6 +186,14 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         
         switch (ev)
         {
+        case WM_LBUTTONDBLCLK:
+        {
+            ShowWindow(handle(), SW_RESTORE);
+            SetForegroundWindow(handle());
+
+            break;
+        }
+
         case WM_CONTEXTMENU:
         {
             if (notifyicon_context_cb_)
@@ -268,6 +276,12 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         noticon_->add();
 
         break;
+    }
+
+    case WM_CLOSE:
+    {
+        ShowWindow(handle(), SW_HIDE);
+        return FALSE;
     }
 
     case WM_DESTROY:
