@@ -14,6 +14,7 @@ var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
 var Version            = System.IO.File.ReadAllText("VERSION").Trim();
 var Installer          = string.Format("PicoTorrent-{0}-x64.msi", Version);
+var InstallerBundle    = string.Format("PicoTorrent-{0}-x64.exe", Version);
 
 public void SignTool(FilePath file)
 {
@@ -87,8 +88,30 @@ Task("Build-Installer")
 
     WiXLight(BuildDirectory + File("PicoTorrent.wixobj"), new LightSettings
     {
-        Extensions = new [] { "WixUIExtension", "WixUtilExtension" },
         OutputFile = BuildDirectory + File(Installer)
+    });
+});
+
+Task("Build-Installer-Bundle")
+    .IsDependentOn("Build")
+    .Does(() =>
+{
+    WiXCandle("./installer/PicoTorrentBundle.wxs", new CandleSettings
+    {
+        Architecture = Architecture.X64,
+        Extensions = new [] { "WixBalExtension" },
+        Defines = new Dictionary<string, string>
+        {
+            { "PicoTorrentInstaller", BuildDirectory + File(Installer) },
+            { "Version", Version }
+        },
+        OutputDirectory = BuildDirectory
+    });
+
+    WiXLight(BuildDirectory + File("PicoTorrentBundle.wixobj"), new LightSettings
+    {
+        Extensions = new [] { "WixBalExtension" },
+        OutputFile = BuildDirectory + File(InstallerBundle)
     });
 });
 
@@ -97,7 +120,7 @@ Task("Build-Chocolatey-Package")
     .Does(() =>
 {
     TransformTextFile("./chocolatey/tools/chocolateyinstall.ps1.template", "%{", "}")
-        .WithToken("Installer", Installer)
+        .WithToken("Installer", InstallerBundle)
         .WithToken("Version", Version)
         .Save("./chocolatey/tools/chocolateyinstall.ps1");
 
@@ -133,19 +156,43 @@ Task("Sign-Installer")
     SignTool(file);
 });
 
+Task("Sign-Installer-Bundle")
+    .IsDependentOn("Build-Installer-Bundle")
+    .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
+    .Does(() =>
+{
+    var bundle = BuildDirectory + File(InstallerBundle);
+    var insignia = Directory("tools")
+                   + Directory("WiX.Toolset")
+                   + Directory("tools")
+                   + Directory("wix")
+                   + File("insignia.exe");
+
+    // Detach Burn engine
+    StartProcess(insignia, "-ib \"" + bundle + "\" -o build/BurnEngine.exe");
+    SignTool("build/BurnEngine.exe");
+    StartProcess(insignia, "-ab build/BurnEngine.exe \"" + bundle + "\" -o \"" + bundle + "\"");
+
+    // Sign the bundle
+    SignTool(bundle);
+});
+
 //////////////////////////////////////////////////////////////////////
 // TASK TARGETS
 //////////////////////////////////////////////////////////////////////
 
 Task("Default")
     .IsDependentOn("Build-Installer")
+    .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package");
 
 Task("Publish")
     .IsDependentOn("Build")
     .IsDependentOn("Sign")
     .IsDependentOn("Build-Installer")
+    .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Sign-Installer")
+    .IsDependentOn("Sign-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package");
 
 //////////////////////////////////////////////////////////////////////

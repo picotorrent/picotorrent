@@ -1,5 +1,5 @@
 ﻿$packageName = 'picotorrent'
-$installerType = 'msi'
+$installerType = 'exe'
 $url = 'https://github.com/picotorrent/picotorrent/releases/download/v%{Version}/%{Installer}'
 $silentArgs = '/quiet'
 $validExitCodes = @(0,3010)

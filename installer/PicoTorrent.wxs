@@ -7,7 +7,7 @@
         Manufacturer="PicoTorrent contributors"
         Language="1033"
         Version="$(var.Version)">
-        
+
         <Package Id="*"
             Description="PicoTorrent installer"
             Compressed="yes"
@@ -166,9 +166,6 @@
             </Directory>
 
             <Directory Id="ProgramMenuFolder" />
-
-            <!-- Visual C++ 2015 redistributable -->
-            <Merge Id="VCRedist" SourceFile="$(var.ResourceDirectory)\Microsoft_VC140_CRT_x64.msm" DiskId="1" Language="0"/>
         </Directory>
 
         <Feature Id="F_Complete"
@@ -189,36 +186,6 @@
             </Feature>
         </Feature>
 
-        <Feature Id="F_VCRedist"
-                 Title="Visual C++ 2015 Runtime"
-                 Description="The Microsoft Visual C++ 2015 Runtime is required to run PicoTorrent."
-                 Level="1">
-
-            <MergeRef Id="VCRedist" />
-        </Feature>
-
-        <WixVariable Id="WixUILicenseRtf" Value="LICENSE.rtf" />
-
         <Property Id="ARPPRODUCTICON" Value="I_PicoTorrent.ico" />
-        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch PicoTorrent" />
-        <Property Id="WixShellExecTarget" Value="[#F_PicoTorrent.exe]" />
-
-        <UI>
-            <UIRef Id="WixUI_FeatureTree" />
-            <UIRef Id="WixUI_ErrorProgressText" />
-
-            <Publish Dialog="ExitDialog"
-                     Control="Finish"
-                     Event="DoAction"
-                     Value="LaunchApplication">
-
-                WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed
-            </Publish>
-        </UI>
-
-        <CustomAction Id="LaunchApplication"
-                      BinaryKey="WixCA"
-                      DllEntry="WixShellExec"
-                      Impersonate="yes" />
     </Product>
 </Wix>
