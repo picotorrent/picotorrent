@@ -3,6 +3,7 @@
 #include <picotorrent/app/command_line.hpp>
 #include <picotorrent/app/message_loop.hpp>
 #include <picotorrent/app/controllers/add_torrent_controller.hpp>
+#include <picotorrent/app/controllers/application_close_controller.hpp>
 #include <picotorrent/app/controllers/application_update_controller.hpp>
 #include <picotorrent/app/controllers/notifyicon_context_menu_controller.hpp>
 #include <picotorrent/app/controllers/remove_torrent_controller.hpp>
@@ -42,6 +43,7 @@ application::application()
     main_window_->on_command(IDA_SELECT_ALL, std::bind(&application::on_select_all_accelerator, this));
     main_window_->on_command(ID_VIEW_PREFERENCES, std::bind(&application::on_view_preferences, this));
 
+    main_window_->on_close(std::bind(&application::on_close, this));
     main_window_->on_copydata(std::bind(&application::on_command_line_args, this, std::placeholders::_1));
     main_window_->on_notifyicon_context_menu(std::bind(&application::on_notifyicon_context_menu, this, std::placeholders::_1));
     main_window_->on_torrent_context_menu(std::bind(&application::on_torrent_context_menu, this, std::placeholders::_1, std::placeholders::_2));
@@ -132,6 +134,12 @@ int application::run(const std::wstring &args)
 
     sess_->unload();
     return result;
+}
+
+bool application::on_close()
+{
+    controllers::application_close_controller close_controller(main_window_);
+    return close_controller.execute();
 }
 
 void application::on_command_line_args(const std::wstring &args)

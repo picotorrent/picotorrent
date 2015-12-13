@@ -33,6 +33,16 @@ int configuration::alert_queue_size()
     return get_or_default("alert_queue_size", 500);
 }
 
+configuration::close_action_t configuration::close_action()
+{
+    return (configuration::close_action_t)get_or_default("close_action", (int64_t)configuration::close_action_t::prompt);
+}
+
+void configuration::set_close_action(configuration::close_action_t action)
+{
+    set("close_action", (int)action);
+}
+
 bool configuration::check_for_updates()
 {
     return get_or_default("check_for_updates", true);

@@ -37,6 +37,7 @@ namespace ui
         std::vector<std::shared_ptr<core::torrent>> get_selected_torrents();
         HWND handle();
         void hide();
+        void on_close(const std::function<bool()> &callback);
         void on_command(int id, const command_func_t &callback);
         void on_copydata(const std::function<void(const std::wstring&)> &callback);
         void on_notifyicon_context_menu(const std::function<void(const POINT &p)> &callback);
@@ -51,6 +52,7 @@ namespace ui
 
         HWND hWnd_;
         command_map_t commands_;
+        std::function<bool()> close_cb_;
         std::function<void(const std::wstring&)> copydata_cb_;
         std::function<void(const POINT &p)> notifyicon_context_cb_;
         std::function<void(const POINT &p, const std::vector<std::shared_ptr<core::torrent>>&)> torrent_context_cb_;

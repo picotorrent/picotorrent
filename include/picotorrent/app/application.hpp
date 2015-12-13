@@ -37,6 +37,7 @@ namespace app
         int run(const std::wstring &args);
 
     private:
+        bool on_close();
         void on_command_line_args(const std::wstring &args);
         void on_file_add_torrent();
         void on_notifyicon_context_menu(const POINT &p);

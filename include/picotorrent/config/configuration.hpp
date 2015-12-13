@@ -17,12 +17,22 @@ namespace config
     class configuration
     {
     public:
+        enum close_action_t
+        {
+            prompt,
+            close,
+            minimize
+        };
+
         configuration();
         ~configuration();
 
         static configuration &instance();
 
         int alert_queue_size();
+
+        close_action_t close_action();
+        void set_close_action(close_action_t action);
 
         bool check_for_updates();
         
