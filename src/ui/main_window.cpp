@@ -89,6 +89,11 @@ HWND main_window::handle()
     return hWnd_;
 }
 
+void main_window::on_close(const std::function<bool()> &callback)
+{
+    close_cb_ = callback;
+}
+
 void main_window::on_command(int id, const command_func_t &callback)
 {
     commands_.insert({ id, callback });
@@ -186,6 +191,14 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         
         switch (ev)
         {
+        case WM_LBUTTONDBLCLK:
+        {
+            ShowWindow(handle(), SW_RESTORE);
+            SetForegroundWindow(handle());
+
+            break;
+        }
+
         case WM_CONTEXTMENU:
         {
             if (notifyicon_context_cb_)
@@ -223,7 +236,7 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         switch (LOWORD(wParam))
         {
         case ID_FILE_EXIT:
-            PostMessage(hWnd_, WM_CLOSE, 0, 0);
+            exit();
             break;
         case ID_HELP_ABOUT:
         {
@@ -268,6 +281,23 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         noticon_->add();
 
         break;
+    }
+
+    case WM_CLOSE:
+    {
+        if (!close_cb_)
+        {
+            break;
+        }
+
+        bool res = close_cb_();
+    
+        if (!res)
+        {
+            return FALSE;
+        }
+
+        return DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
     case WM_DESTROY:
