@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
 
     <Bundle Name="PicoTorrent"
             Manufacturer="PicoTorrent contributors."
@@ -10,17 +11,26 @@
             UpgradeCode="58903cac-fb00-4335-8149-0e1177cc8cba"
             Version="$(var.Version)">
 
+        <!-- Search for the C++ redistributable -->
+        <util:RegistrySearch Id="FindVCRedist"
+                             Root="HKLM"
+                             Key="Software\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64"
+                             Value="installed"
+                             Variable="VCRedistExists"
+                             Result="exists" />
+
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
             <bal:WixStandardBootstrapperApplication LicenseFile="LICENSE.rtf"
                                                     LogoFile="res/app.png" />
         </BootstrapperApplicationRef>
 
         <Variable Name="InstallFolder" Type="string" Value="[ProgramFiles64Folder]PicoTorrent"/>
-        <Variable Name="LaunchTarget" Value="[InstallFolder]/PicoTorrent.exe"/>
+        <Variable Name="LaunchTarget" Value="[InstallFolder]\PicoTorrent.exe"/>
 
         <Chain>
             <ExePackage Name="vc_redist.x64.exe"
                         Compressed="no"
+                        DetectCondition="VCRedistExists"
                         DownloadUrl="https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe"
                         InstallCommand="/quiet"
                         PerMachine="yes"

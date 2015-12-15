@@ -99,7 +99,7 @@ Task("Build-Installer-Bundle")
     WiXCandle("./installer/PicoTorrentBundle.wxs", new CandleSettings
     {
         Architecture = Architecture.X64,
-        Extensions = new [] { "WixBalExtension" },
+        Extensions = new [] { "WixBalExtension", "WixUtilExtension" },
         Defines = new Dictionary<string, string>
         {
             { "PicoTorrentInstaller", BuildDirectory + File(Installer) },
@@ -110,7 +110,7 @@ Task("Build-Installer-Bundle")
 
     WiXLight(BuildDirectory + File("PicoTorrentBundle.wixobj"), new LightSettings
     {
-        Extensions = new [] { "WixBalExtension" },
+        Extensions = new [] { "WixBalExtension", "WixUtilExtension" },
         OutputFile = BuildDirectory + File(InstallerBundle)
     });
 });
