@@ -79,7 +79,7 @@ int task_dialog::show()
     config.cbSize = sizeof(config);
     config.hwndParent = parent_;
     config.pButtons = buttons_.data();
-    config.cButtons = buttons_.size();
+    config.cButtons = (UINT)buttons_.size();
     config.pszWindowTitle = title_.c_str();
     config.pszMainIcon = icon_;
     config.pszMainInstruction = instruction_.c_str();
@@ -100,7 +100,7 @@ int task_dialog::show()
         NULL,
         &verificationFlag);
     
-    verification_checked_ = verificationFlag;
+    verification_checked_ = verificationFlag == TRUE ? true : false;
     return button;
 }
 

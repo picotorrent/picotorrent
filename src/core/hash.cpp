@@ -1,6 +1,8 @@
 #include <picotorrent/core/hash.hpp>
 
+#include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
 #include <libtorrent/sha1_hash.hpp>
+#include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace lt = libtorrent;
 using picotorrent::core::hash;

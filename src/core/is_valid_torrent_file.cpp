@@ -1,8 +1,11 @@
 #include <picotorrent/core/is_valid_torrent_file.hpp>
 
-#include <libtorrent/bdecode.hpp>
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
+
+#include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
+#include <libtorrent/bdecode.hpp>
+#include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace fs = picotorrent::filesystem;
 namespace lt = libtorrent;

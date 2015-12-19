@@ -85,7 +85,7 @@ void file::write_all(const std::vector<char> &buf)
     if (!WriteFile(
         hFile,
         &buf[0],
-        buf.size(),
+        (DWORD)buf.size(),
         &written,
         NULL))
     {

@@ -132,7 +132,7 @@ std::wstring torrent_list_item::size_str() const
     StrFormatByteSize64(
         size,
         &result[0],
-        result.size());
+        (DWORD)result.size());
 
     return result;
 }

@@ -68,7 +68,7 @@ void application::activate_other_instance(const std::wstring &args)
     HWND otherWindow = FindWindow(L"PicoTorrent/MainWindow", NULL);
 
     COPYDATASTRUCT cds;
-    cds.cbData = sizeof(wchar_t) * (args.size() + 1);
+    cds.cbData = (DWORD)(sizeof(wchar_t) * (args.size() + 1));
     cds.dwData = 1;
     cds.lpData = (PVOID)&args[0];
 

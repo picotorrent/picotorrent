@@ -17,7 +17,7 @@ uri::uri(const std::wstring &url)
 
     WinHttpCrackUrl(
         url.c_str(),
-        url.size(),
+        (DWORD)url.size(),
         0,
         &components);
 

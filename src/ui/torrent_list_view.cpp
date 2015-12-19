@@ -181,7 +181,7 @@ LRESULT torrent_list_view::on_custom_draw(LPNMLVCUSTOMDRAW lpCustomDraw, const t
         rc.top += 1;
 
         int width = rc.right - rc.left;
-        int newWidth = width * item.progress();
+        int newWidth = (int)(width * item.progress());
         rc.right = rc.left + newWidth;
 
         DrawThemeBackground(

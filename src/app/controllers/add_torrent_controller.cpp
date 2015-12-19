@@ -234,7 +234,7 @@ void add_torrent_controller::show_torrent(int index)
     if (req->torrent_info())
     {
         std::wstring friendly_size(L"\0", 64);
-        StrFormatByteSize64(req->torrent_info()->total_size(), &friendly_size[0], friendly_size.size());
+        StrFormatByteSize64((UINT)req->torrent_info()->total_size(), &friendly_size[0], (UINT)friendly_size.size());
         dlg_->set_size(friendly_size);
 
         dlg_->clear_torrent_files();
@@ -243,7 +243,7 @@ void add_torrent_controller::show_torrent(int index)
         for (int i = 0; i < req->torrent_info()->num_files(); i++)
         {
             std::wstring file_size(L"\0", 64);
-            StrFormatByteSize64(req->torrent_info()->file_size(i), &file_size[0], file_size.size());
+            StrFormatByteSize64((UINT)req->torrent_info()->file_size(i), &file_size[0], (UINT)file_size.size());
 
             dlg_->add_torrent_file(
                 to_wstring(req->torrent_info()->file_name(i)),

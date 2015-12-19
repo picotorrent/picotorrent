@@ -29,7 +29,7 @@ std::wstring dialog_base::get_dlg_item_text(int controlId)
 
 bool dialog_base::is_dlg_button_checked(int controlId)
 {
-    return IsDlgButtonChecked(handle(), controlId);
+    return IsDlgButtonChecked(handle(), controlId) == BST_CHECKED;
 }
 
 void dialog_base::set_dlg_button_checked(int controlId, bool checked)

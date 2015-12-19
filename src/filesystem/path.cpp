@@ -24,7 +24,7 @@ path path::combine(const path &p) const
 
 bool path::exists() const
 {
-    return PathFileExists(p_.c_str());
+    return PathFileExists(p_.c_str()) == TRUE ? true : false;
 }
 
 path path::filename() const

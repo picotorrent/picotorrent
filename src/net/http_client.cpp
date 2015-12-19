@@ -81,7 +81,7 @@ std::string http_client::post(const std::wstring &url, const std::string &conten
 
     WinHttpCrackUrl(
         url.c_str(),
-        url.size(),
+        (DWORD)url.size(),
         0,
         &components);
 
@@ -101,7 +101,7 @@ std::string http_client::post(const std::wstring &url, const std::string &conten
         WINHTTP_FLAG_SECURE);
 
     std::wstring h = L"Content-Type: application/json";
-    WinHttpAddRequestHeaders(hRequest, h.c_str(), h.size(), WINHTTP_ADDREQ_FLAG_ADD_IF_NEW);
+    WinHttpAddRequestHeaders(hRequest, h.c_str(), (DWORD)h.size(), WINHTTP_ADDREQ_FLAG_ADD_IF_NEW);
 
     WinHttpSendRequest(
         hRequest,
@@ -109,14 +109,14 @@ std::string http_client::post(const std::wstring &url, const std::string &conten
         NULL,
         NULL,
         0,
-        content.size(),
+        (DWORD)content.size(),
         NULL);
 
     DWORD written = 0;
     WinHttpWriteData(
         hRequest,
         content.c_str(),
-        content.size(),
+        (DWORD)content.size(),
         &written);
 
     WinHttpReceiveResponse(
