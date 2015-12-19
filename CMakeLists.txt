@@ -108,7 +108,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /MAP /OPT:REF /OPT:ICF")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
 include_directories(
     include/
@@ -116,7 +116,7 @@ include_directories(
 )
 
 link_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/libs
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/bin/x64
 )
 
 add_definitions(
@@ -208,12 +208,12 @@ target_link_libraries(
     iphlpapi
 
     # Boost.Random
-    debug     libboost_random-vc140-mt-gd-1_59
-    optimized libboost_random-vc140-mt-1_59
+    debug     libboost_random-vc140-mt-gd-1_60
+    optimized libboost_random-vc140-mt-1_60
 
     # Boost.System
-    debug     libboost_system-vc140-mt-gd-1_59
-    optimized libboost_system-vc140-mt-1_59
+    debug     libboost_system-vc140-mt-gd-1_60
+    optimized libboost_system-vc140-mt-1_60
 
     # OpenSSL
     libeay32

@@ -1,12 +1,15 @@
 #include <picotorrent/core/add_request.hpp>
 
+#include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/core/torrent_info.hpp>
+
+#include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/torrent_info.hpp>
-#include <picotorrent/common/string_operations.hpp>
-#include <picotorrent/core/torrent_info.hpp>
+#include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace lt = libtorrent;
 using namespace picotorrent::common;

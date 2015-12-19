@@ -1,16 +1,19 @@
 #include <picotorrent/core/torrent_info.hpp>
 
-#include <libtorrent/torrent_info.hpp>
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
 #include <picotorrent/logging/log.hpp>
+
+#include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
+#include <libtorrent/torrent_info.hpp>
+#include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace lt = libtorrent;
 namespace fs = picotorrent::filesystem;
 using picotorrent::core::torrent_info;
 
 torrent_info::torrent_info(const std::vector<char> &buf)
-    : info_(std::make_unique<lt::torrent_info>(&buf[0], buf.size()))
+    : info_(std::make_unique<lt::torrent_info>(&buf[0], (int)buf.size()))
 {
 }
 

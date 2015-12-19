@@ -1,12 +1,5 @@
 #include <picotorrent/core/session.hpp>
 
-#include <libtorrent/alert_types.hpp>
-#include <libtorrent/bencode.hpp>
-#include <libtorrent/create_torrent.hpp>
-#include <libtorrent/session.hpp>
-#include <libtorrent/torrent_info.hpp>
-#include <libtorrent/torrent_status.hpp>
-
 #include <picotorrent/common/environment.hpp>
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/config/configuration.hpp>
@@ -18,7 +11,15 @@
 #include <picotorrent/filesystem/path.hpp>
 #include <picotorrent/logging/log.hpp>
 
+#include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
+#include <libtorrent/alert_types.hpp>
+#include <libtorrent/bencode.hpp>
+#include <libtorrent/create_torrent.hpp>
+#include <libtorrent/session.hpp>
+#include <libtorrent/torrent_info.hpp>
+#include <libtorrent/torrent_status.hpp>
 #include <queue>
+#include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace fs = picotorrent::filesystem;
 namespace lt = libtorrent;

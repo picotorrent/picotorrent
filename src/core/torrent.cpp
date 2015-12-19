@@ -1,9 +1,12 @@
 #include <picotorrent/core/torrent.hpp>
 
-#include <libtorrent/torrent_info.hpp>
-#include <libtorrent/torrent_status.hpp>
 #include <picotorrent/core/hash.hpp>
 #include <picotorrent/core/torrent_state.hpp>
+
+#include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
+#include <libtorrent/torrent_info.hpp>
+#include <libtorrent/torrent_status.hpp>
+#include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace lt = libtorrent;
 using picotorrent::core::hash;
@@ -32,7 +35,7 @@ int torrent::eta() const
 
 	if (remaining > 0 && status_->download_payload_rate > 0)
 	{
-		return remaining / status_->download_payload_rate;
+        return (int)(remaining / status_->download_payload_rate);
 	}
 
 	return -1;

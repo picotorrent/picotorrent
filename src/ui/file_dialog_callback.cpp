@@ -19,10 +19,14 @@ HRESULT file_dialog_callback::create_instance(REFIID riid, void **ppv)
 
 IFACEMETHODIMP file_dialog_callback::QueryInterface(REFIID riid, void** ppv)
 {
+#pragma warning( push )
+#pragma warning( disable : 4838 )
     static const QITAB qit[] = {
         QITABENT(file_dialog_callback, IFileDialogEvents),
-        { 0 },
+        { 0 }
     };
+#pragma warning( pop )
+
     return QISearch(this, qit, riid, ppv);
 }
 

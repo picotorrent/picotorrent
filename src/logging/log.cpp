@@ -5,11 +5,13 @@
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
 
+#include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
 #include <commctrl.h>
 #include <dbghelp.h>
 #include <fstream>
 #include <sstream>
 #include <windows.h>
+#include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace fs = picotorrent::filesystem;
 using picotorrent::common::environment;

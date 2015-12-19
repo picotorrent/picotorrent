@@ -135,22 +135,16 @@ void torrent_context_menu_controller::copy_to_clipboard(const std::string &text)
 
 void torrent_context_menu_controller::open_and_select_item(const std::wstring &path, const std::wstring &item)
 {
-    LPITEMIDLIST dir = ILCreateFromPath(path.c_str());
-
     TCHAR p[MAX_PATH];
     PathCombine(p, path.c_str(), item.c_str());
 
-    LPITEMIDLIST i1 = ILCreateFromPath(p);
-
-    // Items to select
-    const ITEMIDLIST* selection[] = {i1};
+    LPITEMIDLIST il = ILCreateFromPath(p);
 
     SHOpenFolderAndSelectItems(
-        dir,
-        ARRAYSIZE(selection),
-        selection,
+        il,
+        0,
+        0,
         0);
 
-    ILFree(i1);
-    ILFree(dir);
+    ILFree(il);
 }
