@@ -1,0 +1,15 @@
+# AppVeyor build configuration
+
+branches:
+  except:
+  - master
+
+# Build script
+build_script:
+- powershell -NoProfile -ExecutionPolicy unrestricted -Command .\build.ps1
+
+# Publish artifacts (installer)
+artifacts:
+ - path: build/Release/PicoTorrent-*-x64.exe
+
+test: off
