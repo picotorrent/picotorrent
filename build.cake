@@ -6,9 +6,10 @@
 
 var target        = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
+var platform      = Argument("platform", "x64");
 
 // Parameters
-var BuildDirectory     = Directory("./build") + Directory(configuration);
+var BuildDirectory     = Directory("./build-" + platform) + Directory(configuration);
 var ResourceDirectory  = Directory("./res");
 var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
@@ -55,9 +56,16 @@ Task("Generate-Project")
 {
     CreateDirectory("build");
 
+    var generator = "Visual Studio 14 Win64";
+
+    if(platform == "x86")
+    {
+        generator = "Visual Studio 14";
+    }
+
     CMake("./", new CMakeSettings {
-      OutputPath = "./build",
-      Generator = "Visual Studio 14 Win64",
+      OutputPath = "./build-" + platform,
+      Generator = generator,
       Toolset = "v140"
     });
 });
@@ -66,7 +74,7 @@ Task("Build")
     .IsDependentOn("Generate-Project")
     .Does(() =>
 {
-    MSBuild("./build/PicoTorrent.sln",
+    MSBuild("./build-" + platform + "/PicoTorrent.sln",
         settings => settings.SetConfiguration(configuration));
 });
 

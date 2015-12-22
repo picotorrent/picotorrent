@@ -97,11 +97,18 @@ LONG log::on_unhandled_exception(PEXCEPTION_POINTERS exceptionInfo)
 
     STACKFRAME frame;
     frame.AddrFrame.Mode = AddrModeFlat;
-    frame.AddrFrame.Offset = context->Rbp;
     frame.AddrPC.Mode = AddrModeFlat;
-    frame.AddrPC.Offset = context->Rip;
     frame.AddrStack.Mode = AddrModeFlat;
+
+#ifdef _WIN64
+    frame.AddrFrame.Offset = context->Rbp;
+    frame.AddrPC.Offset = context->Rip;
     frame.AddrStack.Offset = context->Rsp;
+#else
+    frame.AddrFrame.Offset = context->Ebp;
+    frame.AddrPC.Offset = context->Eip;
+    frame.AddrStack.Offset = context->Esp;
+#endif
 
     std::ostringstream o;
     int n = 0;

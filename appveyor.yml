@@ -4,9 +4,14 @@ branches:
   except:
   - master
 
+environment:
+  matrix:
+   - platform: x86
+   - platform: x64
+
 # Build script
 build_script:
-- powershell -NoProfile -ExecutionPolicy unrestricted -Command .\build.ps1
+- powershell -NoProfile -ExecutionPolicy unrestricted -Command .\build.ps1 -Platform %platform%
 
 # Publish artifacts (installer)
 artifacts:
