@@ -129,6 +129,7 @@ link_directories(
 add_definitions(
     -D_UNICODE
     -D_WIN32
+    -D_WIN32_WINNT=0x0600
     -DBOOST_ALL_NO_LIB
     -DNOMINMAX
     -DPICOJSON_USE_INT64
