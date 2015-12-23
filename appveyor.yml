@@ -15,6 +15,6 @@ build_script:
 
 # Publish artifacts (installer)
 artifacts:
- - path: build/Release/PicoTorrent-*-x64.exe
+ - path: build-%platform%/Release/PicoTorrent-*-%platform%.exe
 
 test: off

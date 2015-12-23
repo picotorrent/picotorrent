@@ -1,5 +1,29 @@
 <?xml version="1.0"?>
 
+<?if $(var.Platform) = "x64" ?>
+    <?define FindVCRedistKey = "Software\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" ?>
+    <?define InstallFolder = "[ProgramFiles64Folder]PicoTorrent" ?>
+    <?define UpgradeCode = "58903cac-fb00-4335-8149-0e1177cc8cba" ?>
+
+    <?define VCRedistDescription = "Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.23026" ?>
+    <?define VCRedistHash = "3155cb0f146b927fcc30647c1a904cd162548c8c" ?>
+    <?define VCRedistName = "vc_redist.x64.exe" ?>
+    <?define VCRedistSize = "14573568" ?>
+    <?define VCRedistUrl = "https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe" ?>
+    <?define VCRedistVersion = "14.0.23026.0" ?>
+<?else ?>
+    <?define FindVCRedistKey = "Software\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" ?>
+    <?define InstallFolder = "[ProgramFilesFolder]PicoTorrent" ?>
+    <?define UpgradeCode = "08b52a3a-63eb-47c0-8a75-1df052a99042" ?>
+
+    <?define VCRedistDescription = "Microsoft Visual C++ 2015 Redistributable (x86) - 14.0.23026" ?>
+    <?define VCRedistHash = "bfb74e498c44d3a103ca3aa2831763fb417134d1" ?>
+    <?define VCRedistName = "vc_redist.x86.exe" ?>
+    <?define VCRedistSize = "13767776" ?>
+    <?define VCRedistUrl = "https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe" ?>
+    <?define VCRedistVersion = "14.0.23026.0" ?>
+<?endif ?>
+
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
@@ -8,13 +32,13 @@
             Manufacturer="PicoTorrent contributors."
             IconSourceFile="res/app.ico"
             AboutUrl="http://www.picotorrent.org"
-            UpgradeCode="58903cac-fb00-4335-8149-0e1177cc8cba"
+            UpgradeCode="$(var.UpgradeCode)"
             Version="$(var.Version)">
 
         <!-- Search for the C++ redistributable -->
         <util:RegistrySearch Id="FindVCRedist"
                              Root="HKLM"
-                             Key="Software\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64"
+                             Key="$(var.FindVCRedistKey)"
                              Value="installed"
                              Variable="VCRedistExists"
                              Result="exists" />
@@ -24,25 +48,25 @@
                                                     LogoFile="res/app.png" />
         </BootstrapperApplicationRef>
 
-        <Variable Name="InstallFolder" Type="string" Value="[ProgramFiles64Folder]PicoTorrent"/>
+        <Variable Name="InstallFolder" Type="string" Value="$(var.InstallFolder)"/>
         <Variable Name="LaunchTarget" Value="[InstallFolder]\PicoTorrent.exe"/>
 
         <Chain>
-            <ExePackage Name="vc_redist.x64.exe"
+            <ExePackage Name="$(var.VCRedistName)"
                         Compressed="no"
                         DetectCondition="VCRedistExists"
-                        DownloadUrl="https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe"
+                        DownloadUrl="$(var.VCRedistUrl)"
                         InstallCommand="/quiet"
                         PerMachine="yes"
                         Permanent="yes"
                         Vital="yes">
 
                 <RemotePayload
-                               Description="Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.23026"
-                               Hash="3155cb0f146b927fcc30647c1a904cd162548c8c"
-                               ProductName="Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.23026"
-                               Size="14573568"
-                               Version="14.0.23026.0" />
+                               Description="$(var.VCRedistDescription)"
+                               Hash="$(var.VCRedistHash)"
+                               ProductName="$(var.VCRedistDescription)"
+                               Size="$(var.VCRedistSize)"
+                               Version="$(var.VCRedistVersion)" />
             </ExePackage>
 
             <RollbackBoundary />

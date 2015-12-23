@@ -15,8 +15,8 @@ var ResourceDirectory  = Directory("./res");
 var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
 var Version            = System.IO.File.ReadAllText("VERSION").Trim();
-var Installer          = string.Format("PicoTorrent-{0}-x64.msi", Version);
-var InstallerBundle    = string.Format("PicoTorrent-{0}-x64.exe", Version);
+var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version, platform);
+var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version, platform);
 
 public void SignTool(FilePath file)
 {
@@ -48,7 +48,6 @@ public void SignTool(FilePath file)
 Task("Clean")
     .Does(() =>
 {
-    CleanDirectory(OutputDirectory);
     CleanDirectory(BuildDirectory);
 });
 
@@ -95,12 +94,20 @@ Task("Build-Installer")
     .IsDependentOn("Build")
     .Does(() =>
 {
+    var arch = Architecture.X64;
+
+    if(platform == "x86")
+    {
+        arch = Architecture.X86;
+    }
+
     WiXCandle("./installer/PicoTorrent.wxs", new CandleSettings
     {
-        Architecture = Architecture.X64,
+        Architecture = arch,
         Defines = new Dictionary<string, string>
         {
             { "BuildDirectory", BuildDirectory },
+            { "Platform", platform },
             { "ResourceDirectory", ResourceDirectory },
             { "Version", Version }
         },
@@ -117,13 +124,21 @@ Task("Build-Installer-Bundle")
     .IsDependentOn("Build")
     .Does(() =>
 {
+    var arch = Architecture.X64;
+
+    if(platform == "x86")
+    {
+        arch = Architecture.X86;
+    }
+
     WiXCandle("./installer/PicoTorrentBundle.wxs", new CandleSettings
     {
-        Architecture = Architecture.X64,
+        Architecture = arch,
         Extensions = new [] { "WixBalExtension", "WixUtilExtension" },
         Defines = new Dictionary<string, string>
         {
             { "PicoTorrentInstaller", BuildDirectory + File(Installer) },
+            { "Platform", platform },
             { "Version", Version }
         },
         OutputDirectory = BuildDirectory
