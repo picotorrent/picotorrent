@@ -9,7 +9,8 @@ var configuration = Argument("configuration", "Release");
 var platform      = Argument("platform", "x64");
 
 // Parameters
-var BuildDirectory     = Directory("./build-" + platform) + Directory(configuration);
+var OutputDirectory    = Directory("./build-" + platform);
+var BuildDirectory     = OutputDirectory + Directory(configuration);
 var ResourceDirectory  = Directory("./res");
 var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
@@ -47,6 +48,7 @@ public void SignTool(FilePath file)
 Task("Clean")
     .Does(() =>
 {
+    CleanDirectory(OutputDirectory);
     CleanDirectory(BuildDirectory);
 });
 
@@ -54,8 +56,6 @@ Task("Generate-Project")
     .IsDependentOn("Clean")
     .Does(() =>
 {
-    CreateDirectory("build");
-
     var generator = "Visual Studio 14 Win64";
 
     if(platform == "x86")
@@ -64,7 +64,7 @@ Task("Generate-Project")
     }
 
     CMake("./", new CMakeSettings {
-      OutputPath = "./build-" + platform,
+      OutputPath = OutputDirectory,
       Generator = generator,
       Toolset = "v140"
     });
@@ -74,8 +74,21 @@ Task("Build")
     .IsDependentOn("Generate-Project")
     .Does(() =>
 {
-    MSBuild("./build-" + platform + "/PicoTorrent.sln",
-        settings => settings.SetConfiguration(configuration));
+    var settings = new MSBuildSettings()
+                        .SetConfiguration(configuration);
+
+    if(platform == "x86")
+    {
+        settings.WithProperty("Platform", "Win32")
+                .SetPlatformTarget(PlatformTarget.x86);
+    }
+    else
+    {
+        settings.WithProperty("Platform", "x64")
+                .SetPlatformTarget(PlatformTarget.x64);
+    }
+
+    MSBuild(OutputDirectory + File("PicoTorrent.sln"), settings);
 });
 
 Task("Build-Installer")
