@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<?if $(var.Platform) = "x64" ?>
+    <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+    <?define UpgradeCode = "e8ab3252-b12e-4fca-b4c0-ff723283e7dc" ?>
+<?else ?>
+    <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+    <?define UpgradeCode = "2611493f-f5d7-4c5d-934a-623c9a7c7b36" ?>
+<?endif ?>
+
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Product Id="*"
-        UpgradeCode="e8ab3252-b12e-4fca-b4c0-ff723283e7dc"
+        UpgradeCode="$(var.UpgradeCode)"
         Name="PicoTorrent"
         Manufacturer="PicoTorrent contributors"
         Language="1033"
@@ -20,9 +28,9 @@
         <Icon Id="I_PicoTorrent.ico" SourceFile="$(var.ResourceDirectory)\app.ico" />
 
         <Directory Id="TARGETDIR" Name="SourceDir">
-            <Directory Id="ProgramFiles64Folder" Name="PFiles">
+            <Directory Id="$(var.PlatformProgramFilesFolder)" Name="PFiles">
                 <Directory Id="INSTALLDIR" Name="PicoTorrent">
-                    <Component Id="C_PicoTorrent" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205" Win64="yes">
+                    <Component Id="C_PicoTorrent" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205">
                         <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" Source="$(var.BuildDirectory)\PicoTorrent.exe" KeyPath="yes" />
 
                         <!-- Shortcut -->
@@ -159,7 +167,7 @@
                                        Type="string" />
                     </Component>
 
-                    <Component Id="C_DebugSymbols" Guid="501628a2-baa0-4a6e-a1ad-cd6b8de5f32f" Win64="yes">
+                    <Component Id="C_DebugSymbols" Guid="501628a2-baa0-4a6e-a1ad-cd6b8de5f32f">
                         <File Id="F_PicoTorrent.pdb" Name="PicoTorrent.pdb" Source="$(var.BuildDirectory)\PicoTorrent.pdb" />
                     </Component>
                 </Directory>

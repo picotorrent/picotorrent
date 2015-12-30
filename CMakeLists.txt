@@ -21,6 +21,13 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# Get current architecture
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(PICO_ARCH "x64" )
+else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(PICO_ARCH "x86")
+endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+
 configure_file("${CMAKE_SOURCE_DIR}/src/common/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/common/version_info.cpp" @ONLY)
 
 set(BOOST_ROOT      $ENV{BOOST_ROOT})
@@ -116,12 +123,13 @@ include_directories(
 )
 
 link_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/bin/x64
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/bin/${PICO_ARCH}
 )
 
 add_definitions(
     -D_UNICODE
     -D_WIN32
+    -D_WIN32_WINNT=0x0600
     -DBOOST_ALL_NO_LIB
     -DNOMINMAX
     -DPICOJSON_USE_INT64

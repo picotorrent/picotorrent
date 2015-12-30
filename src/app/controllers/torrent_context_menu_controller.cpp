@@ -96,7 +96,7 @@ void torrent_context_menu_controller::execute(const POINT &p)
     {
         std::stringstream ss;
 
-        for (int i = 0; i < torrents_.size(); i++)
+        for (uint8_t i = 0; i < torrents_.size(); i++)
         {
             if (i > 0)
             {
