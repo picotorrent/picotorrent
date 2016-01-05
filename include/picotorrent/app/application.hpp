@@ -41,7 +41,7 @@ namespace app
         void on_command_line_args(const std::wstring &args);
         void on_file_add_torrent();
         void on_notifyicon_context_menu(const POINT &p);
-        void on_remove_torrents_accelerator();
+        void on_remove_torrents_accelerator(bool remove_data);
         void on_select_all_accelerator();
         void on_torrent_context_menu(const POINT &p, const std::vector<std::shared_ptr<core::torrent>> &torrents);
         void on_view_preferences();
