@@ -28,7 +28,7 @@ namespace controllers
 
         ~remove_torrent_controller();
 
-        void execute();
+        void execute(bool remove_files = false);
 
     private:
         std::shared_ptr<ui::main_window> wnd_;

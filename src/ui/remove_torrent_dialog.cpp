@@ -12,12 +12,11 @@ remove_torrent_dialog::~remove_torrent_dialog()
 {
 }
 
-int remove_torrent_dialog::show(HWND parent)
+int remove_torrent_dialog::show(HWND parent, bool remove_files)
 {
     TASKDIALOG_BUTTON buttons[] = 
     {
-        { ID_REMOVE_DATA, TEXT("Yes, remove the data") },
-        { ID_KEEP_DATA, TEXT("No, keep the data") }
+        { ID_REMOVE_DATA, TEXT("Remove") }
     };
 
     TASKDIALOGCONFIG config = { 0 };
@@ -26,8 +25,18 @@ int remove_torrent_dialog::show(HWND parent)
     config.dwFlags = TDF_USE_COMMAND_LINKS;
     config.hwndParent = parent;
     config.pszWindowTitle = TEXT("PicoTorrent");
-    config.pszMainIcon = TD_INFORMATION_ICON;
-    config.pszMainInstruction = TEXT("Would you also like to remove the data files?");
+
+    if (remove_files)
+    {
+        config.pszMainIcon = TD_WARNING_ICON;
+        config.pszMainInstruction = TEXT("The torrent and its files will be removed. Are you sure?");
+    }
+    else
+    {
+        config.pszMainIcon = TD_INFORMATION_ICON;
+        config.pszMainInstruction = TEXT("The torrent will be removed, but its files will be kept on disk. Are you sure?");
+    }
+
 
     config.cButtons = ARRAYSIZE(buttons);
     config.pButtons = buttons;

@@ -15,7 +15,7 @@ namespace ui
         remove_torrent_dialog();
         ~remove_torrent_dialog();
 
-        int show(HWND parent);
+        int show(HWND parent, bool remove_files);
     };
 }
 }

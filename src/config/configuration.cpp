@@ -84,6 +84,16 @@ void configuration::set_listen_port(int port)
     set("listen_port", port);
 }
 
+bool configuration::prompt_for_remove_data()
+{
+    return get_or_default("prompt_for_remove_data", true);
+}
+
+void configuration::set_prompt_for_remove_data(bool value)
+{
+    set("prompt_for_remove_data", value);
+}
+
 bool configuration::prompt_for_save_path()
 {
     return get_or_default("prompt_for_save_path", true);

@@ -87,9 +87,12 @@ int task_dialog::show()
     config.lpCallbackData = (LONG_PTR)this;
     config.pfCallback = (PFTASKDIALOGCALLBACK)&task_dialog::callback;
     config.pszVerificationText = verification_.c_str();
-
     config.dwCommonButtons = common_buttons_;
-    config.dwFlags = TDF_USE_COMMAND_LINKS;
+
+    if (buttons_.size() > 0)
+    {
+        config.dwFlags = TDF_USE_COMMAND_LINKS;
+    }
 
     int button = 0;
     BOOL verificationFlag;
