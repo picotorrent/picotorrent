@@ -47,6 +47,9 @@ namespace config
         int listen_port();
         void set_listen_port(int port);
 
+        bool prompt_for_remove_data();
+        void set_prompt_for_remove_data(bool value);
+
         bool prompt_for_save_path();
         void set_prompt_for_save_path(bool value);
 

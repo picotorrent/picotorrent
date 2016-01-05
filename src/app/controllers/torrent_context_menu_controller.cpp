@@ -87,6 +87,13 @@ void torrent_context_menu_controller::execute(const POINT &p)
         break;
     }
 
+    case TORRENT_CONTEXT_MENU_REMOVE_DATA:
+    {
+        remove_torrent_controller remove_controller(wnd_, sess_, torrents_);
+        remove_controller.execute(true);
+        break;
+    }
+
     case TORRENT_CONTEXT_MENU_COPY_MAGNET:
     {
         break;

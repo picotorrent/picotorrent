@@ -39,7 +39,8 @@ application::application()
     log::instance().set_unhandled_exception_callback(std::bind(&application::on_unhandled_exception, this, std::placeholders::_1));
 
     main_window_->on_command(ID_FILE_ADDTORRENT, std::bind(&application::on_file_add_torrent, this));
-    main_window_->on_command(IDA_REMOVE_TORRENTS, std::bind(&application::on_remove_torrents_accelerator, this));
+    main_window_->on_command(IDA_REMOVE_TORRENTS, std::bind(&application::on_remove_torrents_accelerator, this, false));
+    main_window_->on_command(IDA_REMOVE_TORRENTS_DATA, std::bind(&application::on_remove_torrents_accelerator, this, true));
     main_window_->on_command(IDA_SELECT_ALL, std::bind(&application::on_select_all_accelerator, this));
     main_window_->on_command(ID_VIEW_PREFERENCES, std::bind(&application::on_view_preferences, this));
 
@@ -167,14 +168,14 @@ void application::on_select_all_accelerator()
     main_window_->select_all_torrents();
 }
 
-void application::on_remove_torrents_accelerator()
+void application::on_remove_torrents_accelerator(bool remove_data)
 {
     controllers::remove_torrent_controller remove_controller(
         main_window_,
         sess_,
         main_window_->get_selected_torrents());
 
-    remove_controller.execute();
+    remove_controller.execute(remove_data);
 }
 
 void application::on_torrent_context_menu(const POINT &p, const std::vector<std::shared_ptr<core::torrent>> &torrents)

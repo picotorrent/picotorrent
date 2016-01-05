@@ -102,7 +102,6 @@ set(PICOUI_SOURCES
     src/ui/notifyicon_context_menu
     src/ui/open_file_dialog
     src/ui/open_torrent_dialog
-    src/ui/remove_torrent_dialog
     src/ui/scaler
     src/ui/sort
     src/ui/task_dialog
