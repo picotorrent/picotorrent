@@ -4,6 +4,14 @@
 
 IDI_APPICON     ICON    "..\\res\\app.ico"
 
+// Strings
+STRINGTABLE
+{
+    IDS_PREFS_DOWNLOADS_TITLE, "Downloads"
+    IDS_PREFS_CONNECTION_TITLE, "Connection"
+    IDS_PREFS_ADVANCED_TITLE, "Advanced"
+}
+
 // Accelerators
 IDR_PICO_ACCELERATORS ACCELERATORS
 {
@@ -140,4 +148,48 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
     CONTROL "", 5004, WC_LISTVIEW, LVS_REPORT | WS_BORDER, 15, 65, 270, 120
 
     PUSHBUTTON "Add torrent(s)", IDOK, 240, 195, 55, 14
+}
+
+// Preferences - Downloads
+6767 DIALOGEX 0, 0, 252, 215
+FONT 9, "MS Shell Dlg"
+{
+    LTEXT "Default save path", -1, 5, 10, 80, 10
+    EDITTEXT ID_PREFS_DEFSAVEPATH, 85, 9, 100, 11
+    PUSHBUTTON "...", ID_PREFS_DEFSAVEPATH_BROWSE, 190, 8, 18, 14
+
+    CHECKBOX "Prompt for save path", ID_PREFS_PROMPTFORSAVEPATH, 5, 25, 80, 11
+}
+
+// Preferences - Connection
+6768 DIALOGEX 0, 0, 0, 0
+FONT 9, "MS Shell Dlg"
+{
+    // -- Listen interface
+    GROUPBOX "Listen interface", -1, 5, 10, 240, 50
+
+    LTEXT "Adapter", -1, 15, 23, 80, 10
+    COMBOBOX -1, 105, 23, 130, 10, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+
+    LTEXT "Port", -1, 15, 38, 80, 10
+    EDITTEXT ID_PREFS_LISTENPORT, 105, 38, 22, 10
+
+    // -- Proxy
+    GROUPBOX "Proxy", -1, 5, 68, 200, 80
+
+    LTEXT "Type", -1, 10, 81, 80, 10
+    COMBOBOX -1, 100, 81, 100, 10, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+
+    LTEXT "Host", -1, 10, 96, 80, 10
+    EDITTEXT -1, 100, 96, 100, 11
+
+    LTEXT "Port", -1, 10, 111, 80, 10
+    EDITTEXT -1, 100, 111, 30, 11
+}
+
+// Preferences - Advanced
+6769 DIALOGEX 0, 0, 0, 0
+FONT 9, "MS Shell Dlg"
+{
+    LTEXT "", -1, 10, 150, 180, 20
 }

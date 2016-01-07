@@ -2,6 +2,11 @@
 
 #define IDC_STATIC -1
 
+// Strings
+#define IDS_PREFS_DOWNLOADS_TITLE 101
+#define IDS_PREFS_CONNECTION_TITLE 102
+#define IDS_PREFS_ADVANCED_TITLE 103
+
 // Keyboard accelerators
 #define IDR_PICO_ACCELERATORS 8000
 #define IDA_SELECT_ALL 8001

@@ -5,10 +5,24 @@
 #include <picotorrent/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/ui/resources.hpp>
 
+#include <prsht.h>
+
 namespace ui = picotorrent::ui;
 using picotorrent::config::configuration;
 using picotorrent::app::controllers::view_preferences_controller;
 using picotorrent::ui::dialogs::preferences_dialog;
+
+INT_PTR CALLBACK DialogProc(
+    _In_ HWND   hwndDlg,
+    _In_ UINT   uMsg,
+    _In_ WPARAM wParam,
+    _In_ LPARAM lParam
+    )
+{
+    OutputDebugStringW(std::to_wstring(uMsg).c_str());
+    OutputDebugStringW(L"\n");
+    return FALSE;
+}
 
 view_preferences_controller::view_preferences_controller(const std::shared_ptr<ui::main_window> &wnd)
     : wnd_(wnd)
@@ -17,21 +31,54 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<u
 
 void view_preferences_controller::execute()
 {
-    preferences_dialog dlg;
+    PROPSHEETPAGE pages[3];
 
-    configuration &cfg = configuration::instance();
-    dlg.set_default_save_path(cfg.default_save_path());
-    dlg.set_listen_port(cfg.listen_port());
-    dlg.set_prompt_for_save_path(cfg.prompt_for_save_path());
+    pages[0] = { 0 };
+    pages[0].dwSize = sizeof(PROPSHEETPAGE);
+    pages[0].dwFlags = PSP_USETITLE;
+    pages[0].hInstance = GetModuleHandle(NULL);
+    pages[0].pszTemplate = MAKEINTRESOURCE(6767);
+    pages[0].pfnDlgProc = DialogProc;
+    pages[0].pszTitle = MAKEINTRESOURCE(IDS_PREFS_DOWNLOADS_TITLE);
+    pages[0].lParam = 0;
+    pages[0].pfnCallback = NULL;
 
-    switch(dlg.show_modal(wnd_->handle()))
+    pages[1] = { 0 };
+    pages[1].dwSize = sizeof(PROPSHEETPAGE);
+    pages[1].dwFlags = PSP_USETITLE;
+    pages[1].hInstance = GetModuleHandle(NULL);
+    pages[1].pszTemplate = MAKEINTRESOURCE(6768);
+    pages[1].pfnDlgProc = DialogProc;
+    pages[1].pszTitle = MAKEINTRESOURCE(IDS_PREFS_CONNECTION_TITLE);
+    pages[1].lParam = 0;
+    pages[1].pfnCallback = NULL;
+
+    pages[2] = { 0 };
+    pages[2].dwSize = sizeof(PROPSHEETPAGE);
+    pages[2].dwFlags = PSP_USETITLE;
+    pages[2].hInstance = GetModuleHandle(NULL);
+    pages[2].pszTemplate = MAKEINTRESOURCE(6769);
+    pages[2].pfnDlgProc = DialogProc;
+    pages[2].pszTitle = MAKEINTRESOURCE(IDS_PREFS_ADVANCED_TITLE);
+    pages[2].lParam = 0;
+    pages[2].pfnCallback = NULL;
+
+    PROPSHEETHEADER header = { 0 };
+    header.dwSize = sizeof(PROPSHEETHEADER);
+    header.dwFlags = PSH_NOCONTEXTHELP | PSH_PROPSHEETPAGE;
+    header.hwndParent = wnd_->handle();
+    header.hInstance = GetModuleHandle(NULL);
+    header.pszCaption = L"Preferences";
+    header.nPages = sizeof(pages) / sizeof(PROPSHEETPAGE);
+    header.nStartPage = 0;
+    header.ppsp = (LPCPROPSHEETPAGE)&pages; 
+    header.pfnCallback = NULL;
+
+    INT_PTR res = PropertySheet(&header);
+
+    if (res == -1)
     {
-    case IDOK:
-    {
-        cfg.set_default_save_path(dlg.default_save_path());
-        cfg.set_listen_port(dlg.listen_port());
-        cfg.set_prompt_for_save_path(dlg.prompt_for_save_path());
-        break;
-    }
+        DWORD err = GetLastError();
+        printf("");
     }
 }
