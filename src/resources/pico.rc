@@ -154,11 +154,14 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 6767 DIALOGEX 0, 0, 252, 215
 FONT 9, "MS Shell Dlg"
 {
-    LTEXT "Default save path", -1, 5, 10, 80, 10
-    EDITTEXT ID_PREFS_DEFSAVEPATH, 85, 9, 100, 11
-    PUSHBUTTON "...", ID_PREFS_DEFSAVEPATH_BROWSE, 190, 8, 18, 14
+    // -- Default save path
+    GROUPBOX "Transfers", -1, 5, 10, 240, 45
 
-    CHECKBOX "Prompt for save path", ID_PREFS_PROMPTFORSAVEPATH, 5, 25, 80, 11
+    LTEXT "Path", -1, 15, 23, 50, 10
+    EDITTEXT ID_PREFS_DEFSAVEPATH, 75, 23, 140, 10
+    PUSHBUTTON "...", ID_PREFS_DEFSAVEPATH_BROWSE, 220, 23, 18, 10
+
+    CHECKBOX "Prompt for save path", ID_PREFS_PROMPTFORSAVEPATH, 15, 38, 80, 11
 }
 
 // Preferences - Connection
@@ -166,7 +169,7 @@ FONT 9, "MS Shell Dlg"
 FONT 9, "MS Shell Dlg"
 {
     // -- Listen interface
-    GROUPBOX "Listen interface", -1, 5, 10, 240, 50
+    GROUPBOX "Listen interface", -1, 5, 10, 240, 45
 
     LTEXT "Adapter", -1, 15, 23, 80, 10
     COMBOBOX -1, 105, 23, 130, 10, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
