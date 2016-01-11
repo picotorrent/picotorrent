@@ -1,28 +1,21 @@
 #include <picotorrent/app/controllers/view_preferences_controller.hpp>
 
 #include <picotorrent/config/configuration.hpp>
-#include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/dialogs/preferences_dialog.hpp>
+#include <picotorrent/ui/property_sheets/property_sheet_page.hpp>
+#include <picotorrent/ui/property_sheets/preferences/downloads_page.hpp>
+#include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/resources.hpp>
+#include <vector>
 
 #include <prsht.h>
 
 namespace ui = picotorrent::ui;
+namespace prefs = picotorrent::ui::property_sheets::preferences;
 using picotorrent::config::configuration;
 using picotorrent::app::controllers::view_preferences_controller;
 using picotorrent::ui::dialogs::preferences_dialog;
-
-INT_PTR CALLBACK DialogProc(
-    _In_ HWND   hwndDlg,
-    _In_ UINT   uMsg,
-    _In_ WPARAM wParam,
-    _In_ LPARAM lParam
-    )
-{
-    OutputDebugStringW(std::to_wstring(uMsg).c_str());
-    OutputDebugStringW(L"\n");
-    return FALSE;
-}
+using picotorrent::ui::property_sheets::property_sheet_page;
 
 view_preferences_controller::view_preferences_controller(const std::shared_ptr<ui::main_window> &wnd)
     : wnd_(wnd)
@@ -31,9 +24,7 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<u
 
 void view_preferences_controller::execute()
 {
-    PROPSHEETPAGE pages[3];
-
-    pages[0] = { 0 };
+    /*pages[0] = { 0 };
     pages[0].dwSize = sizeof(PROPSHEETPAGE);
     pages[0].dwFlags = PSP_USETITLE;
     pages[0].hInstance = GetModuleHandle(NULL);
@@ -62,6 +53,18 @@ void view_preferences_controller::execute()
     pages[2].pszTitle = MAKEINTRESOURCE(IDS_PREFS_ADVANCED_TITLE);
     pages[2].lParam = 0;
     pages[2].pfnCallback = NULL;
+    */
+
+    configuration &cfg = configuration::instance();
+
+    prefs::downloads_page dl;
+    dl.set_init_callback([&cfg, &dl]()
+    {
+        dl.set_downloads_path(cfg.default_save_path());
+    });
+
+    PROPSHEETPAGE p[1];
+    p[0] = dl;
 
     PROPSHEETHEADER header = { 0 };
     header.dwSize = sizeof(PROPSHEETHEADER);
@@ -69,9 +72,9 @@ void view_preferences_controller::execute()
     header.hwndParent = wnd_->handle();
     header.hInstance = GetModuleHandle(NULL);
     header.pszCaption = L"Preferences";
-    header.nPages = sizeof(pages) / sizeof(PROPSHEETPAGE);
+    header.nPages = ARRAYSIZE(p);
     header.nStartPage = 0;
-    header.ppsp = (LPCPROPSHEETPAGE)&pages; 
+    header.ppsp = (LPCPROPSHEETPAGE)p;
     header.pfnCallback = NULL;
 
     INT_PTR res = PropertySheet(&header);
