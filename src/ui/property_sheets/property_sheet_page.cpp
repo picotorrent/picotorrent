@@ -15,12 +15,37 @@ INT_PTR property_sheet_page::dlg_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 {
     switch (uMsg)
     {
+    case WM_COMMAND:
+    {
+        return on_command(hwndDlg, LOWORD(wParam), wParam, lParam);
+    }
+
     case WM_INITDIALOG:
         handle_ = hwndDlg;
         if (init_cb_)
         {
+            is_initializing_ = true;
             init_cb_();
+            is_initializing_ = false;
         }
+
+        return TRUE;
+
+    case WM_NOTIFY:
+        LPNMHDR pnmh = (LPNMHDR)lParam;
+
+        switch (pnmh->code)
+        {
+        case PSN_KILLACTIVE:
+            SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, FALSE);
+            return TRUE;
+
+        case PSN_APPLY:
+            if (apply_cb_) { apply_cb_(); }
+            SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, PSNRET_NOERROR);
+            return TRUE;
+        }
+
         break;
     }
 
@@ -32,9 +57,19 @@ HWND property_sheet_page::handle()
     return handle_;
 }
 
+bool property_sheet_page::is_initializing()
+{
+    return is_initializing_;
+}
+
 void property_sheet_page::set_flags(DWORD flags)
 {
     page_->dwFlags = flags;
+}
+
+void property_sheet_page::set_apply_callback(const std::function<void()> &callback)
+{
+    apply_cb_ = callback;
 }
 
 void property_sheet_page::set_init_callback(const std::function<void()> &callback)

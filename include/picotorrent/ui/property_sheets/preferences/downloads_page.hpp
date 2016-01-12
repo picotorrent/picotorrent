@@ -16,7 +16,13 @@ namespace preferences
     public:
         downloads_page();
         
+        std::wstring downloads_path();
+        bool prompt_for_save_path();
         void set_downloads_path(const std::wstring &path);
+        void set_prompt_for_save_path(bool prompt);
+
+    protected:
+        BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam);
     };
 }
 }

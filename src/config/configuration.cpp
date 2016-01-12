@@ -69,9 +69,14 @@ void configuration::set_ignored_update(const std::wstring &version)
     set("ignored_update", version);
 }
 
-std::wstring configuration::listen_interface()
+std::wstring configuration::listen_address()
 {
-    return get_or_default<std::wstring>("listen_interface", L"0.0.0.0");
+    return get_or_default<std::wstring>("listen_address", L"0.0.0.0");
+}
+
+void configuration::set_listen_address(const std::wstring &address)
+{
+    set("listen_address", address);
 }
 
 int configuration::listen_port()

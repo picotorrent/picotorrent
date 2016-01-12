@@ -21,11 +21,14 @@ namespace property_sheets
             return *page_.get();
         }
         
+        void set_apply_callback(const std::function<void()> &callback);
         void set_init_callback(const std::function<void()> &callback);
 
     protected:
         INT_PTR dlg_proc(HWND, UINT, WPARAM, LPARAM);
         HWND handle();
+        bool is_initializing();
+        virtual BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam) { return FALSE; }
         void set_flags(DWORD flags);
         void set_instance(HINSTANCE instance);
         void set_template_id(int id);
@@ -39,8 +42,11 @@ namespace property_sheets
             );
 
     private:
+        bool is_initializing_;
+
         HWND handle_;
         std::unique_ptr<PROPSHEETPAGE> page_;
+        std::function<void()> apply_cb_;
         std::function<void()> init_cb_;
     };
 }

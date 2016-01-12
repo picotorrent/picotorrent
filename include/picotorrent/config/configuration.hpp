@@ -42,7 +42,8 @@ namespace config
         std::wstring ignored_update();
         void set_ignored_update(const std::wstring &version);
 
-        std::wstring listen_interface();
+        std::wstring listen_address();
+        void set_listen_address(const std::wstring &address);
         
         int listen_port();
         void set_listen_port(int port);

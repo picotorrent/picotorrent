@@ -62,7 +62,7 @@ void session::load()
     LOG(info) << "Loading session";
 
     configuration &cfg = configuration::instance();
-    std::wstring iface(cfg.listen_interface() + L":" + std::to_wstring(cfg.listen_port()));
+    std::wstring iface(cfg.listen_address() + L":" + std::to_wstring(cfg.listen_port()));
 
     lt::settings_pack settings;
     settings.set_int(lt::settings_pack::alert_mask, lt::alert::all_categories);
