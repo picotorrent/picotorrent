@@ -109,6 +109,16 @@ void configuration::set_prompt_for_save_path(bool value)
     set("prompt_for_save_path", value);
 }
 
+configuration::proxy_type_t configuration::proxy_type()
+{
+    return (configuration::proxy_type_t)get_or_default("proxy_type", (int64_t)configuration::proxy_type_t::none);
+}
+
+void configuration::set_proxy_type(configuration::proxy_type_t type)
+{
+    set("proxy_type", (int)type);
+}
+
 int configuration::stop_tracker_timeout()
 {
     return get_or_default("stop_tracker_timeout", 1);

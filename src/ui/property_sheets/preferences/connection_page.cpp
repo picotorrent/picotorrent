@@ -2,6 +2,7 @@
 
 #include <picotorrent/ui/resources.hpp>
 
+#include <windowsx.h>
 #include <commctrl.h>
 #include <iostream>
 #include <sstream>
@@ -16,6 +17,14 @@ connection_page::connection_page()
     set_title_id(IDS_PREFS_CONNECTION_TITLE);
 }
 
+void connection_page::add_proxy_type(const std::wstring &name, int type)
+{
+    HWND ctl = GetDlgItem(handle(), ID_PREFS_PROXY_TYPE);
+
+    int index = ComboBox_AddString(ctl, name.c_str());
+    ComboBox_SetItemData(ctl, index, type);
+}
+
 void connection_page::set_listen_address(const std::wstring &address)
 {
     std::vector<BYTE> addr = get_address_bytes(address);
@@ -26,6 +35,12 @@ void connection_page::set_listen_address(const std::wstring &address)
 void connection_page::set_listen_port(int port)
 {
     SetDlgItemText(handle(), ID_PREFS_LISTENPORT, std::to_wstring(port).c_str());
+}
+
+void connection_page::set_proxy_type(int type)
+{
+    HWND ctl = GetDlgItem(handle(), ID_PREFS_PROXY_TYPE);
+    ComboBox_SelectItemData(ctl, -1, type);
 }
 
 std::vector<BYTE> connection_page::get_address_bytes(const std::wstring &address)

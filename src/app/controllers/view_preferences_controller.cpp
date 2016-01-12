@@ -76,6 +76,17 @@ void view_preferences_controller::init_connection_page()
     configuration &cfg = configuration::instance();
     conn_page_->set_listen_address(cfg.listen_address());
     conn_page_->set_listen_port(cfg.listen_port());
+
+    // Add proxy types
+    conn_page_->add_proxy_type(L"None", configuration::proxy_type_t::none);
+    conn_page_->add_proxy_type(L"HTTP", configuration::proxy_type_t::http);
+    conn_page_->add_proxy_type(L"HTTP (with credentials)", configuration::proxy_type_t::http_pw);
+    conn_page_->add_proxy_type(L"I2P", configuration::proxy_type_t::i2p);
+    conn_page_->add_proxy_type(L"SOCKS4", configuration::proxy_type_t::socks4);
+    conn_page_->add_proxy_type(L"SOCKS5", configuration::proxy_type_t::socks5);
+    conn_page_->add_proxy_type(L"SOCKS5 (with credentials)", configuration::proxy_type_t::socks5_pw);
+
+    conn_page_->set_proxy_type(cfg.proxy_type());
 }
 
 void view_preferences_controller::init_downloads_page()

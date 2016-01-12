@@ -24,6 +24,17 @@ namespace config
             minimize
         };
 
+        enum proxy_type_t
+        {
+            none,
+            socks4,
+            socks5,
+            socks5_pw,
+            http,
+            http_pw,
+            i2p
+        };
+
         configuration();
         ~configuration();
 
@@ -50,6 +61,9 @@ namespace config
 
         bool prompt_for_remove_data();
         void set_prompt_for_remove_data(bool value);
+
+        proxy_type_t proxy_type();
+        void set_proxy_type(proxy_type_t type);
 
         bool prompt_for_save_path();
         void set_prompt_for_save_path(bool value);

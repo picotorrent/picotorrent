@@ -18,8 +18,10 @@ namespace preferences
     public:
         connection_page();
 
+        void add_proxy_type(const std::wstring &name, int type);
         void set_listen_address(const std::wstring &address);
         void set_listen_port(int port);
+        void set_proxy_type(int type);
 
     protected:
         std::vector<BYTE> get_address_bytes(const std::wstring &address);
