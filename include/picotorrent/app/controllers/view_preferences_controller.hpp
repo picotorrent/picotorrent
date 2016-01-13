@@ -35,6 +35,8 @@ namespace controllers
         void init_connection_page();
         void init_downloads_page();
 
+        void on_connection_proxy_type_changed(int type);
+
     private:
         std::shared_ptr<ui::main_window> wnd_;
         std::unique_ptr<ui::property_sheets::preferences::connection_page> conn_page_;

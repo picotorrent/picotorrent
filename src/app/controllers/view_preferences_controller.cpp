@@ -25,6 +25,7 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<u
     dl_page_(std::make_unique<prefs::downloads_page>())
 {
     conn_page_->set_init_callback(std::bind(&view_preferences_controller::init_connection_page, this));
+    conn_page_->set_proxy_type_changed_callback(std::bind(&view_preferences_controller::on_connection_proxy_type_changed, this, std::placeholders::_1));
 
     dl_page_->set_apply_callback(std::bind(&view_preferences_controller::apply_downloads_page, this));
     dl_page_->set_init_callback(std::bind(&view_preferences_controller::init_downloads_page, this));
@@ -87,6 +88,7 @@ void view_preferences_controller::init_connection_page()
     conn_page_->add_proxy_type(L"SOCKS5 (with credentials)", configuration::proxy_type_t::socks5_pw);
 
     conn_page_->set_proxy_type(cfg.proxy_type());
+    on_connection_proxy_type_changed(cfg.proxy_type());
 }
 
 void view_preferences_controller::init_downloads_page()
@@ -94,4 +96,17 @@ void view_preferences_controller::init_downloads_page()
     configuration &cfg = configuration::instance();
     dl_page_->set_downloads_path(cfg.default_save_path());
     dl_page_->set_prompt_for_save_path(cfg.prompt_for_save_path());
+}
+
+void view_preferences_controller::on_connection_proxy_type_changed(int type)
+{
+    switch (type)
+    {
+    case configuration::proxy_type_t::none:
+    {
+        conn_page_->set_proxy_host_enabled(false);
+        conn_page_->set_proxy_port_enabled(false);
+        break;
+    }
+    }
 }

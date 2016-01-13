@@ -37,10 +37,39 @@ void connection_page::set_listen_port(int port)
     SetDlgItemText(handle(), ID_PREFS_LISTENPORT, std::to_wstring(port).c_str());
 }
 
+void connection_page::set_proxy_host_enabled(bool enabled)
+{
+    EnableWindow(
+        GetDlgItem(handle(), ID_PREFS_PROXY_HOST),
+        enabled ? TRUE : FALSE);
+}
+
+void connection_page::set_proxy_port_enabled(bool enabled)
+{
+    EnableWindow(
+        GetDlgItem(handle(), ID_PREFS_PROXY_PORT),
+        enabled ? TRUE : FALSE);
+}
+
 void connection_page::set_proxy_type(int type)
 {
     HWND ctl = GetDlgItem(handle(), ID_PREFS_PROXY_TYPE);
-    ComboBox_SelectItemData(ctl, -1, type);
+
+    for (int i = 0; i < ComboBox_GetCount(ctl); i++)
+    {
+        LRESULT data = ComboBox_GetItemData(ctl, i);
+
+        if (data == type)
+        {
+            ComboBox_SetCurSel(ctl, i);
+            break;
+        }
+    }
+}
+
+void connection_page::set_proxy_type_changed_callback(const std::function<void(int)> &callback)
+{
+    proxy_type_changed_cb_ = callback;
 }
 
 std::vector<BYTE> connection_page::get_address_bytes(const std::wstring &address)
@@ -55,4 +84,24 @@ std::vector<BYTE> connection_page::get_address_bytes(const std::wstring &address
     }
 
     return res;
+}
+
+BOOL connection_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam)
+{
+    switch (uCtrlId)
+    {
+    case ID_PREFS_PROXY_TYPE:
+    {
+        if (HIWORD(wParam) == CBN_SELENDOK && proxy_type_changed_cb_)
+        {
+            HWND ctl = GetDlgItem(handle(), ID_PREFS_PROXY_TYPE);
+            int index = ComboBox_GetCurSel(ctl);
+            int type = (int)ComboBox_GetItemData(ctl, index);
+
+            proxy_type_changed_cb_(type);
+        }
+        break;
+    }
+    }
+    return FALSE;
 }

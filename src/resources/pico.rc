@@ -151,7 +151,7 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 }
 
 // Preferences - Downloads
-6767 DIALOGEX 0, 0, 252, 230
+6767 DIALOGEX 0, 0, 252, 215
 FONT 9, "MS Shell Dlg"
 {
     // -- Default save path
@@ -172,33 +172,34 @@ FONT 9, "MS Shell Dlg"
     GROUPBOX "Listen interface", -1, 5, 10, 240, 45
 
     LTEXT "Address", -1, 15, 23, 80, 10
-    CONTROL "", 1010, WC_IPADDRESS, WS_CHILD, 75, 23, 80, 10
+    CONTROL "", 1010, WC_IPADDRESS, WS_CHILD, 75, 23, 80, 11
 
     LTEXT "Port", -1, 15, 38, 80, 10
-    EDITTEXT ID_PREFS_LISTENPORT, 75, 38, 22, 10
+    EDITTEXT ID_PREFS_LISTENPORT, 75, 38, 25, 11
 
     // -- Proxy
-    GROUPBOX "Proxy", -1, 5, 68, 240, 150
+    GROUPBOX "Proxy", -1, 5, 68, 240, 120
 
     LTEXT "Type", -1, 15, 81, 80, 10
     COMBOBOX ID_PREFS_PROXY_TYPE, 75, 81, 120, 10, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 
     LTEXT "Host", -1, 15, 96, 80, 10
-    EDITTEXT -1, 75, 96, 163, 11
+    EDITTEXT ID_PREFS_PROXY_HOST, 75, 96, 163, 11
 
     LTEXT "Port", -1, 15, 111, 80, 10
-    EDITTEXT -1, 75, 111, 15, 11
+    EDITTEXT ID_PREFS_PROXY_PORT, 75, 111, 25, 11
 
     LTEXT "Username", -1, 15, 126, 80, 10
-    EDITTEXT -1, 75, 126, 80, 10
+    EDITTEXT ID_PREFS_PROXY_USERNAME, 75, 126, 80, 11
 
     LTEXT "Password", -1, 15, 141, 80, 10
-    EDITTEXT -1, 75, 141, 80, 10
+    EDITTEXT ID_PREFS_PROXY_PASSWORD, 75, 141, 80, 11
 
-    CHECKBOX "Force proxy", -1, 15, 156, 80, 10
-    CHECKBOX "Proxy hostnames", -1, 15, 171, 80, 10
-    CHECKBOX "Proxy peer connections", -1, 15, 186, 80, 10
-    CHECKBOX "Proxy tracker connections", -1, 15, 201, 100, 10
+    CHECKBOX "Force proxy", ID_PREFS_PROXY_FORCE, 15, 156, 80, 10
+    CHECKBOX "Proxy hostnames", ID_PREFS_PROXY_HOSTNAMES, 125, 156, 80, 10
+
+    CHECKBOX "Proxy peer connections", ID_PREFS_PROXY_PEERS, 15, 171, 100, 10
+    CHECKBOX "Proxy tracker connections", ID_PREFS_PROXY_TRACKERS, 125, 171, 100, 10
 }
 
 // Preferences - Advanced
