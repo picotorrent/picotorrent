@@ -65,6 +65,30 @@ namespace config
         proxy_type_t proxy_type();
         void set_proxy_type(proxy_type_t type);
 
+        std::wstring proxy_host();
+        void set_proxy_host(const std::wstring &host);
+
+        int proxy_port();
+        void set_proxy_port(int port);
+
+        std::wstring proxy_username();
+        void set_proxy_username(const std::wstring &user);
+
+        std::wstring proxy_password();
+        void set_proxy_password(const std::wstring &pass);
+
+        bool proxy_force();
+        void set_proxy_force(bool value);
+
+        bool proxy_hostnames();
+        void set_proxy_hostnames(bool value);
+
+        bool proxy_peers();
+        void set_proxy_peers(bool value);
+
+        bool proxy_trackers();
+        void set_proxy_trackers(bool value);
+
         bool prompt_for_save_path();
         void set_prompt_for_save_path(bool value);
 

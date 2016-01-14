@@ -31,10 +31,11 @@ namespace controllers
         void execute();
 
     protected:
-        void apply_downloads_page();
-        void init_connection_page();
-        void init_downloads_page();
+        void on_downloads_apply();
+        void on_downloads_init();
 
+        void on_connection_apply();
+        void on_connection_init();
         void on_connection_proxy_type_changed(int type);
 
     private:
