@@ -18,6 +18,7 @@ To successfully build PicoTorrent, you need the following tools installed,
 
 - CMake (>= v2.8)
 - Visual Studio 2015 (Community edition)
+- Chocolatey (>= v0.9.9.11)
 
 Build PicoTorrent by running the following in a PowerShell prompt,
 
