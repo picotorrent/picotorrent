@@ -10,6 +10,7 @@
 #include <picotorrent/ui/open_file_dialog.hpp>
 #include <picotorrent/ui/resources.hpp>
 #include <picotorrent/ui/scaler.hpp>
+#include <picotorrent/ui/sleep_manager.hpp>
 #include <picotorrent/ui/sort.hpp>
 #include <picotorrent/ui/task_dialog.hpp>
 #include <picotorrent/ui/taskbar_list.hpp>
@@ -29,6 +30,7 @@ using picotorrent::ui::scaler;
 using picotorrent::ui::taskbar_list;
 using picotorrent::ui::torrent_list_item;
 using picotorrent::ui::torrent_list_view;
+using picotorrent::ui::sleep_manager;
 
 const UINT main_window::TaskbarButtonCreated = RegisterWindowMessage(L"TaskbarButtonCreated");
 
@@ -69,6 +71,8 @@ void main_window::create()
         NULL,
         GetModuleHandle(NULL),
         static_cast<LPVOID>(this));
+
+    sleep_manager_ = std::make_unique<sleep_manager>();
 }
 
 void main_window::exit()
