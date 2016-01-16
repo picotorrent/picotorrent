@@ -50,6 +50,8 @@ namespace core
         std::string save_path() const;
         int64_t size();
         torrent_state state();
+        uint64_t total_wanted();
+        uint64_t total_wanted_done();
         int upload_rate();
 
     private:

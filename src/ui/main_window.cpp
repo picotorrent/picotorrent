@@ -12,6 +12,7 @@
 #include <picotorrent/ui/scaler.hpp>
 #include <picotorrent/ui/sort.hpp>
 #include <picotorrent/ui/task_dialog.hpp>
+#include <picotorrent/ui/taskbar_list.hpp>
 #include <picotorrent/ui/torrent_list_item.hpp>
 #include <picotorrent/ui/torrent_list_view.hpp>
 #include <shellapi.h>
@@ -25,8 +26,11 @@ using picotorrent::ui::main_window;
 using picotorrent::ui::notify_icon;
 using picotorrent::ui::open_file_dialog;
 using picotorrent::ui::scaler;
+using picotorrent::ui::taskbar_list;
 using picotorrent::ui::torrent_list_item;
 using picotorrent::ui::torrent_list_view;
+
+const UINT main_window::TaskbarButtonCreated = RegisterWindowMessage(L"TaskbarButtonCreated");
 
 main_window::main_window()
     : hWnd_(NULL)
@@ -136,6 +140,12 @@ void main_window::hide()
 
 LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    if (uMsg == TaskbarButtonCreated)
+    {
+        taskbar_ = std::make_shared<taskbar_list>(handle());
+        return DefWindowProc(hWnd, uMsg, wParam, lParam);
+    }
+
     switch (uMsg)
     {
     case WM_TORRENT_ADDED:
@@ -279,6 +289,9 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
         noticon_ = std::make_shared<notify_icon>(hWnd);
         noticon_->add();
+
+        // Set update timer
+        SetTimer(hWnd, 6060, 1000, NULL);
 
         break;
     }
@@ -444,6 +457,21 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
         // Set new width and height for the torrent list view.
         list_view_->resize(width, height);
+        break;
+    }
+
+    case WM_TIMER:
+    {
+        uint64_t done = 0;
+        uint64_t wanted = 0;
+
+        for (torrent_list_item &item : items_)
+        {
+            done += item.torrent()->total_wanted_done();
+            wanted += item.torrent()->total_wanted();
+        }
+
+        taskbar_->set_progress_value(done, wanted);
         break;
     }
 

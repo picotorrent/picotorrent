@@ -20,6 +20,7 @@ namespace core
 namespace ui
 {
     class notify_icon;
+    class taskbar_list;
     class torrent_list_item;
     class torrent_list_view;
 
@@ -50,6 +51,8 @@ namespace ui
         LRESULT CALLBACK wnd_proc(_In_ HWND, _In_ UINT, _In_ WPARAM, _In_ LPARAM);
         static LRESULT CALLBACK wnd_proc_proxy(_In_ HWND, _In_ UINT, _In_ WPARAM, _In_ LPARAM);
 
+        static const UINT TaskbarButtonCreated;
+
         HWND hWnd_;
         command_map_t commands_;
         std::function<bool()> close_cb_;
@@ -60,6 +63,7 @@ namespace ui
         std::vector<torrent_list_item> items_;
         std::shared_ptr<notify_icon> noticon_;
         std::unique_ptr<torrent_list_view> list_view_;
+        std::shared_ptr<taskbar_list> taskbar_;
         std::wstring last_finished_save_path_;
     };
 }

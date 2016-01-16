@@ -146,6 +146,16 @@ torrent_state torrent::state()
     return state_;
 }
 
+uint64_t torrent::total_wanted()
+{
+    return status_->total_wanted;
+}
+
+uint64_t torrent::total_wanted_done()
+{
+    return status_->total_wanted_done;
+}
+
 int torrent::upload_rate()
 {
     return status_->upload_payload_rate;
