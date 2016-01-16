@@ -95,7 +95,6 @@ set(PICOUI_SOURCES
     src/ui/dialogs/dialog_base
     src/ui/dialogs/about_dialog
     src/ui/dialogs/add_torrent_dialog
-    src/ui/dialogs/preferences_dialog
     src/ui/property_sheets/property_sheet_page
     src/ui/property_sheets/preferences/connection_page
     src/ui/property_sheets/preferences/downloads_page
@@ -108,6 +107,7 @@ set(PICOUI_SOURCES
     src/ui/scaler
     src/ui/sort
     src/ui/task_dialog
+    src/ui/taskbar_list
     src/ui/torrent_context_menu
     src/ui/torrent_list_item
     src/ui/torrent_list_view
