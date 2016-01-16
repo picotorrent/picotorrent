@@ -96,6 +96,9 @@ set(PICOUI_SOURCES
     src/ui/dialogs/about_dialog
     src/ui/dialogs/add_torrent_dialog
     src/ui/dialogs/preferences_dialog
+    src/ui/property_sheets/property_sheet_page
+    src/ui/property_sheets/preferences/connection_page
+    src/ui/property_sheets/preferences/downloads_page
     src/ui/file_dialog_callback
     src/ui/main_window
     src/ui/notify_icon

@@ -4,6 +4,14 @@
 
 IDI_APPICON     ICON    "..\\res\\app.ico"
 
+// Strings
+STRINGTABLE
+{
+    IDS_PREFS_DOWNLOADS_TITLE, "Downloads"
+    IDS_PREFS_CONNECTION_TITLE, "Connection"
+    IDS_PREFS_ADVANCED_TITLE, "Advanced"
+}
+
 // Accelerators
 IDR_PICO_ACCELERATORS ACCELERATORS
 {
@@ -140,4 +148,63 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
     CONTROL "", 5004, WC_LISTVIEW, LVS_REPORT | WS_BORDER, 15, 65, 270, 120
 
     PUSHBUTTON "Add torrent(s)", IDOK, 240, 195, 55, 14
+}
+
+// Preferences - Downloads
+6767 DIALOGEX 0, 0, 252, 215
+FONT 9, "MS Shell Dlg"
+{
+    // -- Default save path
+    GROUPBOX "Transfers", -1, 5, 10, 240, 45
+
+    LTEXT "Path", -1, 15, 23, 50, 10
+    EDITTEXT ID_PREFS_DEFSAVEPATH, 75, 23, 140, 10
+    PUSHBUTTON "...", ID_PREFS_DEFSAVEPATH_BROWSE, 220, 23, 18, 10
+
+    CHECKBOX "Prompt for save path", ID_PREFS_PROMPTFORSAVEPATH, 15, 38, 80, 11
+}
+
+// Preferences - Connection
+6768 DIALOGEX 0, 0, 0, 0
+FONT 9, "MS Shell Dlg"
+{
+    // -- Listen interface
+    GROUPBOX "Listen interface", -1, 5, 10, 240, 45
+
+    LTEXT "Address", -1, 15, 23, 80, 10
+    CONTROL "", 1010, WC_IPADDRESS, WS_CHILD, 75, 23, 80, 11
+
+    LTEXT "Port", -1, 15, 38, 80, 10
+    EDITTEXT ID_PREFS_LISTENPORT, 75, 38, 25, 11
+
+    // -- Proxy
+    GROUPBOX "Proxy", -1, 5, 68, 240, 120
+
+    LTEXT "Type", -1, 15, 81, 80, 10
+    COMBOBOX ID_PREFS_PROXY_TYPE, 75, 81, 120, 10, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+
+    LTEXT "Host", -1, 15, 96, 80, 10
+    EDITTEXT ID_PREFS_PROXY_HOST, 75, 96, 163, 11
+
+    LTEXT "Port", -1, 15, 111, 80, 10
+    EDITTEXT ID_PREFS_PROXY_PORT, 75, 111, 25, 11, ES_NUMBER
+
+    LTEXT "Username", -1, 15, 126, 80, 10
+    EDITTEXT ID_PREFS_PROXY_USERNAME, 75, 126, 80, 11
+
+    LTEXT "Password", -1, 15, 141, 80, 10
+    EDITTEXT ID_PREFS_PROXY_PASSWORD, 75, 141, 80, 11, ES_PASSWORD
+
+    CHECKBOX "Force proxy", ID_PREFS_PROXY_FORCE, 15, 156, 80, 10
+    CHECKBOX "Proxy hostnames", ID_PREFS_PROXY_HOSTNAMES, 125, 156, 80, 10
+
+    CHECKBOX "Proxy peer connections", ID_PREFS_PROXY_PEERS, 15, 171, 100, 10
+    CHECKBOX "Proxy tracker connections", ID_PREFS_PROXY_TRACKERS, 125, 171, 100, 10
+}
+
+// Preferences - Advanced
+6769 DIALOGEX 0, 0, 0, 0
+FONT 9, "MS Shell Dlg"
+{
+    LTEXT "", -1, 10, 150, 180, 20
 }

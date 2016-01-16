@@ -69,9 +69,14 @@ void configuration::set_ignored_update(const std::wstring &version)
     set("ignored_update", version);
 }
 
-std::wstring configuration::listen_interface()
+std::wstring configuration::listen_address()
 {
-    return get_or_default<std::wstring>("listen_interface", L"0.0.0.0");
+    return get_or_default<std::wstring>("listen_address", L"0.0.0.0");
+}
+
+void configuration::set_listen_address(const std::wstring &address)
+{
+    set("listen_address", address);
 }
 
 int configuration::listen_port()
@@ -102,6 +107,96 @@ bool configuration::prompt_for_save_path()
 void configuration::set_prompt_for_save_path(bool value)
 {
     set("prompt_for_save_path", value);
+}
+
+configuration::proxy_type_t configuration::proxy_type()
+{
+    return (configuration::proxy_type_t)get_or_default("proxy_type", (int64_t)configuration::proxy_type_t::none);
+}
+
+void configuration::set_proxy_type(configuration::proxy_type_t type)
+{
+    set("proxy_type", (int)type);
+}
+
+std::wstring configuration::proxy_host()
+{
+    return get_or_default<std::wstring>("proxy_host", L"");
+}
+
+void configuration::set_proxy_host(const std::wstring &host)
+{
+    set("proxy_host", host);
+}
+
+int configuration::proxy_port()
+{
+    return get_or_default("proxy_port", 0);
+}
+
+void configuration::set_proxy_port(int port)
+{
+    set("proxy_port", port);
+}
+
+std::wstring configuration::proxy_username()
+{
+    return get_or_default<std::wstring>("proxy_username", L"");
+}
+
+void configuration::set_proxy_username(const std::wstring &username)
+{
+    set("proxy_username", username);
+}
+
+std::wstring configuration::proxy_password()
+{
+    return get_or_default<std::wstring>("proxy_password", L"");
+}
+
+void configuration::set_proxy_password(const std::wstring &password)
+{
+    set("proxy_password", password);
+}
+
+bool configuration::proxy_force()
+{
+    return get_or_default("proxy_force", false);
+}
+
+void configuration::set_proxy_force(bool value)
+{
+    set("proxy_force", value);
+}
+
+bool configuration::proxy_hostnames()
+{
+    return get_or_default("proxy_hostnames", false);
+}
+
+void configuration::set_proxy_hostnames(bool value)
+{
+    set("proxy_hostnames", value);
+}
+
+bool configuration::proxy_peers()
+{
+    return get_or_default("proxy_peers", false);
+}
+
+void configuration::set_proxy_peers(bool value)
+{
+    set("proxy_peers", value);
+}
+
+bool configuration::proxy_trackers()
+{
+    return get_or_default("proxy_trackers", false);
+}
+
+void configuration::set_proxy_trackers(bool value)
+{
+    set("proxy_trackers", value);
 }
 
 int configuration::stop_tracker_timeout()
