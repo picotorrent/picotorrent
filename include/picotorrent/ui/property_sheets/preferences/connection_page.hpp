@@ -22,6 +22,8 @@ namespace preferences
 
         void add_proxy_type(const std::wstring &name, int type);
 
+        std::wstring get_listen_address();
+        int get_listen_port();
         int get_proxy_type();
         std::wstring get_proxy_host();
         std::wstring get_proxy_port();

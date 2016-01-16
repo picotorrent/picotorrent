@@ -6,6 +6,7 @@
 #include <commctrl.h>
 #include <iostream>
 #include <sstream>
+#include <strsafe.h>
 
 using picotorrent::ui::property_sheets::preferences::connection_page;
 
@@ -23,6 +24,27 @@ void connection_page::add_proxy_type(const std::wstring &name, int type)
 
     int index = ComboBox_AddString(ctl, name.c_str());
     ComboBox_SetItemData(ctl, index, type);
+}
+
+std::wstring connection_page::get_listen_address()
+{
+    HWND ctl = GetDlgItem(handle(), 1010);
+    DWORD dwAddr = 0;
+
+    SendMessage(ctl, IPM_GETADDRESS, 0, (LPARAM)&dwAddr);
+    wchar_t wchAddr[20];
+    StringCchPrintf(wchAddr, _countof(wchAddr), L"%ld.%ld.%ld.%ld",
+        FIRST_IPADDRESS(dwAddr),
+        SECOND_IPADDRESS(dwAddr),
+        THIRD_IPADDRESS(dwAddr),
+        FOURTH_IPADDRESS(dwAddr));
+
+    return wchAddr;
+}
+
+int connection_page::get_listen_port()
+{
+    return std::stoi(get_window_text(ID_PREFS_LISTENPORT));
 }
 
 int connection_page::get_proxy_type()

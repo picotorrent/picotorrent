@@ -76,6 +76,9 @@ void view_preferences_controller::on_downloads_apply()
 void view_preferences_controller::on_connection_apply()
 {
     configuration &cfg = configuration::instance();
+    cfg.set_listen_address(conn_page_->get_listen_address());
+    cfg.set_listen_port(conn_page_->get_listen_port());
+
     cfg.set_proxy_type((configuration::proxy_type_t)conn_page_->get_proxy_type());
     cfg.set_proxy_host(conn_page_->get_proxy_host());
     cfg.set_proxy_port(std::stoi(conn_page_->get_proxy_port()));
