@@ -14,6 +14,7 @@ namespace ui
         taskbar_list(HWND hParent);
         ~taskbar_list();
 
+        void set_progress_state(TBPFLAG flags);
         void set_progress_value(uint64_t completed, uint64_t total);
 
     private:
