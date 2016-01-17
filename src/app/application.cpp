@@ -186,7 +186,7 @@ void application::on_torrent_context_menu(const POINT &p, const std::vector<std:
 
 void application::on_view_preferences()
 {
-    controllers::view_preferences_controller view_prefs(main_window_);
+    controllers::view_preferences_controller view_prefs(sess_, main_window_);
     view_prefs.execute();
 }
 
