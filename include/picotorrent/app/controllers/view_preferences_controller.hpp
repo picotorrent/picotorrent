@@ -5,6 +5,10 @@
 
 namespace picotorrent
 {
+namespace core
+{
+    class session;
+}
 namespace ui
 {
     class main_window;
@@ -26,7 +30,7 @@ namespace controllers
     class view_preferences_controller
     {
     public:
-        view_preferences_controller(const std::shared_ptr<ui::main_window> &wnd);
+        view_preferences_controller(const std::shared_ptr<core::session> &sess, const std::shared_ptr<ui::main_window> &wnd);
         ~view_preferences_controller();
         void execute();
 
@@ -39,6 +43,7 @@ namespace controllers
         void on_connection_proxy_type_changed(int type);
 
     private:
+        std::shared_ptr<core::session> sess_;
         std::shared_ptr<ui::main_window> wnd_;
         std::unique_ptr<ui::property_sheets::preferences::connection_page> conn_page_;
         std::unique_ptr<ui::property_sheets::preferences::downloads_page> dl_page_;

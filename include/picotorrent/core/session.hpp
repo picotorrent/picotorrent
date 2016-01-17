@@ -10,6 +10,7 @@ namespace libtorrent
 {
     class session;
     class sha1_hash;
+    struct settings_pack;
     class torrent_info;
 }
 
@@ -32,6 +33,7 @@ namespace core
         void load();
         void unload();
 
+        void reload_settings();
         void remove_torrent(const std::shared_ptr<torrent> &torrent, bool remove_data = false);
 
         void on_torrent_added(const std::function<void(const std::shared_ptr<torrent>&)> &callback);
@@ -44,6 +46,7 @@ namespace core
         typedef std::shared_ptr<torrent> torrent_ptr;
         typedef std::map<libtorrent::sha1_hash, torrent_ptr> torrent_map_t;
 
+        std::shared_ptr<libtorrent::settings_pack> get_session_settings();
         void load_state();
         void load_torrents();
         void read_alerts();

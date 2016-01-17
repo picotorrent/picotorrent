@@ -21,6 +21,8 @@
 #include <queue>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
+#include <strsafe.h>
+
 namespace fs = picotorrent::filesystem;
 namespace lt = libtorrent;
 using namespace picotorrent::common;
@@ -61,16 +63,8 @@ void session::load()
 {
     LOG(info) << "Loading session";
 
-    configuration &cfg = configuration::instance();
-    std::wstring iface(cfg.listen_address() + L":" + std::to_wstring(cfg.listen_port()));
-
-    lt::settings_pack settings;
-    settings.set_int(lt::settings_pack::alert_mask, lt::alert::all_categories);
-    settings.set_int(lt::settings_pack::alert_queue_size, cfg.alert_queue_size());
-    settings.set_str(lt::settings_pack::listen_interfaces, to_string(iface));
-    settings.set_int(lt::settings_pack::stop_tracker_timeout, cfg.stop_tracker_timeout());
-
-    sess_ = std::make_unique<lt::session>(settings);
+    std::shared_ptr<lt::settings_pack> settings = get_session_settings();
+    sess_ = std::make_unique<lt::session>(*settings);
 
     load_state();
     load_torrents();
@@ -123,6 +117,33 @@ void session::on_torrent_removed(const std::function<void(const torrent_ptr&)> &
 void session::on_torrent_updated(const std::function<void(const torrent_ptr&)> &callback)
 {
     torrent_updated_cb_ = callback;
+}
+
+std::shared_ptr<lt::settings_pack> session::get_session_settings()
+{
+    std::shared_ptr<lt::settings_pack> settings = std::make_shared<lt::settings_pack>();
+
+    configuration &cfg = configuration::instance();
+
+    wchar_t iface[128];
+    StringCchPrintf(iface, ARRAYSIZE(iface), L"%s:%d", cfg.listen_address().c_str(), cfg.listen_port());
+
+    settings->set_int(lt::settings_pack::alert_mask, lt::alert::all_categories);
+    settings->set_int(lt::settings_pack::alert_queue_size, cfg.alert_queue_size());
+    settings->set_str(lt::settings_pack::listen_interfaces, to_string(iface));
+    settings->set_int(lt::settings_pack::stop_tracker_timeout, cfg.stop_tracker_timeout());
+
+    // Proxy settings
+    settings->set_int(lt::settings_pack::proxy_type, cfg.proxy_type());
+    settings->set_str(lt::settings_pack::proxy_hostname, to_string(cfg.proxy_host()));
+    settings->set_int(lt::settings_pack::proxy_port, cfg.proxy_port());
+    settings->set_bool(lt::settings_pack::force_proxy, cfg.proxy_force());
+    settings->set_bool(lt::settings_pack::proxy_hostnames, cfg.proxy_hostnames());
+    settings->set_bool(lt::settings_pack::proxy_peer_connections, cfg.proxy_peers());
+    settings->set_bool(lt::settings_pack::proxy_tracker_connections, cfg.proxy_trackers());
+
+    return settings;
+
 }
 
 void session::load_state()
@@ -416,6 +437,11 @@ void session::read_alerts()
             }
         }
     }
+}
+
+void session::reload_settings()
+{
+    sess_->apply_settings(*get_session_settings());
 }
 
 void session::remove_torrent_files(const torrent_ptr &torrent)

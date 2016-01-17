@@ -1,6 +1,7 @@
 #include <picotorrent/app/controllers/view_preferences_controller.hpp>
 
 #include <picotorrent/config/configuration.hpp>
+#include <picotorrent/core/session.hpp>
 #include <picotorrent/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/ui/property_sheets/property_sheet_page.hpp>
 #include <picotorrent/ui/property_sheets/preferences/connection_page.hpp>
@@ -15,12 +16,15 @@
 namespace ui = picotorrent::ui;
 namespace prefs = picotorrent::ui::property_sheets::preferences;
 using picotorrent::config::configuration;
+using picotorrent::core::session;
 using picotorrent::app::controllers::view_preferences_controller;
 using picotorrent::ui::dialogs::preferences_dialog;
 using picotorrent::ui::property_sheets::property_sheet_page;
 
-view_preferences_controller::view_preferences_controller(const std::shared_ptr<ui::main_window> &wnd)
-    : wnd_(wnd),
+view_preferences_controller::view_preferences_controller(const std::shared_ptr<session> &sess,
+    const std::shared_ptr<ui::main_window> &wnd)
+    : sess_(sess),
+    wnd_(wnd),
     conn_page_(std::make_unique<prefs::connection_page>()),
     dl_page_(std::make_unique<prefs::downloads_page>())
 {
@@ -55,14 +59,9 @@ void view_preferences_controller::execute()
     header.ppsp = (LPCPROPSHEETPAGE)p;
     header.pfnCallback = NULL;
 
-    switch (PropertySheet(&header))
+    if (PropertySheet(&header) >= 1)
     {
-    case -1:
-        break;
-    case 0:
-        break;
-    case 1:
-        break;
+        sess_->reload_settings();
     }
 }
 
@@ -107,7 +106,7 @@ void view_preferences_controller::on_connection_init()
 
     conn_page_->set_proxy_type(cfg.proxy_type());
     conn_page_->set_proxy_host(cfg.proxy_host());
-    conn_page_->set_proxy_port(std::to_wstring(cfg.proxy_port()));
+    if (cfg.proxy_port() > 0) { conn_page_->set_proxy_port(std::to_wstring(cfg.proxy_port())); }
     conn_page_->set_proxy_username(cfg.proxy_username());
     conn_page_->set_proxy_password(cfg.proxy_password());
     conn_page_->set_proxy_force_checked(cfg.proxy_force());
