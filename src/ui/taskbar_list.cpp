@@ -18,6 +18,11 @@ taskbar_list::~taskbar_list()
     }
 }
 
+void taskbar_list::set_progress_state(TBPFLAG flags)
+{
+    list_->SetProgressState(hParent_, flags);
+}
+
 void taskbar_list::set_progress_value(uint64_t completed, uint64_t total)
 {
     list_->SetProgressValue(hParent_, completed, total);

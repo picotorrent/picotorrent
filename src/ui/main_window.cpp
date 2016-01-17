@@ -17,6 +17,7 @@
 #include <picotorrent/ui/torrent_list_item.hpp>
 #include <picotorrent/ui/torrent_list_view.hpp>
 #include <shellapi.h>
+#include <shobjidl.h>
 #include <strsafe.h>
 
 namespace core = picotorrent::core;
@@ -482,7 +483,17 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             }
         }
 
-        taskbar_->set_progress_value(done, wanted);
+        if (wanted - done > 0)
+        {
+            taskbar_->set_progress_state(TBPF_NORMAL);
+            taskbar_->set_progress_value(done, wanted);
+        }
+        else
+        {
+            taskbar_->set_progress_state(TBPF_NOPROGRESS);
+        }
+
+
         sleep_manager_->refresh(hasActiveDownloads);
 
         break;
