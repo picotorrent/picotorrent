@@ -10,6 +10,7 @@
 #include <picotorrent/ui/open_file_dialog.hpp>
 #include <picotorrent/ui/resources.hpp>
 #include <picotorrent/ui/scaler.hpp>
+#include <picotorrent/ui/sleep_manager.hpp>
 #include <picotorrent/ui/sort.hpp>
 #include <picotorrent/ui/task_dialog.hpp>
 #include <picotorrent/ui/taskbar_list.hpp>
@@ -29,6 +30,7 @@ using picotorrent::ui::scaler;
 using picotorrent::ui::taskbar_list;
 using picotorrent::ui::torrent_list_item;
 using picotorrent::ui::torrent_list_view;
+using picotorrent::ui::sleep_manager;
 
 const UINT main_window::TaskbarButtonCreated = RegisterWindowMessage(L"TaskbarButtonCreated");
 
@@ -69,6 +71,8 @@ void main_window::create()
         NULL,
         GetModuleHandle(NULL),
         static_cast<LPVOID>(this));
+
+    sleep_manager_ = std::make_unique<sleep_manager>();
 }
 
 void main_window::exit()
@@ -464,14 +468,23 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     {
         uint64_t done = 0;
         uint64_t wanted = 0;
+        bool hasActiveDownloads = false;
 
         for (torrent_list_item &item : items_)
         {
             done += item.torrent()->total_wanted_done();
             wanted += item.torrent()->total_wanted();
+
+            // Is the current item actively downloading?
+            if (!item.torrent()->is_seeding() && !item.torrent()->is_paused() && (wanted + done > 0))
+            {
+                hasActiveDownloads = true;
+            }
         }
 
         taskbar_->set_progress_value(done, wanted);
+        sleep_manager_->refresh(hasActiveDownloads);
+
         break;
     }
 

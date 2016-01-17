@@ -23,6 +23,7 @@ namespace ui
     class taskbar_list;
     class torrent_list_item;
     class torrent_list_view;
+    class sleep_manager;
 
     class main_window
     {
@@ -65,6 +66,7 @@ namespace ui
         std::unique_ptr<torrent_list_view> list_view_;
         std::shared_ptr<taskbar_list> taskbar_;
         std::wstring last_finished_save_path_;
+        std::unique_ptr<sleep_manager> sleep_manager_;
     };
 }
 }

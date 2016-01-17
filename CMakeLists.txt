@@ -105,6 +105,7 @@ set(PICOUI_SOURCES
     src/ui/open_file_dialog
     src/ui/open_torrent_dialog
     src/ui/scaler
+    src/ui/sleep_manager
     src/ui/sort
     src/ui/task_dialog
     src/ui/taskbar_list
