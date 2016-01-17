@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdint.h>
 #include <windows.h>
 
 namespace picotorrent
@@ -12,10 +13,10 @@ namespace ui
         explicit sleep_manager();
         ~sleep_manager();
 
-        void refresh() const;
+        void refresh(uint32_t active);
 
     private:
-        bool isSleeping;
+        bool isSleepPrevented_;
     };
 }
 }
