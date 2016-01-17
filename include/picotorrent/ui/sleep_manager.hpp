@@ -10,10 +10,10 @@ namespace ui
 	class sleep_manager
 	{
     public:
-        explicit sleep_manager();
+        sleep_manager();
         ~sleep_manager();
 
-        void refresh(uint32_t active);
+        void refresh(bool hasActiveDownloads);
 
     private:
         bool isSleepPrevented_;

@@ -468,7 +468,7 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     {
         uint64_t done = 0;
         uint64_t wanted = 0;
-        uint32_t active = 0;
+        bool hasActiveDownloads = false;
 
         for (torrent_list_item &item : items_)
         {
@@ -478,12 +478,12 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             // Is the current item actively downloading?
             if (!item.torrent()->is_seeding() && !item.torrent()->is_paused() && (wanted + done > 0))
             {
-                active++;
+                hasActiveDownloads = true;
             }
         }
 
         taskbar_->set_progress_value(done, wanted);
-        sleep_manager_->refresh(active);
+        sleep_manager_->refresh(hasActiveDownloads);
 
         break;
     }

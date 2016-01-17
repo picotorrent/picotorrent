@@ -16,17 +16,18 @@ sleep_manager::~sleep_manager()
     }
 }
 
-void sleep_manager::refresh(uint32_t active)
+void sleep_manager::refresh(bool hasActiveDownloads)
 {
-    if (active == 0)
+    if (!hasActiveDownloads)
     {
         if (isSleepPrevented_)
         {
             // Allow sleeping
             LOG(info) << "Allowing computer to sleep";
             EXECUTION_STATE state = SetThreadExecutionState(ES_CONTINUOUS);
-            if (state == NULL) {
-                LOG(error) << "Could not allow computer to sleep.";
+            if (state == NULL) 
+            {
+                LOG(error) << "Could not allow computer to sleep";
                 return;
             }
             isSleepPrevented_ = false;
@@ -39,7 +40,8 @@ void sleep_manager::refresh(uint32_t active)
             // Prevent sleeping
             LOG(info) << "Preventing computer from sleeping";
             EXECUTION_STATE state = SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
-            if (state == NULL) {
+            if (state == NULL) 
+            {
                 LOG(error) << "Could not prevent computer from sleeping.";
                 return;
             }
