@@ -1,13 +1,8 @@
 ﻿$packageName = 'picotorrent'
 $installerType = 'exe'
-$url = 'https://github.com/picotorrent/picotorrent/releases/download/v%{Version}/%{Installer}'
+$url = 'https://github.com/picotorrent/picotorrent/releases/download/v%{Version}/PicoTorrent-%{Version}-x86.exe'
+$url64 = 'https://github.com/picotorrent/picotorrent/releases/download/v%{Version}/PicoTorrent-%{Version}-x64.exe'
 $silentArgs = '/quiet'
 $validExitCodes = @(0,3010)
 
-# We only have support for x64 systems for now, so do a simple check and report an error otherwise.
-
-if(Get-ProcessorBits 64) {
-    Install-ChocolateyPackage $packageName $installerType $silentArgs $url -validExitCodes $validExitCodes
-} else {
-    throw "PicoTorrent is currently only supported on 64-bit systems."
-}
+Install-ChocolateyPackage $packageName $installerType $silentArgs $url $url64 -validExitCodes $validExitCodes
