@@ -80,7 +80,7 @@ void view_preferences_controller::on_connection_apply()
 
     cfg.set_proxy_type((configuration::proxy_type_t)conn_page_->get_proxy_type());
     cfg.set_proxy_host(conn_page_->get_proxy_host());
-    cfg.set_proxy_port(std::stoi(conn_page_->get_proxy_port()));
+    cfg.set_proxy_port(conn_page_->get_proxy_port());
     cfg.set_proxy_username(conn_page_->get_proxy_username());
     cfg.set_proxy_password(conn_page_->get_proxy_password());
     cfg.set_proxy_force(conn_page_->get_proxy_force_checked());
