@@ -246,7 +246,7 @@ void add_torrent_controller::show_torrent(int index)
             StrFormatByteSize64((UINT)req->torrent_info()->file_size(i), &file_size[0], (UINT)file_size.size());
 
             dlg_->add_torrent_file(
-                to_wstring(req->torrent_info()->file_name(i)),
+                to_wstring(req->torrent_info()->file_path(i)),
                 file_size,
                 get_prio_str(req->file_priority(i)));
         }
