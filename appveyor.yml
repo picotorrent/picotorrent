@@ -13,9 +13,9 @@ environment:
 build_script:
 - powershell -NoProfile -ExecutionPolicy unrestricted -Command .\build.ps1 -Platform %platform%
 
-# Publish artifacts (installer)
+# Publish artifacts (installer and portable zip)
 artifacts:
- - path: build-*/Release/PicoTorrent-*-x64.exe
- - path: build-*/Release/PicoTorrent-*-x86.exe
+ - path: build-*/Release/PicoTorrent-*-*.exe
+ - path: build-*/Release/PicoTorrent-*-*.zip
 
 test: off

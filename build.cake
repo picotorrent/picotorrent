@@ -17,6 +17,7 @@ var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
 var Version            = System.IO.File.ReadAllText("VERSION").Trim();
 var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version, platform);
 var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version, platform);
+var PortablePackage    = string.Format("PicoTorrent-{0}-{1}.zip", Version, platform);
 
 public void SignTool(FilePath file)
 {
@@ -151,6 +152,19 @@ Task("Build-Installer-Bundle")
     });
 });
 
+Task("Build-Portable-Package")
+    .IsDependentOn("Build")
+    .Does(() =>
+{
+    var files = new FilePath[]
+    {
+        BuildDirectory + File("PicoTorrent.exe"),
+        BuildDirectory + File("PicoTorrent.pdb")
+    };
+
+    Zip(BuildDirectory, BuildDirectory + File(PortablePackage), files);
+});
+
 Task("Build-Chocolatey-Package")
     .IsDependentOn("Build-Installer")
     .Does(() =>
@@ -220,7 +234,8 @@ Task("Sign-Installer-Bundle")
 Task("Default")
     .IsDependentOn("Build-Installer")
     .IsDependentOn("Build-Installer-Bundle")
-    .IsDependentOn("Build-Chocolatey-Package");
+    .IsDependentOn("Build-Chocolatey-Package")
+    .IsDependentOn("Build-Portable-Package");
 
 Task("Publish")
     .IsDependentOn("Build")
@@ -229,7 +244,8 @@ Task("Publish")
     .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Sign-Installer")
     .IsDependentOn("Sign-Installer-Bundle")
-    .IsDependentOn("Build-Chocolatey-Package");
+    .IsDependentOn("Build-Chocolatey-Package")
+    .IsDependentOn("Build-Portable-Package");
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION
