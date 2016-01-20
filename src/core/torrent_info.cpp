@@ -49,9 +49,9 @@ std::shared_ptr<torrent_info> torrent_info::try_load(const fs::path &path)
     return std::make_shared<torrent_info>(buf);
 }
 
-std::string torrent_info::file_name(int index)
+std::string torrent_info::file_path(int index)
 {
-    return info_->files().file_name(index);
+    return info_->files().file_path(index);
 }
 
 int64_t torrent_info::file_size(int index)
