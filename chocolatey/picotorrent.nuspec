@@ -16,7 +16,7 @@
     <!--<docsUrl></docsUrl>
     <mailingListUrl></mailingListUrl>-->
     <bugTrackerUrl>https://github.com/picotorrent/picotorrent/issues</bugTrackerUrl>
-    <tags>picotorrent bittorrent</tags>
+    <tags>picotorrent bittorrent admin</tags>
     <copyright>Copyright 2015, PicoTorrent contributors.</copyright>
     <licenseUrl>https://raw.githubusercontent.com/picotorrent/picotorrent/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
