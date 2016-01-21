@@ -25,7 +25,7 @@
       <dependency id="" version="__VERSION__" />
       <dependency id="" />
     </dependencies>-->
-    <releaseNotes></releaseNotes>
+    <releaseNotes>https://github.com/picotorrent/picotorrent/releases/tag/v$version$</releaseNotes>
     <!--<provides></provides>-->
   </metadata>
   <files>
