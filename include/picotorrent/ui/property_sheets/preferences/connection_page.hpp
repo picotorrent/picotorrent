@@ -26,7 +26,7 @@ namespace preferences
         int get_listen_port();
         int get_proxy_type();
         std::wstring get_proxy_host();
-        std::wstring get_proxy_port();
+        int get_proxy_port();
         std::wstring get_proxy_username();
         std::wstring get_proxy_password();
         bool get_proxy_force_checked();

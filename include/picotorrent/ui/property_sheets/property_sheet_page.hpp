@@ -23,6 +23,8 @@ namespace property_sheets
         
         void set_apply_callback(const std::function<void()> &callback);
         void set_init_callback(const std::function<void()> &callback);
+        void set_validate_callback(const std::function<bool()> &callback);
+        void show_error_message(const std::wstring &text);
 
     protected:
         INT_PTR dlg_proc(HWND, UINT, WPARAM, LPARAM);
@@ -48,6 +50,7 @@ namespace property_sheets
         std::unique_ptr<PROPSHEETPAGE> page_;
         std::function<void()> apply_cb_;
         std::function<void()> init_cb_;
+        std::function<bool()> validate_cb_;
     };
 }
 }

@@ -264,7 +264,7 @@ template<>
 void configuration::set<std::wstring>(const char *name, std::wstring value)
 {
     std::string s = to_string(value);
-    if (s[s.size() - 1] == '\0') { s = s.substr(0, s.size() - 1); }
+    if (!s.empty() && s[s.size() - 1] == '\0') { s = s.substr(0, s.size() - 1); }
 
     (*value_)[name] = pj::value(s);
 }

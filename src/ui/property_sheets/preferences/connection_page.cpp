@@ -44,7 +44,9 @@ std::wstring connection_page::get_listen_address()
 
 int connection_page::get_listen_port()
 {
-    return std::stoi(get_window_text(ID_PREFS_LISTENPORT));
+    std::wstring text = get_window_text(ID_PREFS_LISTENPORT);
+    if (text.empty()) { return -1; }
+    return std::stoi(text);
 }
 
 int connection_page::get_proxy_type()
@@ -60,9 +62,11 @@ std::wstring connection_page::get_proxy_host()
     return get_window_text(ID_PREFS_PROXY_HOST);
 }
 
-std::wstring connection_page::get_proxy_port()
+int connection_page::get_proxy_port()
 {
-    return get_window_text(ID_PREFS_PROXY_PORT);
+    std::wstring text = get_window_text(ID_PREFS_PROXY_PORT);
+    if (text.empty()) { return -1; }
+    return std::stoi(text);
 }
 
 std::wstring connection_page::get_proxy_username()
