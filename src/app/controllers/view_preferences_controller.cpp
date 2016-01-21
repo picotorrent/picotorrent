@@ -30,10 +30,12 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
 {
     conn_page_->set_apply_callback(std::bind(&view_preferences_controller::on_connection_apply, this));
     conn_page_->set_init_callback(std::bind(&view_preferences_controller::on_connection_init, this));
+    conn_page_->set_validate_callback(std::bind(&view_preferences_controller::on_connection_validate, this));
     conn_page_->set_proxy_type_changed_callback(std::bind(&view_preferences_controller::on_connection_proxy_type_changed, this, std::placeholders::_1));
 
     dl_page_->set_apply_callback(std::bind(&view_preferences_controller::on_downloads_apply, this));
     dl_page_->set_init_callback(std::bind(&view_preferences_controller::on_downloads_init, this));
+    dl_page_->set_validate_callback(std::bind(&view_preferences_controller::on_downloads_validate, this));
 }
 
 view_preferences_controller::~view_preferences_controller()
@@ -70,6 +72,18 @@ void view_preferences_controller::on_downloads_apply()
     configuration &cfg = configuration::instance();
     cfg.set_default_save_path(dl_page_->downloads_path());
     cfg.set_prompt_for_save_path(dl_page_->prompt_for_save_path());
+}
+
+bool view_preferences_controller::on_downloads_validate()
+{
+    if (dl_page_->downloads_path().empty())
+    {
+        dl_page_->show_error_message(
+            L"The transfers path cannot be empty.");
+        return false;
+    }
+
+    return true;
 }
 
 void view_preferences_controller::on_connection_apply()
@@ -117,6 +131,19 @@ void view_preferences_controller::on_connection_init()
     on_connection_proxy_type_changed(cfg.proxy_type());
 }
 
+bool view_preferences_controller::on_connection_validate()
+{
+    int listenPort = conn_page_->get_listen_port();
+    if (listenPort < 1024 || listenPort > 65535)
+    {
+        conn_page_->show_error_message(
+            L"Invalid listen port. Must be a number between 1024 and 65535.");
+        return false;
+    }
+
+    return true;
+}
+
 void view_preferences_controller::on_downloads_init()
 {
     configuration &cfg = configuration::instance();
@@ -126,15 +153,6 @@ void view_preferences_controller::on_downloads_init()
 
 void view_preferences_controller::on_connection_proxy_type_changed(int type)
 {
-    /*conn_page_->set_proxy_host(L"");
-    conn_page_->set_proxy_port(L"");
-    conn_page_->set_proxy_username(L"");
-    conn_page_->set_proxy_password(L"");
-    conn_page_->set_proxy_force_checked(false);
-    conn_page_->set_proxy_hostnames_checked(false);
-    conn_page_->set_proxy_peers_checked(false);
-    conn_page_->set_proxy_trackers_checked(false);*/
-
     conn_page_->set_proxy_host_enabled(false);
     conn_page_->set_proxy_port_enabled(false);
     conn_page_->set_proxy_username_enabled(false);

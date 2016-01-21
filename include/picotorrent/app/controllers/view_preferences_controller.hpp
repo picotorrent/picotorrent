@@ -37,10 +37,12 @@ namespace controllers
     protected:
         void on_downloads_apply();
         void on_downloads_init();
+        bool on_downloads_validate();
 
         void on_connection_apply();
         void on_connection_init();
         void on_connection_proxy_type_changed(int type);
+        bool on_connection_validate();
 
     private:
         std::shared_ptr<core::session> sess_;
