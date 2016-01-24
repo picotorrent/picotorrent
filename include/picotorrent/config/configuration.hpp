@@ -95,6 +95,9 @@ namespace config
         int stop_tracker_timeout();
         std::wstring update_url();
 
+        bool use_picotorrent_peer_id();
+        void set_use_picotorrent_peer_id(bool value);
+
     private:
         template<typename T>
         T get_or_default(const char *name, T defaultValue);

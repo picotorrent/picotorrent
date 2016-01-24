@@ -18,6 +18,7 @@ namespace property_sheets
 {
 namespace preferences
 {
+    class advanced_page;
     class connection_page;
     class downloads_page;
 }
@@ -35,6 +36,9 @@ namespace controllers
         void execute();
 
     protected:
+        void on_advanced_apply();
+        void on_advanced_init();
+
         void on_downloads_apply();
         void on_downloads_init();
         bool on_downloads_validate();
@@ -47,6 +51,7 @@ namespace controllers
     private:
         std::shared_ptr<core::session> sess_;
         std::shared_ptr<ui::main_window> wnd_;
+        std::unique_ptr<ui::property_sheets::preferences::advanced_page> adv_page_;
         std::unique_ptr<ui::property_sheets::preferences::connection_page> conn_page_;
         std::unique_ptr<ui::property_sheets::preferences::downloads_page> dl_page_;
     };

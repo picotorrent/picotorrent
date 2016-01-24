@@ -206,5 +206,7 @@ FONT 9, "MS Shell Dlg"
 6769 DIALOGEX 0, 0, 0, 0
 FONT 9, "MS Shell Dlg"
 {
-    LTEXT "", -1, 10, 150, 180, 20
+    GROUPBOX "Experimental", -1, 5, 10, 240, 30
+
+    CHECKBOX "Use PicoTorrent peer id and user agent", ID_PREFS_ADV_USE_PICO_ID, 15, 23, 160, 10
 }

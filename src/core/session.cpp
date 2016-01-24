@@ -2,6 +2,7 @@
 
 #include <picotorrent/common/environment.hpp>
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/version_info.hpp>
 #include <picotorrent/config/configuration.hpp>
 #include <picotorrent/core/add_request.hpp>
 #include <picotorrent/core/timer.hpp>
@@ -10,6 +11,7 @@
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
 #include <picotorrent/logging/log.hpp>
+#include <semver.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
 #include <libtorrent/alert_types.hpp>
@@ -132,6 +134,30 @@ std::shared_ptr<lt::settings_pack> session::get_session_settings()
     settings->set_int(lt::settings_pack::alert_queue_size, cfg.alert_queue_size());
     settings->set_str(lt::settings_pack::listen_interfaces, to_string(iface));
     settings->set_int(lt::settings_pack::stop_tracker_timeout, cfg.stop_tracker_timeout());
+
+    // Set PicoTorrent peer id and user agent
+    if (cfg.use_picotorrent_peer_id())
+    {
+        std::wstring version = to_wstring(common::version_info::current_version());
+
+        // Calculate user agent
+        std::wstring user_agent = L"PicoTorrent/";
+        user_agent.resize(user_agent.size() + version.size());
+        StringCchPrintf(&user_agent[0], user_agent.size(), L"PicoTorrent/%s", version.c_str());
+
+        // Calculate peer id
+        semver::version v(common::version_info::current_version());
+        std::wstring peer_id(L"-", 9);
+        StringCchPrintf(&peer_id[0], peer_id.size(), L"-PI%d%02d%d-", v.getMajor(), v.getMinor(), v.getPatch());
+
+        settings->set_str(lt::settings_pack::user_agent, to_string(user_agent));
+        settings->set_str(lt::settings_pack::peer_fingerprint, to_string(peer_id));
+    }
+    else
+    {
+        settings->set_str(lt::settings_pack::user_agent, "libtorrent/" LIBTORRENT_VERSION);
+        settings->set_str(lt::settings_pack::peer_fingerprint, "-LT1100-");
+    }
 
     // Proxy settings
     settings->set_int(lt::settings_pack::proxy_type, cfg.proxy_type());
