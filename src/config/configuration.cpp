@@ -209,6 +209,16 @@ std::wstring configuration::update_url()
     return get_or_default<std::wstring>("update_url", L"https://api.github.com/repos/picotorrent/picotorrent/releases/latest");
 }
 
+bool configuration::use_picotorrent_peer_id()
+{
+    return get_or_default("use_picotorrent_peer_id", false);
+}
+
+void configuration::set_use_picotorrent_peer_id(bool value)
+{
+    set("use_picotorrent_peer_id", value);
+}
+
 template<typename T>
 T configuration::get_or_default(const char *name, T defaultValue)
 {
