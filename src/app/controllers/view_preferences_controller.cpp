@@ -4,6 +4,7 @@
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/ui/property_sheets/property_sheet_page.hpp>
+#include <picotorrent/ui/property_sheets/preferences/advanced_page.hpp>
 #include <picotorrent/ui/property_sheets/preferences/connection_page.hpp>
 #include <picotorrent/ui/property_sheets/preferences/downloads_page.hpp>
 #include <picotorrent/ui/main_window.hpp>
@@ -25,9 +26,13 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
     const std::shared_ptr<ui::main_window> &wnd)
     : sess_(sess),
     wnd_(wnd),
+    adv_page_(std::make_unique<prefs::advanced_page>()),
     conn_page_(std::make_unique<prefs::connection_page>()),
     dl_page_(std::make_unique<prefs::downloads_page>())
 {
+    adv_page_->set_apply_callback(std::bind(&view_preferences_controller::on_advanced_apply, this));
+    adv_page_->set_init_callback(std::bind(&view_preferences_controller::on_advanced_init, this));
+
     conn_page_->set_apply_callback(std::bind(&view_preferences_controller::on_connection_apply, this));
     conn_page_->set_init_callback(std::bind(&view_preferences_controller::on_connection_init, this));
     conn_page_->set_validate_callback(std::bind(&view_preferences_controller::on_connection_validate, this));
@@ -47,7 +52,8 @@ void view_preferences_controller::execute()
     PROPSHEETPAGE p[] =
     {
         *dl_page_,
-        *conn_page_
+        *conn_page_,
+        *adv_page_
     };
 
     PROPSHEETHEADER header = { 0 };
@@ -65,6 +71,18 @@ void view_preferences_controller::execute()
     {
         sess_->reload_settings();
     }
+}
+
+void view_preferences_controller::on_advanced_apply()
+{
+    configuration &cfg = configuration::instance();
+    cfg.set_use_picotorrent_peer_id(adv_page_->use_picotorrent_id());
+}
+
+void view_preferences_controller::on_advanced_init()
+{
+    configuration &cfg = configuration::instance();
+    adv_page_->set_use_picotorrent_id(cfg.use_picotorrent_peer_id());
 }
 
 void view_preferences_controller::on_downloads_apply()
