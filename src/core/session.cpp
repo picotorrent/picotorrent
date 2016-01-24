@@ -153,6 +153,11 @@ std::shared_ptr<lt::settings_pack> session::get_session_settings()
         settings->set_str(lt::settings_pack::user_agent, to_string(user_agent));
         settings->set_str(lt::settings_pack::peer_fingerprint, to_string(peer_id));
     }
+    else
+    {
+        settings->set_str(lt::settings_pack::user_agent, "libtorrent/" LIBTORRENT_VERSION);
+        settings->set_str(lt::settings_pack::peer_fingerprint, "-LT1100-");
+    }
 
     // Proxy settings
     settings->set_int(lt::settings_pack::proxy_type, cfg.proxy_type());
