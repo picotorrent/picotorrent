@@ -118,6 +118,12 @@ void main_window::on_notifyicon_context_menu(const std::function<void(const POIN
     notifyicon_context_cb_ = callback;
 }
 
+void main_window::on_torrent_activated(const std::function<void(const std::shared_ptr<core::torrent>&)> &callback)
+{
+    torrent_activated_cb = callback;
+}
+
+
 void main_window::on_torrent_context_menu(const std::function<void(const POINT &p, const std::vector<std::shared_ptr<core::torrent>>&)> &callback)
 {
     torrent_context_cb_ = callback;
@@ -421,6 +427,16 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             const torrent_list_item &item = items_.at(inf->item.iItem);
             list_view_->on_getdispinfo(inf, item);
 
+            break;
+        }
+        case LVN_ITEMACTIVATE:
+        {
+            if (torrent_activated_cb)
+            {
+                int index = list_view_->get_selected_items()[0];
+                const torrent_list_item &item = items_.at(index);
+                torrent_activated_cb(item.torrent());
+            }
             break;
         }
         case NM_CUSTOMDRAW:

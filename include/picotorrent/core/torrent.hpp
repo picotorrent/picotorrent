@@ -31,6 +31,7 @@ namespace core
 
         torrent(const torrent &that) = delete;
 
+        int download_limit() const;
         int download_rate();
 		int eta() const;
         bool has_error() const;
@@ -41,6 +42,8 @@ namespace core
         bool is_queued() const;
         bool is_seeding() const;
         bool is_valid();
+        int max_connections() const;
+        int max_uploads() const;
         void move_storage(const std::string &path);
         std::string& name() const;
         void pause();
@@ -48,10 +51,17 @@ namespace core
         int queue_position();
         void resume(bool force);
         std::string save_path() const;
+        void set_download_limit(int limit);
+        void set_max_connections(int limit);
+        void set_max_uploads(int limit);
+        void set_sequential_download(bool val);
+        void set_upload_limit(int limit);
+        bool sequential_download() const;
         int64_t size();
         torrent_state state();
         uint64_t total_wanted();
         uint64_t total_wanted_done();
+        int upload_limit() const;
         int upload_rate();
 
     private:

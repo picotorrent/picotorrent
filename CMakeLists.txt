@@ -44,6 +44,7 @@ set(PICOAPP_SOURCES
     src/app/controllers/move_torrent_controller
     src/app/controllers/notifyicon_context_menu_controller
     src/app/controllers/remove_torrent_controller
+    src/app/controllers/torrent_details_controller
     src/app/controllers/torrent_context_menu_controller
     src/app/controllers/unhandled_exception_controller
     src/app/controllers/view_preferences_controller
@@ -96,6 +97,7 @@ set(PICOUI_SOURCES
     src/ui/dialogs/about_dialog
     src/ui/dialogs/add_torrent_dialog
     src/ui/property_sheets/property_sheet_page
+    src/ui/property_sheets/details/overview_page
     src/ui/property_sheets/preferences/advanced_page
     src/ui/property_sheets/preferences/connection_page
     src/ui/property_sheets/preferences/downloads_page

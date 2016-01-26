@@ -10,6 +10,7 @@ STRINGTABLE
     IDS_PREFS_DOWNLOADS_TITLE, "Downloads"
     IDS_PREFS_CONNECTION_TITLE, "Connection"
     IDS_PREFS_ADVANCED_TITLE, "Advanced"
+    IDS_DETAILS_OVERVIEW_TITLE, "Overview"
 }
 
 // Accelerators
@@ -209,4 +210,31 @@ FONT 9, "MS Shell Dlg"
     GROUPBOX "Experimental", -1, 5, 10, 240, 30
 
     CHECKBOX "Use PicoTorrent peer id and user agent", ID_PREFS_ADV_USE_PICO_ID, 15, 23, 160, 10
+}
+
+// Details - Overview
+IDD_DETAILS_OVERVIEW DIALOGEX 0, 0, 252, 215
+FONT 9, "MS Shell Dlg"
+{
+    GROUPBOX "Limits", -1, 5, 10, 240, 150
+
+    LTEXT "DL limit", -1, 15, 23, 80, 10
+    EDITTEXT ID_DETAILS_DL_LIMIT, 75, 22, 30, 11, ES_RIGHT
+    LTEXT "(KB/s, 0: unlimited)", -1, 110, 23, 80, 10
+
+    LTEXT "UL limit", -1, 15, 38, 80, 10
+    EDITTEXT ID_DETAILS_UL_LIMIT, 75, 37, 30, 11, ES_RIGHT
+    LTEXT "(KB/s, 0: unlimited)", -1, 110, 38, 80, 10
+
+    LTEXT "Max connections", -1, 15, 53, 80, 10
+    EDITTEXT ID_DETAILS_MAX_CONNECTIONS, 75, 52, 30, 11, ES_RIGHT
+    LTEXT "(-1: unlimited)", -1, 110, 53, 80, 10
+
+    LTEXT "Max uploads", -1, 15, 68, 80, 10
+    EDITTEXT ID_DETAILS_MAX_UPLOADS, 75, 67, 30, 11, ES_RIGHT
+    LTEXT "(-1: unlimited)", -1, 110, 68, 80, 10
+
+    CHECKBOX "Sequential download", ID_DETAILS_SEQUENTIAL_DOWNLOAD, 75, 83, 80, 10
+
+    //EDITTEXT -1, 10, 20, 230, 65, ES_LEFT | ES_MULTILINE | ES_WANTRETURN | WS_TABSTOP
 }

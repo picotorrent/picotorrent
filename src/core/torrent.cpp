@@ -19,6 +19,11 @@ torrent::torrent(const lt::torrent_status &st)
 {
 }
 
+int torrent::download_limit() const
+{
+    return status_->handle.download_limit();
+}
+
 int torrent::download_rate()
 {
     return status_->download_payload_rate;
@@ -83,6 +88,16 @@ bool torrent::is_valid()
     return status_->handle.is_valid();
 }
 
+int torrent::max_connections() const
+{
+    return status_->handle.max_connections();
+}
+
+int torrent::max_uploads() const
+{
+    return status_->handle.max_uploads();
+}
+
 void torrent::move_storage(const std::string &path)
 {
     status_->handle.move_storage(path);
@@ -131,6 +146,36 @@ std::string torrent::save_path() const
     return status_->save_path;
 }
 
+void torrent::set_download_limit(int limit)
+{
+    status_->handle.set_download_limit(limit);
+}
+
+void torrent::set_max_connections(int limit)
+{
+    status_->handle.set_max_connections(limit);
+}
+
+void torrent::set_max_uploads(int limit)
+{
+    status_->handle.set_max_uploads(limit);
+}
+
+void torrent::set_sequential_download(bool val)
+{
+    status_->handle.set_sequential_download(val);
+}
+
+void torrent::set_upload_limit(int limit)
+{
+    status_->handle.set_upload_limit(limit);
+}
+
+bool torrent::sequential_download() const
+{
+    return status_->sequential_download;
+}
+
 int64_t torrent::size()
 {
     if (boost::shared_ptr<const lt::torrent_info> info = status_->torrent_file.lock())
@@ -154,6 +199,11 @@ uint64_t torrent::total_wanted()
 uint64_t torrent::total_wanted_done()
 {
     return status_->total_wanted_done;
+}
+
+int torrent::upload_limit() const
+{
+    return status_->handle.upload_limit();
 }
 
 int torrent::upload_rate()

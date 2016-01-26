@@ -66,6 +66,18 @@ bool property_sheet_page::is_initializing()
     return is_initializing_;
 }
 
+std::wstring property_sheet_page::get_dlg_item_text(int id)
+{
+    TCHAR text[1024];
+    GetDlgItemText(handle(), id, text, ARRAYSIZE(text));
+    return text;
+}
+
+void property_sheet_page::set_dlg_item_text(int id, const std::wstring &text)
+{
+    SetDlgItemText(handle(), id, text.c_str());
+}
+
 void property_sheet_page::set_flags(DWORD flags)
 {
     page_->dwFlags = flags;

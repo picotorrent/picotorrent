@@ -43,6 +43,7 @@ namespace ui
         void on_command(int id, const command_func_t &callback);
         void on_copydata(const std::function<void(const std::wstring&)> &callback);
         void on_notifyicon_context_menu(const std::function<void(const POINT &p)> &callback);
+        void on_torrent_activated(const std::function<void(const std::shared_ptr<core::torrent>&)> &callback);
         void on_torrent_context_menu(const std::function<void(const POINT &p, const std::vector<std::shared_ptr<core::torrent>>&)> &callback);
         void post_message(UINT uMsg, WPARAM wParam, LPARAM lParam);
         void send_message(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -59,6 +60,7 @@ namespace ui
         std::function<bool()> close_cb_;
         std::function<void(const std::wstring&)> copydata_cb_;
         std::function<void(const POINT &p)> notifyicon_context_cb_;
+        std::function<void(const std::shared_ptr<core::torrent>&)> torrent_activated_cb;
         std::function<void(const POINT &p, const std::vector<std::shared_ptr<core::torrent>>&)> torrent_context_cb_;
         std::function<void()> sort_items_;
         std::vector<torrent_list_item> items_;
