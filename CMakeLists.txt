@@ -97,6 +97,7 @@ set(PICOUI_SOURCES
     src/ui/dialogs/about_dialog
     src/ui/dialogs/add_torrent_dialog
     src/ui/property_sheets/property_sheet_page
+    src/ui/property_sheets/details/files_page
     src/ui/property_sheets/details/overview_page
     src/ui/property_sheets/preferences/advanced_page
     src/ui/property_sheets/preferences/connection_page

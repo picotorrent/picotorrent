@@ -4,6 +4,7 @@
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/ui/main_window.hpp>
 
+#include <picotorrent/ui/property_sheets/details/files_page.hpp>
 #include <picotorrent/ui/property_sheets/details/overview_page.hpp>
 
 #include <prsht.h>
@@ -20,8 +21,11 @@ torrent_details_controller::torrent_details_controller(
     const std::shared_ptr<torrent> &torrent)
     : torrent_(torrent),
     wnd_(wnd),
+    files_(std::make_unique<details::files_page>()),
     overview_(std::make_unique<details::overview_page>())
 {
+    files_->set_init_callback(std::bind(&torrent_details_controller::on_files_init, this));
+
     overview_->set_apply_callback(std::bind(&torrent_details_controller::on_overview_apply, this));
     overview_->set_init_callback(std::bind(&torrent_details_controller::on_overview_init, this));
 }
@@ -34,7 +38,8 @@ void torrent_details_controller::execute()
 {
     PROPSHEETPAGE p[] =
     {
-        *overview_
+        *overview_,
+        *files_
     };
 
     TCHAR t[1024];
@@ -52,6 +57,10 @@ void torrent_details_controller::execute()
     header.pfnCallback = NULL;
 
     PropertySheet(&header);
+}
+
+void torrent_details_controller::on_files_init()
+{
 }
 
 void torrent_details_controller::on_overview_apply()

@@ -11,6 +11,7 @@ STRINGTABLE
     IDS_PREFS_CONNECTION_TITLE, "Connection"
     IDS_PREFS_ADVANCED_TITLE, "Advanced"
     IDS_DETAILS_OVERVIEW_TITLE, "Overview"
+    IDS_DETAILS_FILES_TITLE, "Files"
 }
 
 // Accelerators
@@ -235,6 +236,12 @@ FONT 9, "MS Shell Dlg"
     LTEXT "(-1: unlimited)", -1, 110, 68, 80, 10
 
     CHECKBOX "Sequential download", ID_DETAILS_SEQUENTIAL_DOWNLOAD, 75, 83, 80, 10
+}
 
-    //EDITTEXT -1, 10, 20, 230, 65, ES_LEFT | ES_MULTILINE | ES_WANTRETURN | WS_TABSTOP
+// Details - Files
+IDD_DETAILS_FILES DIALOGEX 0, 0, 252, 215
+FONT 9, "MS Shell Dlg"
+{
+    LTEXT "", -1, 0, 0, 0, 0 // If we dont have this control, the prefs page gets a gray background
+    CONTROL "", -1, WC_LISTVIEW, LVS_REPORT | WS_BORDER | WS_CHILD, 5, 10, 240, 200
 }

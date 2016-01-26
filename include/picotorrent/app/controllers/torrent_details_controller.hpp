@@ -16,6 +16,7 @@ namespace property_sheets
 {
 namespace details
 {
+    class files_page;
     class overview_page;
 }
 }
@@ -34,6 +35,7 @@ namespace controllers
         void execute();
 
     protected:
+        void on_files_init();
         void on_overview_apply();
         void on_overview_init();
 
@@ -41,6 +43,7 @@ namespace controllers
         std::shared_ptr<core::torrent> torrent_;
         std::shared_ptr<ui::main_window> wnd_;
 
+        std::unique_ptr<ui::property_sheets::details::files_page> files_;
         std::unique_ptr<ui::property_sheets::details::overview_page> overview_;
     };
 }
