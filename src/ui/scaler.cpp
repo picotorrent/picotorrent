@@ -3,7 +3,9 @@
 using picotorrent::ui::scaler;
 
 scaler::scaler()
-    : hdc_(GetDC(NULL))
+    : hdc_(GetDC(NULL)),
+    dpi_x_(96),
+    dpi_y_(96)
 {
 }
 
@@ -20,10 +22,10 @@ scaler& scaler::instance()
 
 long scaler::x(long x)
 {
-    return MulDiv(x, GetDeviceCaps(instance().hdc_, LOGPIXELSX), 96);
+    return MulDiv(x, GetDeviceCaps(instance().hdc_, LOGPIXELSX), instance().dpi_x_);
 }
 
 long scaler::y(long y)
 {
-    return MulDiv(y, GetDeviceCaps(instance().hdc_, LOGPIXELSY), 96);
+    return MulDiv(y, GetDeviceCaps(instance().hdc_, LOGPIXELSY), instance().dpi_y_);
 }

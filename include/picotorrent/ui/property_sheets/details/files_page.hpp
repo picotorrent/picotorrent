@@ -18,6 +18,7 @@ namespace details
 
     protected:
         BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam);
+        void on_init();
     };
 }
 }

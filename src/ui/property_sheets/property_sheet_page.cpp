@@ -26,6 +26,7 @@ INT_PTR property_sheet_page::dlg_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
     case WM_INITDIALOG:
         handle_ = hwndDlg;
         is_initializing_ = true;
+        on_init();
         if (init_cb_) { init_cb_(); }
         is_initializing_ = false;
 

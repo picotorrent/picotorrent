@@ -31,6 +31,7 @@ namespace property_sheets
         HWND handle();
         bool is_initializing();
         virtual BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam) { return FALSE; }
+        virtual void on_init() { }
 
         std::wstring get_dlg_item_text(int id);
         void set_dlg_item_text(int id, const std::wstring &text);

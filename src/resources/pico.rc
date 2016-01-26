@@ -243,5 +243,5 @@ IDD_DETAILS_FILES DIALOGEX 0, 0, 252, 215
 FONT 9, "MS Shell Dlg"
 {
     LTEXT "", -1, 0, 0, 0, 0 // If we dont have this control, the prefs page gets a gray background
-    CONTROL "", -1, WC_LISTVIEW, LVS_REPORT | WS_BORDER | WS_CHILD, 5, 10, 240, 200
+    CONTROL "", ID_DETAILS_FILES_LIST, WC_LISTVIEW, LVS_REPORT | WS_BORDER | WS_CHILD, 5, 10, 240, 200
 }

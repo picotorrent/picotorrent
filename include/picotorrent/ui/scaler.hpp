@@ -18,6 +18,8 @@ namespace ui
     private:
         static scaler& instance();
         const HDC hdc_;
+        UINT dpi_x_;
+        UINT dpi_y_;
     };
 }
 }
