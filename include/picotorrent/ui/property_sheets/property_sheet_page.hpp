@@ -1,5 +1,7 @@
 #pragma once
 
+#include <picotorrent/common/signals/signal.hpp>
+
 #include <functional>
 #include <memory>
 #include <windows.h>
@@ -21,9 +23,12 @@ namespace property_sheets
             return *page_.get();
         }
         
-        void set_apply_callback(const std::function<void()> &callback);
-        void set_init_callback(const std::function<void()> &callback);
-        void set_validate_callback(const std::function<bool()> &callback);
+        common::signals::signal_connector<void, void>& on_activate();
+        common::signals::signal_connector<void, void>& on_apply();
+        common::signals::signal_connector<void, void>& on_destroy();
+        common::signals::signal_connector<void, void>& on_init();
+        common::signals::signal_connector<bool, void>& on_validate();
+
         void show_error_message(const std::wstring &text);
 
     protected:
@@ -31,7 +36,8 @@ namespace property_sheets
         HWND handle();
         bool is_initializing();
         virtual BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam) { return FALSE; }
-        virtual void on_init() { }
+        virtual void on_init_dialog() { }
+        virtual bool on_notify(HWND hDlg, LPNMHDR nmhdr, LRESULT &result) { return false; }
 
         std::wstring get_dlg_item_text(int id);
         void set_dlg_item_text(int id, const std::wstring &text);
@@ -53,9 +59,13 @@ namespace property_sheets
 
         HWND handle_;
         std::unique_ptr<PROPSHEETPAGE> page_;
-        std::function<void()> apply_cb_;
-        std::function<void()> init_cb_;
-        std::function<bool()> validate_cb_;
+
+        // Signals
+        common::signals::signal<void, void> on_activate_;
+        common::signals::signal<void, void> on_apply_;
+        common::signals::signal<void, void> on_destroy_;
+        common::signals::signal<void, void> on_init_;
+        common::signals::signal<bool, void> on_validate_;
     };
 }
 }

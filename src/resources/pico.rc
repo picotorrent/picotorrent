@@ -12,6 +12,7 @@ STRINGTABLE
     IDS_PREFS_ADVANCED_TITLE, "Advanced"
     IDS_DETAILS_OVERVIEW_TITLE, "Overview"
     IDS_DETAILS_FILES_TITLE, "Files"
+    IDS_DETAILS_PEERS_TITLE, "Peers"
 }
 
 // Accelerators
@@ -217,7 +218,7 @@ FONT 9, "MS Shell Dlg"
 IDD_DETAILS_OVERVIEW DIALOGEX 0, 0, 252, 215
 FONT 9, "MS Shell Dlg"
 {
-    GROUPBOX "Limits", -1, 5, 10, 240, 150
+    GROUPBOX "Limits", -1, 5, 10, 340, 150
 
     LTEXT "DL limit", -1, 15, 23, 80, 10
     EDITTEXT ID_DETAILS_DL_LIMIT, 75, 22, 30, 11, ES_RIGHT
@@ -243,5 +244,13 @@ IDD_DETAILS_FILES DIALOGEX 0, 0, 252, 215
 FONT 9, "MS Shell Dlg"
 {
     LTEXT "", -1, 0, 0, 0, 0 // If we dont have this control, the prefs page gets a gray background
-    CONTROL "", ID_DETAILS_FILES_LIST, WC_LISTVIEW, LVS_REPORT | WS_BORDER | WS_CHILD, 5, 10, 240, 200
+    CONTROL "", ID_DETAILS_FILES_LIST, WC_LISTVIEW, LVS_REPORT | WS_BORDER | WS_CHILD, 5, 10, 340, 200
+}
+
+// Details - Peers
+IDD_DETAILS_PEERS DIALOGEX 0, 0, 352, 215
+FONT 9, "MS Shell Dlg"
+{
+    LTEXT "", -1, 0, 0, 0, 0 // If we dont have this control, the prefs page gets a gray background
+    CONTROL "", ID_DETAILS_PEERS_LIST, WC_LISTVIEW, LVS_OWNERDATA | LVS_REPORT | WS_BORDER | WS_CHILD, 5, 10, 340, 200
 }

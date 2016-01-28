@@ -49,12 +49,12 @@ std::shared_ptr<torrent_info> torrent_info::try_load(const fs::path &path)
     return std::make_shared<torrent_info>(buf);
 }
 
-std::string torrent_info::file_path(int index)
+std::string torrent_info::file_path(int index) const
 {
     return info_->files().file_path(index);
 }
 
-int64_t torrent_info::file_size(int index)
+int64_t torrent_info::file_size(int index) const
 {
     return info_->files().file_size(index);
 }
@@ -64,7 +64,7 @@ std::string torrent_info::name()
     return info_->name();
 }
 
-int torrent_info::num_files()
+int torrent_info::num_files() const
 {
     return info_->num_files();
 }

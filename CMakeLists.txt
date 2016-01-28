@@ -64,6 +64,7 @@ set(PICOCORE_SOURCES
     src/core/add_request
     src/core/is_valid_torrent_file
     src/core/hash
+    src/core/peer
     src/core/session
     src/core/timer
     src/core/torrent
@@ -99,6 +100,7 @@ set(PICOUI_SOURCES
     src/ui/property_sheets/property_sheet_page
     src/ui/property_sheets/details/files_page
     src/ui/property_sheets/details/overview_page
+    src/ui/property_sheets/details/peers_page
     src/ui/property_sheets/preferences/advanced_page
     src/ui/property_sheets/preferences/connection_page
     src/ui/property_sheets/preferences/downloads_page

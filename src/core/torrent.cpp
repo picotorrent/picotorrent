@@ -1,21 +1,33 @@
 #include <picotorrent/core/torrent.hpp>
 
+#include <picotorrent/common/signals/signal.hpp>
 #include <picotorrent/core/hash.hpp>
+#include <picotorrent/core/peer.hpp>
+#include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/core/torrent_state.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
+#include <libtorrent/peer_info.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace lt = libtorrent;
+using picotorrent::common::signals::signal;
+using picotorrent::common::signals::signal_connector;
 using picotorrent::core::hash;
+using picotorrent::core::peer;
 using picotorrent::core::torrent;
+using picotorrent::core::torrent_info;
 using picotorrent::core::torrent_state;
 
 torrent::torrent(const lt::torrent_status &st)
     : status_(std::make_unique<lt::torrent_status>(st)),
     state_(torrent_state::state_t::unknown)
+{
+}
+
+torrent::~torrent()
 {
 }
 
@@ -44,6 +56,18 @@ int torrent::eta() const
 	}
 
 	return -1;
+}
+
+void torrent::file_progress(std::vector<int64_t> &progress, int flags) const
+{
+    status_->handle.file_progress(progress, flags);
+}
+
+std::vector<peer> torrent::get_peers()
+{
+    std::vector<lt::peer_info> peers;
+    status_->handle.get_peer_info(peers);
+    return std::vector<peer>(peers.begin(), peers.end());
 }
 
 bool torrent::has_error() const
@@ -191,6 +215,16 @@ torrent_state torrent::state()
     return state_;
 }
 
+std::shared_ptr<const torrent_info> torrent::torrent_info() const
+{
+    if (!status_->handle.torrent_file())
+    {
+        return nullptr;
+    }
+
+    return std::make_shared<core::torrent_info>(*status_->handle.torrent_file());
+}
+
 uint64_t torrent::total_wanted()
 {
     return status_->total_wanted;
@@ -211,10 +245,16 @@ int torrent::upload_rate()
     return status_->upload_payload_rate;
 }
 
+signal_connector<void, void>& torrent::on_updated()
+{
+    return updated_signal_;
+}
+
 void torrent::update(std::unique_ptr<lt::torrent_status> status)
 {
     status_ = std::move(status);
     update_state();
+    updated_signal_.emit();
 }
 
 void torrent::update_state()

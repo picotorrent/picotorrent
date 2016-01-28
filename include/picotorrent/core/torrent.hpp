@@ -1,12 +1,17 @@
 #pragma once
 
+#include <functional>
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
+#include <picotorrent/common/signals/signal.hpp>
 #include <picotorrent/core/torrent_state.hpp>
 
 namespace libtorrent
 {
+    struct peer_info;
     struct torrent_status;
 }
 
@@ -15,8 +20,10 @@ namespace picotorrent
 namespace core
 {
     class hash;
+    class peer;
     class session;
     class torrent;
+    class torrent_info;
 
     typedef std::shared_ptr<torrent> torrent_ptr;
 
@@ -30,10 +37,13 @@ namespace core
         torrent& operator=(torrent&&) = default;
 
         torrent(const torrent &that) = delete;
+        ~torrent();
 
         int download_limit() const;
         int download_rate();
 		int eta() const;
+        void file_progress(std::vector<int64_t> &progress, int flags = 0) const;
+        std::vector<peer> get_peers();
         bool has_error() const;
         std::shared_ptr<hash> info_hash();
         bool is_checking() const;
@@ -59,10 +69,17 @@ namespace core
         bool sequential_download() const;
         int64_t size();
         torrent_state state();
+        std::shared_ptr<const torrent_info> torrent_info() const;
         uint64_t total_wanted();
         uint64_t total_wanted_done();
         int upload_limit() const;
         int upload_rate();
+
+        // Signals
+        common::signals::signal_connector<void, void>& on_updated();
+
+        void register_updated_callback(const std::function<void()> &callback);
+        void unregister_updated_callback(const std::function<void()> &callback);
 
     private:
         void update(std::unique_ptr<libtorrent::torrent_status> status);
@@ -70,6 +87,8 @@ namespace core
 
         std::unique_ptr<libtorrent::torrent_status> status_;
         torrent_state state_;
+
+        common::signals::signal<void, void> updated_signal_;
     };
 }
 }
