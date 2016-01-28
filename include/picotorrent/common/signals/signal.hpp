@@ -69,6 +69,19 @@ namespace signals
         }
     };
 
+    template<typename TArg>
+    class signal<void, TArg> : public signal_connector<void, TArg>
+    {
+    public:
+        void emit(TArg args)
+        {
+            for (callback_item &item : callbacks_)
+            {
+                item.callback(args);
+            }
+        }
+    };
+
     template<typename TRet>
     class signal<TRet, void> : public signal_connector<TRet, void>
     {

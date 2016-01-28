@@ -6,7 +6,12 @@ namespace lt = libtorrent;
 using picotorrent::core::peer;
 
 peer::peer(const lt::peer_info &pi)
-    : pi_(std::make_unique<lt::peer_info>(pi))
+    : pi_(std::make_shared<lt::peer_info>(pi))
+{
+}
+
+peer::peer(const peer &that)
+    : pi_(that.pi_)
 {
 }
 

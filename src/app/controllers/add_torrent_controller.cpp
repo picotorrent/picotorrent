@@ -6,6 +6,7 @@
 #include <picotorrent/config/configuration.hpp>
 #include <picotorrent/core/add_request.hpp>
 #include <picotorrent/core/session.hpp>
+#include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
@@ -183,16 +184,16 @@ void add_torrent_controller::on_torrent_files_context_menu(const std::vector<int
         
         switch (prio)
         {
-        case 0:
+        case core::torrent::do_not_download:
             sub.check_item(TORRENT_FILE_PRIO_SKIP);
             break;
-        case 1:
+        case core::torrent::normal:
             sub.check_item(TORRENT_FILE_PRIO_NORMAL);
             break;
-        case 2:
+        case core::torrent::high:
             sub.check_item(TORRENT_FILE_PRIO_HIGH);
             break;
-        case 7:
+        case core::torrent::maximum:
             sub.check_item(TORRENT_FILE_PRIO_MAX);
             break;
         }
@@ -208,20 +209,20 @@ void add_torrent_controller::on_torrent_files_context_menu(const std::vector<int
         switch (res)
         {
         case TORRENT_FILE_PRIO_SKIP:
-            req->set_file_priority(i, 0);
-            dlg_->set_file_priority(i, get_prio_str(0));
+            req->set_file_priority(i, core::torrent::do_not_download);
+            dlg_->set_file_priority(i, get_prio_str(core::torrent::do_not_download));
             break;
         case TORRENT_FILE_PRIO_NORMAL:
-            req->set_file_priority(i, 1);
-            dlg_->set_file_priority(i, get_prio_str(1));
+            req->set_file_priority(i, core::torrent::normal);
+            dlg_->set_file_priority(i, get_prio_str(core::torrent::normal));
             break;
         case TORRENT_FILE_PRIO_HIGH:
-            req->set_file_priority(i, 2);
-            dlg_->set_file_priority(i, get_prio_str(2));
+            req->set_file_priority(i, core::torrent::high);
+            dlg_->set_file_priority(i, get_prio_str(core::torrent::high));
             break;
         case TORRENT_FILE_PRIO_MAX:
-            req->set_file_priority(i, 7);
-            dlg_->set_file_priority(i, get_prio_str(7));
+            req->set_file_priority(i, core::torrent::maximum);
+            dlg_->set_file_priority(i, get_prio_str(core::torrent::maximum));
             break;
         }
     }
@@ -292,13 +293,13 @@ std::wstring add_torrent_controller::get_prio_str(int prio)
 {
     switch (prio)
     {
-    case 0:
+    case core::torrent::do_not_download:
         return L"Do not download";
-    case 1:
+    case core::torrent::normal:
         return L"Normal";
-    case 2:
+    case core::torrent::high:
         return L"High";
-    case 7:
+    case core::torrent::maximum:
         return L"Maximum";
     default:
         return L"Unknown priority";

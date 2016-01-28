@@ -1,6 +1,8 @@
 #pragma once
 
+#include <picotorrent/common/signals/signal.hpp>
 #include <picotorrent/ui/property_sheets/property_sheet_page.hpp>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,6 +13,10 @@ namespace picotorrent
 {
 namespace ui
 {
+namespace controls
+{
+    class list_view;
+}
 namespace property_sheets
 {
 namespace details
@@ -19,22 +25,25 @@ namespace details
     {
     public:
         files_page();
+        ~files_page();
 
-        void add_file(const std::wstring &name, uint64_t size, float progress);
+        void add_file(const std::wstring &name, uint64_t size, float progress, int priority);
+        common::signals::signal_connector<void, const std::pair<int, int>&>& on_set_file_priority();
         void refresh();
         void update_file_progress(int index, float progress);
 
     protected:
-        BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam);
         void on_init_dialog();
-        bool on_notify(HWND hDlg, LPNMHDR nmhdr, LRESULT &lResult);
+        std::wstring on_list_display(const std::pair<int, int> &p);
+        void on_list_item_context_menu(const std::vector<int> &indices);
+        float on_list_progress(const std::pair<int, int> &p);
 
     private:
-        void handle_draw_progress(LPNMLVCUSTOMDRAW lpCustomDraw, LRESULT &lResult);
+        struct file_item;
 
-        std::vector<float> files_progress_;
-        HTHEME progress_theme_;
-        HWND progress_;
+        std::unique_ptr<controls::list_view> files_;
+        std::vector<file_item> items_;
+        common::signals::signal<void, const std::pair<int, int>&> on_set_file_prio_;
     };
 }
 }

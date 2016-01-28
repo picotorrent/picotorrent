@@ -1,16 +1,38 @@
 #include <picotorrent/ui/property_sheets/details/files_page.hpp>
 
+#include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/core/torrent.hpp>
+#include <picotorrent/ui/controls/list_view.hpp>
+#include <picotorrent/ui/controls/menu.hpp>
 #include <picotorrent/ui/resources.hpp>
 #include <picotorrent/ui/scaler.hpp>
 
 #include <shlwapi.h>
 #include <strsafe.h>
 
+#define LIST_COLUMN_NAME 1
+#define LIST_COLUMN_SIZE 2
+#define LIST_COLUMN_PROGRESS 3
+#define LIST_COLUMN_PRIORITY 4
+
+using picotorrent::common::signals::signal;
+using picotorrent::common::signals::signal_connector;
+using picotorrent::common::to_wstring;
+using picotorrent::core::torrent;
+using picotorrent::ui::controls::list_view;
+using picotorrent::ui::controls::menu;
 using picotorrent::ui::property_sheets::details::files_page;
 using picotorrent::ui::scaler;
 
+struct files_page::file_item
+{
+    std::wstring name;
+    uint64_t size;
+    float progress;
+    int priority;
+};
+
 files_page::files_page()
-    : progress_theme_(NULL)
 {
     set_flags(PSP_USETITLE);
     set_instance(GetModuleHandle(NULL));
@@ -18,194 +40,159 @@ files_page::files_page()
     set_title_id(IDS_DETAILS_FILES_TITLE);
 }
 
-void files_page::add_file(const std::wstring &name, uint64_t size, float progress)
+files_page::~files_page()
 {
-    HWND hFilesList = GetDlgItem(handle(), ID_DETAILS_FILES_LIST);
+}
 
-    TCHAR name_str[1024];
-    StringCchCopy(name_str, ARRAYSIZE(name_str), name.c_str());
+void files_page::add_file(const std::wstring &name, uint64_t size, float progress, int priority)
+{
+    file_item item{ name,size,progress,priority };
+    items_.push_back(item);
 
-    LVITEM item = { 0 };
-    item.pszText = name_str;
-    item.mask = LVIF_TEXT;
-    item.stateMask = 0;
-    item.iSubItem = 0;
-    item.state = 0;
+    files_->set_item_count((int)items_.size());
+}
 
-    ListView_InsertItem(hFilesList, &item);
-
-    TCHAR size_str[100];
-    StrFormatByteSize64(
-        size,
-        size_str,
-        ARRAYSIZE(size_str));
-
-    item.pszText = size_str;
-    item.iSubItem = 1;
-
-    ListView_SetItem(hFilesList, &item);
-
-    files_progress_.push_back(progress);
+signal_connector<void, const std::pair<int, int>&>& files_page::on_set_file_priority()
+{
+    return on_set_file_prio_;
 }
 
 void files_page::refresh()
 {
-    HWND hFilesList = GetDlgItem(handle(), ID_DETAILS_FILES_LIST);
-
-    int idx = ListView_GetTopIndex(hFilesList);
-    int bottom = ListView_GetItemCount(hFilesList);
-
-    ListView_RedrawItems(hFilesList, idx, bottom);
-    ::UpdateWindow(hFilesList);
+    files_->refresh();
 }
 
 void files_page::update_file_progress(int index, float progress)
 {
-    files_progress_[index] = progress;
-}
-
-BOOL files_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam)
-{
-    return FALSE;
+    file_item &item = items_[index];
+    item.progress = progress;
 }
 
 void files_page::on_init_dialog()
 {
-    HWND hFilesList = GetDlgItem(handle(), ID_DETAILS_FILES_LIST);
+    HWND hList = GetDlgItem(handle(), ID_DETAILS_FILES_LIST);
+    files_ = std::make_unique<list_view>(hList);
 
-    // Set style (full row select)
-    ListView_SetExtendedListViewStyle(hFilesList, LVS_EX_FULLROWSELECT);
-
-    LVCOLUMN col;
-    col.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
-    col.pszText = L"Name";
-    col.cx = scaler::x(180);
-    col.fmt = LVCFMT_LEFT;
-
-    ListView_InsertColumn(hFilesList, 0, &col);
-
-    col.pszText = L"Size";
-    col.cx = scaler::x(80);
-    col.fmt = LVCFMT_RIGHT;
-
-    ListView_InsertColumn(hFilesList, 1, &col);
-
-    col.pszText = L"Progress";
-    col.cx = scaler::x(80);
-    col.fmt = LVCFMT_LEFT;
-
-    ListView_InsertColumn(hFilesList, 2, &col);
-
-    // Create progress bar and theme
-    progress_ = CreateWindowEx(
-        0,
-        PROGRESS_CLASS,
-        NULL,
-        WS_CHILD | WS_VISIBLE,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        handle(),
-        NULL,
-        GetModuleHandle(NULL),
-        NULL);
-
-    progress_theme_ = OpenThemeData(progress_, L"PROGRESS");
+    files_->add_column(LIST_COLUMN_NAME,     L"Name",     scaler::x(220));
+    files_->add_column(LIST_COLUMN_SIZE,     L"Size",     scaler::x(80),  list_view::number);
+    files_->add_column(LIST_COLUMN_PROGRESS, L"Progress", scaler::x(120), list_view::progress);
+    files_->add_column(LIST_COLUMN_PRIORITY, L"Priority", scaler::x(80));
+    files_->on_display().connect(std::bind(&files_page::on_list_display, this, std::placeholders::_1));
+    files_->on_item_context_menu().connect(std::bind(&files_page::on_list_item_context_menu, this, std::placeholders::_1));
+    files_->on_progress().connect(std::bind(&files_page::on_list_progress, this, std::placeholders::_1));
 }
 
-bool files_page::on_notify(HWND hDlg, LPNMHDR nmhdr, LRESULT &res)
+std::wstring files_page::on_list_display(const std::pair<int, int> &p)
 {
-    switch (nmhdr->code)
+    file_item &item = items_[p.second];
+
+    switch (p.first)
     {
-    case NM_CUSTOMDRAW:
-        if (nmhdr->idFrom == ID_DETAILS_FILES_LIST)
-        {
-            handle_draw_progress(reinterpret_cast<LPNMLVCUSTOMDRAW>(nmhdr), res);
-            return true;
-        }
-        break;
+    case LIST_COLUMN_NAME:
+        return item.name;
+    case LIST_COLUMN_SIZE:
+    {
+        TCHAR size_str[100];
+        StrFormatByteSize64(
+            item.size,
+            size_str,
+            ARRAYSIZE(size_str));
+
+        return size_str;
     }
-
-    return false;
-}
-
-void files_page::handle_draw_progress(LPNMLVCUSTOMDRAW lpCustomDraw, LRESULT &lResult)
-{
-    lResult = FALSE;
-
-    switch (lpCustomDraw->nmcd.dwDrawStage)
+    case LIST_COLUMN_PRIORITY:
     {
-    case CDDS_PREPAINT:
-        lResult = CDRF_NOTIFYITEMDRAW;
-        break;
-    case CDDS_ITEMPREPAINT:
-        lResult = CDRF_NOTIFYSUBITEMDRAW;
-        break;
-    case (CDDS_ITEMPREPAINT | CDDS_SUBITEM):
-    {
-        if (lpCustomDraw->iSubItem != 2
-            || files_progress_.empty())
+        switch (item.priority)
         {
-            break;
+        case torrent::do_not_download:
+            return L"Do not download";
+        case torrent::normal:
+            return L"Normal";
+        case torrent::high:
+            return L"High";
+        case torrent::maximum:
+            return L"Maximum";
         }
         
-        HWND hFilesList = GetDlgItem(handle(), ID_DETAILS_FILES_LIST);
-        float file_progress = files_progress_[lpCustomDraw->nmcd.dwItemSpec];
-
-        HDC hDc = lpCustomDraw->nmcd.hdc;
-        RECT rc = { 0 };
-        ListView_GetSubItemRect(
-            hFilesList,
-            lpCustomDraw->nmcd.dwItemSpec,
-            lpCustomDraw->iSubItem,
-            LVIR_BOUNDS,
-            &rc);
-
-        // Paint the background
-        rc.bottom -= 2;
-        rc.left += 2;
-        rc.right -= 2;
-        rc.top += 2;
-        DrawThemeBackground(
-            progress_theme_,
-            hDc,
-            11, // TODO(put in #define)
-            1, // TODO(put in #define)
-            &rc,
-            NULL);
-
-        // Paint the filler
-        rc.bottom -= 1;
-        rc.right -= 1;
-        rc.left += 1;
-        rc.top += 1;
-
-        int width = rc.right - rc.left;
-        int newWidth = (int)(width * file_progress);
-        rc.right = rc.left + newWidth;
-
-        DrawThemeBackground(
-            progress_theme_,
-            hDc,
-            5, // TODO(put in #define)
-            1, // TODO(put in #define)
-            &rc,
-            NULL);
-
-        RECT text = { 0 };
-        ListView_GetSubItemRect(
-            hFilesList,
-            lpCustomDraw->nmcd.dwItemSpec,
-            lpCustomDraw->iSubItem,
-            LVIR_BOUNDS,
-            &text);
-
-        TCHAR p[100];
-        StringCchPrintf(p, ARRAYSIZE(p), TEXT("%.2f%%"), file_progress * 100);
-        DrawText(hDc, p, -1, &text, DT_CENTER | DT_VCENTER);
-
-        lResult = CDRF_SKIPDEFAULT;
+        return L"Unknown priority";
     }
+    default:
+        return L"<unknown>";
     }
+}
+
+void files_page::on_list_item_context_menu(const std::vector<int> &indices)
+{
+    if (indices.empty())
+    {
+        return;
+    }
+
+    ui::controls::menu menu(IDR_TORRENT_FILE_MENU);
+    ui::controls::menu sub = menu.get_sub_menu(0);
+
+    // If only one file is selected, check that files priority
+    if (indices.size() == 1)
+    {
+        int prio = items_[indices[0]].priority;
+
+        switch (prio)
+        {
+        case torrent::do_not_download:
+            sub.check_item(TORRENT_FILE_PRIO_SKIP);
+            break;
+        case torrent::normal:
+            sub.check_item(TORRENT_FILE_PRIO_NORMAL);
+            break;
+        case torrent::high:
+            sub.check_item(TORRENT_FILE_PRIO_HIGH);
+            break;
+        case torrent::maximum:
+            sub.check_item(TORRENT_FILE_PRIO_MAX);
+            break;
+        }
+    }
+
+    POINT p;
+    GetCursorPos(&p);
+
+    int res = sub.show(handle(), p);
+
+    for (int i : indices)
+    {
+        switch (res)
+        {
+        case TORRENT_FILE_PRIO_SKIP:
+            on_set_file_prio_.emit({ i, torrent::do_not_download });
+            items_[i].priority = torrent::do_not_download;
+            break;
+        case TORRENT_FILE_PRIO_NORMAL:
+            on_set_file_prio_.emit({ i, torrent::normal });
+            items_[i].priority = torrent::normal;
+            break;
+        case TORRENT_FILE_PRIO_HIGH:
+            on_set_file_prio_.emit({ i, torrent::high });
+            items_[i].priority = torrent::high;
+            break;
+        case TORRENT_FILE_PRIO_MAX:
+            on_set_file_prio_.emit({ i, torrent::maximum });
+            items_[i].priority = torrent::maximum;
+            break;
+        }
+    }
+
+    files_->refresh();
+}
+
+float files_page::on_list_progress(const std::pair<int, int> &p)
+{
+    file_item &item = items_[p.second];
+
+    switch (p.first)
+    {
+    case LIST_COLUMN_PROGRESS:
+        return item.progress;
+    }
+
+    return -1;
 }

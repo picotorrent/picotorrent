@@ -70,6 +70,7 @@ set(PICOCORE_SOURCES
     src/core/torrent
     src/core/torrent_info
     src/core/torrent_state
+    src/core/tracker
 )
 
 set(PICOFS_SOURCES
@@ -101,6 +102,7 @@ set(PICOUI_SOURCES
     src/ui/property_sheets/details/files_page
     src/ui/property_sheets/details/overview_page
     src/ui/property_sheets/details/peers_page
+    src/ui/property_sheets/details/trackers_page
     src/ui/property_sheets/preferences/advanced_page
     src/ui/property_sheets/preferences/connection_page
     src/ui/property_sheets/preferences/downloads_page

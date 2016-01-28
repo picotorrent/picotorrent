@@ -15,7 +15,9 @@ namespace core
     class peer
     {
     public:
-        explicit peer(const libtorrent::peer_info &pi);
+        peer(const libtorrent::peer_info &pi);
+        peer(const peer &that);
+
         ~peer();
 
         std::string client() const;
@@ -27,7 +29,7 @@ namespace core
         int upload_rate() const;
 
     private:
-        std::unique_ptr<libtorrent::peer_info> pi_;
+        std::shared_ptr<libtorrent::peer_info> pi_;
     };
 }
 }

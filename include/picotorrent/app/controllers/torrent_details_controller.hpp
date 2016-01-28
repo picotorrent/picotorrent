@@ -20,6 +20,7 @@ namespace details
     class files_page;
     class overview_page;
     class peers_page;
+    class trackers_page;
 }
 }
 }
@@ -48,6 +49,7 @@ namespace controllers
 
         void on_files_destroy();
         void on_files_init();
+        void on_files_set_prio(const std::pair<int, int>&);
         void on_overview_apply();
         void on_overview_init();
 
@@ -56,6 +58,7 @@ namespace controllers
         void set_active_page(active_page_t page);
         void update_files();
         void update_peers();
+        void update_trackers();
 
     private:
         std::shared_ptr<core::torrent> torrent_;
@@ -65,6 +68,7 @@ namespace controllers
         std::unique_ptr<ui::property_sheets::details::files_page> files_;
         std::unique_ptr<ui::property_sheets::details::overview_page> overview_;
         std::unique_ptr<ui::property_sheets::details::peers_page> peers_;
+        std::unique_ptr<ui::property_sheets::details::trackers_page> trackers_;
     };
 }
 }

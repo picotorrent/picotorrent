@@ -5,8 +5,10 @@
 #include <picotorrent/core/peer.hpp>
 #include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/core/torrent_state.hpp>
+#include <picotorrent/core/tracker.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
+#include <libtorrent/announce_entry.hpp>
 #include <libtorrent/peer_info.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
@@ -20,6 +22,7 @@ using picotorrent::core::peer;
 using picotorrent::core::torrent;
 using picotorrent::core::torrent_info;
 using picotorrent::core::torrent_state;
+using picotorrent::core::tracker;
 
 torrent::torrent(const lt::torrent_status &st)
     : status_(std::make_unique<lt::torrent_status>(st)),
@@ -58,6 +61,16 @@ int torrent::eta() const
 	return -1;
 }
 
+std::vector<int> torrent::file_priorities() const
+{
+    return status_->handle.file_priorities();
+}
+
+void torrent::file_priority(int file_index, int priority)
+{
+    status_->handle.file_priority(file_index, priority);
+}
+
 void torrent::file_progress(std::vector<int64_t> &progress, int flags) const
 {
     status_->handle.file_progress(progress, flags);
@@ -68,6 +81,12 @@ std::vector<peer> torrent::get_peers()
     std::vector<lt::peer_info> peers;
     status_->handle.get_peer_info(peers);
     return std::vector<peer>(peers.begin(), peers.end());
+}
+
+std::vector<tracker> torrent::get_trackers()
+{
+    std::vector<lt::announce_entry> trackers = status_->handle.trackers();
+    return std::vector<tracker>(trackers.begin(), trackers.end());
 }
 
 bool torrent::has_error() const

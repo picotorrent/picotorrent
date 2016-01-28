@@ -4,11 +4,13 @@
 #include <picotorrent/core/peer.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/torrent_info.hpp>
+#include <picotorrent/core/tracker.hpp>
 #include <picotorrent/ui/main_window.hpp>
 
 #include <picotorrent/ui/property_sheets/details/files_page.hpp>
 #include <picotorrent/ui/property_sheets/details/overview_page.hpp>
 #include <picotorrent/ui/property_sheets/details/peers_page.hpp>
+#include <picotorrent/ui/property_sheets/details/trackers_page.hpp>
 
 #include <prsht.h>
 #include <strsafe.h>
@@ -19,6 +21,7 @@ using picotorrent::common::to_wstring;
 using picotorrent::core::peer;
 using picotorrent::core::torrent;
 using picotorrent::core::torrent_info;
+using picotorrent::core::tracker;
 using picotorrent::ui::main_window;
 
 torrent_details_controller::torrent_details_controller(
@@ -28,16 +31,19 @@ torrent_details_controller::torrent_details_controller(
     wnd_(wnd),
     files_(std::make_unique<details::files_page>()),
     overview_(std::make_unique<details::overview_page>()),
-    peers_(std::make_unique<details::peers_page>())
+    peers_(std::make_unique<details::peers_page>()),
+    trackers_(std::make_unique<details::trackers_page>())
 {
     files_->on_activate().connect([this]() { set_active_page(torrent_details_controller::files); });
     files_->on_init().connect(std::bind(&torrent_details_controller::on_files_init, this));
-
+    files_->on_set_file_priority().connect(std::bind(&torrent_details_controller::on_files_set_prio, this, std::placeholders::_1));
     overview_->on_activate().connect([this]() { set_active_page(torrent_details_controller::overview); });
     overview_->on_apply().connect(std::bind(&torrent_details_controller::on_overview_apply, this));
     overview_->on_init().connect(std::bind(&torrent_details_controller::on_overview_init, this));
 
     peers_->on_activate().connect([this]() { set_active_page(torrent_details_controller::peers); });
+    
+    trackers_->on_activate().connect([this]() { set_active_page(torrent_details_controller::trackers); });
 
     torrent_->on_updated().connect(std::bind(&torrent_details_controller::on_torrent_updated, this));
 }
@@ -53,7 +59,8 @@ void torrent_details_controller::execute()
     {
         *overview_,
         *files_,
-        *peers_
+        *peers_,
+        *trackers_
     };
 
     TCHAR t[1024];
@@ -85,6 +92,7 @@ void torrent_details_controller::on_files_init()
 
     std::vector<int64_t> progress;
     torrent_->file_progress(progress);
+    std::vector<int> priorities = torrent_->file_priorities();
 
     // Loop through each file in torrent and add it
     for (int i = 0; i < ti->num_files(); i++)
@@ -94,8 +102,14 @@ void torrent_details_controller::on_files_init()
         files_->add_file(
             to_wstring(ti->file_path(i)),
             ti->file_size(i),
-            p);
+            p,
+            priorities[i]);
     }
+}
+
+void torrent_details_controller::on_files_set_prio(const std::pair<int, int> &p)
+{
+    torrent_->file_priority(p.first, p.second);
 }
 
 void torrent_details_controller::on_overview_apply()
@@ -139,8 +153,6 @@ void torrent_details_controller::on_torrent_updated()
 {
     switch (active_page_)
     {
-    case torrent_details_controller::overview:
-        break;
     case torrent_details_controller::files:
         update_files();
         break;
@@ -148,6 +160,7 @@ void torrent_details_controller::on_torrent_updated()
         update_peers();
         break;
     case torrent_details_controller::trackers:
+        update_trackers();
         break;
     }
 }
@@ -176,24 +189,10 @@ void torrent_details_controller::update_files()
 
 void torrent_details_controller::update_peers()
 {
-    peers_->begin_update();
+    peers_->refresh(torrent_->get_peers());
+}
 
-    for (peer &p : torrent_->get_peers())
-    {
-        if (!peers_->has_peer(p.id()))
-        {
-            peers_->add_peer(
-                p.id(),
-                to_wstring(p.ip()),
-                p.port());
-        }
-
-        peers_->update_peer(p.id(),
-            to_wstring(p.client()),
-            to_wstring(p.flags_str()),
-            p.download_rate(),
-            p.upload_rate());
-    }
-
-    peers_->end_update();
+void torrent_details_controller::update_trackers()
+{
+    trackers_->refresh(torrent_->get_trackers());
 }

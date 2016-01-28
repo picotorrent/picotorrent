@@ -5,7 +5,18 @@
 #include <commctrl.h>
 #include <windowsx.h>
 
+#define LIST_COLUMN_NAME 1
+#define LIST_COLUMN_SIZE 2
+#define LIST_COLUMN_PRIO 3
+
 using picotorrent::ui::dialogs::add_torrent_dialog;
+
+struct add_torrent_dialog::file_item
+{
+    std::wstring name;
+    std::wstring size;
+    std::wstring priority;
+};
 
 add_torrent_dialog::add_torrent_dialog()
     : dialog_base(IDD_ADD_TORRENT),
@@ -16,6 +27,10 @@ add_torrent_dialog::add_torrent_dialog()
 {
 }
 
+add_torrent_dialog::~add_torrent_dialog()
+{
+}
+
 void add_torrent_dialog::add_torrent(const std::wstring &name)
 {
     ComboBox_AddString(combo_, name.c_str());
@@ -23,16 +38,16 @@ void add_torrent_dialog::add_torrent(const std::wstring &name)
 
 void add_torrent_dialog::add_torrent_file(const std::wstring &name, const std::wstring &friendly_size, const std::wstring &priority)
 {
-    int items = files_->get_item_count();
+    file_item item{ name, friendly_size,priority };
+    items_.push_back(item);
 
-    files_->insert_item(items, name);
-    files_->set_item(items, 1, friendly_size);
-    files_->set_item(items, 2, priority);
+    files_->set_item_count((int)items_.size());
 }
 
 void add_torrent_dialog::clear_torrent_files()
 {
-    files_->clear();
+    items_.clear();
+    files_->set_item_count(0);
 }
 
 void add_torrent_dialog::disable_files()
@@ -52,7 +67,10 @@ int add_torrent_dialog::get_selected_torrent()
 
 void add_torrent_dialog::set_file_priority(int index, const std::wstring &prio)
 {
-    files_->set_item(index, 2, prio);
+    file_item &item = items_[index];
+    item.priority = prio;
+
+    files_->set_item_count((int)items_.size());
 }
 
 void add_torrent_dialog::set_init_callback(const std::function<void()> &callback)
@@ -136,13 +154,13 @@ BOOL add_torrent_dialog::on_init_dialog()
     combo_ = GetDlgItem(handle(), 5001);
     size_ = GetDlgItem(handle(), 5002);
     save_path_ = GetDlgItem(handle(), 5003);
-    files_ = std::make_shared<controls::list_view>(GetDlgItem(handle(), 5004));
 
     // Set up the files list view
-    // files_->add_column(L"Name", 270, LVCFMT_LEFT);
-    // files_->add_column(L"Size", 80, LVCFMT_RIGHT);
-    // files_->add_column(L"Priority", 120, LVCFMT_LEFT);
-    // files_->set_extended_style(LVS_EX_FULLROWSELECT);
+    files_ = std::make_shared<controls::list_view>(GetDlgItem(handle(), 5004));
+    files_->add_column(LIST_COLUMN_NAME, L"Name", 270);
+    files_->add_column(LIST_COLUMN_SIZE, L"Size", 80, controls::list_view::number);
+    files_->add_column(LIST_COLUMN_PRIO, L"Priority", 120);
+    files_->on_display().connect(std::bind(&add_torrent_dialog::on_list_display, this, std::placeholders::_1));
 
     if (init_cb_)
     {
@@ -170,7 +188,7 @@ BOOL add_torrent_dialog::on_notify(LPARAM lParam)
             break;
         }
 
-        std::vector<int> selectedFiles = files_->get_selected_items();
+        std::vector<int> selectedFiles = files_->get_selection();
         files_context_cb_(selectedFiles);
         break;
     }
@@ -178,3 +196,21 @@ BOOL add_torrent_dialog::on_notify(LPARAM lParam)
 
     return FALSE;
 }
+
+std::wstring add_torrent_dialog::on_list_display(const std::pair<int, int> &p)
+{
+    file_item &item = items_[p.second];
+
+    switch (p.first)
+    {
+    case LIST_COLUMN_NAME:
+        return item.name;
+    case LIST_COLUMN_SIZE:
+        return item.size;
+    case LIST_COLUMN_PRIO:
+        return item.priority;
+    default:
+        return L"<unknown>";
+    }
+}
+

@@ -24,6 +24,7 @@ namespace core
     class session;
     class torrent;
     class torrent_info;
+    class tracker;
 
     typedef std::shared_ptr<torrent> torrent_ptr;
 
@@ -32,6 +33,14 @@ namespace core
         friend class session;
 
     public:
+        enum priority_t
+        {
+            do_not_download = 0,
+            normal = 4,
+            high = 6,
+            maximum = 7
+        };
+
         torrent(const libtorrent::torrent_status &st);
         torrent(torrent&&) = default;
         torrent& operator=(torrent&&) = default;
@@ -42,8 +51,11 @@ namespace core
         int download_limit() const;
         int download_rate();
 		int eta() const;
+        std::vector<int> file_priorities() const;
+        void file_priority(int file_index, int priority);
         void file_progress(std::vector<int64_t> &progress, int flags = 0) const;
         std::vector<peer> get_peers();
+        std::vector<tracker> get_trackers();
         bool has_error() const;
         std::shared_ptr<hash> info_hash();
         bool is_checking() const;
