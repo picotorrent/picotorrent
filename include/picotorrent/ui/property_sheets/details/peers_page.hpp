@@ -12,6 +12,10 @@ namespace picotorrent
 {
 namespace ui
 {
+namespace controls
+{
+    class list_view;
+}
 namespace property_sheets
 {
 namespace details
@@ -20,6 +24,7 @@ namespace details
     {
     public:
         peers_page();
+        ~peers_page();
 
         void add_peer(const std::string &pid, const std::wstring &ip, int port);
         void begin_update();
@@ -30,9 +35,10 @@ namespace details
     protected:
         BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam);
         void on_init_dialog();
-        bool on_notify(HWND hDlg, LPNMHDR nmhdr, LRESULT &result);
 
     private:
+        std::wstring on_list_display(int id);
+
         struct peer_item
         {
             std::string pid;
@@ -45,6 +51,7 @@ namespace details
             bool clean;
         };
 
+        std::unique_ptr<controls::list_view> list_;
         std::vector<peer_item> peers_;
 
     };

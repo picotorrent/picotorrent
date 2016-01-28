@@ -139,10 +139,10 @@ BOOL add_torrent_dialog::on_init_dialog()
     files_ = std::make_shared<controls::list_view>(GetDlgItem(handle(), 5004));
 
     // Set up the files list view
-    files_->add_column(L"Name", 270, LVCFMT_LEFT);
-    files_->add_column(L"Size", 80, LVCFMT_RIGHT);
-    files_->add_column(L"Priority", 120, LVCFMT_LEFT);
-    files_->set_extended_style(LVS_EX_FULLROWSELECT);
+    // files_->add_column(L"Name", 270, LVCFMT_LEFT);
+    // files_->add_column(L"Size", 80, LVCFMT_RIGHT);
+    // files_->add_column(L"Priority", 120, LVCFMT_LEFT);
+    // files_->set_extended_style(LVS_EX_FULLROWSELECT);
 
     if (init_cb_)
     {

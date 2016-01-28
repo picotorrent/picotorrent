@@ -1,11 +1,19 @@
 #include <picotorrent/ui/property_sheets/details/peers_page.hpp>
 
+#include <picotorrent/ui/controls/list_view.hpp>
 #include <picotorrent/ui/resources.hpp>
 #include <picotorrent/ui/scaler.hpp>
 
 #include <shlwapi.h>
 #include <strsafe.h>
 
+#define LIST_COLUMN_IP 1
+#define LIST_COLUMN_CLIENT 2
+#define LIST_COLUMN_FLAGS 3
+#define LIST_COLUMN_DOWNLOAD 4
+#define LIST_COLUMN_UPLOAD 5
+
+using picotorrent::ui::controls::list_view;
 using picotorrent::ui::property_sheets::details::peers_page;
 using picotorrent::ui::scaler;
 
@@ -15,6 +23,10 @@ peers_page::peers_page()
     set_instance(GetModuleHandle(NULL));
     set_template_id(IDD_DETAILS_PEERS);
     set_title_id(IDS_DETAILS_PEERS_TITLE);
+}
+
+peers_page::~peers_page()
+{
 }
 
 void peers_page::add_peer(const std::string &pid, const std::wstring &ip, int port)
@@ -28,7 +40,7 @@ void peers_page::add_peer(const std::string &pid, const std::wstring &ip, int po
 
     HWND hPeersList = GetDlgItem(handle(), ID_DETAILS_PEERS_LIST);
     ListView_SetItemCount(hPeersList, (int)peers_.size());
-}
+} 
 
 void peers_page::begin_update()
 {
@@ -73,101 +85,25 @@ BOOL peers_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lPara
 
 void peers_page::on_init_dialog()
 {
-    HWND hPeersList = GetDlgItem(handle(), ID_DETAILS_PEERS_LIST);
+    HWND hList = GetDlgItem(handle(), ID_DETAILS_PEERS_LIST);
+    list_ = std::make_unique<list_view>(hList);
 
-    // Set style (full row select)
-    ListView_SetExtendedListViewStyle(hPeersList, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+    list_->add_column(LIST_COLUMN_IP,       L"IP",     140);
+    list_->add_column(LIST_COLUMN_CLIENT,   L"Client", 80);
+    list_->add_column(LIST_COLUMN_FLAGS,    L"Flags",  80);
+    list_->add_column(LIST_COLUMN_DOWNLOAD, L"DL",     140, list_view::number);
+    list_->add_column(LIST_COLUMN_UPLOAD,   L"UL",     140, list_view::number);
 
-    LVCOLUMN col;
-    col.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
-    col.pszText = L"Remote";
-    col.cx = scaler::x(140);
-    col.fmt = LVCFMT_LEFT;
-
-    ListView_InsertColumn(hPeersList, 0, &col);
-
-    col.pszText = L"Client";
-    col.cx = scaler::x(80);
-    col.fmt = LVCFMT_LEFT;
-
-    ListView_InsertColumn(hPeersList, 1, &col);
-
-    col.pszText = L"Flags";
-    col.cx = scaler::x(80);
-    col.fmt = LVCFMT_LEFT;
-
-    ListView_InsertColumn(hPeersList, 2, &col);
-
-    col.pszText = L"DL";
-    col.cx = scaler::x(80);
-    col.fmt = LVCFMT_RIGHT;
-
-    ListView_InsertColumn(hPeersList, 3, &col);
-
-    col.pszText = L"UL";
-    col.cx = scaler::x(80);
-    col.fmt = LVCFMT_RIGHT;
-
-    ListView_InsertColumn(hPeersList, 4, &col);
+    list_->on_display().connect(std::bind(&peers_page::on_list_display, this, std::placeholders::_1));
 }
 
-bool peers_page::on_notify(HWND hDlg, LPNMHDR nmhdr, LRESULT &result)
+std::wstring peers_page::on_list_display(int id)
 {
-    switch (nmhdr->code)
+    switch (id)
     {
-        case LVN_GETDISPINFO:
-        {
-            NMLVDISPINFO* inf = reinterpret_cast<NMLVDISPINFO*>(nmhdr);
-            
-            if (inf->item.iItem == -1
-                || peers_.size() == 0)
-            {
-                break;
-            }
-
-            peer_item &item = peers_[inf->item.iItem];
-
-            if (inf->item.mask & LVIF_TEXT)
-            {
-                switch (inf->item.iSubItem)
-                {
-                case 0:
-                {
-                    StringCchPrintf(inf->item.pszText, inf->item.cchTextMax, L"%s:%d", item.ip.c_str(), item.port);
-                    break;
-                }
-                case 1:
-                {
-                    StringCchCopy(inf->item.pszText, inf->item.cchTextMax, item.client.c_str());
-                    break;
-                }
-                case 2:
-                {
-                    StringCchCopy(inf->item.pszText, inf->item.cchTextMax, item.flags.c_str());
-                    break;
-                }
-                case 3:
-                case 4:
-                {
-                    TCHAR result[100];
-
-                    StrFormatByteSize64(
-                        inf->item.iSubItem == 3
-                            ? item.dl
-                            : item.ul,
-                        result,
-                        ARRAYSIZE(result));
-
-                    StringCchPrintf(inf->item.pszText, inf->item.cchTextMax, TEXT("%s/s"), result);
-                    break;
-                }
-                }
-            }
-
-            break;
-        }
+    case LIST_COLUMN_IP:
+        return L"IP";
+    default:
+        return L"<unknown column>";
     }
-
-    return false;
 }
-

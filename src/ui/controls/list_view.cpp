@@ -1,21 +1,15 @@
 #include <picotorrent/ui/controls/list_view.hpp>
 
-#include <commctrl.h>
 #include <picotorrent/ui/scaler.hpp>
 #include <strsafe.h>
 #include <vector>
 
+using picotorrent::common::signals::signal;
+using picotorrent::common::signals::signal_connector;
 using picotorrent::ui::scaler;
 using picotorrent::ui::controls::list_view;
 
-list_view::list_view(HWND handle)
-    : control_base(handle),
-    header_(NULL)
-{
-    header_ = ListView_GetHeader(handle);
-}
-
-void list_view::add_column(const std::wstring &text, int width, int format)
+LV_COLUMN list_view::list_view_column::get_native_column()
 {
     TCHAR col_text[1024];
     StringCchCopy(col_text, _ARRAYSIZE(col_text), text.c_str());
@@ -26,11 +20,72 @@ void list_view::add_column(const std::wstring &text, int width, int format)
     col.cx = scaler::x(width);
     col.fmt = format;
 
-    if (ListView_InsertColumn(handle(), get_column_count(), &col) == -1)
+    return col;
+}
+
+list_view::list_view(HWND handle)
+    : control_base(handle),
+    header_(NULL)
+{
+    header_ = ListView_GetHeader(handle);
+
+    // Set extended style.
+    ListView_SetExtendedListViewStyle(handle, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+}
+
+void list_view::add_column(int id, const std::wstring &text, int width, list_view::col_type_t type)
+{
+    list_view_column col;
+    col.id = id;
+    col.index = get_column_count();
+    col.text = text;
+    col.width = width;
+    col.type = type;
+
+    if (type == col_type_t::number)
     {
-        DWORD err = GetLastError();
-        throw new std::runtime_error(std::to_string(err));
+        col.format = LVCFMT_RIGHT;
     }
+    else
+    {
+        col.format = LVCFMT_LEFT;
+    }
+
+    columns_.push_back(col);
+
+    ListView_InsertColumn(
+        handle(),
+        col.index,
+        &col.get_native_column());
+}
+
+signal_connector<std::wstring, int>& list_view::on_display()
+{
+    return on_display_;
+}
+
+LRESULT list_view::subclass_proc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+    switch(msg)
+    {
+    case WM_NOTIFY:
+    {
+        LPNMHDR nmhdr = reinterpret_cast<LPNMHDR>(lParam);
+        
+        switch (nmhdr->code)
+        {
+        case LVN_GETDISPINFO:
+        {
+            NMLVDISPINFO* inf = reinterpret_cast<NMLVDISPINFO*>(nmhdr);
+            printf("");
+            break;
+        }
+        }
+        break;
+    }
+    }
+
+    return DefSubclassProc(hWnd, msg, wParam, lParam);
 }
 
 void list_view::clear()
