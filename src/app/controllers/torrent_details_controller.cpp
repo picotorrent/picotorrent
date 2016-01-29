@@ -168,6 +168,7 @@ void torrent_details_controller::on_torrent_updated()
 void torrent_details_controller::set_active_page(torrent_details_controller::active_page_t page)
 {
     active_page_ = page;
+    on_torrent_updated();
 }
 
 void torrent_details_controller::update_files()
