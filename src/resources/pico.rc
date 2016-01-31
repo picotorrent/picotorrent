@@ -219,7 +219,7 @@ FONT 9, "MS Shell Dlg"
 IDD_DETAILS_OVERVIEW DIALOGEX 0, 0, 252, 215
 FONT 9, "MS Shell Dlg"
 {
-    GROUPBOX "Limits", -1, 5, 10, 340, 150
+    GROUPBOX "Limits", -1, 5, 10, 340, 90
 
     LTEXT "DL limit", -1, 15, 23, 80, 10
     EDITTEXT ID_DETAILS_DL_LIMIT, 75, 22, 30, 11, ES_RIGHT
