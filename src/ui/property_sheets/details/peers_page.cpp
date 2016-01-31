@@ -43,12 +43,12 @@ peers_page::peers_page()
 
 peers_page::~peers_page()
 {
-    std::unique_lock<std::mutex>(update_mtx_);
+    std::unique_lock<std::mutex> lock(update_mtx_);
 }
 
 void peers_page::refresh(const std::vector<peer> &peers)
 {
-    std::unique_lock<std::mutex>(update_mtx_);
+    std::unique_lock<std::mutex> lock(update_mtx_);
 
     for (peer_state &ps : peers_)
     {
@@ -104,7 +104,7 @@ void peers_page::on_init_dialog()
 
 std::wstring peers_page::on_list_display(const std::pair<int, int> &p)
 {
-    std::unique_lock<std::mutex>(update_mtx_);
+    std::unique_lock<std::mutex> lock(update_mtx_);
 
     peer_state &ps = peers_[p.second];
 

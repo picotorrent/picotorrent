@@ -3,6 +3,7 @@
 #include <picotorrent/common/signals/signal.hpp>
 #include <picotorrent/ui/property_sheets/property_sheet_page.hpp>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -41,6 +42,7 @@ namespace details
     private:
         struct file_item;
 
+        std::mutex update_lock_;
         std::unique_ptr<controls::list_view> files_;
         std::vector<file_item> items_;
         common::signals::signal<void, const std::pair<int, int>&> on_set_file_prio_;

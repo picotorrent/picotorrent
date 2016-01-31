@@ -42,10 +42,13 @@ files_page::files_page()
 
 files_page::~files_page()
 {
+    std::unique_lock<std::mutex> lock(update_lock_);
 }
 
 void files_page::add_file(const std::wstring &name, uint64_t size, float progress, int priority)
 {
+    std::unique_lock<std::mutex> lock(update_lock_);
+
     file_item item{ name,size,progress,priority };
     items_.push_back(item);
 
@@ -64,6 +67,8 @@ void files_page::refresh()
 
 void files_page::update_file_progress(int index, float progress)
 {
+    std::unique_lock<std::mutex> lock(update_lock_);
+
     file_item &item = items_[index];
     item.progress = progress;
 }
@@ -84,6 +89,8 @@ void files_page::on_init_dialog()
 
 std::wstring files_page::on_list_display(const std::pair<int, int> &p)
 {
+    std::unique_lock<std::mutex> lock(update_lock_);
+
     file_item &item = items_[p.second];
 
     switch (p.first)
@@ -123,6 +130,8 @@ std::wstring files_page::on_list_display(const std::pair<int, int> &p)
 
 void files_page::on_list_item_context_menu(const std::vector<int> &indices)
 {
+    std::unique_lock<std::mutex> lock(update_lock_);
+
     if (indices.empty())
     {
         return;

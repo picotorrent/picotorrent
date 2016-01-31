@@ -95,6 +95,8 @@ void trackers_page::on_init_dialog()
 
 std::wstring trackers_page::on_list_display(const std::pair<int, int> &p)
 {
+    std::unique_lock<std::mutex> lock(update_mtx_);
+
     const tracker_state &t = trackers_[p.second];
 
     switch (p.first)
