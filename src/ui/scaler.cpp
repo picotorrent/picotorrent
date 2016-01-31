@@ -5,6 +5,8 @@ using picotorrent::ui::scaler;
 scaler::scaler()
     : hdc_(GetDC(NULL))
 {
+    x_ = GetDeviceCaps(hdc_, LOGPIXELSX);
+    y_ = GetDeviceCaps(hdc_, LOGPIXELSY);
 }
 
 scaler::~scaler()
@@ -20,10 +22,10 @@ scaler& scaler::instance()
 
 long scaler::x(long x)
 {
-    return MulDiv(x, GetDeviceCaps(instance().hdc_, LOGPIXELSX), 96);
+    return MulDiv(x, instance().x_, 96);
 }
 
 long scaler::y(long y)
 {
-    return MulDiv(y, GetDeviceCaps(instance().hdc_, LOGPIXELSY), 96);
+    return MulDiv(y, instance().y_, 96);
 }

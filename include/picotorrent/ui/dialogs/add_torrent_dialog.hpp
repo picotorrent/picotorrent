@@ -21,6 +21,7 @@ namespace dialogs
     {
     public:
         add_torrent_dialog();
+        ~add_torrent_dialog();
 
         void add_torrent(const std::wstring &name);
         void add_torrent_file(const std::wstring &name, const std::wstring &friendly_size, const std::wstring &priority);
@@ -42,12 +43,18 @@ namespace dialogs
         BOOL on_init_dialog();
         BOOL on_notify(LPARAM);
 
+        std::wstring on_list_display(const std::pair<int, int> &p);
+
     private:
+        struct file_item;
+
         std::function<void()> init_cb_;
         std::function<void(int)> change_cb_;
         std::function<void(const std::vector<int> &files)> files_context_cb_;
         std::function<void()> save_path_cb_;
         std::shared_ptr<controls::list_view> files_;
+        std::vector<file_item> items_;
+
         HWND combo_;
         HWND save_path_;
         HWND size_;

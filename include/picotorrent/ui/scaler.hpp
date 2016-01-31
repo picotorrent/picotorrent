@@ -18,6 +18,8 @@ namespace ui
     private:
         static scaler& instance();
         const HDC hdc_;
+        int x_;
+        int y_;
     };
 }
 }

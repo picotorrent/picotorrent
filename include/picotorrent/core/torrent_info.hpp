@@ -33,10 +33,10 @@ namespace core
 
         static torrent_info_ptr try_load(const filesystem::path &p);
 
-        std::string file_path(int index);
-        int64_t file_size(int index);
+        std::string file_path(int index) const;
+        int64_t file_size(int index) const;
         std::string name();
-        int num_files();
+        int num_files() const;
         int64_t total_size();
 
     private:

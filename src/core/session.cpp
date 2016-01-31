@@ -17,6 +17,7 @@
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/create_torrent.hpp>
+#include <libtorrent/peer_info.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>

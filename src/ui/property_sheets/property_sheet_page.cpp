@@ -2,6 +2,8 @@
 
 #include <picotorrent/ui/task_dialog.hpp>
 
+using picotorrent::common::signals::signal;
+using picotorrent::common::signals::signal_connector;
 using picotorrent::ui::property_sheets::property_sheet_page;
 using picotorrent::ui::task_dialog;
 
@@ -14,6 +16,12 @@ property_sheet_page::property_sheet_page()
     page_->pfnDlgProc = &property_sheet_page::dlg_proc_proxy;
 }
 
+signal_connector<void, void>& property_sheet_page::on_activate() { return on_activate_; }
+signal_connector<void, void>& property_sheet_page::on_apply() { return on_apply_; }
+signal_connector<void, void>& property_sheet_page::on_destroy() { return on_destroy_; }
+signal_connector<void, void>& property_sheet_page::on_init() { return on_init_; }
+signal_connector<bool, void>& property_sheet_page::on_validate() { return on_validate_; }
+
 INT_PTR property_sheet_page::dlg_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
@@ -23,29 +31,51 @@ INT_PTR property_sheet_page::dlg_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
         return on_command(hwndDlg, LOWORD(wParam), wParam, lParam);
     }
 
+    case WM_DESTROY:
+    {
+        on_destroy_.emit();
+        break;
+    }
+
     case WM_INITDIALOG:
         handle_ = hwndDlg;
+
         is_initializing_ = true;
-        if (init_cb_) { init_cb_(); }
+        on_init_dialog();
+        on_init_.emit();
         is_initializing_ = false;
 
         return TRUE;
 
     case WM_NOTIFY:
         LPNMHDR pnmh = (LPNMHDR)lParam;
+        LRESULT res = FALSE;
+
+        // If the on_notify override decides to handle this message.
+        if (on_notify(hwndDlg, pnmh, res))
+        {
+            SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, res);
+            return TRUE;
+        }
 
         switch (pnmh->code)
         {
+        case PSN_SETACTIVE:
+        {
+            on_activate_.emit();
+            break;
+        }
+
         case PSN_KILLACTIVE:
         {
-            BOOL ret = FALSE;
-            if (validate_cb_) { ret = validate_cb_() ? FALSE : TRUE; }
-            SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, ret);
+            std::vector<bool> ret = on_validate_.emit();
+            bool valid = std::all_of(ret.begin(), ret.end(), [](bool v) { return v == true; });
+            SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, valid ? FALSE : TRUE);
             return TRUE;
         }
 
         case PSN_APPLY:
-            if (apply_cb_) { apply_cb_(); }
+            on_apply_.emit();
             SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
             return TRUE;
         }
@@ -66,24 +96,21 @@ bool property_sheet_page::is_initializing()
     return is_initializing_;
 }
 
+std::wstring property_sheet_page::get_dlg_item_text(int id)
+{
+    TCHAR text[1024];
+    GetDlgItemText(handle(), id, text, ARRAYSIZE(text));
+    return text;
+}
+
+void property_sheet_page::set_dlg_item_text(int id, const std::wstring &text)
+{
+    SetDlgItemText(handle(), id, text.c_str());
+}
+
 void property_sheet_page::set_flags(DWORD flags)
 {
     page_->dwFlags = flags;
-}
-
-void property_sheet_page::set_apply_callback(const std::function<void()> &callback)
-{
-    apply_cb_ = callback;
-}
-
-void property_sheet_page::set_init_callback(const std::function<void()> &callback)
-{
-    init_cb_ = callback;
-}
-
-void property_sheet_page::set_validate_callback(const std::function<bool()> &callback)
-{
-    validate_cb_ = callback;
 }
 
 void property_sheet_page::set_instance(HINSTANCE instance)

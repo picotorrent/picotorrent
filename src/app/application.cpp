@@ -8,6 +8,7 @@
 #include <picotorrent/app/controllers/notifyicon_context_menu_controller.hpp>
 #include <picotorrent/app/controllers/remove_torrent_controller.hpp>
 #include <picotorrent/app/controllers/torrent_context_menu_controller.hpp>
+#include <picotorrent/app/controllers/torrent_details_controller.hpp>
 #include <picotorrent/app/controllers/unhandled_exception_controller.hpp>
 #include <picotorrent/app/controllers/view_preferences_controller.hpp>
 #include <picotorrent/config/configuration.hpp>
@@ -47,6 +48,7 @@ application::application()
     main_window_->on_close(std::bind(&application::on_close, this));
     main_window_->on_copydata(std::bind(&application::on_command_line_args, this, std::placeholders::_1));
     main_window_->on_notifyicon_context_menu(std::bind(&application::on_notifyicon_context_menu, this, std::placeholders::_1));
+    main_window_->on_torrent_activated(std::bind(&application::on_torrent_activated, this, std::placeholders::_1));
     main_window_->on_torrent_context_menu(std::bind(&application::on_torrent_context_menu, this, std::placeholders::_1, std::placeholders::_2));
 
     sess_->on_torrent_added(std::bind(&application::torrent_added, this, std::placeholders::_1));
@@ -176,6 +178,12 @@ void application::on_remove_torrents_accelerator(bool remove_data)
         main_window_->get_selected_torrents());
 
     remove_controller.execute(remove_data);
+}
+
+void application::on_torrent_activated(const std::shared_ptr<core::torrent> &torrent)
+{
+    controllers::torrent_details_controller details_controller(main_window_, torrent);
+    details_controller.execute();
 }
 
 void application::on_torrent_context_menu(const POINT &p, const std::vector<std::shared_ptr<core::torrent>> &torrents)

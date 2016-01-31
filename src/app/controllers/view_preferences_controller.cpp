@@ -30,17 +30,17 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
     conn_page_(std::make_unique<prefs::connection_page>()),
     dl_page_(std::make_unique<prefs::downloads_page>())
 {
-    adv_page_->set_apply_callback(std::bind(&view_preferences_controller::on_advanced_apply, this));
-    adv_page_->set_init_callback(std::bind(&view_preferences_controller::on_advanced_init, this));
+    adv_page_->on_apply().connect(std::bind(&view_preferences_controller::on_advanced_apply, this));
+    adv_page_->on_init().connect(std::bind(&view_preferences_controller::on_advanced_init, this));
 
-    conn_page_->set_apply_callback(std::bind(&view_preferences_controller::on_connection_apply, this));
-    conn_page_->set_init_callback(std::bind(&view_preferences_controller::on_connection_init, this));
-    conn_page_->set_validate_callback(std::bind(&view_preferences_controller::on_connection_validate, this));
+    conn_page_->on_apply().connect(std::bind(&view_preferences_controller::on_connection_apply, this));
+    conn_page_->on_init().connect(std::bind(&view_preferences_controller::on_connection_init, this));
+    conn_page_->on_validate().connect(std::bind(&view_preferences_controller::on_connection_validate, this));
     conn_page_->set_proxy_type_changed_callback(std::bind(&view_preferences_controller::on_connection_proxy_type_changed, this, std::placeholders::_1));
 
-    dl_page_->set_apply_callback(std::bind(&view_preferences_controller::on_downloads_apply, this));
-    dl_page_->set_init_callback(std::bind(&view_preferences_controller::on_downloads_init, this));
-    dl_page_->set_validate_callback(std::bind(&view_preferences_controller::on_downloads_validate, this));
+    dl_page_->on_apply().connect(std::bind(&view_preferences_controller::on_downloads_apply, this));
+    dl_page_->on_init().connect(std::bind(&view_preferences_controller::on_downloads_init, this));
+    dl_page_->on_validate().connect(std::bind(&view_preferences_controller::on_downloads_validate, this));
 }
 
 view_preferences_controller::~view_preferences_controller()

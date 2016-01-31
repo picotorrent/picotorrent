@@ -30,7 +30,7 @@ int add_request::file_priority(int file_index)
 {
     if (params_->file_priorities.size() < (uint8_t)(file_index + 1))
     {
-        return 1;
+        return 4; // Normal priority according to libtorrent
     }
 
     return params_->file_priorities[file_index];
@@ -65,7 +65,7 @@ void add_request::set_file_priority(int file_index, int priority)
 {
     if (params_->file_priorities.size() < (uint8_t)(file_index + 1))
     {
-        params_->file_priorities.resize(file_index + 1, 1);
+        params_->file_priorities.resize(file_index + 1);
     }
 
     params_->file_priorities[file_index] = priority;
