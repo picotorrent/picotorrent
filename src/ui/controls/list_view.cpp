@@ -110,6 +110,11 @@ signal_connector<void, const std::vector<int>&>& list_view::on_item_context_menu
     return on_item_context_;
 }
 
+signal_connector<int, const std::pair<int, int>&>& list_view::on_item_image()
+{
+    return on_item_image_;
+}
+
 signal_connector<float, const std::pair<int, int>&>& list_view::on_progress()
 {
     return on_progress_;
@@ -122,6 +127,11 @@ void list_view::refresh()
 
     ListView_RedrawItems(handle(), idx, bottom);
     ::UpdateWindow(handle());
+}
+
+void list_view::set_image_list(HIMAGELIST img)
+{
+    ListView_SetImageList(handle(), img, LVSIL_SMALL);
 }
 
 void list_view::set_item_count(int count)
@@ -168,11 +178,21 @@ LRESULT list_view::subclass_proc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 
             // Find column with index
             const list_view_column &col = lv->columns_.at(inf->item.iSubItem);
-
             std::pair<int, int> p = std::make_pair(col.id, inf->item.iItem);
-            std::wstring text = lv->on_display_.emit(p)[0];
 
-            StringCchCopy(inf->item.pszText, inf->item.cchTextMax, text.c_str());
+            if (inf->item.mask & LVIF_TEXT)
+            {
+                std::wstring text = lv->on_display_.emit(p)[0];
+                StringCchCopy(inf->item.pszText, inf->item.cchTextMax, text.c_str());
+            }
+
+            if (inf->item.mask & LVIF_IMAGE)
+            {
+                std::vector<int> index = lv->on_item_image_.emit(p);
+                if (index.size() <= 0) { break; }
+                inf->item.iImage = index[0];
+            }
+
             break;
         }
         case NM_CUSTOMDRAW:

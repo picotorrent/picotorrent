@@ -2,6 +2,7 @@
 
 #include <picotorrent/common/signals/signal.hpp>
 #include <picotorrent/ui/property_sheets/property_sheet_page.hpp>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -37,13 +38,16 @@ namespace details
         void on_init_dialog();
         std::wstring on_list_display(const std::pair<int, int> &p);
         void on_list_item_context_menu(const std::vector<int> &indices);
+        int on_list_item_image(const std::pair<int, int> &p);
         float on_list_progress(const std::pair<int, int> &p);
 
     private:
         struct file_item;
 
-        std::mutex update_lock_;
+        HIMAGELIST images_;
+
         std::unique_ptr<controls::list_view> files_;
+        std::map<std::wstring, int> icon_map_;
         std::vector<file_item> items_;
         common::signals::signal<void, const std::pair<int, int>&> on_set_file_prio_;
     };

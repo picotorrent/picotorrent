@@ -7,6 +7,7 @@
 #include <picotorrent/ui/resources.hpp>
 #include <picotorrent/ui/scaler.hpp>
 
+#include <shellapi.h>
 #include <shlwapi.h>
 #include <strsafe.h>
 
@@ -33,26 +34,42 @@ struct files_page::file_item
 };
 
 files_page::files_page()
+    : images_(NULL)
 {
     set_flags(PSP_USETITLE);
     set_instance(GetModuleHandle(NULL));
     set_template_id(IDD_DETAILS_FILES);
     set_title_id(IDS_DETAILS_FILES_TITLE);
+
+    images_ = ImageList_Create(
+        scaler::x(16),
+        scaler::y(16),
+        ILC_COLOR,
+        10,
+        10);
 }
 
 files_page::~files_page()
 {
-    std::unique_lock<std::mutex> lock(update_lock_);
 }
 
 void files_page::add_file(const std::wstring &name, uint64_t size, float progress, int priority)
 {
-    std::unique_lock<std::mutex> lock(update_lock_);
-
     file_item item{ name,size,progress,priority };
     items_.push_back(item);
 
     files_->set_item_count((int)items_.size());
+
+    // Add file extension image to image list
+    SHFILEINFO shInfo = { 0 };
+    SHGetFileInfo(name.c_str(),
+        FILE_ATTRIBUTE_NORMAL,
+        &shInfo,
+        sizeof(SHFILEINFO),
+        SHGFI_USEFILEATTRIBUTES | SHGFI_ICON | SHGFI_SMALLICON);
+
+    int i = ImageList_AddIcon(images_, shInfo.hIcon);
+    icon_map_.insert({ name, i });
 }
 
 signal_connector<void, const std::pair<int, int>&>& files_page::on_set_file_priority()
@@ -67,8 +84,6 @@ void files_page::refresh()
 
 void files_page::update_file_progress(int index, float progress)
 {
-    std::unique_lock<std::mutex> lock(update_lock_);
-
     file_item &item = items_[index];
     item.progress = progress;
 }
@@ -82,15 +97,17 @@ void files_page::on_init_dialog()
     files_->add_column(LIST_COLUMN_SIZE,     L"Size",     scaler::x(80),  list_view::number);
     files_->add_column(LIST_COLUMN_PROGRESS, L"Progress", scaler::x(120), list_view::progress);
     files_->add_column(LIST_COLUMN_PRIORITY, L"Priority", scaler::x(80));
+
     files_->on_display().connect(std::bind(&files_page::on_list_display, this, std::placeholders::_1));
     files_->on_item_context_menu().connect(std::bind(&files_page::on_list_item_context_menu, this, std::placeholders::_1));
+    files_->on_item_image().connect(std::bind(&files_page::on_list_item_image, this, std::placeholders::_1));
     files_->on_progress().connect(std::bind(&files_page::on_list_progress, this, std::placeholders::_1));
+
+    files_->set_image_list(images_);
 }
 
 std::wstring files_page::on_list_display(const std::pair<int, int> &p)
 {
-    std::unique_lock<std::mutex> lock(update_lock_);
-
     file_item &item = items_[p.second];
 
     switch (p.first)
@@ -130,8 +147,6 @@ std::wstring files_page::on_list_display(const std::pair<int, int> &p)
 
 void files_page::on_list_item_context_menu(const std::vector<int> &indices)
 {
-    std::unique_lock<std::mutex> lock(update_lock_);
-
     if (indices.empty())
     {
         return;
@@ -191,6 +206,12 @@ void files_page::on_list_item_context_menu(const std::vector<int> &indices)
     }
 
     files_->refresh();
+}
+
+int files_page::on_list_item_image(const std::pair<int, int> &p)
+{
+    file_item &item = items_[p.second];
+    return icon_map_.at(item.name);
 }
 
 float files_page::on_list_progress(const std::pair<int, int> &p)
