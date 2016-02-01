@@ -32,9 +32,11 @@ namespace controls
         
         common::signals::signal_connector<std::wstring, const std::pair<int, int>&>& on_display();
         common::signals::signal_connector<void, const std::vector<int>&>& on_item_context_menu();
+        common::signals::signal_connector<int, const std::pair<int, int>&>& on_item_image();
         common::signals::signal_connector<float, const std::pair<int, int>&>& on_progress();
 
         void refresh();
+        void set_image_list(HIMAGELIST img);
         void set_item_count(int count);
 
     private:
@@ -58,6 +60,7 @@ namespace controls
         std::map<int, list_view_column> columns_;
         common::signals::signal<std::wstring, const std::pair<int, int>&> on_display_;
         common::signals::signal<void, const std::vector<int>&> on_item_context_;
+        common::signals::signal<int, const std::pair<int, int>&> on_item_image_;
         common::signals::signal<float, const std::pair<int, int>&> on_progress_;
     };
 }
