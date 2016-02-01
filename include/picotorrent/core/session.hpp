@@ -5,6 +5,9 @@
 #include <memory>
 #include <thread>
 #include <vector>
+#include <windows.h>
+
+#include <picotorrent/common/signals/signal.hpp>
 
 namespace libtorrent
 {
@@ -30,16 +33,21 @@ namespace core
 
         void add_torrent(const std::shared_ptr<add_request> &add);
 
-        void load();
+        void load(HWND hWnd);
         void unload();
+
+        void notify();
 
         void reload_settings();
         void remove_torrent(const std::shared_ptr<torrent> &torrent, bool remove_data = false);
 
-        void on_torrent_added(const std::function<void(const std::shared_ptr<torrent>&)> &callback);
-        void on_torrent_finished(const std::function<void(const std::shared_ptr<torrent>&)> &callback);
-        void on_torrent_removed(const std::function<void(const std::shared_ptr<torrent>&)> &callback);
-        void on_torrent_updated(const std::function<void(const std::shared_ptr<torrent>&)> &callback);
+        common::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_added();
+        common::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_finished();
+        common::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_removed();
+        common::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_updated();
+
+    protected:
+        void on_alert_notify();
 
     private:
         typedef std::unique_ptr<libtorrent::session> session_ptr;
@@ -49,7 +57,6 @@ namespace core
         std::shared_ptr<libtorrent::settings_pack> get_session_settings();
         void load_state();
         void load_torrents();
-        void read_alerts();
         void remove_torrent_files(const torrent_ptr &torrent);
         void save_state();
         void save_torrent(const libtorrent::torrent_info &ti);
@@ -59,14 +66,15 @@ namespace core
         std::unique_ptr<timer> timer_;
         torrent_map_t torrents_;
         session_ptr sess_;
-        std::thread alert_thread_;
-        bool is_running_;
 
-        // Callbacks
-        std::function<void(const torrent_ptr&)> torrent_added_cb_;
-        std::function<void(const torrent_ptr&)> torrent_finished_cb_;
-        std::function<void(const torrent_ptr&)> torrent_removed_cb_;
-        std::function<void(const torrent_ptr&)> torrent_updated_cb_;
+        // Handle to our main window
+        HWND hWnd_;
+
+        // Signals
+        common::signals::signal<void, const torrent_ptr&> on_torrent_added_;
+        common::signals::signal<void, const torrent_ptr&> on_torrent_finished_;
+        common::signals::signal<void, const torrent_ptr&> on_torrent_removed_;
+        common::signals::signal<void, const torrent_ptr&> on_torrent_updated_;
     };
 }
 }

@@ -48,13 +48,14 @@ application::application()
     main_window_->on_close(std::bind(&application::on_close, this));
     main_window_->on_copydata(std::bind(&application::on_command_line_args, this, std::placeholders::_1));
     main_window_->on_notifyicon_context_menu(std::bind(&application::on_notifyicon_context_menu, this, std::placeholders::_1));
+    main_window_->on_session_alert_notify().connect(std::bind(&application::on_session_alert_notify, this));
     main_window_->on_torrent_activated(std::bind(&application::on_torrent_activated, this, std::placeholders::_1));
     main_window_->on_torrent_context_menu(std::bind(&application::on_torrent_context_menu, this, std::placeholders::_1, std::placeholders::_2));
 
-    sess_->on_torrent_added(std::bind(&application::torrent_added, this, std::placeholders::_1));
-    sess_->on_torrent_finished(std::bind(&application::torrent_finished, this, std::placeholders::_1));
-    sess_->on_torrent_removed(std::bind(&application::torrent_removed, this, std::placeholders::_1));
-    sess_->on_torrent_updated(std::bind(&application::torrent_updated, this, std::placeholders::_1));
+    sess_->on_torrent_added().connect(std::bind(&application::torrent_added, this, std::placeholders::_1));
+    sess_->on_torrent_finished().connect(std::bind(&application::torrent_finished, this, std::placeholders::_1));
+    sess_->on_torrent_removed().connect(std::bind(&application::torrent_removed, this, std::placeholders::_1));
+    sess_->on_torrent_updated().connect(std::bind(&application::torrent_updated, this, std::placeholders::_1));
 }
 
 application::~application()
@@ -119,7 +120,7 @@ bool application::is_single_instance()
 int application::run(const std::wstring &args)
 {
     main_window_->create();
-    sess_->load();
+    sess_->load(main_window_->handle());
 
     if (!args.empty())
     {
@@ -168,6 +169,11 @@ void application::on_notifyicon_context_menu(const POINT &p)
 void application::on_select_all_accelerator()
 {
     main_window_->select_all_torrents();
+}
+
+void application::on_session_alert_notify()
+{
+    sess_->notify();
 }
 
 void application::on_remove_torrents_accelerator(bool remove_data)

@@ -231,23 +231,24 @@ void add_torrent_controller::on_torrent_files_context_menu(const std::vector<int
 void add_torrent_controller::show_torrent(int index)
 {
     std::shared_ptr<core::add_request> &req = requests_[index];
+    core::torrent_info_ptr ti = req->torrent_info();
 
-    if (req->torrent_info())
+    if (ti)
     {
         std::wstring friendly_size(L"\0", 64);
-        StrFormatByteSize64((UINT)req->torrent_info()->total_size(), &friendly_size[0], (UINT)friendly_size.size());
+        StrFormatByteSize64((UINT)ti->total_size(), &friendly_size[0], (UINT)friendly_size.size());
         dlg_->set_size(friendly_size);
 
         dlg_->clear_torrent_files();
         dlg_->enable_files();
 
-        for (int i = 0; i < req->torrent_info()->num_files(); i++)
+        for (int i = 0; i < ti->num_files(); i++)
         {
             std::wstring file_size(L"\0", 64);
-            StrFormatByteSize64((UINT)req->torrent_info()->file_size(i), &file_size[0], (UINT)file_size.size());
+            StrFormatByteSize64((UINT)ti->file_size(i), &file_size[0], (UINT)file_size.size());
 
             dlg_->add_torrent_file(
-                to_wstring(req->torrent_info()->file_path(i)),
+                to_wstring(ti->file_path(i)),
                 file_size,
                 get_prio_str(req->file_priority(i)));
         }

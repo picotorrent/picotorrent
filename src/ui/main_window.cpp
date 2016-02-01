@@ -20,8 +20,12 @@
 #include <shobjidl.h>
 #include <strsafe.h>
 
+#define PT_SESSION_NOTIFY WM_USER+1337
+
 namespace core = picotorrent::core;
 namespace fs = picotorrent::filesystem;
+using picotorrent::common::signals::signal;
+using picotorrent::common::signals::signal_connector;
 using picotorrent::common::to_wstring;
 using picotorrent::ui::dialogs::about_dialog;
 using picotorrent::ui::main_window;
@@ -118,6 +122,11 @@ void main_window::on_notifyicon_context_menu(const std::function<void(const POIN
     notifyicon_context_cb_ = callback;
 }
 
+signal_connector<void, void>& main_window::on_session_alert_notify()
+{
+    return on_session_alert_notify_;
+}
+
 void main_window::on_torrent_activated(const std::function<void(const std::shared_ptr<core::torrent>&)> &callback)
 {
     torrent_activated_cb = callback;
@@ -159,6 +168,12 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     switch (uMsg)
     {
+    case PT_SESSION_NOTIFY:
+    {
+        on_session_alert_notify_.emit();
+        break;
+    }
+
     case WM_TORRENT_ADDED:
     {
         const core::torrent_ptr &t = *(core::torrent_ptr*)lParam;

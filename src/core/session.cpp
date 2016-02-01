@@ -1,5 +1,6 @@
 #include <picotorrent/core/session.hpp>
 
+#include <picotorrent/common/signals/signal.hpp>
 #include <picotorrent/common/environment.hpp>
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/common/version_info.hpp>
@@ -29,6 +30,8 @@
 namespace fs = picotorrent::filesystem;
 namespace lt = libtorrent;
 using namespace picotorrent::common;
+using picotorrent::common::signals::signal;
+using picotorrent::common::signals::signal_connector;
 using picotorrent::config::configuration;
 using picotorrent::core::add_request;
 using picotorrent::core::session;
@@ -49,7 +52,8 @@ struct load_item
 };
 
 session::session()
-    : timer_(std::make_unique<timer>(std::bind(&session::timer_callback, this), 1000))
+    : timer_(std::make_unique<timer>(std::bind(&session::timer_callback, this), 1000)),
+    hWnd_(NULL)
 {
 }
 
@@ -62,7 +66,7 @@ void session::add_torrent(const std::shared_ptr<add_request> &add)
     sess_->async_add_torrent(*add->params_);
 }
 
-void session::load()
+void session::load(HWND hWnd)
 {
     LOG(info) << "Loading session";
 
@@ -72,10 +76,8 @@ void session::load()
     load_state();
     load_torrents();
 
-    // Start the alert thread which will read and handle any
-    // alerts we receive from libtorrent.
-    is_running_ = true;
-    alert_thread_ = std::thread(std::bind(&session::read_alerts, this));
+    hWnd_ = hWnd;
+    sess_->set_alert_notify(std::bind(&session::on_alert_notify, this));
 
     timer_->start();
 }
@@ -83,15 +85,8 @@ void session::load()
 void session::unload()
 {
     LOG(info) << "Unloading session";
-    is_running_ = false;
-
+    sess_->set_alert_notify([] {});
     timer_->stop();
-
-    if (alert_thread_.joinable())
-    {
-        LOG(trace) << "Joining alert thread";
-        alert_thread_.join();
-    }
 
     save_state();
     save_torrents();
@@ -102,24 +97,29 @@ void session::remove_torrent(const torrent_ptr &torrent, bool remove_data)
     sess_->remove_torrent(torrent->status_->handle, remove_data ? lt::session::delete_files : 0);
 }
 
-void session::on_torrent_added(const std::function<void(const torrent_ptr&)> &callback)
+signal_connector<void, const session::torrent_ptr&>& session::on_torrent_added()
 {
-    torrent_added_cb_ = callback;
+    return on_torrent_added_;
 }
 
-void session::on_torrent_finished(const std::function<void(const torrent_ptr&)> &callback)
+signal_connector<void, const session::torrent_ptr&>& session::on_torrent_finished()
 {
-    torrent_finished_cb_ = callback;
+    return on_torrent_finished_;
 }
 
-void session::on_torrent_removed(const std::function<void(const torrent_ptr&)> &callback)
+signal_connector<void, const session::torrent_ptr&>& session::on_torrent_removed()
 {
-    torrent_removed_cb_ = callback;
+    return on_torrent_removed_;
 }
 
-void session::on_torrent_updated(const std::function<void(const torrent_ptr&)> &callback)
+signal_connector<void, const session::torrent_ptr&>& session::on_torrent_updated()
 {
-    torrent_updated_cb_ = callback;
+    return on_torrent_updated_;
+}
+
+void session::on_alert_notify()
+{
+    PostMessage(hWnd_, WM_USER + 1337, NULL, NULL);
 }
 
 std::shared_ptr<lt::settings_pack> session::get_session_settings()
@@ -330,138 +330,115 @@ void session::load_torrents()
     }
 }
 
-void session::read_alerts()
+void session::notify()
 {
-    while (is_running_)
+    std::vector<lt::alert*> alerts;
+    sess_->pop_alerts(&alerts);
+
+    for (lt::alert *alert : alerts)
     {
-        const lt::alert *a = sess_->wait_for_alert(lt::milliseconds(500));
-        if (a == 0) { continue; }
-
-        std::vector<lt::alert*> alerts;
-        sess_->pop_alerts(&alerts);
-
-        for (lt::alert *alert : alerts)
+        switch (alert->type())
         {
-            switch (alert->type())
+        case lt::add_torrent_alert::alert_type:
+        {
+            lt::add_torrent_alert *al = lt::alert_cast<lt::add_torrent_alert>(alert);
+
+            if (al->error)
             {
-            case lt::add_torrent_alert::alert_type:
+                LOG(error) << "Error when adding torrent: " << al->error.message();
+                continue;
+            }
+
+            if (torrents_.find(al->handle.info_hash()) != torrents_.end())
             {
-                lt::add_torrent_alert *al = lt::alert_cast<lt::add_torrent_alert>(alert);
-
-                if (al->error)
-                {
-                    LOG(error) << "Error when adding torrent: " << al->error.message();
-                    continue;
-                }
-
-                if (torrents_.find(al->handle.info_hash()) != torrents_.end())
-                {
-                    LOG(warning) << "Torrent already in session: " << lt::to_hex(al->handle.info_hash().to_string());
-                    continue;
-                }
-
-                if (al->handle.torrent_file())
-                {
-                    save_torrent(*al->handle.torrent_file());
-                }
-                else if(!al->params.url.empty())
-                {
-                    lt::entry::dictionary_type e;
-                    e.insert({ "pT-queuePosition", al->handle.status().queue_position });
-                    e.insert({ "pT-url", al->params.url });
-
-                    std::vector<char> buf;
-                    lt::bencode(std::back_inserter(buf), e);
-
-                    fs::path data = environment::get_data_path();
-                    fs::directory dir = data.combine(L"Torrents");
-
-                    if (!dir.path().exists())
-                    {
-                        dir.create();
-                    }
-
-                    std::wstring hash = lt::convert_to_wstring(lt::to_hex(al->handle.info_hash().to_string()));
-                    fs::file torrentFile(dir.path().combine((hash + L".dat")));
-
-                    try
-                    {
-                        torrentFile.write_all(buf);
-                    }
-                    catch (const std::exception& e)
-                    {
-                        LOG(error) << "Error when writing resume data file: " << e.what();
-                    }
-                }
-
-                torrents_.insert(
-                    std::make_pair(
-                        al->handle.info_hash(),
-                        std::make_shared<core::torrent>(al->handle.status())
-                        ));
-
-                if (torrent_added_cb_)
-                {
-                    const torrent_ptr &t = torrents_.find(al->handle.info_hash())->second;
-                    torrent_added_cb_(t);
-                }
-                break;
+                LOG(warning) << "Torrent already in session: " << lt::to_hex(al->handle.info_hash().to_string());
+                continue;
             }
-            case lt::metadata_received_alert::alert_type:
+
+            if (al->handle.torrent_file())
             {
-                lt::metadata_received_alert *al = lt::alert_cast<lt::metadata_received_alert>(alert);
-
-                if (al->handle.torrent_file())
-                {
-                    save_torrent(*al->handle.torrent_file());
-                }
-                break;
+                save_torrent(*al->handle.torrent_file());
             }
-            case lt::state_update_alert::alert_type:
+            else if (!al->params.url.empty())
             {
-                lt::state_update_alert *al = lt::alert_cast<lt::state_update_alert>(alert);
+                lt::entry::dictionary_type e;
+                e.insert({ "pT-queuePosition", al->handle.status().queue_position });
+                e.insert({ "pT-url", al->params.url });
 
-                for (lt::torrent_status &st : al->status)
+                std::vector<char> buf;
+                lt::bencode(std::back_inserter(buf), e);
+
+                fs::path data = environment::get_data_path();
+                fs::directory dir = data.combine(L"Torrents");
+
+                if (!dir.path().exists())
                 {
-                    const torrent_ptr &t = torrents_.find(st.info_hash)->second;
-                    t->update(std::make_unique<lt::torrent_status>(st));
-
-                    if (torrent_updated_cb_)
-                    {
-                        torrent_updated_cb_(t);
-                    }
+                    dir.create();
                 }
-                break;
+
+                std::wstring hash = lt::convert_to_wstring(lt::to_hex(al->handle.info_hash().to_string()));
+                fs::file torrentFile(dir.path().combine((hash + L".dat")));
+
+                try
+                {
+                    torrentFile.write_all(buf);
+                }
+                catch (const std::exception& e)
+                {
+                    LOG(error) << "Error when writing resume data file: " << e.what();
+                }
             }
-            case lt::torrent_finished_alert::alert_type:
+
+            torrent_ptr torrent = std::make_shared<core::torrent>(al->handle.status());
+            torrents_.insert({ al->handle.info_hash(), torrent });
+            on_torrent_added_.emit(torrent);
+            break;
+        }
+        case lt::metadata_received_alert::alert_type:
+        {
+            lt::metadata_received_alert *al = lt::alert_cast<lt::metadata_received_alert>(alert);
+
+            if (al->handle.torrent_file())
             {
-                lt::torrent_finished_alert *al = lt::alert_cast<lt::torrent_finished_alert>(alert);
-                torrent_ptr &torrent = torrents_.at(al->handle.info_hash());
-
-                // Check `total_download` to see if we have a real finished torrent or one that
-                // was finished when we added it and just completed the hash check.
-                if (torrent_finished_cb_ && al->handle.status().total_download > 0)
-                {
-                    torrent_finished_cb_(torrent);
-                }
-                break;
+                save_torrent(*al->handle.torrent_file());
             }
-            case lt::torrent_removed_alert::alert_type:
+            break;
+        }
+        case lt::state_update_alert::alert_type:
+        {
+            lt::state_update_alert *al = lt::alert_cast<lt::state_update_alert>(alert);
+
+            for (lt::torrent_status &st : al->status)
             {
-                lt::torrent_removed_alert *al = lt::alert_cast<lt::torrent_removed_alert>(alert);
-                torrent_ptr &torrent = torrents_.at(al->info_hash);
-
-                remove_torrent_files(torrent);
-
-                if (torrent_removed_cb_)
-                {
-                    torrent_removed_cb_(torrent);
-                }
-
-                torrents_.erase(al->info_hash);
-                break;
+                const torrent_ptr &t = torrents_.find(st.info_hash)->second;
+                t->update(std::make_unique<lt::torrent_status>(st));
+                on_torrent_updated_.emit(t);
             }
+            break;
+        }
+        case lt::torrent_finished_alert::alert_type:
+        {
+            lt::torrent_finished_alert *al = lt::alert_cast<lt::torrent_finished_alert>(alert);
+            torrent_ptr &torrent = torrents_.at(al->handle.info_hash());
+
+            // Check `total_download` to see if we have a real finished torrent or one that
+            // was finished when we added it and just completed the hash check.
+            if (al->handle.status().total_download > 0)
+            {
+                on_torrent_finished_.emit(torrent);
             }
+            break;
+        }
+        case lt::torrent_removed_alert::alert_type:
+        {
+            lt::torrent_removed_alert *al = lt::alert_cast<lt::torrent_removed_alert>(alert);
+            torrent_ptr &torrent = torrents_.at(al->info_hash);
+
+            remove_torrent_files(torrent);
+            on_torrent_removed_.emit(torrent);
+            torrents_.erase(al->info_hash);
+            break;
+        }
         }
     }
 }
