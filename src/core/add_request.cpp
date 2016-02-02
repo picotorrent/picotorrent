@@ -28,7 +28,7 @@ add_request::~add_request()
 
 int add_request::file_priority(int file_index)
 {
-    if (params_->file_priorities.size() < (uint8_t)(file_index + 1))
+    if (params_->file_priorities.size() < (file_index + 1))
     {
         return 4; // Normal priority according to libtorrent
     }
@@ -63,7 +63,7 @@ std::wstring add_request::url()
 
 void add_request::set_file_priority(int file_index, int priority)
 {
-    if (params_->file_priorities.size() < (uint8_t)(file_index + 1))
+    if (params_->file_priorities.size() < (file_index + 1))
     {
         params_->file_priorities.resize(file_index + 1);
     }
