@@ -37,6 +37,7 @@ namespace app
         int run(const std::wstring &args);
 
     private:
+        void on_check_for_update();
         bool on_close();
         void on_command_line_args(const std::wstring &args);
         void on_file_add_torrent();

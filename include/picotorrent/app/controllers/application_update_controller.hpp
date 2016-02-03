@@ -26,11 +26,11 @@ namespace controllers
         application_update_controller(const std::shared_ptr<ui::main_window> &wnd);
         ~application_update_controller();
 
-        void execute();
+        void execute(bool forced = false);
 
     protected:
         void notify(const std::wstring &title, const net::uri &uri, const std::wstring &version);
-        void on_response(const net::http_response &response);
+        void on_response(const net::http_response &response, bool forced);
 
     private:
         std::shared_ptr<net::http_client> http_;

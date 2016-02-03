@@ -42,6 +42,8 @@ IDR_MAINMENU MENU
     POPUP "&Help"
     {
         MENUITEM "&About", ID_HELP_ABOUT
+        MENUITEM SEPARATOR
+        MENUITEM "&Check for update", ID_HELP_CHECK_FOR_UPDATE
     }
 }
 
