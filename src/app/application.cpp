@@ -44,6 +44,7 @@ application::application()
     main_window_->on_command(IDA_REMOVE_TORRENTS_DATA, std::bind(&application::on_remove_torrents_accelerator, this, true));
     main_window_->on_command(IDA_SELECT_ALL, std::bind(&application::on_select_all_accelerator, this));
     main_window_->on_command(ID_VIEW_PREFERENCES, std::bind(&application::on_view_preferences, this));
+    main_window_->on_command(ID_HELP_CHECK_FOR_UPDATE, std::bind(&application::on_check_for_update, this));
 
     main_window_->on_close(std::bind(&application::on_close, this));
     main_window_->on_copydata(std::bind(&application::on_command_line_args, this, std::placeholders::_1));
@@ -138,6 +139,11 @@ int application::run(const std::wstring &args)
 
     sess_->unload();
     return result;
+}
+
+void application::on_check_for_update()
+{
+    updater_->execute(true);
 }
 
 bool application::on_close()

@@ -37,15 +37,15 @@ application_update_controller::~application_update_controller()
 {
 }
 
-void application_update_controller::execute()
+void application_update_controller::execute(bool forced)
 {
     configuration &cfg = configuration::instance();
 
     uri api(cfg.update_url());
-    http_->get_async(api, std::bind(&application_update_controller::on_response, this, std::placeholders::_1));
+    http_->get_async(api, std::bind(&application_update_controller::on_response, this, std::placeholders::_1, forced));
 }
 
-void application_update_controller::on_response(const http_response &response)
+void application_update_controller::on_response(const http_response &response, bool forced)
 {
     if (!response.is_success_status())
     {
@@ -71,7 +71,8 @@ void application_update_controller::on_response(const http_response &response)
 
     configuration &cfg = configuration::instance();
 
-    if (cfg.ignored_update() == wideVersion)
+    if (cfg.ignored_update() == wideVersion
+        && !forced)
     {
         // Just return if we have ignored this update.
         return;
@@ -85,6 +86,17 @@ void application_update_controller::on_response(const http_response &response)
         uri uri(to_wstring(obj["html_url"].get<std::string>()));
 
         notify(title, uri, wideVersion);
+    }
+    else if (forced)
+    {
+        ui::task_dialog dlg;
+        dlg.set_common_buttons(TDCBF_OK_BUTTON);
+        dlg.set_content(L"There doesn't seem to be an update available.");
+        dlg.set_main_icon(TD_INFORMATION_ICON);
+        dlg.set_parent(wnd_->handle());
+        dlg.set_main_instruction(L"No update available");
+        dlg.set_title(L"PicoTorrent");
+        dlg.show();
     }
 }
 

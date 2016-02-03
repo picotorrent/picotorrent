@@ -35,6 +35,7 @@
 #define ID_FILE_EXIT 9002
 #define ID_VIEW_PREFERENCES 9101
 #define ID_HELP_ABOUT 9201
+#define ID_HELP_CHECK_FOR_UPDATE 9203
 
 // Preferences dialog
 #define ID_PREFS_DEFSAVEPATH 9101
