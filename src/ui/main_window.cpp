@@ -456,6 +456,13 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
             if (nmhdr->hwndFrom == list_view_->handle())
             {
+                std::vector<int> selectedItems = list_view_->get_selected_items();
+
+                if (selectedItems.size() == 0)
+                {
+                    break;
+                }
+
                 if (torrent_context_cb_)
                 {
                     POINT pt;
