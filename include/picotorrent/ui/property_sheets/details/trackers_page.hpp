@@ -1,7 +1,6 @@
 #pragma once
 
 #include <picotorrent/ui/property_sheets/property_sheet_page.hpp>
-#include <mutex>
 #include <string>
 #include <vector>
 
@@ -33,11 +32,9 @@ namespace details
         void on_init_dialog();
 
     private:
-        struct tracker_state;
-
         std::wstring on_list_display(const std::pair<int, int> &p);
 
-        std::mutex update_mtx_;
+        struct tracker_state;
         std::unique_ptr<controls::list_view> list_;
         std::vector<tracker_state> trackers_;
 
