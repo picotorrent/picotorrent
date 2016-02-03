@@ -52,10 +52,10 @@ application::application()
     main_window_->on_torrent_activated(std::bind(&application::on_torrent_activated, this, std::placeholders::_1));
     main_window_->on_torrent_context_menu(std::bind(&application::on_torrent_context_menu, this, std::placeholders::_1, std::placeholders::_2));
 
-    sess_->on_torrent_added().connect(std::bind(&application::torrent_added, this, std::placeholders::_1));
-    sess_->on_torrent_finished().connect(std::bind(&application::torrent_finished, this, std::placeholders::_1));
-    sess_->on_torrent_removed().connect(std::bind(&application::torrent_removed, this, std::placeholders::_1));
-    sess_->on_torrent_updated().connect(std::bind(&application::torrent_updated, this, std::placeholders::_1));
+    sess_->on_torrent_added().connect(std::bind(&ui::main_window::torrent_added, main_window_, std::placeholders::_1));
+    sess_->on_torrent_finished().connect(std::bind(&ui::main_window::torrent_finished, main_window_, std::placeholders::_1));
+    sess_->on_torrent_removed().connect(std::bind(&ui::main_window::torrent_removed, main_window_, std::placeholders::_1));
+    sess_->on_torrent_updated().connect(std::bind(&ui::main_window::torrent_updated, main_window_, std::placeholders::_1));
 }
 
 application::~application()
@@ -208,24 +208,4 @@ void application::on_unhandled_exception(const std::string &stacktrace)
 {
     controllers::unhandled_exception_controller exception_controller(main_window_, stacktrace);
     exception_controller.execute();
-}
-
-void application::torrent_added(const std::shared_ptr<core::torrent> &torrent)
-{
-    main_window_->post_message(WM_TORRENT_ADDED, NULL, (LPARAM)&torrent);
-}
-
-void application::torrent_finished(const std::shared_ptr<core::torrent> &torrent)
-{
-    main_window_->post_message(WM_TORRENT_FINISHED, NULL, (LPARAM)&torrent);
-}
-
-void application::torrent_removed(const std::shared_ptr<core::torrent> &torrent)
-{
-    main_window_->send_message(WM_TORRENT_REMOVED, NULL, (LPARAM)&torrent);
-}
-
-void application::torrent_updated(const std::shared_ptr<core::torrent> &torrent)
-{
-    main_window_->post_message(WM_TORRENT_UPDATED, NULL, (LPARAM)&torrent);
 }

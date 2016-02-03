@@ -85,6 +85,35 @@ void main_window::exit()
     DestroyWindow(handle());
 }
 
+void main_window::torrent_added(const std::shared_ptr<core::torrent> &t)
+{
+    items_.push_back(t);
+    list_view_->set_item_count((int)items_.size());
+}
+
+void main_window::torrent_finished(const std::shared_ptr<core::torrent> &t)
+{
+    last_finished_save_path_ = to_wstring(t->save_path());
+    noticon_->show_balloon(TEXT("Torrent finished"), to_wstring(t->name()));
+}
+
+void main_window::torrent_removed(const std::shared_ptr<core::torrent> &t)
+{
+    auto &f = std::find(items_.begin(), items_.end(), t);
+
+    if (f != items_.end())
+    {
+        items_.erase(f);
+        list_view_->set_item_count((int)items_.size());
+    }
+}
+
+void main_window::torrent_updated(const std::shared_ptr<core::torrent> &t)
+{
+    if (sort_items_) { sort_items_(); }
+    list_view_->refresh();
+}
+
 std::vector<std::shared_ptr<core::torrent>> main_window::get_selected_torrents()
 {
     std::vector<core::torrent_ptr> torrents;
@@ -171,53 +200,6 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     case PT_SESSION_NOTIFY:
     {
         on_session_alert_notify_.emit();
-        break;
-    }
-
-    case WM_TORRENT_ADDED:
-    {
-        const core::torrent_ptr &t = *(core::torrent_ptr*)lParam;
-
-        torrent_list_item list_item(t);
-        items_.push_back(list_item);
-
-        list_view_->set_item_count((int)items_.size());
-        break;
-    }
-
-    case WM_TORRENT_REMOVED:
-    {
-        const core::torrent_ptr &t = *(core::torrent_ptr*)lParam;
-        auto f = std::find(items_.begin(), items_.end(), torrent_list_item(t));
-
-        if (f != items_.end())
-        {
-            items_.erase(f);
-        }
-
-        list_view_->set_item_count((int)items_.size());
-        break;
-    }
-
-    case WM_TORRENT_UPDATED:
-    {
-        const core::torrent_ptr &t = *(core::torrent_ptr*)lParam;
-
-        if (sort_items_)
-        {
-            sort_items_();
-        }
-
-        list_view_->refresh();
-
-        break;
-    }
-
-    case WM_TORRENT_FINISHED:
-    {
-        const core::torrent_ptr &t = *(core::torrent_ptr*)lParam;
-        last_finished_save_path_ = to_wstring(t->save_path());
-        noticon_->show_balloon(TEXT("Torrent finished"), to_wstring(t->name()));
         break;
     }
 

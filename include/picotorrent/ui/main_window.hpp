@@ -36,6 +36,11 @@ namespace ui
         main_window();
         ~main_window();
 
+        void torrent_added(const std::shared_ptr<core::torrent>&);
+        void torrent_finished(const std::shared_ptr<core::torrent>&);
+        void torrent_removed(const std::shared_ptr<core::torrent>&);
+        void torrent_updated(const std::shared_ptr<core::torrent>&);
+
         void create();
         void exit();
         std::vector<std::shared_ptr<core::torrent>> get_selected_torrents();
