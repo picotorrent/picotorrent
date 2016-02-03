@@ -92,5 +92,45 @@ std::string peer::flags_str() const
         flags += "I ";
     }
 
+    if (!(pi_->flags & lt::peer_info::remote_choked) && !(pi_->flags & lt::peer_info::interesting))
+    {
+        flags += "K ";
+    }
+
+    if (!(pi_->flags & lt::peer_info::choked) && !(pi_->flags & lt::peer_info::remote_interested))
+    {
+        flags += "? ";
+    }
+
+    if (pi_->source & lt::peer_info::pex)
+    {
+        flags += "X ";
+    }
+
+    if (pi_->source & lt::peer_info::dht)
+    {
+        flags += "H ";
+    }
+
+    if (pi_->flags & lt::peer_info::rc4_encrypted)
+    {
+        flags += "E ";
+    }
+
+    if (pi_->flags & lt::peer_info::plaintext_encrypted)
+    {
+        flags += "e ";
+    }
+
+    if (pi_->flags & lt::peer_info::utp_socket)
+    {
+        flags += "P ";
+    }
+
+    if (pi_->source & lt::peer_info::lsd)
+    {
+        flags += "L ";
+    }
+
     return flags;
 }
