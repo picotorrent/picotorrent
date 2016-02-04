@@ -439,6 +439,18 @@ void session::notify()
             torrents_.erase(al->info_hash);
             break;
         }
+        case lt::tracker_reply_alert::alert_type:
+        {
+            lt::tracker_reply_alert *al = lt::alert_cast<lt::tracker_reply_alert>(alert);
+            torrent_map_t::iterator &find = torrents_.find(al->handle.info_hash());
+            if (find != torrents_.end()) { find->second->handle(*al); }
+            break;
+        }
+        case lt::scrape_reply_alert::alert_type:
+            lt::scrape_reply_alert *al = lt::alert_cast<lt::scrape_reply_alert>(alert);
+            torrent_ptr &torrent = torrents_.at(al->handle.info_hash());
+            torrent->handle(*al);
+            break;
         }
     }
 }

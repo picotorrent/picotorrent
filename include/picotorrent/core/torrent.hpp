@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -12,7 +13,9 @@
 namespace libtorrent
 {
     struct peer_info;
+    struct scrape_reply_alert;
     struct torrent_status;
+    struct tracker_reply_alert;
 }
 
 namespace picotorrent
@@ -25,6 +28,7 @@ namespace core
     class torrent;
     class torrent_info;
     class tracker;
+    class tracker_status;
 
     typedef std::shared_ptr<torrent> torrent_ptr;
 
@@ -56,6 +60,7 @@ namespace core
         void file_progress(std::vector<int64_t> &progress, int flags = 0) const;
         std::vector<peer> get_peers();
         std::vector<tracker> get_trackers();
+        tracker_status& get_tracker_status(const std::string &url);
         bool has_error() const;
         std::shared_ptr<hash> info_hash();
         bool is_checking() const;
@@ -94,9 +99,12 @@ namespace core
         void unregister_updated_callback(const std::function<void()> &callback);
 
     private:
+        void handle(const libtorrent::scrape_reply_alert &alert);
+        void handle(const libtorrent::tracker_reply_alert &alert);
         void update(std::unique_ptr<libtorrent::torrent_status> status);
         void update_state();
 
+        std::map<std::string, tracker_status> tracker_status_;
         std::unique_ptr<libtorrent::torrent_status> status_;
         torrent_state state_;
 

@@ -136,7 +136,7 @@ void list_view::set_image_list(HIMAGELIST img)
 
 void list_view::set_item_count(int count)
 {
-    ListView_SetItemCount(handle(), count);
+    ListView_SetItemCountEx(handle(), count, LVSICF_NOSCROLL);
 }
 
 LRESULT list_view::subclass_proc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)

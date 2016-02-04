@@ -8,6 +8,7 @@ namespace picotorrent
 {
 namespace core
 {
+    class torrent;
     class tracker;
 }
 namespace ui
@@ -26,7 +27,7 @@ namespace details
         trackers_page();
         ~trackers_page();
 
-        void refresh(const std::vector<core::tracker> &trackers);
+        void refresh(const std::shared_ptr<core::torrent> &torrent);
 
     protected:
         void on_init_dialog();

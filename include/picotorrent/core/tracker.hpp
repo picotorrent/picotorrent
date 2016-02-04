@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <memory>
 #include <string>
 
@@ -28,6 +29,7 @@ namespace core
         ~tracker();
 
         std::string message() const;
+        std::chrono::seconds next_announce_in() const;
         int scrape_complete() const;
         status_t status() const;
         std::string url() const;
