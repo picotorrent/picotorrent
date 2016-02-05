@@ -137,6 +137,12 @@ std::wstring trackers_page::on_list_display(const std::pair<int, int> &p)
         std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(next);
         std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(next - min_left);
 
+        // Return unknown if more than 60 minutes
+        if (min_left.count() >= 60)
+        {
+            return L"-";
+        }
+
         TCHAR t[100];
         StringCchPrintf(
             t,
