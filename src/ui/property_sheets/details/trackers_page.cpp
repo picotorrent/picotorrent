@@ -1,21 +1,28 @@
 #include <picotorrent/ui/property_sheets/details/trackers_page.hpp>
 
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/tracker.hpp>
+#include <picotorrent/core/tracker_status.hpp>
 #include <picotorrent/ui/controls/list_view.hpp>
 #include <picotorrent/ui/resources.hpp>
 #include <picotorrent/ui/scaler.hpp>
 
 #include <cassert>
+#include <chrono>
 #include <shlwapi.h>
 #include <strsafe.h>
 
 #define LIST_COLUMN_URL    1
 #define LIST_COLUMN_STATUS 2
-#define LIST_COLUMN_PEERS  3
+#define LIST_COLUMN_UPDATE 3
+#define LIST_COLUMN_PEERS  4
+#define LIST_COLUMN_SCRAPE 5
 
 using picotorrent::common::to_wstring;
+using picotorrent::core::torrent;
 using picotorrent::core::tracker;
+using picotorrent::core::tracker_status;
 using picotorrent::ui::controls::list_view;
 using picotorrent::ui::property_sheets::details::trackers_page;
 using picotorrent::ui::scaler;
@@ -28,6 +35,7 @@ struct trackers_page::tracker_state
     }
 
     tracker tracker;
+    tracker_status status;
     bool dirty;
 };
 
@@ -43,20 +51,23 @@ trackers_page::~trackers_page()
 {
 }
 
-void trackers_page::refresh(const std::vector<tracker> &trackers)
+void trackers_page::refresh(const std::shared_ptr<torrent> &torrent)
 {
     for (tracker_state &ts : trackers_)
     {
         ts.dirty = false;
     }
 
-    for (const tracker &t : trackers)
+    for (const tracker &t : torrent->get_trackers())
     {
+        tracker_status &ts = torrent->get_tracker_status(t.url());
+
         // TODO: std::find_if uses moderate CPU here, and in a loop as well. maybe a std::map is better for peers_.
         auto &item = std::find_if(trackers_.begin(), trackers_.end(), [t](const tracker_state &ts) { return t.url() == ts.tracker.url(); });
 
         if (item != trackers_.end())
         {
+            item->status = ts;
             item->tracker = t;
             item->dirty = true;
         }
@@ -64,6 +75,7 @@ void trackers_page::refresh(const std::vector<tracker> &trackers)
         {
             tracker_state state(t);
             state.dirty = true;
+            state.status = ts;
             trackers_.push_back(state);
         }
     }
@@ -74,7 +86,6 @@ void trackers_page::refresh(const std::vector<tracker> &trackers)
         return !t.dirty;
     }), trackers_.end());
 
-    assert(trackers_.size() == trackers.size());
     list_->set_item_count((int)trackers_.size());
 }
 
@@ -83,9 +94,11 @@ void trackers_page::on_init_dialog()
     HWND hList = GetDlgItem(handle(), ID_DETAILS_TRACKERS_LIST);
     list_ = std::make_unique<list_view>(hList);
 
-    list_->add_column(LIST_COLUMN_URL,    L"Url",    scaler::x(240));
-    list_->add_column(LIST_COLUMN_STATUS, L"Status", scaler::x(120));
-    //list_->add_column(LIST_COLUMN_PEERS,  L"Peers",  scaler::x(80), list_view::number);
+    list_->add_column(LIST_COLUMN_URL,    L"Url",           scaler::x(240));
+    list_->add_column(LIST_COLUMN_STATUS, L"Status",        scaler::x(100));
+    list_->add_column(LIST_COLUMN_UPDATE, L"Next announce", scaler::x(100), list_view::number);
+    list_->add_column(LIST_COLUMN_PEERS,  L"Peers",         scaler::x(80),  list_view::number);
+    list_->add_column(LIST_COLUMN_SCRAPE, L"Scrape",        scaler::x(80),  list_view::number);
 
     list_->on_display().connect(std::bind(&trackers_page::on_list_display, this, std::placeholders::_1));
 }
@@ -112,6 +125,54 @@ std::wstring trackers_page::on_list_display(const std::pair<int, int> &p)
             return L"Unknown";
         }
         break;
+    case LIST_COLUMN_UPDATE:
+    {
+        std::chrono::seconds next = t.tracker.next_announce_in();
+
+        if (next.count() < 0)
+        {
+            return L"-";
+        }
+
+        std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(next);
+        std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(next - min_left);
+
+        // Return unknown if more than 60 minutes
+        if (min_left.count() >= 60)
+        {
+            return L"-";
+        }
+
+        TCHAR t[100];
+        StringCchPrintf(
+            t,
+            ARRAYSIZE(t),
+            L"%dm %ds",
+            min_left.count(),
+            sec_left.count());
+        return t;
+    }
+    case LIST_COLUMN_PEERS:
+        if (t.status.num_peers < 0)
+        {
+            return L"-";
+        }
+
+        return std::to_wstring(t.status.num_peers);
+    case LIST_COLUMN_SCRAPE:
+    {
+        int complete = t.status.scrape_complete;
+        int incomplete = t.status.scrape_incomplete;
+
+        TCHAR t[100];
+        StringCchPrintf(
+            t,
+            ARRAYSIZE(t),
+            L"%s/%s",
+            complete < 0 ? L"-" : std::to_wstring(complete).c_str(),
+            incomplete < 0 ? L"-" : std::to_wstring(incomplete).c_str());
+        return t;
+    }
     default:
         return L"<unknown column>";
     }

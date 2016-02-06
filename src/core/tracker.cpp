@@ -24,6 +24,11 @@ std::string tracker::message() const
     return ae_->message;
 }
 
+std::chrono::seconds tracker::next_announce_in() const
+{
+    return std::chrono::seconds(ae_->next_announce_in());
+}
+
 int tracker::scrape_complete() const
 {
     return ae_->scrape_complete;

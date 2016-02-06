@@ -195,5 +195,5 @@ void torrent_details_controller::update_peers()
 
 void torrent_details_controller::update_trackers()
 {
-    trackers_->refresh(torrent_->get_trackers());
+    trackers_->refresh(torrent_);
 }

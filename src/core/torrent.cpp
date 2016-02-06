@@ -6,8 +6,10 @@
 #include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/core/torrent_state.hpp>
 #include <picotorrent/core/tracker.hpp>
+#include <picotorrent/core/tracker_status.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
+#include <libtorrent/alert_types.hpp>
 #include <libtorrent/announce_entry.hpp>
 #include <libtorrent/peer_info.hpp>
 #include <libtorrent/torrent_info.hpp>
@@ -23,6 +25,7 @@ using picotorrent::core::torrent;
 using picotorrent::core::torrent_info;
 using picotorrent::core::torrent_state;
 using picotorrent::core::tracker;
+using picotorrent::core::tracker_status;
 
 torrent::torrent(const lt::torrent_status &st)
     : status_(std::make_unique<lt::torrent_status>(st)),
@@ -87,6 +90,11 @@ std::vector<tracker> torrent::get_trackers()
 {
     std::vector<lt::announce_entry> trackers = status_->handle.trackers();
     return std::vector<tracker>(trackers.begin(), trackers.end());
+}
+
+tracker_status& torrent::get_tracker_status(const std::string &url)
+{
+    return tracker_status_[url];
 }
 
 bool torrent::has_error() const
@@ -267,6 +275,19 @@ int torrent::upload_rate()
 signal_connector<void, void>& torrent::on_updated()
 {
     return updated_signal_;
+}
+
+void torrent::handle(const lt::scrape_reply_alert &alert)
+{
+    tracker_status &ts = tracker_status_[alert.tracker_url()];
+    ts.scrape_complete = alert.complete;
+    ts.scrape_incomplete = alert.incomplete;
+}
+
+void torrent::handle(const lt::tracker_reply_alert &alert)
+{
+    tracker_status &ts = tracker_status_[alert.tracker_url()];
+    ts.num_peers = alert.num_peers;
 }
 
 void torrent::update(std::unique_ptr<lt::torrent_status> status)
