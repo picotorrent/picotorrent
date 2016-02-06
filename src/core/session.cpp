@@ -419,13 +419,13 @@ void session::notify()
         case lt::torrent_finished_alert::alert_type:
         {
             lt::torrent_finished_alert *al = lt::alert_cast<lt::torrent_finished_alert>(alert);
-            torrent_ptr &torrent = torrents_.at(al->handle.info_hash());
+            torrent_map_t::iterator &find = torrents_.find(al->handle.info_hash());
 
             // Check `total_download` to see if we have a real finished torrent or one that
             // was finished when we added it and just completed the hash check.
-            if (al->handle.status().total_download > 0)
+            if (find != torrents_.end() && al->handle.status().total_download > 0)
             {
-                on_torrent_finished_.emit(torrent);
+                on_torrent_finished_.emit(find->second);
             }
             break;
         }
