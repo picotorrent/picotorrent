@@ -16,6 +16,8 @@ using namespace picotorrent::common;
 using picotorrent::core::add_request;
 using picotorrent::core::torrent_info;
 
+#define FILE_PRIO_NORMAL 4
+
 add_request::add_request()
     : params_(std::make_unique<lt::add_torrent_params>())
 {   
@@ -30,7 +32,7 @@ int add_request::file_priority(int file_index)
 {
     if (params_->file_priorities.size() < (size_t)(file_index + 1))
     {
-        return 4; // Normal priority according to libtorrent
+        return FILE_PRIO_NORMAL; // Normal priority according to libtorrent
     }
 
     return params_->file_priorities[file_index];
@@ -65,7 +67,7 @@ void add_request::set_file_priority(int file_index, int priority)
 {
     if (params_->file_priorities.size() < (size_t)(file_index + 1))
     {
-        params_->file_priorities.resize(file_index + 1);
+        params_->file_priorities.resize(file_index + 1, FILE_PRIO_NORMAL);
     }
 
     params_->file_priorities[file_index] = priority;
