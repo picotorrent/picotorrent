@@ -2,17 +2,21 @@
 
 #include <picotorrent/config/configuration.hpp>
 #include <picotorrent/core/session.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/ui/property_sheets/property_sheet_page.hpp>
 #include <picotorrent/ui/property_sheets/preferences/advanced_page.hpp>
 #include <picotorrent/ui/property_sheets/preferences/connection_page.hpp>
 #include <picotorrent/ui/property_sheets/preferences/downloads_page.hpp>
+#include <picotorrent/ui/property_sheets/preferences/general_page.hpp>
 #include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/resources.hpp>
+#include <picotorrent/ui/task_dialog.hpp>
 #include <vector>
 
 #include <iphlpapi.h>
 #include <prsht.h>
+#include <strsafe.h>
 
 namespace ui = picotorrent::ui;
 namespace prefs = picotorrent::ui::property_sheets::preferences;
@@ -21,6 +25,7 @@ using picotorrent::core::session;
 using picotorrent::app::controllers::view_preferences_controller;
 using picotorrent::ui::dialogs::preferences_dialog;
 using picotorrent::ui::property_sheets::property_sheet_page;
+using picotorrent::ui::task_dialog;
 
 view_preferences_controller::view_preferences_controller(const std::shared_ptr<session> &sess,
     const std::shared_ptr<ui::main_window> &wnd)
@@ -28,7 +33,8 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
     wnd_(wnd),
     adv_page_(std::make_unique<prefs::advanced_page>()),
     conn_page_(std::make_unique<prefs::connection_page>()),
-    dl_page_(std::make_unique<prefs::downloads_page>())
+    dl_page_(std::make_unique<prefs::downloads_page>()),
+    gen_page_(std::make_unique<prefs::general_page>())
 {
     adv_page_->on_apply().connect(std::bind(&view_preferences_controller::on_advanced_apply, this));
     adv_page_->on_init().connect(std::bind(&view_preferences_controller::on_advanced_init, this));
@@ -41,6 +47,9 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
     dl_page_->on_apply().connect(std::bind(&view_preferences_controller::on_downloads_apply, this));
     dl_page_->on_init().connect(std::bind(&view_preferences_controller::on_downloads_init, this));
     dl_page_->on_validate().connect(std::bind(&view_preferences_controller::on_downloads_validate, this));
+
+    gen_page_->on_apply().connect(std::bind(&view_preferences_controller::on_general_apply, this));
+    gen_page_->on_init().connect(std::bind(&view_preferences_controller::on_general_init, this));
 }
 
 view_preferences_controller::~view_preferences_controller()
@@ -51,6 +60,7 @@ void view_preferences_controller::execute()
 {
     PROPSHEETPAGE p[] =
     {
+        *gen_page_,
         *dl_page_,
         *conn_page_,
         *adv_page_
@@ -61,7 +71,10 @@ void view_preferences_controller::execute()
     header.dwFlags = PSH_NOCONTEXTHELP | PSH_PROPSHEETPAGE;
     header.hwndParent = wnd_->handle();
     header.hInstance = GetModuleHandle(NULL);
-    header.pszCaption = L"Preferences";
+
+    std::wstring caption = TR("preferences");
+    header.pszCaption = caption.c_str();
+
     header.nPages = ARRAYSIZE(p);
     header.nStartPage = 0;
     header.ppsp = (LPCPROPSHEETPAGE)p;
@@ -97,7 +110,7 @@ bool view_preferences_controller::on_downloads_validate()
     if (dl_page_->downloads_path().empty())
     {
         dl_page_->show_error_message(
-            L"The transfers path cannot be empty.");
+            TR("the_transfers_path_cannot_be_empty"));
         return false;
     }
 
@@ -128,13 +141,13 @@ void view_preferences_controller::on_connection_init()
     conn_page_->set_listen_port(cfg.listen_port());
 
     // Add proxy types
-    conn_page_->add_proxy_type(L"None", configuration::proxy_type_t::none);
-    conn_page_->add_proxy_type(L"HTTP", configuration::proxy_type_t::http);
-    conn_page_->add_proxy_type(L"HTTP (with credentials)", configuration::proxy_type_t::http_pw);
-    conn_page_->add_proxy_type(L"I2P", configuration::proxy_type_t::i2p);
-    conn_page_->add_proxy_type(L"SOCKS4", configuration::proxy_type_t::socks4);
-    conn_page_->add_proxy_type(L"SOCKS5", configuration::proxy_type_t::socks5);
-    conn_page_->add_proxy_type(L"SOCKS5 (with credentials)", configuration::proxy_type_t::socks5_pw);
+    conn_page_->add_proxy_type(TR("none"), configuration::proxy_type_t::none);
+    conn_page_->add_proxy_type(TR("http"), configuration::proxy_type_t::http);
+    conn_page_->add_proxy_type(TR("http_with_credentials"), configuration::proxy_type_t::http_pw);
+    conn_page_->add_proxy_type(TR("i2p"), configuration::proxy_type_t::i2p);
+    conn_page_->add_proxy_type(TR("socks4"), configuration::proxy_type_t::socks4);
+    conn_page_->add_proxy_type(TR("socks5"), configuration::proxy_type_t::socks5);
+    conn_page_->add_proxy_type(TR("socks5_with_credentials"), configuration::proxy_type_t::socks5_pw);
 
     conn_page_->set_proxy_type(cfg.proxy_type());
     conn_page_->set_proxy_host(cfg.proxy_host());
@@ -154,8 +167,7 @@ bool view_preferences_controller::on_connection_validate()
     int listenPort = conn_page_->get_listen_port();
     if (listenPort < 1024 || listenPort > 65535)
     {
-        conn_page_->show_error_message(
-            L"Invalid listen port. Must be a number between 1024 and 65535.");
+        conn_page_->show_error_message(TR("invalid_listen_port"));
         return false;
     }
 
@@ -209,4 +221,71 @@ void view_preferences_controller::on_connection_proxy_type_changed(int type)
         break;
     }
     }
+}
+
+void view_preferences_controller::on_general_apply()
+{
+    int currentLang = i18n::translator::instance().get_current_lang_id();
+    int selectedLang = gen_page_->get_selected_language();
+
+    if (currentLang == selectedLang)
+    {
+        return;
+    }
+
+    // Change language!
+    i18n::translator::instance().set_current_language(selectedLang);
+
+    // Notify the user about restarting PicoTorrent
+    if (should_restart())
+    {
+        restart();
+    }
+}
+
+void view_preferences_controller::on_general_init()
+{
+    std::vector<i18n::translation> langs = i18n::translator::instance().get_available_translations();
+
+    gen_page_->add_languages(langs);
+    gen_page_->select_language(i18n::translator::instance().get_current_lang_id());
+}
+
+void view_preferences_controller::restart()
+{
+    TCHAR mod[MAX_PATH];
+    TCHAR exe[MAX_PATH];
+
+    GetModuleFileName(NULL, mod, ARRAYSIZE(mod));
+    StringCchPrintf(exe, ARRAYSIZE(exe), L"\"%s\" --restart %d", mod, (int)GetCurrentProcessId());
+
+    STARTUPINFO si = { 0 };
+    PROCESS_INFORMATION pi = { 0 };
+
+    CreateProcess(
+        NULL,
+        exe,
+        NULL,
+        NULL,
+        FALSE,
+        0,
+        NULL,
+        NULL,
+        &si,
+        &pi);
+
+    wnd_->exit();
+}
+
+bool view_preferences_controller::should_restart()
+{
+    task_dialog dlg;
+    dlg.set_common_buttons(TDCBF_OK_BUTTON | TDCBF_CANCEL_BUTTON);
+    dlg.set_content(TR("prompt_restart"));
+    dlg.set_main_icon(TD_INFORMATION_ICON);
+    dlg.set_main_instruction(TR("prompt_restart_title"));
+    dlg.set_parent(gen_page_->handle());
+    dlg.set_title(L"PicoTorrent");
+
+    return dlg.show() == IDOK;
 }

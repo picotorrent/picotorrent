@@ -1,6 +1,7 @@
 #include <picotorrent/ui/property_sheets/preferences/downloads_page.hpp>
 
 #include <picotorrent/filesystem/path.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/ui/open_file_dialog.hpp>
 #include <picotorrent/ui/resources.hpp>
 
@@ -14,8 +15,8 @@ downloads_page::downloads_page()
 {
     set_flags(PSP_USETITLE);
     set_instance(GetModuleHandle(NULL));
-    set_template_id(6767);
-    set_title_id(IDS_PREFS_DOWNLOADS_TITLE);
+    set_template_id(IDD_PREFERENCES_DOWNLOADS);
+    set_title(TR("downloads"));
 }
 
 std::wstring downloads_page::downloads_path()
@@ -88,4 +89,12 @@ BOOL downloads_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM l
     }
 
     return FALSE;
+}
+
+void downloads_page::on_init_dialog()
+{
+    SetDlgItemText(handle(), ID_TRANSFERS_GROUP, TR("transfers"));
+    SetDlgItemText(handle(), ID_DEFSAVEPATH_TEXT, TR("path"));
+    SetDlgItemText(handle(), ID_PREFS_DEFSAVEPATH_BROWSE, TR("browse"));
+    SetDlgItemText(handle(), ID_PREFS_PROMPTFORSAVEPATH, TR("prompt_for_save_path"));
 }

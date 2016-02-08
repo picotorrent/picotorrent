@@ -2,12 +2,15 @@
 
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/torrent.hpp>
+#include <picotorrent/core/torrent_state.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <windows.h>
 #include <shlwapi.h>
 #include <strsafe.h>
 
 namespace core = picotorrent::core;
 using namespace picotorrent::common;
+using picotorrent::core::torrent_state;
 using picotorrent::ui::torrent_list_item;
 
 bool picotorrent::ui::operator==(const torrent_list_item &i1, const torrent_list_item &i2)
@@ -139,8 +142,43 @@ std::wstring torrent_list_item::size_str() const
 
 std::wstring torrent_list_item::state_str() const
 {
-    // TODO: translations
-    return torrent_->state().to_string();
+    switch (torrent_->state())
+    {
+    case torrent_state::state_t::checking_resume_data:
+        return TR("state_checking_resume_data");
+    case torrent_state::state_t::downloading:
+        return TR("state_downloading");
+    case torrent_state::state_t::downloading_checking:
+        return TR("state_downloading_checking");
+    case torrent_state::state_t::downloading_forced:
+        return TR("state_downloading_forced");
+    case torrent_state::state_t::downloading_metadata:
+        return TR("state_downloading_metadata");
+    case torrent_state::state_t::downloading_paused:
+        return TR("state_downloading_paused");
+    case torrent_state::state_t::downloading_queued:
+        return TR("state_downloading_queued");
+    case torrent_state::state_t::downloading_stalled:
+        return TR("state_downloading_stalled");
+    case torrent_state::state_t::error:
+        return TR("state_error");
+    case torrent_state::state_t::unknown:
+        return TR("state_unknown");
+    case torrent_state::state_t::uploading:
+        return TR("state_uploading");
+    case torrent_state::state_t::uploading_checking:
+        return TR("state_uploading_checking");
+    case torrent_state::state_t::uploading_forced:
+        return TR("state_uploading_forced");
+    case torrent_state::state_t::uploading_paused:
+        return TR("state_uploading_paused");
+    case torrent_state::state_t::uploading_queued:
+        return TR("state_uploading_queued");
+    case torrent_state::state_t::uploading_stalled:
+        return TR("state_uploading_stalled");
+    }
+
+    return L"<unknown state>";
 }
 
 int torrent_list_item::upload_rate() const

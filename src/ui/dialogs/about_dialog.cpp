@@ -2,6 +2,7 @@
 
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/common/version_info.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/ui/resources.hpp>
 #include <picotorrent/ui/scaler.hpp>
 
@@ -51,34 +52,34 @@ BOOL about_dialog::on_init_dialog()
         scaler::y(128),
         LR_DEFAULTCOLOR);
 
-    SendDlgItemMessage(handle(), 4654, STM_SETICON, (WPARAM)hImage, 0);
+    SendDlgItemMessage(handle(), ID_PICO_LOGO, STM_SETICON, (WPARAM)hImage, 0);
 
     int x = ((dlgRc.right - dlgRc.left) - scaler::x(128)) / 2;
-    SetWindowPos(GetDlgItem(handle(), 4654), HWND_TOPMOST, x, scaler::y(10), -1, -1, SWP_NOSIZE | SWP_NOZORDER);
+    SetWindowPos(GetDlgItem(handle(), ID_PICO_LOGO), HWND_TOPMOST, x, scaler::y(10), -1, -1, SWP_NOSIZE | SWP_NOZORDER);
 
-    SendDlgItemMessage(handle(), 1011, WM_SETFONT, (WPARAM)title_font_, TRUE);
+    SendDlgItemMessage(handle(), ID_PICOTORRENT_V_FORMAT, WM_SETFONT, (WPARAM)title_font_, TRUE);
 
     TCHAR picoVersion[1024];
     StringCchPrintf(
         picoVersion,
         ARRAYSIZE(picoVersion),
-        L"PicoTorrent v%s",
+        TR("picotorrent_v_format"),
         to_wstring(version_info::current_version()).c_str());
-
-    SetWindowText(GetDlgItem(handle(), 1011), picoVersion);
 
     TCHAR picoBuild[1024];
     StringCchPrintf(
         picoBuild,
         ARRAYSIZE(picoBuild),
-        L"Branch: %s\nSHA1: %s",
+        TR("build_info_format"),
         to_wstring(version_info::git_branch()).c_str(),
         to_wstring(version_info::git_commit_hash()).c_str());
 
-    SetWindowText(GetDlgItem(handle(), 1012), picoBuild);
-
-    SetWindowText(GetDlgItem(handle(), 1013),
-        L"<a href=\"https://github.com/picotorrent/picotorrent\">PicoTorrent on Github</a>");
+    // Localize
+    SetWindowText(handle(), TR("about_picotorrent"));
+    SetDlgItemText(handle(), ID_PICOTORRENT_V_FORMAT, picoVersion);
+    SetDlgItemText(handle(), ID_BUILD_INFO_FORMAT, picoBuild);
+    SetDlgItemText(handle(), ID_PICOTORRENT_DESCRIPTION, TR("picotorrent_description"));
+    SetDlgItemText(handle(), ID_GITHUB_LINK, TR("github_link"));
 
     return TRUE;
 }
@@ -93,7 +94,7 @@ BOOL about_dialog::on_notify(LPARAM lParam)
         PNMLINK pNMLink = (PNMLINK)lParam;
         LITEM item = pNMLink->item;
 
-        if ((((LPNMHDR)lParam)->idFrom == 1013) && (item.iLink == 0))
+        if ((((LPNMHDR)lParam)->idFrom == ID_GITHUB_LINK) && (item.iLink == 0))
         {
             ShellExecute(NULL, L"open", item.szUrl, NULL, NULL, SW_SHOW);
         }

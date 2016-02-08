@@ -2,6 +2,7 @@
 
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/torrent.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/ui/controls/list_view.hpp>
 #include <picotorrent/ui/controls/menu.hpp>
 #include <picotorrent/ui/resources.hpp>
@@ -39,7 +40,7 @@ files_page::files_page()
     set_flags(PSP_USETITLE);
     set_instance(GetModuleHandle(NULL));
     set_template_id(IDD_DETAILS_FILES);
-    set_title_id(IDS_DETAILS_FILES_TITLE);
+    set_title(TR("files"));
 
     images_ = ImageList_Create(
         scaler::x(16),
@@ -93,10 +94,10 @@ void files_page::on_init_dialog()
     HWND hList = GetDlgItem(handle(), ID_DETAILS_FILES_LIST);
     files_ = std::make_unique<list_view>(hList);
 
-    files_->add_column(LIST_COLUMN_NAME,     L"Name",     scaler::x(220));
-    files_->add_column(LIST_COLUMN_SIZE,     L"Size",     scaler::x(80),  list_view::number);
-    files_->add_column(LIST_COLUMN_PROGRESS, L"Progress", scaler::x(120), list_view::progress);
-    files_->add_column(LIST_COLUMN_PRIORITY, L"Priority", scaler::x(80));
+    files_->add_column(LIST_COLUMN_NAME,     TR("name"),     scaler::x(220));
+    files_->add_column(LIST_COLUMN_SIZE,     TR("size"),     scaler::x(80),  list_view::number);
+    files_->add_column(LIST_COLUMN_PROGRESS, TR("progress"), scaler::x(120), list_view::progress);
+    files_->add_column(LIST_COLUMN_PRIORITY, TR("priority"), scaler::x(80));
 
     files_->on_display().connect(std::bind(&files_page::on_list_display, this, std::placeholders::_1));
     files_->on_item_context_menu().connect(std::bind(&files_page::on_list_item_context_menu, this, std::placeholders::_1));
@@ -129,16 +130,16 @@ std::wstring files_page::on_list_display(const std::pair<int, int> &p)
         switch (item.priority)
         {
         case torrent::do_not_download:
-            return L"Do not download";
+            return TR("do_not_download");
         case torrent::normal:
-            return L"Normal";
+            return TR("normal");
         case torrent::high:
-            return L"High";
+            return TR("high");
         case torrent::maximum:
-            return L"Maximum";
+            return TR("maximum");
         }
         
-        return L"Unknown priority";
+        return L"<unknown priority>";
     }
     default:
         return L"<unknown>";

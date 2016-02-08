@@ -8,11 +8,6 @@
 
 #include <picotorrent/common/signals/signal.hpp>
 
-#define WM_TORRENT_ADDED WM_USER+1
-#define WM_TORRENT_REMOVED WM_USER+2
-#define WM_TORRENT_UPDATED WM_USER+3
-#define WM_TORRENT_FINISHED WM_USER+4
-
 namespace picotorrent
 {
 namespace core
@@ -49,6 +44,7 @@ namespace ui
         void on_close(const std::function<bool()> &callback);
         void on_command(int id, const command_func_t &callback);
         void on_copydata(const std::function<void(const std::wstring&)> &callback);
+        common::signals::signal_connector<void, void>& on_destroy();
         void on_notifyicon_context_menu(const std::function<void(const POINT &p)> &callback);
         common::signals::signal_connector<void, void>& on_session_alert_notify();
         void on_torrent_activated(const std::function<void(const std::shared_ptr<core::torrent>&)> &callback);
@@ -78,6 +74,7 @@ namespace ui
         std::wstring last_finished_save_path_;
         std::unique_ptr<sleep_manager> sleep_manager_;
 
+        common::signals::signal<void, void> on_destroy_;
         common::signals::signal<void, void> on_session_alert_notify_;
     };
 }

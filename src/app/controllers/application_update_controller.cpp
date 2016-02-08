@@ -4,6 +4,7 @@
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/common/version_info.hpp>
 #include <picotorrent/config/configuration.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/logging/log.hpp>
 #include <picotorrent/net/http_client.hpp>
 #include <picotorrent/net/http_response.hpp>
@@ -81,7 +82,7 @@ void application_update_controller::on_response(const http_response &response, b
     if (parsedVersion > semver::version(version_info::current_version()))
     {
         TCHAR title[100];
-        StringCchPrintf(title, ARRAYSIZE(title), TEXT("PicoTorrent %s available"), to_wstring(version).c_str());
+        StringCchPrintf(title, ARRAYSIZE(title), TR("picotorrent_v_available"), to_wstring(version).c_str());
 
         uri uri(to_wstring(obj["html_url"].get<std::string>()));
 
@@ -91,10 +92,9 @@ void application_update_controller::on_response(const http_response &response, b
     {
         ui::task_dialog dlg;
         dlg.set_common_buttons(TDCBF_OK_BUTTON);
-        dlg.set_content(L"There doesn't seem to be an update available.");
         dlg.set_main_icon(TD_INFORMATION_ICON);
         dlg.set_parent(wnd_->handle());
-        dlg.set_main_instruction(L"No update available");
+        dlg.set_main_instruction(TR("no_update_available"));
         dlg.set_title(L"PicoTorrent");
         dlg.show();
     }
@@ -103,7 +103,7 @@ void application_update_controller::on_response(const http_response &response, b
 void application_update_controller::notify(const std::wstring &title, const uri& uri, const std::wstring &version)
 {
     ui::task_dialog dlg;
-    dlg.add_button(1000, L"Show on GitHub",
+    dlg.add_button(1000, TR("show_on_github"),
         [this, uri]()
     {
         ShellExecute(
@@ -118,12 +118,12 @@ void application_update_controller::notify(const std::wstring &title, const uri&
     });
 
     dlg.set_common_buttons(TDCBF_CLOSE_BUTTON);
-    dlg.set_content(L"A newer version of PicoTorrent is available.");
+    dlg.set_content(TR("new_version_available"));
     dlg.set_main_icon(TD_INFORMATION_ICON);
     dlg.set_main_instruction(title);
     dlg.set_parent(wnd_->handle());
     dlg.set_title(L"PicoTorrent");
-    dlg.set_verification_text(L"Ignore this update.");
+    dlg.set_verification_text(TR("ignore_update"));
     dlg.show();
 
     if (dlg.is_verification_checked())
