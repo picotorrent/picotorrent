@@ -45,7 +45,7 @@ namespace property_sheets
         void set_flags(DWORD flags);
         void set_instance(HINSTANCE instance);
         void set_template_id(int id);
-        void set_title_id(int id);
+        void set_title(const std::wstring &title);
 
         static INT_PTR CALLBACK dlg_proc_proxy(
             _In_ HWND   hwndDlg,
@@ -58,6 +58,7 @@ namespace property_sheets
         bool is_initializing_;
 
         HWND handle_;
+        std::wstring title_;
         std::unique_ptr<PROPSHEETPAGE> page_;
 
         // Signals

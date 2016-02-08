@@ -182,6 +182,12 @@ add_library(
 )
 
 add_library(
+    PicoI18n
+    STATIC
+    src/i18n/translator
+)
+
+add_library(
     PicoLogging
     STATIC
     ${PICOLOGGING_SOURCES}
@@ -213,6 +219,7 @@ target_link_libraries(
     PicoApp
     PicoCore
     PicoFileSystem
+    PicoI18n
     PicoUI
     comctl32
 )
@@ -255,6 +262,7 @@ target_link_libraries(
 
 target_link_libraries(
     PicoUI
+    PicoI18n
     PicoNet
 
     UxTheme

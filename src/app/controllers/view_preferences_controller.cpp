@@ -2,6 +2,7 @@
 
 #include <picotorrent/config/configuration.hpp>
 #include <picotorrent/core/session.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/ui/property_sheets/property_sheet_page.hpp>
 #include <picotorrent/ui/property_sheets/preferences/advanced_page.hpp>
@@ -61,7 +62,10 @@ void view_preferences_controller::execute()
     header.dwFlags = PSH_NOCONTEXTHELP | PSH_PROPSHEETPAGE;
     header.hwndParent = wnd_->handle();
     header.hInstance = GetModuleHandle(NULL);
-    header.pszCaption = L"Preferences";
+
+    std::wstring caption = TR("preferences");
+    header.pszCaption = caption.c_str();
+
     header.nPages = ARRAYSIZE(p);
     header.nStartPage = 0;
     header.ppsp = (LPCPROPSHEETPAGE)p;
@@ -97,7 +101,7 @@ bool view_preferences_controller::on_downloads_validate()
     if (dl_page_->downloads_path().empty())
     {
         dl_page_->show_error_message(
-            L"The transfers path cannot be empty.");
+            TR("the_transfers_path_cannot_be_empty"));
         return false;
     }
 
@@ -128,13 +132,13 @@ void view_preferences_controller::on_connection_init()
     conn_page_->set_listen_port(cfg.listen_port());
 
     // Add proxy types
-    conn_page_->add_proxy_type(L"None", configuration::proxy_type_t::none);
-    conn_page_->add_proxy_type(L"HTTP", configuration::proxy_type_t::http);
-    conn_page_->add_proxy_type(L"HTTP (with credentials)", configuration::proxy_type_t::http_pw);
-    conn_page_->add_proxy_type(L"I2P", configuration::proxy_type_t::i2p);
-    conn_page_->add_proxy_type(L"SOCKS4", configuration::proxy_type_t::socks4);
-    conn_page_->add_proxy_type(L"SOCKS5", configuration::proxy_type_t::socks5);
-    conn_page_->add_proxy_type(L"SOCKS5 (with credentials)", configuration::proxy_type_t::socks5_pw);
+    conn_page_->add_proxy_type(TR("none"), configuration::proxy_type_t::none);
+    conn_page_->add_proxy_type(TR("http"), configuration::proxy_type_t::http);
+    conn_page_->add_proxy_type(TR("http_with_credentials"), configuration::proxy_type_t::http_pw);
+    conn_page_->add_proxy_type(TR("i2p"), configuration::proxy_type_t::i2p);
+    conn_page_->add_proxy_type(TR("socks4"), configuration::proxy_type_t::socks4);
+    conn_page_->add_proxy_type(TR("socks5"), configuration::proxy_type_t::socks5);
+    conn_page_->add_proxy_type(TR("socks5_with_credentials"), configuration::proxy_type_t::socks5_pw);
 
     conn_page_->set_proxy_type(cfg.proxy_type());
     conn_page_->set_proxy_host(cfg.proxy_host());
@@ -154,8 +158,7 @@ bool view_preferences_controller::on_connection_validate()
     int listenPort = conn_page_->get_listen_port();
     if (listenPort < 1024 || listenPort > 65535)
     {
-        conn_page_->show_error_message(
-            L"Invalid listen port. Must be a number between 1024 and 65535.");
+        conn_page_->show_error_message(TR("invalid_listen_port"));
         return false;
     }
 

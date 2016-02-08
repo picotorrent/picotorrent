@@ -1,6 +1,7 @@
 #include <picotorrent/app/controllers/application_close_controller.hpp>
 
 #include <picotorrent/config/configuration.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/task_dialog.hpp>
 
@@ -36,25 +37,25 @@ bool application_close_controller::execute()
 bool application_close_controller::prompt_for_exit()
 {
     ui::task_dialog dlg;
-    dlg.add_button(ID_DLG_CLOSE, L"Close PicoTorrent",
+    dlg.add_button(ID_DLG_CLOSE, TR("close_picotorrent"),
         [this]()
     {
         return false;
     });
 
-    dlg.add_button(ID_DLG_MINIMIZE, L"Minimize to tray",
+    dlg.add_button(ID_DLG_MINIMIZE, TR("minimize_to_tray"),
         [this]()
     {
         return false;
     });
 
     dlg.set_common_buttons(TDCBF_CANCEL_BUTTON);
-    dlg.set_content(L"Are you sure you want to close PicoTorrent?");
+    dlg.set_content(TR("confirm_close_description"));
     dlg.set_main_icon(TD_INFORMATION_ICON);
-    dlg.set_main_instruction(L"Confirm close");
+    dlg.set_main_instruction(TR("confirm_close"));
     dlg.set_parent(wnd_->handle());
     dlg.set_title(L"PicoTorrent");
-    dlg.set_verification_text(L"Remember my choice");
+    dlg.set_verification_text(TR("remember_choice"));
 
     configuration &cfg = configuration::instance();
     int res = dlg.show();

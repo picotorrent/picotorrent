@@ -5,6 +5,7 @@
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/filesystem/path.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/ui/dialogs/about_dialog.hpp>
 #include <picotorrent/ui/notify_icon.hpp>
 #include <picotorrent/ui/open_file_dialog.hpp>
@@ -58,7 +59,6 @@ void main_window::create()
     wnd.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_APPICON));
     wnd.lpfnWndProc = &main_window::wnd_proc_proxy;
     wnd.lpszClassName = TEXT("PicoTorrent/MainWindow");
-    wnd.lpszMenuName = MAKEINTRESOURCE(IDR_MAINMENU);
     wnd.style = CS_HREDRAW | CS_VREDRAW;
 
     RegisterClassEx(&wnd);
@@ -77,6 +77,27 @@ void main_window::create()
         GetModuleHandle(NULL),
         static_cast<LPVOID>(this));
 
+    // Create main menu
+    HMENU file = CreateMenu();
+    AppendMenu(file, MF_STRING, ID_FILE_ADDTORRENT, TR("amp_add_torrent"));
+    AppendMenu(file, MF_SEPARATOR, 0, NULL);
+    AppendMenu(file, MF_STRING, ID_FILE_EXIT, TR("amp_exit"));
+
+    HMENU view = CreateMenu();
+    AppendMenu(view, MF_STRING, ID_VIEW_PREFERENCES, TR("amp_preferences"));
+
+    HMENU help = CreateMenu();
+    AppendMenu(help, MF_STRING, ID_HELP_CHECK_FOR_UPDATE, TR("amp_check_for_update"));
+    AppendMenu(help, MF_SEPARATOR, 0, NULL);
+    AppendMenu(help, MF_STRING, ID_HELP_ABOUT, TR("amp_about"));
+
+    HMENU menuBar = CreateMenu();
+    AppendMenu(menuBar, MF_POPUP, (UINT_PTR)file, TR("amp_file"));
+    AppendMenu(menuBar, MF_POPUP, (UINT_PTR)view, TR("amp_view"));
+    AppendMenu(menuBar, MF_POPUP, (UINT_PTR)help, TR("amp_help"));
+
+    SetMenu(hWnd_, menuBar);
+
     sleep_manager_ = std::make_unique<sleep_manager>();
 }
 
@@ -94,7 +115,7 @@ void main_window::torrent_added(const std::shared_ptr<core::torrent> &t)
 void main_window::torrent_finished(const std::shared_ptr<core::torrent> &t)
 {
     last_finished_save_path_ = to_wstring(t->save_path());
-    noticon_->show_balloon(TEXT("Torrent finished"), to_wstring(t->name()));
+    noticon_->show_balloon(TR("torrent_finished"), to_wstring(t->name()));
 }
 
 void main_window::torrent_removed(const std::shared_ptr<core::torrent> &t)
@@ -286,14 +307,14 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         list_view_->create();
 
         // Add columns
-        list_view_->add_column(TEXT("Name"), scaler::x(280), LVCFMT_LEFT);
-        list_view_->add_column(TEXT("#"), scaler::x(30), LVCFMT_RIGHT);
-        list_view_->add_column(TEXT("Size"), scaler::x(80), LVCFMT_RIGHT);
-        list_view_->add_column(TEXT("Status"), scaler::x(120), LVCFMT_LEFT);
-        list_view_->add_column(TEXT("Progress"), scaler::x(100), LVCFMT_LEFT);
-		list_view_->add_column(TEXT("ETA"), scaler::x(80), LVCFMT_RIGHT);
-        list_view_->add_column(TEXT("DL"), scaler::x(80), LVCFMT_RIGHT);
-        list_view_->add_column(TEXT("UL"), scaler::x(80), LVCFMT_RIGHT);
+        list_view_->add_column(TR("name"),           scaler::x(280), LVCFMT_LEFT);
+        list_view_->add_column(TR("queue_position"), scaler::x(30),  LVCFMT_RIGHT);
+        list_view_->add_column(TR("size"),           scaler::x(80),  LVCFMT_RIGHT);
+        list_view_->add_column(TR("status"),         scaler::x(120), LVCFMT_LEFT);
+        list_view_->add_column(TR("progress"),       scaler::x(100), LVCFMT_LEFT);
+		list_view_->add_column(TR("eta"),            scaler::x(80),  LVCFMT_RIGHT);
+        list_view_->add_column(TR("dl"),             scaler::x(80),  LVCFMT_RIGHT);
+        list_view_->add_column(TR("ul"),             scaler::x(80),  LVCFMT_RIGHT);
 
         noticon_ = std::make_shared<notify_icon>(hWnd);
         noticon_->add();
