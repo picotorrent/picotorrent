@@ -7,6 +7,8 @@
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
 
+#include <windows.h>
+
 namespace fs = picotorrent::filesystem;
 namespace pj = picojson;
 using namespace picotorrent::common;
@@ -46,6 +48,11 @@ void configuration::set_close_action(configuration::close_action_t action)
 bool configuration::check_for_updates()
 {
     return get_or_default("check_for_updates", true);
+}
+
+int configuration::current_language_id()
+{
+    return get_or_default("language_id", (int)GetUserDefaultLangID());
 }
 
 std::wstring configuration::default_save_path()

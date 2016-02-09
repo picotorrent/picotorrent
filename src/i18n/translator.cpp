@@ -2,6 +2,9 @@
 
 #include <picotorrent/picojson.hpp> 
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/config/configuration.hpp>
+#include <picotorrent/filesystem/file.hpp>
+#include <picotorrent/filesystem/path.hpp>
 
 #include <windows.h>
 #include <shlwapi.h>
@@ -9,14 +12,16 @@
 
 #define TEXTFILE 256
 
+namespace fs = picotorrent::filesystem;
 namespace pj = picojson;
 using picotorrent::common::to_wstring;
+using picotorrent::config::configuration;
 using picotorrent::i18n::translator;
 
 translator::translator()
     : instance_(GetModuleHandle(NULL))
 {
-    LANGID id = GetUserDefaultUILanguage();
+    configuration &cfg = configuration::instance();
 
     TCHAR path[MAX_PATH];
     TCHAR file[1024];
@@ -26,17 +31,25 @@ translator::translator()
     PathRemoveFileSpec(path);
 
     // Get the path to our language DLL.
-    StringCchPrintf(file, ARRAYSIZE(file), L"%d.json", id);
+    StringCchPrintf(file, ARRAYSIZE(file), L"%d.json", cfg.current_language_id());
 
     PathCombine(path, path, L"lang");
     PathCombine(file, path, file);
 
-    DWORD dwAttrib = GetFileAttributes(path);
+    DWORD dwAttrib = GetFileAttributes(file);
 
     if (dwAttrib != INVALID_FILE_ATTRIBUTES &&
         !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
     {
         // Load JSON from file
+        fs::file f(file);
+        std::vector<char> buf;
+        f.read_all(buf);
+
+        pj::value v;
+        pj::parse(v, std::string(buf.begin(), buf.end()));
+
+        strings_ = v.get<pj::object>()["strings"].get<pj::object>();
     }
     else
     {

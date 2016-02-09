@@ -46,6 +46,8 @@ namespace config
         void set_close_action(close_action_t action);
 
         bool check_for_updates();
+
+        int current_language_id();
         
         std::wstring default_save_path();
         void set_default_save_path(const std::wstring &path);

@@ -91,8 +91,15 @@ Task("Build")
     MSBuild(OutputDirectory + File("PicoTorrent.sln"), settings);
 });
 
+Task("Output-Languages")
+    .Does(() =>
+{
+    CopyDirectory("./lang/", BuildDirectory + Directory("lang"));
+});
+
 Task("Build-Installer")
     .IsDependentOn("Build")
+    .IsDependentOn("Output-Languages")
     .Does(() =>
 {
     var arch = Architecture.X64;
