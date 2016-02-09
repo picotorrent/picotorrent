@@ -4,10 +4,10 @@
     {
         "name": "Name",
         "queue_position": "#",
-        "size": "Dateigröße", //could also just be "Größe"
+        "size": "Dateigröße",
         "status": "Status",
         "progress": "Vortschritt",
-        "eta": "Verbleibende Zeit", //"ETA" should be fine though, it's kinda long
+        "eta": "Verbleibende Zeit",
         "dl": "DL",
         "ul": "UL",
         "torrent_finished": "Torrent fertiggestellt",
@@ -110,21 +110,21 @@
         "confirm_close": "Schließen bestätigen",
         "remember_choice": "Auswahl merken",
         "select_destination": "Ziel auswählen",
-        "state_checking_resume_data": "Überprüfung der Daten zum Fortfahren", //literally "Checking Data to Resume", not sure if appropriate translation, would like to see this in context to make sure
+        "state_checking_resume_data": "Überprüfung der Daten zum Fortfahren",
         "state_downloading": "Herunterladen",
         "state_downloading_checking": "Überprüfen",
-        "state_downloading_forced": "[ERZW] Herunterladen",
+        "state_downloading_forced": "[E] Herunterladen",
         "state_downloading_metadata": "Metadaten herunterladen",
         "state_downloading_paused": "Pausiert",
         "state_downloading_queued": "in Warteschlange",
-        "state_downloading_stalled": "warte auf Peers...", //literally "waitng for peers...", not sure if accurate representation, other translations sound weird though
+        "state_downloading_stalled": "warte auf Peers...",
         "state_error": "Fehler",
         "state_unknown": "Unbekannt",
         "state_uploading": "Seeden",
         "state_uploading_checking": "Überprüfen",
-        "state_uploading_forced": "[ERZW] Seeden",
+        "state_uploading_forced": "[E] Seeden",
         "state_uploading_paused": "Fertig",
         "state_uploading_queued": "In Warteschlan",
-        "state_uploading_stalled": "Seeden" //could change to "warte auf Peers" too if accurate
+        "state_uploading_stalled": "Seeden"
     }
 }
