@@ -24,6 +24,7 @@
 #define IDD_PREFERENCES_DOWNLOADS 314
 #define IDD_PREFERENCES_CONNECTION 315
 #define IDD_PREFERENCES_ADVANCED 316
+#define IDD_PREFERENCES_GENERAL 317
 
 // Menus
 #define ID_FILE_ADDTORRENT 9001
@@ -42,6 +43,11 @@
 #define ID_SAVE_PATH 107
 #define ID_BROWSE 108
 #define ID_FILES 109
+
+// General preferences dialog
+#define ID_UI_GROUP 101
+#define ID_LANGUAGE_TEXT 102
+#define ID_LANGUAGE 103
 
 // Download preferences dialog
 #define ID_TRANSFERS_GROUP 102

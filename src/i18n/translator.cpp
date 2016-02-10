@@ -4,6 +4,7 @@
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/config/configuration.hpp>
 #include <picotorrent/filesystem/file.hpp>
+#include <picotorrent/filesystem/directory.hpp>
 #include <picotorrent/filesystem/path.hpp>
 
 #include <windows.h>
@@ -16,6 +17,7 @@ namespace fs = picotorrent::filesystem;
 namespace pj = picojson;
 using picotorrent::common::to_wstring;
 using picotorrent::config::configuration;
+using picotorrent::i18n::translation;
 using picotorrent::i18n::translator;
 
 translator::translator()
@@ -23,18 +25,9 @@ translator::translator()
 {
     configuration &cfg = configuration::instance();
 
-    TCHAR path[MAX_PATH];
     TCHAR file[1024];
-
-    // Get directory where PicoTorrent.exe resides
-    GetModuleFileName(NULL, path, ARRAYSIZE(path));
-    PathRemoveFileSpec(path);
-
-    // Get the path to our language DLL.
     StringCchPrintf(file, ARRAYSIZE(file), L"%d.json", cfg.current_language_id());
-
-    PathCombine(path, path, L"lang");
-    PathCombine(file, path, file);
+    PathCombine(file, get_lang_path().c_str(), file);
 
     DWORD dwAttrib = GetFileAttributes(file);
 
@@ -70,13 +63,76 @@ translator::~translator()
 {
 }
 
-std::wstring translator::translate(const std::string &key)
+translator& translator::instance()
 {
     static translator instance;
-    return instance.get_string(key);
+    return instance;
 }
 
-std::wstring translator::get_string(const std::string &key)
+std::vector<translation> translator::get_available_translations()
+{
+    fs::path p = get_lang_path();
+    fs::directory d(p);
+
+    translation def;
+    def.language_id = 1033;
+    def.name = L"English (United States)";
+
+    std::vector<translation> langs;
+    langs.push_back(def);
+
+    for (fs::path &path : d.get_files(d.path().combine(L"*.json")))
+    {
+        std::vector<char> buf;
+        fs::file(path).read_all(buf);
+
+        pj::value v;
+        std::string err = pj::parse(v, std::string(buf.begin(), buf.end()));
+
+        if (!err.empty())
+        {
+            // TODO: log
+            continue;
+        }
+
+        if (!v.is<pj::object>())
+        {
+            // TODO: log
+            continue;
+        }
+
+        pj::object obj = v.get<pj::object>();
+
+        if (obj.find("lang_name") == obj.end())
+        {
+            // TODO: log
+            continue;
+        }
+
+        std::string name = obj.at("lang_name").get<std::string>();
+
+        translation t;
+        t.language_id = (int)obj.at("lang_id").get<int64_t>();
+        t.name = to_wstring(name);
+
+        if (t.language_id == def.language_id)
+        {
+            continue;
+        }
+
+        langs.push_back(t);
+    }
+
+    return langs;
+}
+
+int translator::get_current_lang_id()
+{
+    configuration &cfg = configuration::instance();
+    return cfg.current_language_id();
+}
+
+std::wstring translator::translate(const std::string &key)
 {
     std::string result = key;
 
@@ -86,4 +142,22 @@ std::wstring translator::get_string(const std::string &key)
     }
 
     return to_wstring(result);
+}
+
+void translator::set_current_language(int langId)
+{
+    configuration &cfg = configuration::instance();
+    cfg.set_current_language_id(langId);
+}
+
+std::wstring translator::get_lang_path()
+{
+    TCHAR path[MAX_PATH];
+
+    // Get directory where PicoTorrent.exe resides
+    GetModuleFileName(NULL, path, ARRAYSIZE(path));
+    PathRemoveFileSpec(path);
+    PathCombine(path, path, L"lang");
+
+    return path;
 }

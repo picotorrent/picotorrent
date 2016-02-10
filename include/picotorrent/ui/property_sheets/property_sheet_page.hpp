@@ -29,11 +29,11 @@ namespace property_sheets
         common::signals::signal_connector<void, void>& on_init();
         common::signals::signal_connector<bool, void>& on_validate();
 
+        HWND handle();
         void show_error_message(const std::wstring &text);
 
     protected:
         INT_PTR dlg_proc(HWND, UINT, WPARAM, LPARAM);
-        HWND handle();
         bool is_initializing();
         virtual BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam) { return FALSE; }
         virtual void on_init_dialog() { }

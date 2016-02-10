@@ -55,6 +55,11 @@ int configuration::current_language_id()
     return get_or_default("language_id", (int)GetUserDefaultLangID());
 }
 
+void configuration::set_current_language_id(int langId)
+{
+    set("language_id", langId);
+}
+
 std::wstring configuration::default_save_path()
 {
     fs::path defaultPath = environment::get_special_folder(special_folder::user_downloads);

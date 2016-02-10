@@ -106,6 +106,7 @@ set(PICOUI_SOURCES
     src/ui/property_sheets/preferences/advanced_page
     src/ui/property_sheets/preferences/connection_page
     src/ui/property_sheets/preferences/downloads_page
+    src/ui/property_sheets/preferences/general_page
     src/ui/file_dialog_callback
     src/ui/main_window
     src/ui/notify_icon

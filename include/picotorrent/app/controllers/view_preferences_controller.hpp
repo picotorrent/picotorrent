@@ -21,6 +21,7 @@ namespace preferences
     class advanced_page;
     class connection_page;
     class downloads_page;
+    class general_page;
 }
 }
 }
@@ -48,12 +49,19 @@ namespace controllers
         void on_connection_proxy_type_changed(int type);
         bool on_connection_validate();
 
+        void on_general_apply();
+        void on_general_init();
+
     private:
+        void restart();
+        bool should_restart();
+
         std::shared_ptr<core::session> sess_;
         std::shared_ptr<ui::main_window> wnd_;
         std::unique_ptr<ui::property_sheets::preferences::advanced_page> adv_page_;
         std::unique_ptr<ui::property_sheets::preferences::connection_page> conn_page_;
         std::unique_ptr<ui::property_sheets::preferences::downloads_page> dl_page_;
+        std::unique_ptr<ui::property_sheets::preferences::general_page> gen_page_;
     };
 }
 }

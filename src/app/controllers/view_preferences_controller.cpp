@@ -8,12 +8,15 @@
 #include <picotorrent/ui/property_sheets/preferences/advanced_page.hpp>
 #include <picotorrent/ui/property_sheets/preferences/connection_page.hpp>
 #include <picotorrent/ui/property_sheets/preferences/downloads_page.hpp>
+#include <picotorrent/ui/property_sheets/preferences/general_page.hpp>
 #include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/resources.hpp>
+#include <picotorrent/ui/task_dialog.hpp>
 #include <vector>
 
 #include <iphlpapi.h>
 #include <prsht.h>
+#include <strsafe.h>
 
 namespace ui = picotorrent::ui;
 namespace prefs = picotorrent::ui::property_sheets::preferences;
@@ -22,6 +25,7 @@ using picotorrent::core::session;
 using picotorrent::app::controllers::view_preferences_controller;
 using picotorrent::ui::dialogs::preferences_dialog;
 using picotorrent::ui::property_sheets::property_sheet_page;
+using picotorrent::ui::task_dialog;
 
 view_preferences_controller::view_preferences_controller(const std::shared_ptr<session> &sess,
     const std::shared_ptr<ui::main_window> &wnd)
@@ -29,7 +33,8 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
     wnd_(wnd),
     adv_page_(std::make_unique<prefs::advanced_page>()),
     conn_page_(std::make_unique<prefs::connection_page>()),
-    dl_page_(std::make_unique<prefs::downloads_page>())
+    dl_page_(std::make_unique<prefs::downloads_page>()),
+    gen_page_(std::make_unique<prefs::general_page>())
 {
     adv_page_->on_apply().connect(std::bind(&view_preferences_controller::on_advanced_apply, this));
     adv_page_->on_init().connect(std::bind(&view_preferences_controller::on_advanced_init, this));
@@ -42,6 +47,9 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
     dl_page_->on_apply().connect(std::bind(&view_preferences_controller::on_downloads_apply, this));
     dl_page_->on_init().connect(std::bind(&view_preferences_controller::on_downloads_init, this));
     dl_page_->on_validate().connect(std::bind(&view_preferences_controller::on_downloads_validate, this));
+
+    gen_page_->on_apply().connect(std::bind(&view_preferences_controller::on_general_apply, this));
+    gen_page_->on_init().connect(std::bind(&view_preferences_controller::on_general_init, this));
 }
 
 view_preferences_controller::~view_preferences_controller()
@@ -52,6 +60,7 @@ void view_preferences_controller::execute()
 {
     PROPSHEETPAGE p[] =
     {
+        *gen_page_,
         *dl_page_,
         *conn_page_,
         *adv_page_
@@ -212,4 +221,71 @@ void view_preferences_controller::on_connection_proxy_type_changed(int type)
         break;
     }
     }
+}
+
+void view_preferences_controller::on_general_apply()
+{
+    int currentLang = i18n::translator::instance().get_current_lang_id();
+    int selectedLang = gen_page_->get_selected_language();
+
+    if (currentLang == selectedLang)
+    {
+        return;
+    }
+
+    // Change language!
+    i18n::translator::instance().set_current_language(selectedLang);
+
+    // Notify the user about restarting PicoTorrent
+    if (should_restart())
+    {
+        restart();
+    }
+}
+
+void view_preferences_controller::on_general_init()
+{
+    std::vector<i18n::translation> langs = i18n::translator::instance().get_available_translations();
+
+    gen_page_->add_languages(langs);
+    gen_page_->select_language(i18n::translator::instance().get_current_lang_id());
+}
+
+void view_preferences_controller::restart()
+{
+    TCHAR mod[MAX_PATH];
+    TCHAR exe[MAX_PATH];
+
+    GetModuleFileName(NULL, mod, ARRAYSIZE(mod));
+    StringCchPrintf(exe, ARRAYSIZE(exe), L"\"%s\" --restart %d", mod, (int)GetCurrentProcessId());
+
+    STARTUPINFO si = { 0 };
+    PROCESS_INFORMATION pi = { 0 };
+
+    CreateProcess(
+        NULL,
+        exe,
+        NULL,
+        NULL,
+        FALSE,
+        0,
+        NULL,
+        NULL,
+        &si,
+        &pi);
+
+    wnd_->exit();
+}
+
+bool view_preferences_controller::should_restart()
+{
+    task_dialog dlg;
+    dlg.set_common_buttons(TDCBF_OK_BUTTON | TDCBF_CANCEL_BUTTON);
+    dlg.set_content(TR("prompt_restart"));
+    dlg.set_main_icon(TD_INFORMATION_ICON);
+    dlg.set_main_instruction(TR("prompt_restart_title"));
+    dlg.set_parent(gen_page_->handle());
+    dlg.set_title(L"PicoTorrent");
+
+    return dlg.show() == IDOK;
 }

@@ -35,6 +35,7 @@ namespace app
         bool init();
         bool is_single_instance();
         int run(const std::wstring &args);
+        static void wait_for_restart(const std::wstring &args);
 
     private:
         void on_check_for_update();

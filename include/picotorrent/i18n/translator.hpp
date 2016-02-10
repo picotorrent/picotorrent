@@ -2,9 +2,10 @@
 
 #include <map>
 #include <string>
+#include <vector>
 #include <windows.h>
 
-#define TR(id) picotorrent::i18n::translator::translate(id).c_str()
+#define TR(id) picotorrent::i18n::translator::instance().translate(id).c_str()
 
 namespace picojson
 {
@@ -16,16 +17,27 @@ namespace picotorrent
 {
 namespace i18n
 {
+    struct translation
+    {
+        std::wstring name;
+        int language_id;
+    };
+
     class translator
     {
     public:
-        static std::wstring translate(const std::string &key);
+        static translator& instance();
+
+        std::vector<translation> get_available_translations();
+        int get_current_lang_id();
+        std::wstring translate(const std::string &key);
+        void set_current_language(int langId);
 
     private:
         translator();
         ~translator();
 
-        std::wstring get_string(const std::string &key);
+        std::wstring get_lang_path();
 
         HINSTANCE instance_;
         picojson::object strings_;

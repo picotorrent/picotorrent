@@ -141,6 +141,42 @@ int application::run(const std::wstring &args)
     return result;
 }
 
+void application::wait_for_restart(const std::wstring &args)
+{
+    command_line cmd = command_line::parse(args);
+
+    if (!cmd.restart())
+    {
+        return;
+    }
+
+    HANDLE hProc = OpenProcess(SYNCHRONIZE, FALSE, cmd.prev_process_id());
+
+    if (hProc == NULL)
+    {
+        DWORD err = GetLastError();
+        LOG(debug) << "Could not open process: " << err;
+        return;
+    }
+
+    LOG(debug) << "Waiting for previous instance of PicoTorrent to shut down";
+    DWORD res = WaitForSingleObject(hProc, 10000);
+    CloseHandle(hProc);
+    
+    switch (res)
+    {
+    case WAIT_FAILED:
+        LOG(debug) << "Could not wait for process: " << GetLastError();
+        break;
+    case WAIT_OBJECT_0:
+        LOG(debug) << "Successfully waited for process";
+        break;
+    case WAIT_TIMEOUT:
+        LOG(debug) << "Timeout when waiting for process";
+        break;
+    }
+}
+
 void application::on_check_for_update()
 {
     updater_->execute(true);
