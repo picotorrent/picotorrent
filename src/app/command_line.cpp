@@ -11,6 +11,7 @@ command_line command_line::parse(const std::wstring &cmd)
     LPWSTR *argc = CommandLineToArgvW(cmd.c_str(), &argv);
 
     command_line cl;
+    cl.restart_ = false;
 
     for (int i = 0; i < argv; i++)
     {
@@ -29,6 +30,12 @@ command_line command_line::parse(const std::wstring &cmd)
         {
             cl.files_.push_back(arg);
         }
+
+        if (arg == L"--restart")
+        {
+            cl.restart_ = true;
+            cl.prev_process_id_ = std::stoi(argc[i + 1]);
+        }
     }
 
     return cl;
@@ -42,4 +49,14 @@ std::vector<picotorrent::filesystem::path> command_line::files() const
 std::vector<std::wstring> command_line::magnet_links() const
 {
     return magnets_;
+}
+
+bool command_line::restart() const
+{
+    return restart_;
+}
+
+int command_line::prev_process_id() const
+{
+    return prev_process_id_;
 }

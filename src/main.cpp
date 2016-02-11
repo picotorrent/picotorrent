@@ -16,6 +16,7 @@ int WINAPI wWinMain(
     _In_ LPTSTR        lpCmdLine,
     _In_ int           nCmdShow)
 {
+    picotorrent::app::application::wait_for_restart(lpCmdLine);
     picotorrent::app::application app;
 
     if (!app.is_single_instance())

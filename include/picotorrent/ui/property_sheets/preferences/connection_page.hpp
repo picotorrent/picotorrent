@@ -58,6 +58,7 @@ namespace preferences
     protected:
         std::vector<BYTE> get_address_bytes(const std::wstring &address);
         BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam);
+        void on_init_dialog();
         
     private:
         void enable_window(int id, bool enabled);

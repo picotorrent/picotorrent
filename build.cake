@@ -91,8 +91,15 @@ Task("Build")
     MSBuild(OutputDirectory + File("PicoTorrent.sln"), settings);
 });
 
+Task("Output-Languages")
+    .Does(() =>
+{
+    CopyDirectory("./lang/", BuildDirectory + Directory("lang"));
+});
+
 Task("Build-Installer")
     .IsDependentOn("Build")
+    .IsDependentOn("Output-Languages")
     .Does(() =>
 {
     var arch = Architecture.X64;
@@ -159,7 +166,9 @@ Task("Build-Portable-Package")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.exe"),
-        BuildDirectory + File("PicoTorrent.pdb")
+        BuildDirectory + File("PicoTorrent.pdb"),
+        BuildDirectory + Directory("lang") + File("1031.json"),
+        BuildDirectory + Directory("lang") + File("1053.json")
     };
 
     Zip(BuildDirectory, BuildDirectory + File(PortablePackage), files);

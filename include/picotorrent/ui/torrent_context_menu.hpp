@@ -10,6 +10,7 @@ namespace ui
     {
     public:
         explicit torrent_context_menu();
+        ~torrent_context_menu();
 
         void disable_open_in_explorer();
         void highlight_pause();

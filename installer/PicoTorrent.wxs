@@ -30,6 +30,8 @@
         <Directory Id="TARGETDIR" Name="SourceDir">
             <Directory Id="$(var.PlatformProgramFilesFolder)" Name="PFiles">
                 <Directory Id="INSTALLDIR" Name="PicoTorrent">
+                    <Directory Id="LANGDIR" Name="lang" />
+
                     <Component Id="C_PicoTorrent" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205">
                         <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" Source="$(var.BuildDirectory)\PicoTorrent.exe" KeyPath="yes" />
 
@@ -176,6 +178,16 @@
             <Directory Id="ProgramMenuFolder" />
         </Directory>
 
+        <ComponentGroup Id="CG_Languages" Directory="LANGDIR">
+          <Component Id="C_Lang_1031">
+            <File Name="1031.json" Source="$(var.BuildDirectory)\lang\1031.json" />
+          </Component>
+
+          <Component Id="C_Lang_1053">
+            <File Name="1053.json" Source="$(var.BuildDirectory)\lang\1053.json" />
+          </Component>
+        </ComponentGroup>
+
         <Feature Id="F_Complete"
                  Title="PicoTorrent"
                  Absent="disallow"
@@ -184,6 +196,14 @@
                  Level="1">
 
             <ComponentRef Id="C_PicoTorrent" />
+
+            <Feature Id="F_Lang"
+                     Title="Language files"
+                     Description="Language files for PicoTorrent."
+                     Level="1">
+
+              <ComponentGroupRef Id="CG_Languages" />
+            </Feature>
 
             <Feature Id="F_DebugSymbols"
                      Title="PDB files"

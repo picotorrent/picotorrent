@@ -7,6 +7,8 @@
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
 
+#include <windows.h>
+
 namespace fs = picotorrent::filesystem;
 namespace pj = picojson;
 using namespace picotorrent::common;
@@ -46,6 +48,16 @@ void configuration::set_close_action(configuration::close_action_t action)
 bool configuration::check_for_updates()
 {
     return get_or_default("check_for_updates", true);
+}
+
+int configuration::current_language_id()
+{
+    return get_or_default("language_id", (int)GetUserDefaultLangID());
+}
+
+void configuration::set_current_language_id(int langId)
+{
+    set("language_id", langId);
 }
 
 std::wstring configuration::default_save_path()
@@ -314,4 +326,52 @@ void configuration::save()
 
     fs::file cfg = data.path().combine(L"PicoTorrent.json");
     cfg.write_all(buf);
+}
+
+std::shared_ptr<picotorrent::config::window_placement> configuration::window_placement(const std::string &name)
+{
+    if (value_->find("wnd_" + name) == value_->end())
+    {
+        return nullptr;
+    }
+
+    pj::value v = value_->at("wnd_" + name);
+
+    if (!v.is<pj::array>())
+    {
+        return nullptr;
+    }
+
+    pj::array a = v.get<pj::array>();
+    
+    auto wp = std::make_shared<picotorrent::config::window_placement>();
+    wp->flags = (uint32_t)a[0].get<int64_t>();
+    wp->max_x = (long)a[1].get<int64_t>();
+    wp->max_y = (long)a[2].get<int64_t>();
+    wp->min_x = (long)a[3].get<int64_t>();
+    wp->min_y = (long)a[4].get<int64_t>();
+    wp->pos_bottom = (long)a[5].get<int64_t>();
+    wp->pos_left = (long)a[6].get<int64_t>();
+    wp->pos_right = (long)a[7].get<int64_t>();
+    wp->pos_top = (long)a[8].get<int64_t>();
+    wp->show = (uint32_t)a[9].get<int64_t>();
+
+    return wp;
+}
+
+void configuration::set_window_placement(const std::string &name, const picotorrent::config::window_placement &wnd)
+{
+    pj::array a;
+    a.push_back(pj::value((int64_t)wnd.flags));
+    a.push_back(pj::value((int64_t)wnd.max_x));
+    a.push_back(pj::value((int64_t)wnd.max_y));
+    a.push_back(pj::value((int64_t)wnd.min_x));
+    a.push_back(pj::value((int64_t)wnd.min_y));
+    a.push_back(pj::value((int64_t)wnd.pos_bottom));
+    a.push_back(pj::value((int64_t)wnd.pos_left));
+    a.push_back(pj::value((int64_t)wnd.pos_right));
+    a.push_back(pj::value((int64_t)wnd.pos_top));
+    a.push_back(pj::value((int64_t)wnd.show));
+
+    (*value_)["wnd_" + name] = pj::value(a);
 }

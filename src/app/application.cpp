@@ -48,6 +48,7 @@ application::application()
 
     main_window_->on_close(std::bind(&application::on_close, this));
     main_window_->on_copydata(std::bind(&application::on_command_line_args, this, std::placeholders::_1));
+    main_window_->on_destroy().connect(std::bind(&application::on_destroy, this));
     main_window_->on_notifyicon_context_menu(std::bind(&application::on_notifyicon_context_menu, this, std::placeholders::_1));
     main_window_->on_session_alert_notify().connect(std::bind(&application::on_session_alert_notify, this));
     main_window_->on_torrent_activated(std::bind(&application::on_torrent_activated, this, std::placeholders::_1));
@@ -121,6 +122,30 @@ bool application::is_single_instance()
 int application::run(const std::wstring &args)
 {
     main_window_->create();
+
+    // Set window placement
+    std::shared_ptr<config::window_placement> wp = configuration::instance().window_placement("main");
+    if (wp != nullptr)
+    {
+        WINDOWPLACEMENT winplace = { sizeof(WINDOWPLACEMENT) };
+        winplace.flags = wp->flags;
+        winplace.ptMaxPosition.x = wp->max_x;
+        winplace.ptMaxPosition.y = wp->max_y;
+        winplace.ptMinPosition.x = wp->min_x;
+        winplace.ptMinPosition.y = wp->min_y;
+        winplace.rcNormalPosition.bottom = wp->pos_bottom;
+        winplace.rcNormalPosition.left = wp->pos_left;
+        winplace.rcNormalPosition.right = wp->pos_right;
+        winplace.rcNormalPosition.top = wp->pos_top;
+        winplace.showCmd = wp->show;
+
+        SetWindowPlacement(main_window_->handle(), &winplace);
+    }
+    else
+    {
+        ShowWindow(main_window_->handle(), SW_SHOW);
+    }
+
     sess_->load(main_window_->handle());
 
     if (!args.empty())
@@ -141,6 +166,42 @@ int application::run(const std::wstring &args)
     return result;
 }
 
+void application::wait_for_restart(const std::wstring &args)
+{
+    command_line cmd = command_line::parse(args);
+
+    if (!cmd.restart())
+    {
+        return;
+    }
+
+    HANDLE hProc = OpenProcess(SYNCHRONIZE, FALSE, cmd.prev_process_id());
+
+    if (hProc == NULL)
+    {
+        DWORD err = GetLastError();
+        LOG(debug) << "Could not open process: " << err;
+        return;
+    }
+
+    LOG(debug) << "Waiting for previous instance of PicoTorrent to shut down";
+    DWORD res = WaitForSingleObject(hProc, 10000);
+    CloseHandle(hProc);
+    
+    switch (res)
+    {
+    case WAIT_FAILED:
+        LOG(debug) << "Could not wait for process: " << GetLastError();
+        break;
+    case WAIT_OBJECT_0:
+        LOG(debug) << "Successfully waited for process";
+        break;
+    case WAIT_TIMEOUT:
+        LOG(debug) << "Timeout when waiting for process";
+        break;
+    }
+}
+
 void application::on_check_for_update()
 {
     updater_->execute(true);
@@ -158,6 +219,27 @@ void application::on_command_line_args(const std::wstring &args)
 
     controllers::add_torrent_controller add_controller(sess_, main_window_);
     add_controller.execute(cmd);
+}
+
+void application::on_destroy()
+{
+    WINDOWPLACEMENT wndplace = { sizeof(WINDOWPLACEMENT) };
+    if (GetWindowPlacement(main_window_->handle(), &wndplace))
+    {
+        config::window_placement wp;
+        wp.flags = wndplace.flags;
+        wp.max_x = wndplace.ptMaxPosition.x;
+        wp.max_y = wndplace.ptMaxPosition.y;
+        wp.min_x = wndplace.ptMinPosition.x;
+        wp.min_y = wndplace.ptMinPosition.y;
+        wp.pos_bottom = wndplace.rcNormalPosition.bottom;
+        wp.pos_left = wndplace.rcNormalPosition.left;
+        wp.pos_right = wndplace.rcNormalPosition.right;
+        wp.pos_top = wndplace.rcNormalPosition.top;
+        wp.show = wndplace.showCmd;
+
+        configuration::instance().set_window_placement("main", wp);
+    }
 }
 
 void application::on_file_add_torrent()

@@ -2,6 +2,7 @@
 
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/peer.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/ui/controls/list_view.hpp>
 #include <picotorrent/ui/resources.hpp>
 #include <picotorrent/ui/scaler.hpp>
@@ -38,7 +39,7 @@ peers_page::peers_page()
     set_flags(PSP_USETITLE);
     set_instance(GetModuleHandle(NULL));
     set_template_id(IDD_DETAILS_PEERS);
-    set_title_id(IDS_DETAILS_PEERS_TITLE);
+    set_title(TR("peers"));
 }
 
 peers_page::~peers_page()
@@ -90,11 +91,11 @@ void peers_page::on_init_dialog()
     HWND hList = GetDlgItem(handle(), ID_DETAILS_PEERS_LIST);
     list_ = std::make_unique<list_view>(hList);
 
-    list_->add_column(LIST_COLUMN_IP,       L"IP",     scaler::x(110));
-    list_->add_column(LIST_COLUMN_CLIENT,   L"Client", scaler::x(140));
-    list_->add_column(LIST_COLUMN_FLAGS,    L"Flags",  scaler::x(80));
-    list_->add_column(LIST_COLUMN_DOWNLOAD, L"DL",     scaler::x(80), list_view::number);
-    list_->add_column(LIST_COLUMN_UPLOAD,   L"UL",     scaler::x(80), list_view::number);
+    list_->add_column(LIST_COLUMN_IP,       TR("ip"),     scaler::x(110));
+    list_->add_column(LIST_COLUMN_CLIENT,   TR("client"), scaler::x(140));
+    list_->add_column(LIST_COLUMN_FLAGS,    TR("flags"),  scaler::x(80));
+    list_->add_column(LIST_COLUMN_DOWNLOAD, TR("dl"),     scaler::x(80), list_view::number);
+    list_->add_column(LIST_COLUMN_UPLOAD,   TR("ul"),     scaler::x(80), list_view::number);
 
     list_->on_display().connect(std::bind(&peers_page::on_list_display, this, std::placeholders::_1));
 }

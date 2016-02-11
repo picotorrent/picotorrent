@@ -123,9 +123,10 @@ void property_sheet_page::set_template_id(int id)
     page_->pszTemplate = MAKEINTRESOURCE(id);
 }
 
-void property_sheet_page::set_title_id(int id)
+void property_sheet_page::set_title(const std::wstring &title)
 {
-    page_->pszTitle = MAKEINTRESOURCE(id);
+    title_ = title;
+    page_->pszTitle = title_.c_str();
 }
 
 void property_sheet_page::show_error_message(const std::wstring &text)
