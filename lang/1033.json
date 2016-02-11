@@ -133,6 +133,7 @@
         "prompt_restart": "PicoTorrent needs to restart in order for the changes to take effect.",
         "prompt_restart_title": "Restart required",
         "add_torrent": "Add torrent",
-        "exit": "Exit"
+        "exit": "Exit",
+        "details": "Details"
     }
 }
