@@ -67,7 +67,7 @@ void main_window::create()
         0,
         wnd.lpszClassName,
         TEXT("PicoTorrent"),
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+        WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
         scaler::x(800),
@@ -165,6 +165,11 @@ void main_window::on_command(int id, const command_func_t &callback)
 void main_window::on_copydata(const std::function<void(const std::wstring&)> &callback)
 {
     copydata_cb_ = callback;
+}
+
+signal_connector<void, void>& main_window::on_destroy()
+{
+    return on_destroy_;
 }
 
 void main_window::on_notifyicon_context_menu(const std::function<void(const POINT &p)> &callback)
@@ -344,6 +349,7 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     case WM_DESTROY:
     {
+        on_destroy_.emit();
         noticon_->remove();
 
         PostQuitMessage(0);

@@ -14,6 +14,20 @@ namespace picotorrent
 {
 namespace config
 {
+    struct window_placement
+    {
+        uint32_t flags;
+        long max_x;
+        long max_y;
+        long min_x;
+        long min_y;
+        long pos_bottom;
+        long pos_left;
+        long pos_right;
+        long pos_top;
+        uint32_t show;
+    };
+
     class configuration
     {
     public:
@@ -100,6 +114,9 @@ namespace config
 
         bool use_picotorrent_peer_id();
         void set_use_picotorrent_peer_id(bool value);
+
+        std::shared_ptr<window_placement> window_placement(const std::string &name);
+        void set_window_placement(const std::string &name, const config::window_placement &wnd);
 
     private:
         template<typename T>

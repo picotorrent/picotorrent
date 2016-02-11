@@ -130,7 +130,9 @@
         "general": "General",
         "user_interface": "User interface",
         "language": "Language",
-        "prompt_restart": "A restart is required for the changes to take effect.",
-        "prompt_restart_title": "Restart required"
+        "prompt_restart": "PicoTorrent needs to restart in order for the changes to take effect.",
+        "prompt_restart_title": "Restart required",
+        "add_torrent": "Add torrent",
+        "exit": "Exit"
     }
 }
