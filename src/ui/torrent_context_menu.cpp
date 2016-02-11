@@ -12,6 +12,8 @@ torrent_context_menu::torrent_context_menu()
     AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_RESUME, TR("resume"));
     AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_RESUME_FORCE, TR("resume_force"));
     AppendMenu(menu_, MF_SEPARATOR, 0, NULL);
+    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_DETAILS, TR("details"));
+    AppendMenu(menu_, MF_SEPARATOR, 0, NULL);
     AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_MOVE, TR("move"));
 
     HMENU remove = CreateMenu();
