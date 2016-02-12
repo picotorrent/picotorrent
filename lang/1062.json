@@ -75,7 +75,7 @@
         "invalid_listen_port": "Nederīgs Klausīšanās ports. Jābūt skaitlim starp 1024 un 65535.",
         "preferences": "Konfigurācija",
         "advanced": "Papildus",
-        "experimental": "Eksperimentāli",
+        "experimental": "Eksperimentāls",
         "use_picotorrent_peer_id": "Lietot PicoTorrent ID un lietotāju",
         "limits": "Limiti",
         "dl_limit": "Lejupiel. limits",
