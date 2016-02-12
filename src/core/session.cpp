@@ -432,7 +432,7 @@ void session::notify()
         {
             lt::torrent_removed_alert *al = lt::alert_cast<lt::torrent_removed_alert>(alert);
             torrent_ptr &torrent = torrents_.at(al->info_hash);
-            throw new std::exception();
+
             remove_torrent_files(torrent);
             on_torrent_removed_.emit(torrent);
             torrents_.erase(al->info_hash);
