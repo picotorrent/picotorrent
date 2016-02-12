@@ -1,6 +1,6 @@
 #include <picotorrent/core/add_request.hpp>
 
-#include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/torrent_info.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
@@ -12,7 +12,7 @@
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace lt = libtorrent;
-using namespace picotorrent::common;
+using picotorrent::core::to_wstring;
 using picotorrent::core::add_request;
 using picotorrent::core::torrent_info;
 

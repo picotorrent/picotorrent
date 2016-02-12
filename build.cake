@@ -166,7 +166,9 @@ Task("Build-Portable-Package")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.exe"),
+        BuildDirectory + File("PicoTorrentCore.dll"),
         BuildDirectory + File("PicoTorrent.pdb"),
+        BuildDirectory + File("PicoTorrentCore.pdb"),
         BuildDirectory + Directory("lang") + File("1031.json"),
         BuildDirectory + Directory("lang") + File("1053.json")
     };
@@ -202,8 +204,8 @@ Task("Sign")
     .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
     .Does(() =>
 {
-    var file = BuildDirectory + File("PicoTorrent.exe");
-    SignTool(file);
+    SignTool(BuildDirectory + File("PicoTorrent.exe"));
+    SignTool(BuildDirectory + File("PicoTorrentCore.dll"));
 });
 
 Task("Sign-Installer")

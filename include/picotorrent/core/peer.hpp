@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <picotorrent/common.hpp>
 #include <string>
 
 namespace libtorrent
@@ -15,18 +16,18 @@ namespace core
     class peer
     {
     public:
-        peer(const libtorrent::peer_info &pi);
-        peer(const peer &that);
+        DLL_EXPORT peer(const libtorrent::peer_info &pi);
+        DLL_EXPORT peer(const peer &that);
 
-        ~peer();
+        DLL_EXPORT ~peer();
 
-        std::string client() const;
-        int download_rate() const;
-        std::string flags_str() const;
-        std::string id() const;
-        std::string ip() const;
-        int port() const;
-        int upload_rate() const;
+        DLL_EXPORT std::string client() const;
+        DLL_EXPORT int download_rate() const;
+        DLL_EXPORT std::string flags_str() const;
+        DLL_EXPORT std::string id() const;
+        DLL_EXPORT std::string ip() const;
+        DLL_EXPORT int port() const;
+        DLL_EXPORT int upload_rate() const;
 
     private:
         std::shared_ptr<libtorrent::peer_info> pi_;

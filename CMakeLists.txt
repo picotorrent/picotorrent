@@ -28,40 +28,30 @@ else(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PICO_ARCH "x86")
 endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
-configure_file("${CMAKE_SOURCE_DIR}/src/common/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/common/version_info.cpp" @ONLY)
+configure_file("${CMAKE_SOURCE_DIR}/src/core/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/core/version_info.cpp" @ONLY)
 
 set(BOOST_ROOT      $ENV{BOOST_ROOT})
 set(LIBTORRENT_ROOT $ENV{LIBTORRENT_ROOT})
 set(OPENSSL_ROOT    $ENV{OPENSSL_ROOT})
 
-set(PICOAPP_SOURCES
-    src/app/application
-    src/app/command_line
-    src/app/message_loop
-    src/app/controllers/add_torrent_controller
-    src/app/controllers/application_close_controller
-    src/app/controllers/application_update_controller
-    src/app/controllers/move_torrent_controller
-    src/app/controllers/notifyicon_context_menu_controller
-    src/app/controllers/remove_torrent_controller
-    src/app/controllers/torrent_details_controller
-    src/app/controllers/torrent_context_menu_controller
-    src/app/controllers/unhandled_exception_controller
-    src/app/controllers/view_preferences_controller
-)
+set(PICOTORRENTCORE_SOURCES
+    # File system components
+    src/core/filesystem/directory
+    src/core/filesystem/file
+    src/core/filesystem/path
 
-set(PICOCOMMON_SOURCES
-    src/common/environment
-    src/common/string_operations
-    src/common/version_info
-)
+    # Misc
+    src/core/environment
+    src/core/string_operations
+    src/core/version_info
 
-set(PICOCONFIG_SOURCES
-    src/config/configuration
-)
+    # Logging components
+    src/core/logging/log
+    src/core/logging/log_record
 
-set(PICOCORE_SOURCES
+    # BitTorrent components
     src/core/add_request
+    src/core/configuration
     src/core/is_valid_torrent_file
     src/core/hash
     src/core/peer
@@ -73,61 +63,62 @@ set(PICOCORE_SOURCES
     src/core/tracker
 )
 
-set(PICOFS_SOURCES
-    src/filesystem/directory
-    src/filesystem/file
-    src/filesystem/path
-)
-
-set(PICOLOGGING_SOURCES
-    src/logging/log
-    src/logging/log_record
-)
-
-set(PICONET_SOURCES
-    src/net/http_client
-    src/net/http_request
-    src/net/http_response
-    src/net/uri
-)
-
-set(PICOUI_SOURCES
-    src/ui/controls/control_base
-    src/ui/controls/list_view
-    src/ui/controls/menu
-    src/ui/dialogs/dialog_base
-    src/ui/dialogs/about_dialog
-    src/ui/dialogs/add_torrent_dialog
-    src/ui/property_sheets/property_sheet_page
-    src/ui/property_sheets/details/files_page
-    src/ui/property_sheets/details/overview_page
-    src/ui/property_sheets/details/peers_page
-    src/ui/property_sheets/details/trackers_page
-    src/ui/property_sheets/preferences/advanced_page
-    src/ui/property_sheets/preferences/connection_page
-    src/ui/property_sheets/preferences/downloads_page
-    src/ui/property_sheets/preferences/general_page
-    src/ui/file_dialog_callback
-    src/ui/main_window
-    src/ui/notify_icon
-    src/ui/notifyicon_context_menu
-    src/ui/open_file_dialog
-    src/ui/open_torrent_dialog
-    src/ui/scaler
-    src/ui/sleep_manager
-    src/ui/sort
-    src/ui/task_dialog
-    src/ui/taskbar_list
-    src/ui/torrent_context_menu
-    src/ui/torrent_list_item
-    src/ui/torrent_list_view
+set(PICOTORRENT_SOURCES
+    src/client/application
+    src/client/command_line
+    src/client/message_loop
+    src/client/controllers/add_torrent_controller
+    src/client/controllers/application_close_controller
+    src/client/controllers/application_update_controller
+    src/client/controllers/move_torrent_controller
+    src/client/controllers/notifyicon_context_menu_controller
+    src/client/controllers/remove_torrent_controller
+    src/client/controllers/torrent_details_controller
+    src/client/controllers/torrent_context_menu_controller
+    src/client/controllers/unhandled_exception_controller
+    src/client/controllers/view_preferences_controller
+    src/client/i18n/translator
+    src/client/net/http_client
+    src/client/net/http_response
+    src/client/net/uri
+    src/client/ui/controls/control_base
+    src/client/ui/controls/list_view
+    src/client/ui/controls/menu
+    src/client/ui/dialogs/dialog_base
+    src/client/ui/dialogs/about_dialog
+    src/client/ui/dialogs/add_torrent_dialog
+    src/client/ui/property_sheets/property_sheet_page
+    src/client/ui/property_sheets/details/files_page
+    src/client/ui/property_sheets/details/overview_page
+    src/client/ui/property_sheets/details/peers_page
+    src/client/ui/property_sheets/details/trackers_page
+    src/client/ui/property_sheets/preferences/advanced_page
+    src/client/ui/property_sheets/preferences/connection_page
+    src/client/ui/property_sheets/preferences/downloads_page
+    src/client/ui/property_sheets/preferences/general_page
+    src/client/ui/file_dialog_callback
+    src/client/ui/main_window
+    src/client/ui/notify_icon
+    src/client/ui/notifyicon_context_menu
+    src/client/ui/open_file_dialog
+    src/client/ui/open_torrent_dialog
+    src/client/ui/scaler
+    src/client/ui/sleep_manager
+    src/client/ui/sort
+    src/client/ui/task_dialog
+    src/client/ui/taskbar_list
+    src/client/ui/torrent_context_menu
+    src/client/ui/torrent_list_item
+    src/client/ui/torrent_list_view
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
 include_directories(
     include/
@@ -153,86 +144,28 @@ add_definitions(
 )
 
 add_library(
-    PicoApp
-    STATIC
-    ${PICOAPP_SOURCES}
-)
-
-add_library(
-    PicoCommon
-    STATIC
-    ${PICOCOMMON_SOURCES}
-)
-
-add_library(
-    PicoConfig
-    STATIC
-    ${PICOCONFIG_SOURCES}
-)
-
-add_library(
-    PicoFileSystem
-    STATIC
-    ${PICOFS_SOURCES}
-)
-
-add_library(
-    PicoCore
-    STATIC
-    ${PICOCORE_SOURCES}
-)
-
-add_library(
-    PicoI18n
-    STATIC
-    src/i18n/translator
-)
-
-add_library(
-    PicoLogging
-    STATIC
-    ${PICOLOGGING_SOURCES}
-)
-
-add_library(
-    PicoNet
-    STATIC
-    ${PICONET_SOURCES}
-)
-
-add_library(
-    PicoUI
-    STATIC
-    ${PICOUI_SOURCES}
+    PicoTorrentCore
+    SHARED
+    ${PICOTORRENTCORE_SOURCES}
 )
 
 add_executable(
     PicoTorrent
     WIN32
+    ${PICOTORRENT_SOURCES}
     src/main
 
     # The resources belong to the application itself
     # to avoid linker issues.
-    src/resources/pico.rc
+    src/client/pico.rc
 )
 
 target_link_libraries(
-    PicoApp
-    PicoCore
-    PicoFileSystem
-    PicoI18n
-    PicoUI
-    comctl32
-)
-
-target_link_libraries(
-    PicoCore
-    PicoCommon
-    PicoConfig
-    PicoLogging
+    PicoTorrentCore
 
     dbghelp
     iphlpapi
+    shlwapi
 
     # Boost.Random
     debug     libboost_random-vc140-mt-gd-1_60
@@ -252,24 +185,11 @@ target_link_libraries(
 )
 
 target_link_libraries(
-    PicoFileSystem
-    shlwapi
-)
-
-target_link_libraries(
-    PicoNet
-    winhttp
-)
-
-target_link_libraries(
-    PicoUI
-    PicoI18n
-    PicoNet
-
-    UxTheme
-)
-
-target_link_libraries(
     PicoTorrent
-    PicoApp
+
+    PicoTorrentCore
+
+    comctl32
+    UxTheme
+    winhttp
 )
