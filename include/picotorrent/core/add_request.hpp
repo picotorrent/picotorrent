@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <picotorrent/common.hpp>
 #include <string>
 
 namespace libtorrent
@@ -20,18 +21,18 @@ namespace core
         friend class session;
 
     public:
-        explicit add_request();
-        ~add_request();
+        DLL_EXPORT explicit add_request();
+        DLL_EXPORT ~add_request();
 
-        int file_priority(int file_index);
-        std::wstring name();
-        std::wstring save_path();
-        std::shared_ptr<torrent_info> torrent_info();
-        std::wstring url();
-        void set_file_priority(int file_index, int priority);
-        void set_save_path(const std::wstring &path);
-        void set_torrent_info(const std::shared_ptr<core::torrent_info> &file);
-        void set_url(const std::wstring &url);
+        DLL_EXPORT int file_priority(int file_index);
+        DLL_EXPORT std::wstring name();
+        DLL_EXPORT std::wstring save_path();
+        DLL_EXPORT std::shared_ptr<torrent_info> torrent_info();
+        DLL_EXPORT std::wstring url();
+        DLL_EXPORT void set_file_priority(int file_index, int priority);
+        DLL_EXPORT void set_save_path(const std::wstring &path);
+        DLL_EXPORT void set_torrent_info(const std::shared_ptr<core::torrent_info> &file);
+        DLL_EXPORT void set_url(const std::wstring &url);
 
     private:
         std::unique_ptr<libtorrent::add_torrent_params> params_;

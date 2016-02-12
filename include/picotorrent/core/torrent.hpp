@@ -7,8 +7,10 @@
 #include <string>
 #include <vector>
 
-#include <picotorrent/common/signals/signal.hpp>
+#include <picotorrent/common.hpp>
+#include <picotorrent/core/signals/signal.hpp>
 #include <picotorrent/core/torrent_state.hpp>
+#include <picotorrent/core/tracker_status.hpp>
 
 namespace libtorrent
 {
@@ -28,7 +30,6 @@ namespace core
     class torrent;
     class torrent_info;
     class tracker;
-    class tracker_status;
 
     typedef std::shared_ptr<torrent> torrent_ptr;
 
@@ -45,58 +46,55 @@ namespace core
             maximum = 7
         };
 
-        torrent(const libtorrent::torrent_status &st);
-        torrent(torrent&&) = default;
-        torrent& operator=(torrent&&) = default;
+        DLL_EXPORT torrent(const libtorrent::torrent_status &st);
+        DLL_EXPORT torrent(torrent&&) = default;
+        DLL_EXPORT torrent& operator=(torrent&&) = default;
 
-        torrent(const torrent &that) = delete;
-        ~torrent();
+        DLL_EXPORT torrent(const torrent &that) = delete;
+        DLL_EXPORT ~torrent();
 
-        int download_limit() const;
-        int download_rate();
-		int eta() const;
-        std::vector<int> file_priorities() const;
-        void file_priority(int file_index, int priority);
-        void file_progress(std::vector<int64_t> &progress, int flags = 0) const;
-        std::vector<peer> get_peers();
-        std::vector<tracker> get_trackers();
-        tracker_status& get_tracker_status(const std::string &url);
-        bool has_error() const;
-        std::shared_ptr<hash> info_hash();
-        bool is_checking() const;
-        bool is_forced() const;
-        bool is_paused() const;
-        bool is_queued() const;
-        bool is_seeding() const;
-        bool is_valid();
-        int max_connections() const;
-        int max_uploads() const;
-        void move_storage(const std::string &path);
-        std::string& name() const;
-        void pause();
-        float progress() const;
-        int queue_position();
-        void resume(bool force);
-        std::string save_path() const;
-        void set_download_limit(int limit);
-        void set_max_connections(int limit);
-        void set_max_uploads(int limit);
-        void set_sequential_download(bool val);
-        void set_upload_limit(int limit);
-        bool sequential_download() const;
-        int64_t size();
-        torrent_state state();
-        std::shared_ptr<const torrent_info> torrent_info() const;
-        uint64_t total_wanted();
-        uint64_t total_wanted_done();
-        int upload_limit() const;
-        int upload_rate();
+        DLL_EXPORT int download_limit() const;
+        DLL_EXPORT int download_rate();
+		DLL_EXPORT int eta() const;
+        DLL_EXPORT std::vector<int> file_priorities() const;
+        DLL_EXPORT void file_priority(int file_index, int priority);
+        DLL_EXPORT void file_progress(std::vector<int64_t> &progress, int flags = 0) const;
+        DLL_EXPORT std::vector<peer> get_peers();
+        DLL_EXPORT std::vector<tracker> get_trackers();
+        DLL_EXPORT tracker_status& get_tracker_status(const std::string &url);
+        DLL_EXPORT bool has_error() const;
+        DLL_EXPORT std::shared_ptr<hash> info_hash();
+        DLL_EXPORT bool is_checking() const;
+        DLL_EXPORT bool is_forced() const;
+        DLL_EXPORT bool is_paused() const;
+        DLL_EXPORT bool is_queued() const;
+        DLL_EXPORT bool is_seeding() const;
+        DLL_EXPORT bool is_valid();
+        DLL_EXPORT int max_connections() const;
+        DLL_EXPORT int max_uploads() const;
+        DLL_EXPORT void move_storage(const std::string &path);
+        DLL_EXPORT std::string& name() const;
+        DLL_EXPORT void pause();
+        DLL_EXPORT float progress() const;
+        DLL_EXPORT int queue_position();
+        DLL_EXPORT void resume(bool force);
+        DLL_EXPORT std::string save_path() const;
+        DLL_EXPORT void set_download_limit(int limit);
+        DLL_EXPORT void set_max_connections(int limit);
+        DLL_EXPORT void set_max_uploads(int limit);
+        DLL_EXPORT void set_sequential_download(bool val);
+        DLL_EXPORT void set_upload_limit(int limit);
+        DLL_EXPORT bool sequential_download() const;
+        DLL_EXPORT int64_t size();
+        DLL_EXPORT torrent_state state();
+        DLL_EXPORT std::shared_ptr<const torrent_info> torrent_info() const;
+        DLL_EXPORT uint64_t total_wanted();
+        DLL_EXPORT uint64_t total_wanted_done();
+        DLL_EXPORT int upload_limit() const;
+        DLL_EXPORT int upload_rate();
 
         // Signals
-        common::signals::signal_connector<void, void>& on_updated();
-
-        void register_updated_callback(const std::function<void()> &callback);
-        void unregister_updated_callback(const std::function<void()> &callback);
+        DLL_EXPORT signals::signal_connector<void, void>& on_updated();
 
     private:
         void handle(const libtorrent::scrape_reply_alert &alert);
@@ -105,10 +103,10 @@ namespace core
         void update_state();
 
         std::map<std::string, tracker_status> tracker_status_;
-        std::unique_ptr<libtorrent::torrent_status> status_;
+        std::shared_ptr<libtorrent::torrent_status> status_;
         torrent_state state_;
 
-        common::signals::signal<void, void> updated_signal_;
+        signals::signal<void, void> updated_signal_;
     };
 }
 }

@@ -8,7 +8,7 @@
 
 #include <windows.h>
 
-#include <picotorrent/app/application.hpp>
+#include <picotorrent/client/application.hpp>
 
 int WINAPI wWinMain(
     _In_ HINSTANCE     hInstance,
@@ -16,8 +16,8 @@ int WINAPI wWinMain(
     _In_ LPTSTR        lpCmdLine,
     _In_ int           nCmdShow)
 {
-    picotorrent::app::application::wait_for_restart(lpCmdLine);
-    picotorrent::app::application app;
+    picotorrent::client::application::wait_for_restart(lpCmdLine);
+    picotorrent::client::application app;
 
     if (!app.is_single_instance())
     {

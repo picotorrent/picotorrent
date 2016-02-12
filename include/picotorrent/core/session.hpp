@@ -7,7 +7,8 @@
 #include <vector>
 #include <windows.h>
 
-#include <picotorrent/common/signals/signal.hpp>
+#include <picotorrent/common.hpp>
+#include <picotorrent/core/signals/signal.hpp>
 
 namespace libtorrent
 {
@@ -28,23 +29,23 @@ namespace core
     class session
     {
     public:
-        session();
-        ~session();
+        DLL_EXPORT session();
+        DLL_EXPORT ~session();
 
-        void add_torrent(const std::shared_ptr<add_request> &add);
+        DLL_EXPORT void add_torrent(const std::shared_ptr<add_request> &add);
 
-        void load(HWND hWnd);
-        void unload();
+        DLL_EXPORT void load(HWND hWnd);
+        DLL_EXPORT void unload();
 
-        void notify();
+        DLL_EXPORT void notify();
 
-        void reload_settings();
-        void remove_torrent(const std::shared_ptr<torrent> &torrent, bool remove_data = false);
+        DLL_EXPORT void reload_settings();
+        DLL_EXPORT void remove_torrent(const std::shared_ptr<torrent> &torrent, bool remove_data = false);
 
-        common::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_added();
-        common::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_finished();
-        common::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_removed();
-        common::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_updated();
+        DLL_EXPORT core::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_added();
+        DLL_EXPORT core::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_finished();
+        DLL_EXPORT core::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_removed();
+        DLL_EXPORT core::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_updated();
 
     protected:
         void on_alert_notify();
@@ -71,10 +72,10 @@ namespace core
         HWND hWnd_;
 
         // Signals
-        common::signals::signal<void, const torrent_ptr&> on_torrent_added_;
-        common::signals::signal<void, const torrent_ptr&> on_torrent_finished_;
-        common::signals::signal<void, const torrent_ptr&> on_torrent_removed_;
-        common::signals::signal<void, const torrent_ptr&> on_torrent_updated_;
+        core::signals::signal<void, const torrent_ptr&> on_torrent_added_;
+        core::signals::signal<void, const torrent_ptr&> on_torrent_finished_;
+        core::signals::signal<void, const torrent_ptr&> on_torrent_removed_;
+        core::signals::signal<void, const torrent_ptr&> on_torrent_updated_;
     };
 }
 }

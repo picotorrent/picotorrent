@@ -1,17 +1,16 @@
 #include <picotorrent/core/session.hpp>
 
-#include <picotorrent/common/signals/signal.hpp>
-#include <picotorrent/common/environment.hpp>
-#include <picotorrent/common/string_operations.hpp>
-#include <picotorrent/common/version_info.hpp>
-#include <picotorrent/config/configuration.hpp>
+#include <picotorrent/core/environment.hpp>
+#include <picotorrent/core/string_operations.hpp>
+#include <picotorrent/core/version_info.hpp>
 #include <picotorrent/core/add_request.hpp>
+#include <picotorrent/core/configuration.hpp>
 #include <picotorrent/core/timer.hpp>
 #include <picotorrent/core/torrent.hpp>
-#include <picotorrent/filesystem/directory.hpp>
-#include <picotorrent/filesystem/file.hpp>
-#include <picotorrent/filesystem/path.hpp>
-#include <picotorrent/logging/log.hpp>
+#include <picotorrent/core/filesystem/directory.hpp>
+#include <picotorrent/core/filesystem/file.hpp>
+#include <picotorrent/core/filesystem/path.hpp>
+#include <picotorrent/core/logging/log.hpp>
 #include <semver.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
@@ -27,13 +26,13 @@
 
 #include <strsafe.h>
 
-namespace fs = picotorrent::filesystem;
+namespace fs = picotorrent::core::filesystem;
 namespace lt = libtorrent;
-using namespace picotorrent::common;
-using picotorrent::common::signals::signal;
-using picotorrent::common::signals::signal_connector;
-using picotorrent::config::configuration;
+using picotorrent::core::to_wstring;
+using picotorrent::core::signals::signal;
+using picotorrent::core::signals::signal_connector;
 using picotorrent::core::add_request;
+using picotorrent::core::configuration;
 using picotorrent::core::session;
 using picotorrent::core::timer;
 using picotorrent::core::torrent;
@@ -139,7 +138,7 @@ std::shared_ptr<lt::settings_pack> session::get_session_settings()
     // Set PicoTorrent peer id and user agent
     if (cfg.use_picotorrent_peer_id())
     {
-        std::wstring version = to_wstring(common::version_info::current_version());
+        std::wstring version = to_wstring(version_info::current_version());
 
         // Calculate user agent
         std::wstring user_agent = L"PicoTorrent/";
@@ -147,7 +146,7 @@ std::shared_ptr<lt::settings_pack> session::get_session_settings()
         StringCchPrintf(&user_agent[0], user_agent.size(), L"PicoTorrent/%s", version.c_str());
 
         // Calculate peer id
-        semver::version v(common::version_info::current_version());
+        semver::version v(version_info::current_version());
         std::wstring peer_id(L"-", 9);
         StringCchPrintf(&peer_id[0], peer_id.size(), L"-PI%d%02d%d-", v.getMajor(), v.getMinor(), v.getPatch());
 
@@ -433,7 +432,7 @@ void session::notify()
         {
             lt::torrent_removed_alert *al = lt::alert_cast<lt::torrent_removed_alert>(alert);
             torrent_ptr &torrent = torrents_.at(al->info_hash);
-
+            throw new std::exception();
             remove_torrent_files(torrent);
             on_torrent_removed_.emit(torrent);
             torrents_.erase(al->info_hash);

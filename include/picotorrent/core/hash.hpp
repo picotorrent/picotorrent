@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <picotorrent/common.hpp>
 #include <string>
 
 namespace libtorrent
@@ -15,9 +16,9 @@ namespace core
     class hash
     { 
     public:
-        hash(const libtorrent::sha1_hash &h);
+        DLL_EXPORT hash(const libtorrent::sha1_hash &h);
 
-        std::string to_string();
+        DLL_EXPORT std::string to_string();
 
     private:
         std::unique_ptr<libtorrent::sha1_hash> hash_;
