@@ -106,6 +106,7 @@ set(PICOUI_SOURCES
     src/ui/property_sheets/preferences/advanced_page
     src/ui/property_sheets/preferences/connection_page
     src/ui/property_sheets/preferences/downloads_page
+    src/ui/property_sheets/preferences/general_page
     src/ui/file_dialog_callback
     src/ui/main_window
     src/ui/notify_icon
@@ -182,6 +183,12 @@ add_library(
 )
 
 add_library(
+    PicoI18n
+    STATIC
+    src/i18n/translator
+)
+
+add_library(
     PicoLogging
     STATIC
     ${PICOLOGGING_SOURCES}
@@ -213,6 +220,7 @@ target_link_libraries(
     PicoApp
     PicoCore
     PicoFileSystem
+    PicoI18n
     PicoUI
     comctl32
 )
@@ -255,6 +263,7 @@ target_link_libraries(
 
 target_link_libraries(
     PicoUI
+    PicoI18n
     PicoNet
 
     UxTheme

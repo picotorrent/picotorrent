@@ -4,6 +4,7 @@
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/tracker.hpp>
 #include <picotorrent/core/tracker_status.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/ui/controls/list_view.hpp>
 #include <picotorrent/ui/resources.hpp>
 #include <picotorrent/ui/scaler.hpp>
@@ -44,7 +45,7 @@ trackers_page::trackers_page()
     set_flags(PSP_USETITLE);
     set_instance(GetModuleHandle(NULL));
     set_template_id(IDD_DETAILS_TRACKERS);
-    set_title_id(IDS_DETAILS_TRACKERS_TITLE);
+    set_title(TR("trackers"));
 }
 
 trackers_page::~trackers_page()
@@ -94,11 +95,11 @@ void trackers_page::on_init_dialog()
     HWND hList = GetDlgItem(handle(), ID_DETAILS_TRACKERS_LIST);
     list_ = std::make_unique<list_view>(hList);
 
-    list_->add_column(LIST_COLUMN_URL,    L"Url",           scaler::x(240));
-    list_->add_column(LIST_COLUMN_STATUS, L"Status",        scaler::x(100));
-    list_->add_column(LIST_COLUMN_UPDATE, L"Next announce", scaler::x(100), list_view::number);
-    list_->add_column(LIST_COLUMN_PEERS,  L"Peers",         scaler::x(80),  list_view::number);
-    list_->add_column(LIST_COLUMN_SCRAPE, L"Scrape",        scaler::x(80),  list_view::number);
+    list_->add_column(LIST_COLUMN_URL,    TR("url"),           scaler::x(240));
+    list_->add_column(LIST_COLUMN_STATUS, TR("status"),        scaler::x(100));
+    list_->add_column(LIST_COLUMN_UPDATE, TR("next_announce"), scaler::x(100), list_view::number);
+    list_->add_column(LIST_COLUMN_PEERS,  TR("peers"),         scaler::x(80),  list_view::number);
+    list_->add_column(LIST_COLUMN_SCRAPE, TR("scrape"),        scaler::x(80),  list_view::number);
 
     list_->on_display().connect(std::bind(&trackers_page::on_list_display, this, std::placeholders::_1));
 }

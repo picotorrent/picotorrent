@@ -10,8 +10,8 @@
 #include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/filesystem/file.hpp>
 #include <picotorrent/filesystem/path.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/logging/log.hpp>
-#include <picotorrent/ui/controls/menu.hpp>
 #include <picotorrent/ui/dialogs/add_torrent_dialog.hpp>
 #include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/open_file_dialog.hpp>
@@ -128,7 +128,7 @@ void add_torrent_controller::on_dialog_init()
 {
     for (auto &req : requests_)
     {
-        std::wstring name = L"Unknown name";
+        std::wstring name = TR("unknown_name");
 
         if (req->torrent_info())
         {
@@ -172,8 +172,15 @@ void add_torrent_controller::on_torrent_files_context_menu(const std::vector<int
         return;
     }
 
-    ui::controls::menu menu(IDR_TORRENT_FILE_MENU);
-    ui::controls::menu sub = menu.get_sub_menu(0);
+    HMENU prioMenu = CreateMenu();
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_MAX, TR("maximum"));
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_HIGH, TR("high"));
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_NORMAL, TR("normal"));
+    AppendMenu(prioMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_SKIP, TR("do_not_download"));
+
+    HMENU menu = CreatePopupMenu();
+    AppendMenu(menu, MF_POPUP, (UINT_PTR)prioMenu, TR("priority"));
 
     auto &req = requests_[dlg_->get_selected_torrent()];
 
@@ -185,16 +192,16 @@ void add_torrent_controller::on_torrent_files_context_menu(const std::vector<int
         switch (prio)
         {
         case core::torrent::do_not_download:
-            sub.check_item(TORRENT_FILE_PRIO_SKIP);
+            CheckMenuItem(prioMenu, TORRENT_FILE_PRIO_SKIP, MF_BYCOMMAND | MF_CHECKED);
             break;
         case core::torrent::normal:
-            sub.check_item(TORRENT_FILE_PRIO_NORMAL);
+            CheckMenuItem(prioMenu, TORRENT_FILE_PRIO_NORMAL, MF_BYCOMMAND | MF_CHECKED);
             break;
         case core::torrent::high:
-            sub.check_item(TORRENT_FILE_PRIO_HIGH);
+            CheckMenuItem(prioMenu, TORRENT_FILE_PRIO_HIGH, MF_BYCOMMAND | MF_CHECKED);
             break;
         case core::torrent::maximum:
-            sub.check_item(TORRENT_FILE_PRIO_MAX);
+            CheckMenuItem(prioMenu, TORRENT_FILE_PRIO_MAX, MF_BYCOMMAND | MF_CHECKED);
             break;
         }
     }
@@ -202,7 +209,14 @@ void add_torrent_controller::on_torrent_files_context_menu(const std::vector<int
     POINT p;
     GetCursorPos(&p);
 
-    int res = sub.show(dlg_->handle(), p);
+    int res = TrackPopupMenu(
+        menu,
+        TPM_NONOTIFY | TPM_RETURNCMD,
+        p.x,
+        p.y,
+        0,
+        wnd_->handle(),
+        NULL);
 
     for (int i : files)
     {
@@ -257,7 +271,7 @@ void add_torrent_controller::show_torrent(int index)
     {
         dlg_->clear_torrent_files();
         dlg_->disable_files();
-        dlg_->set_size(L"Unknown size");
+        dlg_->set_size(TR("unknown_size"));
     }
 
     dlg_->set_save_path(req->save_path());
@@ -276,7 +290,7 @@ std::wstring add_torrent_controller::get_save_path()
     dlg.set_guid(DLG_SAVE);
     dlg.set_folder(cfg.default_save_path());
     dlg.set_options(dlg.options() | FOS_PICKFOLDERS);
-    dlg.set_title(TEXT("Choose save path"));
+    dlg.set_title(TR("choose_save_path"));
 
     dlg.show(wnd_->handle());
 
@@ -295,14 +309,14 @@ std::wstring add_torrent_controller::get_prio_str(int prio)
     switch (prio)
     {
     case core::torrent::do_not_download:
-        return L"Do not download";
+        return TR("do_not_download");
     case core::torrent::normal:
-        return L"Normal";
+        return TR("normal");
     case core::torrent::high:
-        return L"High";
+        return TR("high");
     case core::torrent::maximum:
-        return L"Maximum";
+        return TR("maximum");
     default:
-        return L"Unknown priority";
+        return TR("unknown");
     }
 }

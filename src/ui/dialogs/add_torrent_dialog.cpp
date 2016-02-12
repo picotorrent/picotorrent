@@ -1,5 +1,6 @@
 #include <picotorrent/ui/dialogs/add_torrent_dialog.hpp>
 
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/ui/resources.hpp>
 #include <picotorrent/ui/controls/list_view.hpp>
 #include <commctrl.h>
@@ -119,7 +120,7 @@ BOOL add_torrent_dialog::on_command(int controlId, WPARAM wParam, LPARAM lParam)
         return TRUE;
     }
 
-    case 5001:
+    case ID_TORRENT:
     {
         switch (HIWORD(wParam))
         {
@@ -136,7 +137,7 @@ BOOL add_torrent_dialog::on_command(int controlId, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-    case 5005:
+    case ID_BROWSE:
     {
         if (save_path_cb_)
         {
@@ -151,15 +152,24 @@ BOOL add_torrent_dialog::on_command(int controlId, WPARAM wParam, LPARAM lParam)
 
 BOOL add_torrent_dialog::on_init_dialog()
 {
-    combo_ = GetDlgItem(handle(), 5001);
-    size_ = GetDlgItem(handle(), 5002);
-    save_path_ = GetDlgItem(handle(), 5003);
+    combo_ = GetDlgItem(handle(), ID_TORRENT);
+    size_ = GetDlgItem(handle(), ID_SIZE);
+    save_path_ = GetDlgItem(handle(), ID_SAVE_PATH);
+
+    // Localize
+    SetWindowText(handle(), TR("add_torrent_s"));
+    SetDlgItemText(handle(), ID_TORRENT_TEXT, TR("torrent"));
+    SetDlgItemText(handle(), ID_SIZE_TEXT, TR("size"));
+    SetDlgItemText(handle(), ID_SAVE_PATH_TEXT, TR("save_path"));
+    SetDlgItemText(handle(), ID_BROWSE, TR("browse"));
+    SetDlgItemText(handle(), ID_STORAGE_GROUP, TR("storage"));
+    SetDlgItemText(handle(), IDOK, TR("add_torrent_s"));
 
     // Set up the files list view
-    files_ = std::make_shared<controls::list_view>(GetDlgItem(handle(), 5004));
-    files_->add_column(LIST_COLUMN_NAME, L"Name", 270);
-    files_->add_column(LIST_COLUMN_SIZE, L"Size", 80, controls::list_view::number);
-    files_->add_column(LIST_COLUMN_PRIO, L"Priority", 120);
+    files_ = std::make_shared<controls::list_view>(GetDlgItem(handle(), ID_FILES));
+    files_->add_column(LIST_COLUMN_NAME, TR("name"), 270);
+    files_->add_column(LIST_COLUMN_SIZE, TR("size"), 80, controls::list_view::number);
+    files_->add_column(LIST_COLUMN_PRIO, TR("priority"), 120);
     files_->on_display().connect(std::bind(&add_torrent_dialog::on_list_display, this, std::placeholders::_1));
 
     if (init_cb_)

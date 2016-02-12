@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <picotorrent/app/controllers/move_torrent_controller.hpp>
 #include <picotorrent/app/controllers/remove_torrent_controller.hpp>
+#include <picotorrent/app/controllers/torrent_details_controller.hpp>
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/hash.hpp>
 #include <picotorrent/core/session.hpp>
@@ -123,6 +124,13 @@ void torrent_context_menu_controller::execute(const POINT &p)
         open_and_select_item(
             to_wstring(sp),
             to_wstring(n));
+        break;
+    }
+
+    case TORRENT_CONTEXT_MENU_DETAILS:
+    {
+        torrent_details_controller details_controller(wnd_, torrents_[0]);
+        details_controller.execute();
         break;
     }
     }

@@ -4,6 +4,7 @@
 #include <picotorrent/config/configuration.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/task_dialog.hpp>
 
@@ -41,12 +42,12 @@ void remove_torrent_controller::execute(bool remove_files)
     {
         task_dialog dlg;
         dlg.set_common_buttons(TDCBF_OK_BUTTON | TDCBF_CANCEL_BUTTON);
-        dlg.set_content(L"This will remove any downloaded files for this torrent.");
+        dlg.set_content(TR("confirm_remove_description"));
         dlg.set_main_icon(TD_WARNING_ICON);
-        dlg.set_main_instruction(L"Confirm remove");
+        dlg.set_main_instruction(TR("confirm_remove"));
         dlg.set_parent(wnd_->handle());
         dlg.set_title(L"PicoTorrent");
-        dlg.set_verification_text(L"Do not ask again");
+        dlg.set_verification_text(TR("do_not_ask_again"));
 
         switch (dlg.show())
         {

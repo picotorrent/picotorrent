@@ -3,6 +3,7 @@
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/filesystem/path.hpp>
+#include <picotorrent/i18n/translator.hpp>
 #include <picotorrent/ui/main_window.hpp>
 #include <picotorrent/ui/open_file_dialog.hpp>
 
@@ -36,7 +37,7 @@ void move_torrent_controller::execute()
     }
     
     dlg.set_options(dlg.options() | FOS_PICKFOLDERS);
-    dlg.set_title(TEXT("Select destination"));
+    dlg.set_title(TR("select_destination"));
 
     dlg.show(wnd_->handle());
 

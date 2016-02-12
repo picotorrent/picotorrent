@@ -29,11 +29,11 @@ namespace property_sheets
         common::signals::signal_connector<void, void>& on_init();
         common::signals::signal_connector<bool, void>& on_validate();
 
+        HWND handle();
         void show_error_message(const std::wstring &text);
 
     protected:
         INT_PTR dlg_proc(HWND, UINT, WPARAM, LPARAM);
-        HWND handle();
         bool is_initializing();
         virtual BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam) { return FALSE; }
         virtual void on_init_dialog() { }
@@ -45,7 +45,7 @@ namespace property_sheets
         void set_flags(DWORD flags);
         void set_instance(HINSTANCE instance);
         void set_template_id(int id);
-        void set_title_id(int id);
+        void set_title(const std::wstring &title);
 
         static INT_PTR CALLBACK dlg_proc_proxy(
             _In_ HWND   hwndDlg,
@@ -58,6 +58,7 @@ namespace property_sheets
         bool is_initializing_;
 
         HWND handle_;
+        std::wstring title_;
         std::unique_ptr<PROPSHEETPAGE> page_;
 
         // Signals

@@ -15,10 +15,14 @@ namespace app
 
         std::vector<filesystem::path> files() const;
         std::vector<std::wstring> magnet_links() const;
+        bool restart() const;
+        int prev_process_id() const;
 
     private:
         std::vector<std::wstring> magnets_;
         std::vector<filesystem::path> files_;
+        bool restart_;
+        int prev_process_id_;
     };
 }
 }
