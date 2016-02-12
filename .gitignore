@@ -1,7 +1,7 @@
 build-x64/
 build-x86/
 chocolatey/tools/chocolateyinstall.ps1
-src/common/version_info.cpp
+src/core/version_info.cpp
 tools/Cake
 tools/Cake.CMake
 tools/nuget.exe
