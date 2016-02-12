@@ -101,10 +101,12 @@ LONG log::on_unhandled_exception(PEXCEPTION_POINTERS exceptionInfo)
     frame.AddrStack.Mode = AddrModeFlat;
 
 #ifdef _WIN64
+    DWORD machineType = IMAGE_FILE_MACHINE_AMD64;
     frame.AddrFrame.Offset = context->Rbp;
     frame.AddrPC.Offset = context->Rip;
     frame.AddrStack.Offset = context->Rsp;
 #else
+    DWORD machineType = IMAGE_FILE_MACHINE_I386;
     frame.AddrFrame.Offset = context->Ebp;
     frame.AddrPC.Offset = context->Eip;
     frame.AddrStack.Offset = context->Esp;
@@ -171,7 +173,7 @@ LONG log::on_unhandled_exception(PEXCEPTION_POINTERS exceptionInfo)
         }
 
         if (!StackWalk(
-            IMAGE_FILE_MACHINE_AMD64,
+            machineType,
             GetCurrentProcess(),
             GetCurrentThread(),
             &frame,
