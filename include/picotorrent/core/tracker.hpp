@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <memory>
+#include <picotorrent/common.hpp>
 #include <string>
 
 namespace libtorrent
@@ -24,15 +25,15 @@ namespace core
             updating
         };
 
-        tracker(const libtorrent::announce_entry &entry);
-        tracker(const tracker &that);
-        ~tracker();
+        DLL_EXPORT tracker(const libtorrent::announce_entry &entry);
+        DLL_EXPORT tracker(const tracker &that);
+        DLL_EXPORT ~tracker();
 
-        std::string message() const;
-        std::chrono::seconds next_announce_in() const;
-        int scrape_complete() const;
-        status_t status() const;
-        std::string url() const;
+        DLL_EXPORT std::string message() const;
+        DLL_EXPORT std::chrono::seconds next_announce_in() const;
+        DLL_EXPORT int scrape_complete() const;
+        DLL_EXPORT status_t status() const;
+        DLL_EXPORT std::string url() const;
 
     private:
         std::shared_ptr<libtorrent::announce_entry> ae_;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <picotorrent/common.hpp>
 #include <windows.h>
 
 namespace picotorrent
@@ -10,11 +11,11 @@ namespace core
     class timer
     {
     public:
-        timer(const std::function<void()> &callback, int interval);
-        ~timer();
+        DLL_EXPORT timer(const std::function<void()> &callback, int interval);
+        DLL_EXPORT ~timer();
 
-        void start();
-        void stop();
+        DLL_EXPORT void start();
+        DLL_EXPORT void stop();
 
     private:
         static void CALLBACK callback(PVOID lpParameter, BOOLEAN TimerOrWaitFired);

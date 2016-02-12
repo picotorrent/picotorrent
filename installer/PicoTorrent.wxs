@@ -34,6 +34,7 @@
 
                     <Component Id="C_PicoTorrent" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205">
                         <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" Source="$(var.BuildDirectory)\PicoTorrent.exe" KeyPath="yes" />
+                        <File Id="F_PicoTorrentCore.dll" Name="PicoTorrentCore.dll" Source="$(var.BuildDirectory)\PicoTorrentCore.dll" />
 
                         <!-- Shortcut -->
                         <Shortcut Id="S_PicoTorrent"
@@ -169,8 +170,12 @@
                                        Type="string" />
                     </Component>
 
-                    <Component Id="C_DebugSymbols" Guid="501628a2-baa0-4a6e-a1ad-cd6b8de5f32f">
+                    <Component Id="C_PicoDebug">
                         <File Id="F_PicoTorrent.pdb" Name="PicoTorrent.pdb" Source="$(var.BuildDirectory)\PicoTorrent.pdb" />
+                    </Component>
+
+                    <Component Id="C_PicoCoreDebug">
+                        <File Id="F_PicoTorrentCore.pdb" Name="PicoTorrentCore.pdb" Source="$(var.BuildDirectory)\PicoTorrentCore.pdb" />
                     </Component>
                 </Directory>
             </Directory>
@@ -210,7 +215,8 @@
                      Description="The PDB files contains symbols which are helpful when debugging issues with PicoTorrent."
                      Level="1">
 
-                <ComponentRef Id="C_DebugSymbols" />
+                <ComponentRef Id="C_PicoDebug" />
+                <ComponentRef Id="C_PicoCoreDebug" />
             </Feature>
         </Feature>
 

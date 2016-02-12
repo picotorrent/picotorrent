@@ -1,6 +1,5 @@
 #include <picotorrent/core/torrent.hpp>
 
-#include <picotorrent/common/signals/signal.hpp>
 #include <picotorrent/core/hash.hpp>
 #include <picotorrent/core/peer.hpp>
 #include <picotorrent/core/torrent_info.hpp>
@@ -17,8 +16,8 @@
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace lt = libtorrent;
-using picotorrent::common::signals::signal;
-using picotorrent::common::signals::signal_connector;
+using picotorrent::core::signals::signal;
+using picotorrent::core::signals::signal_connector;
 using picotorrent::core::hash;
 using picotorrent::core::peer;
 using picotorrent::core::torrent;
@@ -28,7 +27,7 @@ using picotorrent::core::tracker;
 using picotorrent::core::tracker_status;
 
 torrent::torrent(const lt::torrent_status &st)
-    : status_(std::make_unique<lt::torrent_status>(st)),
+    : status_(std::make_shared<lt::torrent_status>(st)),
     state_(torrent_state::state_t::unknown)
 {
 }

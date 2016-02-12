@@ -1,13 +1,13 @@
 #include <picotorrent/core/is_valid_torrent_file.hpp>
 
-#include <picotorrent/filesystem/file.hpp>
-#include <picotorrent/filesystem/path.hpp>
+#include <picotorrent/core/filesystem/file.hpp>
+#include <picotorrent/core/filesystem/path.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
 #include <libtorrent/bdecode.hpp>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
-namespace fs = picotorrent::filesystem;
+namespace fs = picotorrent::core::filesystem;
 namespace lt = libtorrent;
 
 bool picotorrent::core::is_valid_torrent_file(const fs::path &path)

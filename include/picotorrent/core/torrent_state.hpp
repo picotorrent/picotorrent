@@ -1,5 +1,6 @@
 #pragma once
 
+#include <picotorrent/common.hpp>
 #include <string>
 
 namespace picotorrent
@@ -29,9 +30,9 @@ namespace core
             uploading_stalled
         };
 
-        torrent_state(state_t state);
-        operator int() const;
-        std::wstring to_string() const;
+        DLL_EXPORT torrent_state(state_t state);
+        DLL_EXPORT operator int() const;
+        DLL_EXPORT std::wstring to_string() const;
 
     private:
         state_t state_;
