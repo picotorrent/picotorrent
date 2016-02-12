@@ -138,7 +138,7 @@ std::wstring files_page::on_list_display(const std::pair<int, int> &p)
         case torrent::maximum:
             return TR("maximum");
         }
-        
+
         return L"<unknown priority>";
     }
     default:
@@ -153,8 +153,15 @@ void files_page::on_list_item_context_menu(const std::vector<int> &indices)
         return;
     }
 
-    ui::controls::menu menu(IDR_TORRENT_FILE_MENU);
-    ui::controls::menu sub = menu.get_sub_menu(0);
+    HMENU prioMenu = CreateMenu();
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_MAX, TR("maximum"));
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_HIGH, TR("high"));
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_NORMAL, TR("normal"));
+    AppendMenu(prioMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_SKIP, TR("do_not_download"));
+
+    HMENU menu = CreatePopupMenu();
+    AppendMenu(menu, MF_POPUP, (UINT_PTR)prioMenu, TR("priority"));
 
     // If only one file is selected, check that files priority
     if (indices.size() == 1)
@@ -164,16 +171,16 @@ void files_page::on_list_item_context_menu(const std::vector<int> &indices)
         switch (prio)
         {
         case torrent::do_not_download:
-            sub.check_item(TORRENT_FILE_PRIO_SKIP);
+            CheckMenuItem(prioMenu, TORRENT_FILE_PRIO_SKIP, MF_BYCOMMAND | MF_CHECKED);
             break;
         case torrent::normal:
-            sub.check_item(TORRENT_FILE_PRIO_NORMAL);
+            CheckMenuItem(prioMenu, TORRENT_FILE_PRIO_NORMAL, MF_BYCOMMAND | MF_CHECKED);
             break;
         case torrent::high:
-            sub.check_item(TORRENT_FILE_PRIO_HIGH);
+            CheckMenuItem(prioMenu, TORRENT_FILE_PRIO_HIGH, MF_BYCOMMAND | MF_CHECKED);
             break;
         case torrent::maximum:
-            sub.check_item(TORRENT_FILE_PRIO_MAX);
+            CheckMenuItem(prioMenu, TORRENT_FILE_PRIO_MAX, MF_BYCOMMAND | MF_CHECKED);
             break;
         }
     }
@@ -181,7 +188,14 @@ void files_page::on_list_item_context_menu(const std::vector<int> &indices)
     POINT p;
     GetCursorPos(&p);
 
-    int res = sub.show(handle(), p);
+    int res = TrackPopupMenu(
+        menu,
+        TPM_NONOTIFY | TPM_RETURNCMD,
+        p.x,
+        p.y,
+        0,
+        handle(),
+        NULL);
 
     for (int i : indices)
     {
