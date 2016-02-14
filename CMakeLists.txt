@@ -197,12 +197,13 @@ target_link_libraries(
 
 # Plugins
 add_library(
-    ChakraCorePlugin
+    JavaScriptPlugin
     SHARED
-    src/plugins/chakracore/plugin
+    src/plugins/javascript/duktape
+    src/plugins/javascript/plugin
 )
 
 target_link_libraries(
-    ChakraCorePlugin
+    JavaScriptPlugin
     PicoTorrentCore
 )
