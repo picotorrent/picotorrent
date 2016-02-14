@@ -1,6 +1,6 @@
 #include <picotorrent/client/i18n/translator.hpp>
 
-#include <picojson.hpp> 
+#include <picojson.hpp>
 #include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/configuration.hpp>
 #include <picotorrent/core/filesystem/file.hpp>
@@ -51,7 +51,7 @@ translator::translator()
         HGLOBAL data = LoadResource(instance_, rc);
         DWORD size = SizeofResource(instance_, rc);
         std::string json = static_cast<const char*>(LockResource(data));
-        
+
         pj::value v;
         pj::parse(v, json);
 
@@ -80,6 +80,11 @@ std::vector<translation> translator::get_available_translations()
 
     std::vector<translation> langs;
     langs.push_back(def);
+
+    if (!d.path().exists())
+    {
+        return langs;
+    }
 
     for (fs::path &path : d.get_files(d.path().combine(L"*.json")))
     {
