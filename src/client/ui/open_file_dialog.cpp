@@ -1,6 +1,7 @@
 #include <picotorrent/client/ui/open_file_dialog.hpp>
 
 #include <picotorrent/core/filesystem/path.hpp>
+#include <picotorrent/core/logging/log.hpp>
 #include <picotorrent/client/ui/file_dialog_callback.hpp>
 
 namespace fs = picotorrent::core::filesystem;
@@ -43,7 +44,13 @@ std::vector<fs::path> open_file_dialog::get_paths()
         items->GetItemAt(i, &item);
 
         PWSTR path = NULL;
-        item->GetDisplayName(SIGDN_FILESYSPATH, &path);
+        HRESULT res = item->GetDisplayName(SIGDN_FILESYSPATH, &path);
+
+        if (res != S_OK)
+        {
+            LOG(warning) << "Could not get display name from path: " << std::hex << res;
+            continue;
+        }
 
         fs::path p(path);
         paths.push_back(p);
