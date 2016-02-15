@@ -19,9 +19,13 @@ struct pico_req_t
     int callback_ref;
     int data_ref;
     void *data;
+    HANDLE iocp;
 };
 
-HANDLE io = NULL;
+struct PICOOVERLAPPED : public OVERLAPPED
+{
+    pico_req_t* req;
+};
 
 int pico_ref(duk_context *ctx)
 {
@@ -66,9 +70,37 @@ int pico_ref(duk_context *ctx)
     return ref;
 }
 
+void pico_unref(duk_context *ctx, int ref)
+{
+    if (!ref)
+    {
+        return;
+    }
+
+    // Get the "refs" array in the heap stash
+    duk_push_heap_stash(ctx);
+    duk_get_prop_string(ctx, -1, "refs");
+    duk_remove(ctx, -2);
+
+    // Insert a new link in the freelist
+
+    // refs[ref] = refs[0]
+    duk_get_prop_index(ctx, -1, 0);
+    duk_put_prop_index(ctx, -2, ref);
+    // refs[0] = ref
+    duk_push_int(ctx, ref);
+    duk_put_prop_index(ctx, -2, 0);
+
+    duk_pop(ctx);
+}
+
 pico_req_t* pico_setup_req(duk_context* ctx, int callback_index)
 {
     pico_req_t *req = static_cast<pico_req_t*>(duk_alloc(ctx, sizeof(*req)));
+
+    duk_get_global_string(ctx, "\xff" "iocp");
+    req->iocp = static_cast<HANDLE>(duk_get_pointer(ctx, -1));
+    duk_pop(ctx);
 
     duk_push_this(ctx);
     req->context = pico_ref(ctx);
@@ -91,9 +123,77 @@ pico_req_t* pico_setup_req(duk_context* ctx, int callback_index)
     return req;
 }
 
+pico_req_t* pico_cleanup_req(duk_context *ctx, pico_req_t *data) {
+    pico_unref(ctx, data->req_ref);
+    pico_unref(ctx, data->context);
+    pico_unref(ctx, data->callback_ref);
+    pico_unref(ctx, data->data_ref);
+    duk_free(ctx, data->data);
+    duk_free(ctx, data);
+    return NULL;
+}
+
+void pico_push_ref(duk_context *ctx, int ref)
+{
+    if (!ref)
+    {
+        duk_push_undefined(ctx);
+        return;
+    }
+
+    // Get the "refs" array in the heap stash
+    duk_push_heap_stash(ctx);
+    duk_get_prop_string(ctx, -1, "refs");
+    duk_remove(ctx, -2);
+
+    duk_get_prop_index(ctx, -1, ref);
+
+    duk_remove(ctx, -2);
+}
+
+void pico_fulfill_req(duk_context *ctx, pico_req_t *req, int nargs)
+{
+    if (req->callback_ref)
+    {
+        pico_push_ref(ctx, req->callback_ref);
+        
+        if (nargs)
+        {
+            duk_insert(ctx, -1 - nargs);
+        }
+
+        pico_push_ref(ctx, req->context);
+
+        if (nargs)
+        {
+            duk_insert(ctx, -1 - nargs);
+        }
+
+        if (duk_pcall_method(ctx, nargs) != 0)
+        {
+            LOG(error) << "Callback error: " << duk_safe_to_string(ctx, -1);
+        }
+
+        duk_pop(ctx);
+    }
+    else
+    {
+        duk_pop_n(ctx, nargs);
+    }
+}
+
 DWORD WINAPI run_fs_readdir(LPVOID lpParameter)
 {
-    pico_req_t *req = reinterpret_cast<pico_req_t*>(lpParameter);
+    PICOOVERLAPPED *po = new PICOOVERLAPPED();
+    po->req = static_cast<pico_req_t*>(lpParameter);
+
+    // Post to completion port
+    PostQueuedCompletionStatus(
+        po->req->iocp,
+        0,
+        NULL,
+        po);
+
     return 0;
 }
 
@@ -125,37 +225,58 @@ duk_ret_t dukopen_fs(duk_context *ctx)
     return 1;
 }
 
+duk_ret_t console_log(duk_context *ctx)
+{
+    LOG(info) << duk_require_string(ctx, 0);
+    return 0;
+}
+
 class javascript_plugin : public picotorrent::plugin
 {
 public:
-    void load()
+    javascript_plugin()
     {
-        // Create IOCP
-        io = CreateIoCompletionPort(
+        io_ = CreateIoCompletionPort(
             INVALID_HANDLE_VALUE,
             NULL,
             NULL,
             NULL);
+    }
 
+    void load()
+    {
+        is_running_ = true;
         thread_ = CreateThread(
             NULL,
             0,
             run,
-            NULL,
+            this,
             0,
             NULL);
     }
 
     void unload()
     {
-        LOG(info) << "javascript_plugin unloading";
+        LOG(info) << "Shutting down JS thread.";
+
+        is_running_ = false;
+        WaitForSingleObject(thread_, 1000);
+
+        LOG(info) << "Unloading done.";
+    }
+
+    HANDLE iocp_handle()
+    {
+        return io_;
     }
 
 private:
     static DWORD WINAPI run(LPVOID lpParameter)
     {
-        fs::file boot = get_script_root().combine(L"bootloader.js");
-        if (!boot.path().exists())
+        javascript_plugin *jsp = reinterpret_cast<javascript_plugin*>(lpParameter);
+
+        fs::directory scripts = get_script_root();
+        if (!scripts.path().exists())
         {
             LOG(error) << "Script root does not exist, JavaScript engine disabled.";
             return 1;
@@ -169,6 +290,10 @@ private:
             return 1;
         }
 
+        // Put a reference to the plugin in as a property on the global object
+        duk_push_pointer(ctx, jsp->iocp_handle());
+        duk_put_global_string(ctx, "\xff" "iocp");
+
         // Set up ref counting
         duk_push_heap_stash(ctx);
         duk_push_array(ctx);
@@ -177,28 +302,53 @@ private:
         duk_put_prop_string(ctx, -2, "refs");
         duk_pop(ctx);
 
+        // Set up console.log
+        duk_push_object(ctx);
+        duk_push_c_function(ctx, console_log, DUK_VARARGS);
+        duk_put_prop_string(ctx, -2, "log");
+        duk_put_global_string(ctx, "console");
+
         // Set up the native require function
         duk_get_global_string(ctx, "Duktape");
         duk_push_c_function(ctx, require, DUK_VARARGS);
         duk_put_prop_string(ctx, -2, "modSearch");
         duk_pop(ctx);
 
-        std::string p = to_string(boot.path().to_string());
-
-        if (duk_peval_file(ctx, p.c_str()) != 0)
+        for (fs::path &p : scripts.get_files(L"*.js"))
         {
-            LOG(error) << "Error when loading script: " << duk_safe_to_string(ctx, -1);
-        }
-        else
-        {
-            // RUn the IOCP thingy
-            DWORD bytes;
-            ULONG_PTR key;
-            LPOVERLAPPED overlapped;
+            std::string path = to_string(p.to_string());
 
-            while (GetQueuedCompletionStatus(io, &bytes, &key, &overlapped, INFINITE))
+            if (duk_peval_file(ctx, path.c_str()) != 0)
             {
-                printf("");
+                LOG(error) << "Error when loading script: " << duk_safe_to_string(ctx, -1);
+            }
+        }
+
+        // RUn the IOCP thingy
+        DWORD bytes;
+        ULONG_PTR key;
+        LPOVERLAPPED overlapped;
+
+        while(jsp->is_running_)
+        {
+            if (GetQueuedCompletionStatus(
+                jsp->io_,
+                &bytes,
+                &key,
+                &overlapped,
+                1000))
+            {
+                PICOOVERLAPPED *po = reinterpret_cast<PICOOVERLAPPED*>(overlapped);
+
+                if (po != nullptr)
+                {
+                    // Push result
+                    duk_push_undefined(ctx);
+                    duk_push_string(ctx, "Hello!");
+
+                    pico_fulfill_req(ctx, po->req, 2);
+                    pico_cleanup_req(ctx, po->req);
+                }
             }
         }
 
@@ -239,6 +389,8 @@ private:
         return path;
     }
 
+    bool is_running_;
+    HANDLE io_;
     HANDLE thread_;
 };
 
