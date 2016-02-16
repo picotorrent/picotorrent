@@ -48,7 +48,9 @@ void overview_page::on_init_dialog()
 
 int overview_page::dl_limit()
 {
-    return std::stoi(get_dlg_item_text(ID_DL_LIMIT));
+    std::wstring text = get_dlg_item_text(ID_DL_LIMIT);
+    if (text.empty()) { return -1; }
+    return std::stoi(text);
 }
 
 void overview_page::dl_limit(int limit)
@@ -58,7 +60,9 @@ void overview_page::dl_limit(int limit)
 
 int overview_page::ul_limit()
 {
-    return std::stoi(get_dlg_item_text(ID_UL_LIMIT));
+    std::wstring text = get_dlg_item_text(ID_UL_LIMIT);
+    if (text.empty()) { return -1; }
+    return std::stoi(text);
 }
 
 void overview_page::ul_limit(int limit)
@@ -68,7 +72,9 @@ void overview_page::ul_limit(int limit)
 
 int overview_page::max_connections()
 {
-    return std::stoi(get_dlg_item_text(ID_MAX_CONNECTIONS));
+    std::wstring text = get_dlg_item_text(ID_MAX_CONNECTIONS);
+    if (text.empty()) { return -1; }
+    return std::stoi(text);
 }
 
 void overview_page::max_connections(int max)
@@ -78,7 +84,9 @@ void overview_page::max_connections(int max)
 
 int overview_page::max_uploads()
 {
-    return std::stoi(get_dlg_item_text(ID_MAX_UPLOADS));
+    std::wstring text = get_dlg_item_text(ID_MAX_UPLOADS);
+    if (text.empty()) { return -1; }
+    return std::stoi(text);
 }
 
 void overview_page::max_uploads(int max)
