@@ -134,6 +134,7 @@
         "prompt_restart_title": "Restart required",
         "add_torrent": "Add torrent",
         "exit": "Exit",
-        "details": "Details"
+        "details": "Details",
+        "global_limits": "Global limits"
     }
 }

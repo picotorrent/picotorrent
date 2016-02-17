@@ -97,4 +97,7 @@ void downloads_page::on_init_dialog()
     SetDlgItemText(handle(), ID_DEFSAVEPATH_TEXT, TR("path"));
     SetDlgItemText(handle(), ID_PREFS_DEFSAVEPATH_BROWSE, TR("browse"));
     SetDlgItemText(handle(), ID_PREFS_PROMPTFORSAVEPATH, TR("prompt_for_save_path"));
+    SetDlgItemText(handle(), ID_DL_PREFS_LIMITS_GROUP, TR("global_limits"));
+    SetDlgItemText(handle(), ID_PREFS_GLOBAL_DL_LIMIT_TEXT, TR("dl_limit"));
+    SetDlgItemText(handle(), ID_PREFS_GLOBAL_UL_LIMIT_TEXT, TR("ul_limit"));
 }
