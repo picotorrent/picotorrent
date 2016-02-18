@@ -437,6 +437,12 @@ void session::notify()
             if (al->handle.torrent_file())
             {
                 save_torrent(*al->handle.torrent_file());
+
+                fs::directory torrents = environment::get_data_path().combine(L"Torrents");
+                std::wstring hash = lt::convert_to_wstring(lt::to_hex(al->handle.info_hash().to_string()));
+                fs::path torrent(torrents.path().combine((hash + L".torrent")));
+
+                hash_to_path_.insert({ al->handle.info_hash(), torrent.to_string() });
             }
             break;
         }
