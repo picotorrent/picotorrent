@@ -33,8 +33,8 @@
                     <Directory Id="LANGDIR" Name="lang" />
 
                     <Component Id="C_PicoTorrent" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205">
-                        <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" Source="$(var.BuildDirectory)\PicoTorrent.exe" KeyPath="yes" />
-                        <File Id="F_PicoTorrentCore.dll" Name="PicoTorrentCore.dll" Source="$(var.BuildDirectory)\PicoTorrentCore.dll" />
+                        <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" Source="$(var.PublishDirectory)\PicoTorrent.exe" KeyPath="yes" />
+                        <File Id="F_PicoTorrentCore.dll" Name="PicoTorrentCore.dll" Source="$(var.PublishDirectory)\PicoTorrentCore.dll" />
 
                         <!-- Shortcut -->
                         <Shortcut Id="S_PicoTorrent"
@@ -171,11 +171,11 @@
                     </Component>
 
                     <Component Id="C_PicoDebug">
-                        <File Id="F_PicoTorrent.pdb" Name="PicoTorrent.pdb" Source="$(var.BuildDirectory)\PicoTorrent.pdb" />
+                        <File Id="F_PicoTorrent.pdb" Name="PicoTorrent.pdb" Source="$(var.PublishDirectory)\PicoTorrent.pdb" />
                     </Component>
 
                     <Component Id="C_PicoCoreDebug">
-                        <File Id="F_PicoTorrentCore.pdb" Name="PicoTorrentCore.pdb" Source="$(var.BuildDirectory)\PicoTorrentCore.pdb" />
+                        <File Id="F_PicoTorrentCore.pdb" Name="PicoTorrentCore.pdb" Source="$(var.PublishDirectory)\PicoTorrentCore.pdb" />
                     </Component>
                 </Directory>
             </Directory>
@@ -185,11 +185,19 @@
 
         <ComponentGroup Id="CG_Languages" Directory="LANGDIR">
           <Component Id="C_Lang_1031">
-            <File Name="1031.json" Source="$(var.BuildDirectory)\lang\1031.json" />
+            <File Name="1031.json" Source="$(var.PublishDirectory)\lang\1031.json" />
+          </Component>
+
+          <Component Id="C_Lang_1049">
+            <File Name="1049.json" Source="$(var.PublishDirectory)\lang\1049.json" />
           </Component>
 
           <Component Id="C_Lang_1053">
-            <File Name="1053.json" Source="$(var.BuildDirectory)\lang\1053.json" />
+            <File Name="1053.json" Source="$(var.PublishDirectory)\lang\1053.json" />
+          </Component>
+
+          <Component Id="C_Lang_1062">
+            <File Name="1062.json" Source="$(var.PublishDirectory)\lang\1062.json" />
           </Component>
         </ComponentGroup>
 
