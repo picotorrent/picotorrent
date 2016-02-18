@@ -10,8 +10,15 @@
 #include <picotorrent/common.hpp>
 #include <picotorrent/core/signals/signal.hpp>
 
+namespace boost {
+    namespace system {
+        class error_code;
+    }
+}
+
 namespace libtorrent
 {
+    typedef boost::system::error_code error_code;
     class session;
     class sha1_hash;
     struct settings_pack;
@@ -49,6 +56,7 @@ namespace core
 
     protected:
         void on_alert_notify();
+        void on_load_torrent(const libtorrent::sha1_hash &hash, std::vector<char> &buf, libtorrent::error_code &ec);
 
     private:
         typedef std::unique_ptr<libtorrent::session> session_ptr;
@@ -65,6 +73,7 @@ namespace core
         void timer_callback();
 
         std::unique_ptr<timer> timer_;
+        std::map<libtorrent::sha1_hash, std::wstring> hash_to_path_;
         torrent_map_t torrents_;
         session_ptr sess_;
 

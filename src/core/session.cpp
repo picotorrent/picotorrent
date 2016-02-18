@@ -17,6 +17,7 @@
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/create_torrent.hpp>
+#include <libtorrent/error_code.hpp>
 #include <libtorrent/peer_info.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
@@ -77,6 +78,13 @@ void session::load(HWND hWnd)
 
     hWnd_ = hWnd;
     sess_->set_alert_notify(std::bind(&session::on_alert_notify, this));
+    sess_->set_load_function(
+        std::bind(
+            &session::on_load_torrent,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3));
 
     timer_->start();
 }
@@ -119,6 +127,30 @@ signal_connector<void, const session::torrent_ptr&>& session::on_torrent_updated
 void session::on_alert_notify()
 {
     PostMessage(hWnd_, WM_USER + 1337, NULL, NULL);
+}
+
+void session::on_load_torrent(const lt::sha1_hash &hash, std::vector<char> &buf, lt::error_code &ec)
+{
+    auto it = hash_to_path_.find(hash);
+
+    if (it == hash_to_path_.end())
+    {
+        LOG(error) << "Hash-to-path map did not contain the info hash.";
+        ec.assign(boost::system::errc::no_such_file_or_directory, boost::system::generic_category());
+        return;
+    }
+
+    fs::file torrent(it->second);
+
+    if (!torrent.path().exists())
+    {
+        LOG(error) << "Torrent file did not exist when lazy loading.";
+        ec.assign(boost::system::errc::no_such_file_or_directory, boost::system::generic_category());
+    }
+    else
+    {
+        torrent.read_all(buf);
+    }
 }
 
 std::shared_ptr<lt::settings_pack> session::get_session_settings()
@@ -316,6 +348,9 @@ void session::load_torrents()
             }
 
             params.ti = boost::make_shared<lt::torrent_info>(node);
+
+            // Insert into hash-to-path map
+            hash_to_path_.insert({ params.ti->info_hash(), torrent.path().to_string() });
         }
 
         params.flags |= lt::add_torrent_params::flags_t::flag_use_resume_save_path;
@@ -402,6 +437,12 @@ void session::notify()
             if (al->handle.torrent_file())
             {
                 save_torrent(*al->handle.torrent_file());
+
+                fs::directory torrents = environment::get_data_path().combine(L"Torrents");
+                std::wstring hash = lt::convert_to_wstring(lt::to_hex(al->handle.info_hash().to_string()));
+                fs::path torrent(torrents.path().combine((hash + L".torrent")));
+
+                hash_to_path_.insert({ al->handle.info_hash(), torrent.to_string() });
             }
             break;
         }
