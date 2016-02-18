@@ -108,8 +108,6 @@ set(PICOTORRENT_SOURCES
     src/client/ui/task_dialog
     src/client/ui/taskbar_list
     src/client/ui/torrent_context_menu
-    src/client/ui/torrent_list_item
-    src/client/ui/torrent_list_view
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
