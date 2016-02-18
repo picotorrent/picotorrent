@@ -38,6 +38,7 @@ namespace controls
         core::signals::signal_connector<float, const std::pair<int, int>&>& on_progress();
 
         void refresh();
+        void resize(int width, int height);
         void set_image_list(HIMAGELIST img);
         void set_item_count(int count);
 

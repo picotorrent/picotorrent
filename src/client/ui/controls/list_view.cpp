@@ -139,6 +139,18 @@ void list_view::set_item_count(int count)
     ListView_SetItemCountEx(handle(), count, LVSICF_NOSCROLL);
 }
 
+void list_view::resize(int width, int height)
+{
+    ::SetWindowPos(
+        handle(),
+        0,
+        0,
+        0,
+        width,
+        height,
+        SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
 LRESULT list_view::subclass_proc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
     list_view *lv = reinterpret_cast<list_view*>(dwRefData);

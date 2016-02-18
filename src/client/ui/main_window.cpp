@@ -6,17 +6,15 @@
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/filesystem/path.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
+#include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/dialogs/about_dialog.hpp>
 #include <picotorrent/client/ui/notify_icon.hpp>
 #include <picotorrent/client/ui/open_file_dialog.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
 #include <picotorrent/client/ui/sleep_manager.hpp>
-#include <picotorrent/client/ui/sort.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
 #include <picotorrent/client/ui/taskbar_list.hpp>
-#include <picotorrent/client/ui/torrent_list_item.hpp>
-#include <picotorrent/client/ui/torrent_list_view.hpp>
 #include <shellapi.h>
 #include <shobjidl.h>
 #include <strsafe.h>
@@ -28,14 +26,13 @@ namespace fs = picotorrent::core::filesystem;
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
 using picotorrent::core::to_wstring;
+using picotorrent::client::ui::controls::list_view;
 using picotorrent::client::ui::dialogs::about_dialog;
 using picotorrent::client::ui::main_window;
 using picotorrent::client::ui::notify_icon;
 using picotorrent::client::ui::open_file_dialog;
 using picotorrent::client::ui::scaler;
 using picotorrent::client::ui::taskbar_list;
-using picotorrent::client::ui::torrent_list_item;
-using picotorrent::client::ui::torrent_list_view;
 using picotorrent::client::ui::sleep_manager;
 
 const UINT main_window::TaskbarButtonCreated = RegisterWindowMessage(L"TaskbarButtonCreated");
@@ -108,8 +105,8 @@ void main_window::exit()
 
 void main_window::torrent_added(const std::shared_ptr<core::torrent> &t)
 {
-    items_.push_back(t);
-    list_view_->set_item_count((int)items_.size());
+    torrents_.push_back(t);
+    list_view_->set_item_count((int)torrents_.size());
 }
 
 void main_window::torrent_finished(const std::shared_ptr<core::torrent> &t)
@@ -120,12 +117,12 @@ void main_window::torrent_finished(const std::shared_ptr<core::torrent> &t)
 
 void main_window::torrent_removed(const std::shared_ptr<core::torrent> &t)
 {
-    auto &f = std::find(items_.begin(), items_.end(), t);
+    auto &f = std::find(torrents_.begin(), torrents_.end(), t);
 
-    if (f != items_.end())
+    if (f != torrents_.end())
     {
-        items_.erase(f);
-        list_view_->set_item_count((int)items_.size());
+        torrents_.erase(f);
+        list_view_->set_item_count((int)torrents_.size());
     }
 }
 
@@ -139,9 +136,9 @@ std::vector<std::shared_ptr<core::torrent>> main_window::get_selected_torrents()
 {
     std::vector<core::torrent_ptr> torrents;
 
-    for (int i : list_view_->get_selected_items())
+    for (int i : list_view_->get_selection())
     {
-        torrents.push_back(items_.at(i).torrent());
+        torrents.push_back(torrents_.at(i));
     }
 
     return torrents;
@@ -308,18 +305,17 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     case WM_CREATE:
     {
-        list_view_ = std::make_unique<torrent_list_view>(hWnd);
-        list_view_->create();
+        list_view_ = std::make_unique<list_view>(hWnd);
 
         // Add columns
-        list_view_->add_column(TR("name"),           scaler::x(280), LVCFMT_LEFT);
-        list_view_->add_column(TR("queue_position"), scaler::x(30),  LVCFMT_RIGHT);
-        list_view_->add_column(TR("size"),           scaler::x(80),  LVCFMT_RIGHT);
-        list_view_->add_column(TR("status"),         scaler::x(120), LVCFMT_LEFT);
-        list_view_->add_column(TR("progress"),       scaler::x(100), LVCFMT_LEFT);
-		list_view_->add_column(TR("eta"),            scaler::x(80),  LVCFMT_RIGHT);
-        list_view_->add_column(TR("dl"),             scaler::x(80),  LVCFMT_RIGHT);
-        list_view_->add_column(TR("ul"),             scaler::x(80),  LVCFMT_RIGHT);
+        list_view_->add_column(1, TR("name"),           scaler::x(280), list_view::text);
+        list_view_->add_column(2, TR("queue_position"), scaler::x(30),  list_view::number);
+        list_view_->add_column(3, TR("size"),           scaler::x(80),  list_view::number);
+        list_view_->add_column(4, TR("status"),         scaler::x(120), list_view::text);
+        list_view_->add_column(5, TR("progress"),       scaler::x(100), list_view::progress);
+		list_view_->add_column(6, TR("eta"),            scaler::x(80),  list_view::number);
+        list_view_->add_column(7, TR("dl"),             scaler::x(80),  list_view::number);
+        list_view_->add_column(8, TR("ul"),             scaler::x(80),  list_view::number);
 
         noticon_ = std::make_shared<notify_icon>(hWnd);
         noticon_->add();
@@ -362,125 +358,21 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
         switch (nmhdr->code)
         {
-        case LVN_COLUMNCLICK:
-        {
-            LPNMLISTVIEW lv = reinterpret_cast<LPNMLISTVIEW>(nmhdr);
-            int colIndex = lv->iSubItem;
-            torrent_list_view::sort_order currentOrder = list_view_->get_column_sort(colIndex);
-            torrent_list_view::sort_order newOrder = torrent_list_view::sort_order::asc;
-
-            if (currentOrder == torrent_list_view::sort_order::asc) newOrder = torrent_list_view::sort_order::desc;
-            if (currentOrder == torrent_list_view::sort_order::desc) newOrder = torrent_list_view::sort_order::asc;
-
-            for (int i = 0; i < list_view_->get_column_count(); i++)
-            {
-                list_view_->set_column_sort(i, torrent_list_view::sort_order::none);
-            }
-
-            using picotorrent::client::ui::sort;
-            bool isAscending = newOrder == torrent_list_view::sort_order::asc;
-
-            switch (colIndex)
-            {
-            case COL_NAME:
-                sort_items_ = [this, isAscending]()
-                {
-                    std::sort(items_.begin(), items_.end(), sort::by_name(isAscending));
-                };
-                break;
-            case COL_QUEUE_POSITION:
-                sort_items_ = [this, isAscending]()
-                {
-                    std::sort(items_.begin(), items_.end(), sort::by_queue_position(isAscending));
-                };
-                break;
-            case COL_SIZE:
-                sort_items_ = [this, isAscending]()
-                {
-                    std::sort(items_.begin(), items_.end(), sort::by_size(isAscending));
-                };
-                break;
-            case COL_PROGRESS:
-                sort_items_ = [this, isAscending]()
-                {
-                    std::sort(items_.begin(), items_.end(), sort::by_progress(isAscending));
-                };
-                break;
-			case COL_ETA:
-			{
-				sort_items_ = [this, isAscending]()
-				{
-					std::sort(items_.begin(), items_.end(), sort::by_eta(isAscending));
-				};
-				break;
-			}
-            case COL_DOWNLOAD_RATE:
-                sort_items_ = [this, isAscending]()
-                {
-                    std::sort(items_.begin(), items_.end(), sort::by_download_rate(isAscending));
-                };
-                break;
-            case COL_UPLOAD_RATE:
-                sort_items_ = [this, isAscending]()
-                {
-                    std::sort(items_.begin(), items_.end(), sort::by_upload_rate(isAscending));
-                };
-                break;
-            }
-
-            if (sort_items_)
-            {
-                sort_items_();
-            }
-
-            list_view_->set_column_sort(colIndex, newOrder);
-            list_view_->refresh();
-
-            break;
-        }
-        case LVN_GETDISPINFO:
-        {
-            NMLVDISPINFO* inf = reinterpret_cast<NMLVDISPINFO*>(nmhdr);
-
-            if (inf->item.iItem == -1
-                || items_.size() == 0)
-            {
-                break;
-            }
-
-            const torrent_list_item &item = items_.at(inf->item.iItem);
-            list_view_->on_getdispinfo(inf, item);
-
-            break;
-        }
         case LVN_ITEMACTIVATE:
         {
             if (torrent_activated_cb)
             {
-                int index = list_view_->get_selected_items()[0];
-                const torrent_list_item &item = items_.at(index);
-                torrent_activated_cb(item.torrent());
+                int index = list_view_->get_selection()[0];
+                const std::shared_ptr<core::torrent> &t = torrents_.at(index);
+                torrent_activated_cb(t);
             }
             break;
-        }
-        case NM_CUSTOMDRAW:
-        {
-            if (nmhdr->hwndFrom != list_view_->handle()
-                || items_.size() == 0)
-            {
-                break;
-            }
-
-            LPNMLVCUSTOMDRAW lpCD = (LPNMLVCUSTOMDRAW)nmhdr;
-            const torrent_list_item &item = items_.at(lpCD->nmcd.dwItemSpec);
-
-            return list_view_->on_custom_draw(lpCD, item);
         }
         case NM_RCLICK:
         {
             if (nmhdr->hwndFrom == list_view_->handle())
             {
-                std::vector<int> selectedItems = list_view_->get_selected_items();
+                std::vector<int> selectedItems = list_view_->get_selection();
 
                 if (selectedItems.size() == 0)
                 {
@@ -518,13 +410,13 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         uint64_t wanted = 0;
         bool hasActiveDownloads = false;
 
-        for (torrent_list_item &item : items_)
+        for (const core::torrent_ptr &t : torrents_)
         {
-            done += item.torrent()->total_wanted_done();
-            wanted += item.torrent()->total_wanted();
+            done += t->total_wanted_done();
+            wanted += t->total_wanted();
 
             // Is the current item actively downloading?
-            if (!item.torrent()->is_seeding() && !item.torrent()->is_paused() && (wanted + done > 0))
+            if (!t->is_seeding() && !t->is_paused() && (wanted + done > 0))
             {
                 hasActiveDownloads = true;
             }

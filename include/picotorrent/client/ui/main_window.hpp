@@ -18,10 +18,13 @@ namespace client
 {
 namespace ui
 {
+namespace controls
+{
+    class list_view;
+}
+
     class notify_icon;
     class taskbar_list;
-    class torrent_list_item;
-    class torrent_list_view;
     class sleep_manager;
 
     class main_window
@@ -69,9 +72,9 @@ namespace ui
         std::function<void(const std::shared_ptr<core::torrent>&)> torrent_activated_cb;
         std::function<void(const POINT &p, const std::vector<std::shared_ptr<core::torrent>>&)> torrent_context_cb_;
         std::function<void()> sort_items_;
-        std::vector<torrent_list_item> items_;
+        std::vector<std::shared_ptr<core::torrent>> torrents_;
         std::shared_ptr<notify_icon> noticon_;
-        std::unique_ptr<torrent_list_view> list_view_;
+        std::unique_ptr<controls::list_view> list_view_;
         std::shared_ptr<taskbar_list> taskbar_;
         std::wstring last_finished_save_path_;
         std::unique_ptr<sleep_manager> sleep_manager_;
