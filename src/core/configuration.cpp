@@ -71,6 +71,16 @@ void configuration::set_default_save_path(const std::wstring &path)
     set("default_save_path", path);
 }
 
+int configuration::download_rate_limit()
+{
+    return get_or_default("global_dl_rate_limit", 0);
+}
+
+void configuration::set_download_rate_limit(int dl_rate)
+{
+    set("global_dl_rate_limit", dl_rate);
+}
+
 std::wstring configuration::ignored_update()
 {
     return get_or_default<std::wstring>("ignored_update", L"");
@@ -219,6 +229,16 @@ int configuration::stop_tracker_timeout()
 std::wstring configuration::update_url()
 {
     return get_or_default<std::wstring>("update_url", L"https://api.github.com/repos/picotorrent/picotorrent/releases/latest");
+}
+
+int configuration::upload_rate_limit()
+{
+    return get_or_default("global_ul_rate_limit", 0);
+}
+
+void configuration::set_upload_rate_limit(int ul_rate)
+{
+    set("global_ul_rate_limit", ul_rate);
 }
 
 bool configuration::use_picotorrent_peer_id()

@@ -26,9 +26,22 @@ std::wstring downloads_page::downloads_path()
     return p;
 }
 
+int downloads_page::download_rate()
+{
+    TCHAR val[1024];
+    GetDlgItemText(handle(), ID_PREFS_GLOBAL_DL_LIMIT, val, ARRAYSIZE(val));
+    return std::stoi(val);
+}
+
 bool downloads_page::prompt_for_save_path()
 {
     return IsDlgButtonChecked(handle(), ID_PREFS_PROMPTFORSAVEPATH) == BST_CHECKED;
+}
+int downloads_page::upload_rate()
+{
+    TCHAR val[1024];
+    GetDlgItemText(handle(), ID_PREFS_GLOBAL_UL_LIMIT, val, ARRAYSIZE(val));
+    return std::stoi(val);
 }
 
 void downloads_page::set_downloads_path(const std::wstring &path)
@@ -36,15 +49,27 @@ void downloads_page::set_downloads_path(const std::wstring &path)
     SetDlgItemText(handle(), ID_PREFS_DEFSAVEPATH, path.c_str());
 }
 
+void downloads_page::set_download_rate(int dl_rate)
+{
+    SetDlgItemText(handle(), ID_PREFS_GLOBAL_DL_LIMIT, std::to_wstring(dl_rate).c_str());
+}
+
 void downloads_page::set_prompt_for_save_path(bool prompt)
 {
     CheckDlgButton(handle(), ID_PREFS_PROMPTFORSAVEPATH, prompt ? BST_CHECKED : BST_UNCHECKED);
+}
+
+void downloads_page::set_upload_rate(int ul_rate)
+{
+    SetDlgItemText(handle(), ID_PREFS_GLOBAL_UL_LIMIT, std::to_wstring(ul_rate).c_str());
 }
 
 BOOL downloads_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam)
 {
     switch (uCtrlId)
     {
+    case ID_PREFS_GLOBAL_DL_LIMIT:
+    case ID_PREFS_GLOBAL_UL_LIMIT:
     case ID_PREFS_DEFSAVEPATH:
         if (HIWORD(wParam) == EN_CHANGE && !is_initializing())
         {
@@ -99,5 +124,7 @@ void downloads_page::on_init_dialog()
     SetDlgItemText(handle(), ID_PREFS_PROMPTFORSAVEPATH, TR("prompt_for_save_path"));
     SetDlgItemText(handle(), ID_DL_PREFS_LIMITS_GROUP, TR("global_limits"));
     SetDlgItemText(handle(), ID_PREFS_GLOBAL_DL_LIMIT_TEXT, TR("dl_limit"));
+    SetDlgItemText(handle(), ID_PREFS_GLOBAL_DL_LIMIT_HELP, TR("dl_limit_help"));
     SetDlgItemText(handle(), ID_PREFS_GLOBAL_UL_LIMIT_TEXT, TR("ul_limit"));
+    SetDlgItemText(handle(), ID_PREFS_GLOBAL_UL_LIMIT_HELP, TR("ul_limit_help"));
 }

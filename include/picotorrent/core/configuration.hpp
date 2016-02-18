@@ -68,6 +68,9 @@ namespace core
         DLL_EXPORT std::wstring default_save_path();
         DLL_EXPORT void set_default_save_path(const std::wstring &path);
 
+        DLL_EXPORT int download_rate_limit();
+        DLL_EXPORT void set_download_rate_limit(int dl_rate);
+
         DLL_EXPORT std::wstring ignored_update();
         DLL_EXPORT void set_ignored_update(const std::wstring &version);
 
@@ -112,6 +115,9 @@ namespace core
 
         DLL_EXPORT int stop_tracker_timeout();
         DLL_EXPORT std::wstring update_url();
+
+        DLL_EXPORT int upload_rate_limit();
+        DLL_EXPORT void set_upload_rate_limit(int ul_rate);
 
         DLL_EXPORT bool use_picotorrent_peer_id();
         DLL_EXPORT void set_use_picotorrent_peer_id(bool value);

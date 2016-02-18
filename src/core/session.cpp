@@ -134,6 +134,8 @@ std::shared_ptr<lt::settings_pack> session::get_session_settings()
     settings->set_int(lt::settings_pack::alert_queue_size, cfg.alert_queue_size());
     settings->set_str(lt::settings_pack::listen_interfaces, to_string(iface));
     settings->set_int(lt::settings_pack::stop_tracker_timeout, cfg.stop_tracker_timeout());
+    settings->set_int(lt::settings_pack::download_rate_limit, cfg.download_rate_limit());
+    settings->set_int(lt::settings_pack::upload_rate_limit, cfg.upload_rate_limit());
 
     // Set PicoTorrent peer id and user agent
     if (cfg.use_picotorrent_peer_id())
