@@ -15,11 +15,22 @@
 #include <picotorrent/client/ui/sleep_manager.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
 #include <picotorrent/client/ui/taskbar_list.hpp>
+#include <chrono>
 #include <shellapi.h>
+#include <shlwapi.h>
 #include <shobjidl.h>
 #include <strsafe.h>
 
 #define PT_SESSION_NOTIFY WM_USER+1337
+
+#define COLUMN_NAME 1
+#define COLUMN_QUEUE_POSITION 2
+#define COLUMN_SIZE 3
+#define COLUMN_STATUS 4
+#define COLUMN_PROGRESS 5
+#define COLUMN_ETA 6
+#define COLUMN_DL 7
+#define COLUMN_UL 8
 
 namespace core = picotorrent::core;
 namespace fs = picotorrent::core::filesystem;
@@ -305,17 +316,36 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     case WM_CREATE:
     {
-        list_view_ = std::make_unique<list_view>(hWnd);
+        RECT rcClient;
+        GetClientRect(hWnd, &rcClient);
+
+        HWND hList = CreateWindowEx(
+            0,
+            WC_LISTVIEW,
+            0,
+            WS_CHILD | WS_VISIBLE | LVS_OWNERDATA | LVS_REPORT,
+            0,
+            0,
+            rcClient.right - rcClient.left,
+            rcClient.bottom - rcClient.top,
+            hWnd,
+            NULL,
+            GetModuleHandle(NULL),
+            NULL);
+
+        list_view_ = std::make_unique<list_view>(hList);
+        list_view_->on_display().connect(std::bind(&main_window::on_list_display, this, std::placeholders::_1));
+        list_view_->on_progress().connect(std::bind(&main_window::on_list_progress, this, std::placeholders::_1));
 
         // Add columns
-        list_view_->add_column(1, TR("name"),           scaler::x(280), list_view::text);
-        list_view_->add_column(2, TR("queue_position"), scaler::x(30),  list_view::number);
-        list_view_->add_column(3, TR("size"),           scaler::x(80),  list_view::number);
-        list_view_->add_column(4, TR("status"),         scaler::x(120), list_view::text);
-        list_view_->add_column(5, TR("progress"),       scaler::x(100), list_view::progress);
-		list_view_->add_column(6, TR("eta"),            scaler::x(80),  list_view::number);
-        list_view_->add_column(7, TR("dl"),             scaler::x(80),  list_view::number);
-        list_view_->add_column(8, TR("ul"),             scaler::x(80),  list_view::number);
+        list_view_->add_column(COLUMN_NAME,           TR("name"),           scaler::x(280), list_view::text);
+        list_view_->add_column(COLUMN_QUEUE_POSITION, TR("queue_position"), scaler::x(30),  list_view::number);
+        list_view_->add_column(COLUMN_SIZE,           TR("size"),           scaler::x(80),  list_view::number);
+        list_view_->add_column(COLUMN_STATUS,         TR("status"),         scaler::x(120), list_view::text);
+        list_view_->add_column(COLUMN_PROGRESS,       TR("progress"),       scaler::x(100), list_view::progress);
+        list_view_->add_column(COLUMN_ETA,            TR("eta"),            scaler::x(80),  list_view::number);
+        list_view_->add_column(COLUMN_DL,             TR("dl"),             scaler::x(80),  list_view::number);
+        list_view_->add_column(COLUMN_UL,             TR("ul"),             scaler::x(80),  list_view::number);
 
         noticon_ = std::make_shared<notify_icon>(hWnd);
         noticon_->add();
@@ -456,4 +486,119 @@ LRESULT main_window::wnd_proc_proxy(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 
     main_window* pWnd = reinterpret_cast<main_window*>(GetWindowLongPtr(hWnd, 0));
     return pWnd->wnd_proc(hWnd, uMsg, wParam, lParam);
+}
+
+std::wstring main_window::on_list_display(const std::pair<int, int> &p)
+{
+    const core::torrent_ptr &t = torrents_[p.second];
+
+    switch (p.first)
+    {
+    case COLUMN_NAME:
+        return to_wstring(t->name());
+    case COLUMN_QUEUE_POSITION:
+        if (t->queue_position() < 0)
+        {
+            return L"-";
+        }
+
+        return std::to_wstring(t->queue_position() + 1);
+    case COLUMN_SIZE:
+        TCHAR size[128];
+        StrFormatByteSize64(t->size(), size, ARRAYSIZE(size));
+        return size;
+    case COLUMN_STATUS:
+    {
+        switch (t->state())
+        {
+        case core::torrent_state::state_t::checking_resume_data:
+            return TR("state_checking_resume_data");
+        case core::torrent_state::state_t::downloading:
+            return TR("state_downloading");
+        case core::torrent_state::state_t::downloading_checking:
+            return TR("state_downloading_checking");
+        case core::torrent_state::state_t::downloading_forced:
+            return TR("state_downloading_forced");
+        case core::torrent_state::state_t::downloading_metadata:
+            return TR("state_downloading_metadata");
+        case core::torrent_state::state_t::downloading_paused:
+            return TR("state_downloading_paused");
+        case core::torrent_state::state_t::downloading_queued:
+            return TR("state_downloading_queued");
+        case core::torrent_state::state_t::downloading_stalled:
+            return TR("state_downloading_stalled");
+        case core::torrent_state::state_t::error:
+            return TR("state_error");
+        case core::torrent_state::state_t::unknown:
+            return TR("state_unknown");
+        case core::torrent_state::state_t::uploading:
+            return TR("state_uploading");
+        case core::torrent_state::state_t::uploading_checking:
+            return TR("state_uploading_checking");
+        case core::torrent_state::state_t::uploading_forced:
+            return TR("state_uploading_forced");
+        case core::torrent_state::state_t::uploading_paused:
+            return TR("state_uploading_paused");
+        case core::torrent_state::state_t::uploading_queued:
+            return TR("state_uploading_queued");
+        case core::torrent_state::state_t::uploading_stalled:
+            return TR("state_uploading_stalled");
+        }
+
+        return L"<unknown state>";
+    }
+    case COLUMN_ETA:
+    {
+        std::chrono::seconds next(t->eta());
+
+        if (next.count() < 0)
+        {
+            return L"-";
+        }
+
+        std::chrono::hours hours_left = std::chrono::duration_cast<std::chrono::hours>(next);
+        std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(next - hours_left);
+        std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(next - hours_left - min_left);
+
+        TCHAR t[100];
+        StringCchPrintf(
+            t,
+            ARRAYSIZE(t),
+            L"%dh %dm %ds",
+            hours_left.count(),
+            min_left.count(),
+            sec_left.count());
+        return t;
+    }
+    case COLUMN_DL:
+    case COLUMN_UL:
+    {
+        int rate = p.first == COLUMN_DL ? t->download_rate() : t->upload_rate();
+
+        if (rate < 1024)
+        {
+            return L"-";
+        }
+
+        TCHAR speed[128];
+        StrFormatByteSize64(rate, speed, ARRAYSIZE(speed));
+        StringCchPrintf(speed, ARRAYSIZE(speed), L"%s/s", speed);
+        return speed;
+    }
+    }
+
+    return L"<unknown>";
+}
+
+float main_window::on_list_progress(const std::pair<int, int> &p)
+{
+    const core::torrent_ptr &t = torrents_[p.second];
+
+    switch (p.first)
+    {
+    case COLUMN_PROGRESS:
+        return t->progress();
+    }
+
+    return 0;
 }

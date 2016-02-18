@@ -14,7 +14,7 @@ LV_COLUMN list_view::list_view_column::get_native_column()
     LVCOLUMN col;
     col.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
     col.pszText = &text[0];
-    col.cx = scaler::x(width);
+    col.cx = width;
     col.fmt = format;
 
     return col;
