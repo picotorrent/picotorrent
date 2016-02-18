@@ -11,6 +11,7 @@ var platform      = Argument("platform", "x64");
 // Parameters
 var OutputDirectory    = Directory("./build-" + platform);
 var BuildDirectory     = OutputDirectory + Directory(configuration);
+var PublishDirectory   = BuildDirectory + Directory("publish");
 var ResourceDirectory  = Directory("./res");
 var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
@@ -91,15 +92,27 @@ Task("Build")
     MSBuild(OutputDirectory + File("PicoTorrent.sln"), settings);
 });
 
-Task("Output-Languages")
+Task("Setup-Publish-Directory")
+    .IsDependentOn("Build")
     .Does(() =>
 {
-    CopyDirectory("./lang/", BuildDirectory + Directory("lang"));
+    var files = new FilePath[]
+    {
+        BuildDirectory + File("PicoTorrent.exe"),
+        BuildDirectory + File("PicoTorrentCore.dll"),
+        BuildDirectory + File("PicoTorrent.pdb"),
+        BuildDirectory + File("PicoTorrentCore.pdb")
+    };
+
+    CreateDirectory(PublishDirectory);
+    CopyFiles(files, PublishDirectory);
+    CopyDirectory(Directory("lang"), PublishDirectory + Directory("lang"));
+    DeleteFile(PublishDirectory + Directory("lang") + File("1033.json"));
 });
 
 Task("Build-Installer")
     .IsDependentOn("Build")
-    .IsDependentOn("Output-Languages")
+    .IsDependentOn("Setup-Publish-Directory")
     .Does(() =>
 {
     var arch = Architecture.X64;
@@ -114,7 +127,7 @@ Task("Build-Installer")
         Architecture = arch,
         Defines = new Dictionary<string, string>
         {
-            { "BuildDirectory", BuildDirectory },
+            { "PublishDirectory", PublishDirectory },
             { "Platform", platform },
             { "ResourceDirectory", ResourceDirectory },
             { "Version", Version }
@@ -161,19 +174,10 @@ Task("Build-Installer-Bundle")
 
 Task("Build-Portable-Package")
     .IsDependentOn("Build")
+    .IsDependentOn("Setup-Publish-Directory")
     .Does(() =>
 {
-    var files = new FilePath[]
-    {
-        BuildDirectory + File("PicoTorrent.exe"),
-        BuildDirectory + File("PicoTorrentCore.dll"),
-        BuildDirectory + File("PicoTorrent.pdb"),
-        BuildDirectory + File("PicoTorrentCore.pdb"),
-        BuildDirectory + Directory("lang") + File("1031.json"),
-        BuildDirectory + Directory("lang") + File("1053.json")
-    };
-
-    Zip(BuildDirectory, BuildDirectory + File(PortablePackage), files);
+    Zip(PublishDirectory, BuildDirectory + File(PortablePackage));
 });
 
 Task("Build-Chocolatey-Package")

@@ -29,7 +29,7 @@ if($WhatIf.IsPresent) {
 
 # Try download NuGet.exe if do not exist.
 if (!(Test-Path $NUGET_EXE)) {
-    Invoke-WebRequest -Uri http://nuget.org/nuget.exe -OutFile $NUGET_EXE
+    Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/v3.3.0/nuget.exe -OutFile $NUGET_EXE
 }
 
 # Make sure NuGet exists where we expect it.
