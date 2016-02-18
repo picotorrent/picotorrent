@@ -19,9 +19,13 @@ namespace preferences
         downloads_page();
         
         std::wstring downloads_path();
+        int download_rate();
         bool prompt_for_save_path();
+        int upload_rate();
         void set_downloads_path(const std::wstring &path);
+        void set_download_rate(int dl_rate);
         void set_prompt_for_save_path(bool prompt);
+        void set_upload_rate(int ul_rate);
 
     protected:
         BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam);

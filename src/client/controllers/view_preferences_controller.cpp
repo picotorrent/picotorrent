@@ -103,6 +103,14 @@ void view_preferences_controller::on_downloads_apply()
     configuration &cfg = configuration::instance();
     cfg.set_default_save_path(dl_page_->downloads_path());
     cfg.set_prompt_for_save_path(dl_page_->prompt_for_save_path());
+
+    int dl_rate = dl_page_->download_rate();
+    if (dl_rate > 0) { dl_rate *= 1024; }
+    int ul_rate = dl_page_->upload_rate();
+    if (ul_rate > 0) { ul_rate *= 1024; }
+
+    cfg.set_download_rate_limit(dl_rate);
+    cfg.set_upload_rate_limit(ul_rate);
 }
 
 bool view_preferences_controller::on_downloads_validate()
@@ -179,6 +187,17 @@ void view_preferences_controller::on_downloads_init()
     configuration &cfg = configuration::instance();
     dl_page_->set_downloads_path(cfg.default_save_path());
     dl_page_->set_prompt_for_save_path(cfg.prompt_for_save_path());
+
+    int dl_rate = cfg.download_rate_limit();
+    int ul_rate = cfg.upload_rate_limit();
+
+    if (dl_rate < 0) { dl_rate = 0; }
+    if (dl_rate > 0) { dl_rate /= 1024; }
+    if (ul_rate < 0) { ul_rate = 0; }
+    if (ul_rate > 0) { ul_rate /= 1024; }
+
+    dl_page_->set_download_rate(dl_rate);
+    dl_page_->set_upload_rate(ul_rate);
 }
 
 void view_preferences_controller::on_connection_proxy_type_changed(int type)
