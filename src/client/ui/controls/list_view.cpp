@@ -100,6 +100,38 @@ std::vector<int> list_view::get_selection()
     return items;
 }
 
+list_view::sort_order_t list_view::get_sort_order(int columnId)
+{
+    HWND hHeader = ListView_GetHeader(handle());
+
+    if (!hHeader)
+    {
+        return sort_order_t::unknown;
+    }
+
+    // Find column index by id
+    auto it = std::find_if(
+        columns_.begin(),
+        columns_.end(),
+        [columnId](const std::pair<int, list_view_column> &p) { return p.second.id == columnId; });
+
+    if (it == columns_.end())
+    {
+        return sort_order_t::unknown;
+    }
+
+    HDITEM hdrItem = { 0 };
+    hdrItem.mask = HDI_FORMAT;
+
+    if (Header_GetItem(hHeader, it->first, &hdrItem))
+    {
+        if (hdrItem.fmt & HDF_SORTDOWN) { return sort_order_t::desc; }
+        if (hdrItem.fmt & HDF_SORTUP) { return sort_order_t::asc; }
+    }
+
+    return sort_order_t::unknown;
+}
+
 signal_connector<std::wstring, const std::pair<int, int>&>& list_view::on_display()
 {
     return on_display_;
@@ -120,6 +152,12 @@ signal_connector<float, const std::pair<int, int>&>& list_view::on_progress()
     return on_progress_;
 }
 
+signal_connector<void, const std::pair<int, list_view::sort_order_t>&> list_view::on_sort()
+
+{
+    return on_sort_;
+}
+
 void list_view::refresh()
 {
     int idx = ListView_GetTopIndex(handle());
@@ -137,6 +175,54 @@ void list_view::set_image_list(HIMAGELIST img)
 void list_view::set_item_count(int count)
 {
     ListView_SetItemCountEx(handle(), count, LVSICF_NOSCROLL);
+}
+
+void list_view::set_column_sort(int columnId, list_view::sort_order_t order)
+{
+    HWND hHeader = ListView_GetHeader(handle());
+    HDITEM hdrItem = { 0 };
+
+    if (!hHeader)
+    {
+        return;
+    }
+
+    // Find column index by id
+    auto it = std::find_if(
+        columns_.begin(),
+        columns_.end(),
+        [columnId](const std::pair<int, list_view_column> &p) { return p.second.id == columnId; });
+
+    if (it == columns_.end())
+    {
+        return;
+    }
+
+    hdrItem.mask = HDI_FORMAT;
+
+    if (Header_GetItem(hHeader, it->first, &hdrItem))
+    {
+        switch (order)
+        {
+        case sort_order_t::asc:
+        {
+            hdrItem.fmt = (hdrItem.fmt & ~HDF_SORTDOWN) | HDF_SORTUP;
+            break;
+        }
+        case sort_order_t::desc:
+        {
+            hdrItem.fmt = (hdrItem.fmt & ~HDF_SORTUP) | HDF_SORTDOWN;
+            break;
+        }
+        default:
+        {
+            hdrItem.fmt = hdrItem.fmt & ~(HDF_SORTDOWN | HDF_SORTUP);
+            break;
+        }
+        }
+
+        Header_SetItem(hHeader, it->first, &hdrItem);
+    }
 }
 
 void list_view::resize(int width, int height)
@@ -184,6 +270,29 @@ LRESULT list_view::subclass_proc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 
         switch (nmhdr->code)
         {
+        case LVN_COLUMNCLICK:
+        {
+            LPNMLISTVIEW lpListView = reinterpret_cast<LPNMLISTVIEW>(nmhdr);
+            int columnIndex = lpListView->iSubItem;
+            list_view_column &col = lv->columns_.at(columnIndex);
+            sort_order_t currentSortOrder = lv->get_sort_order(col.id);
+            sort_order_t newSortOrder = sort_order_t::asc;
+
+            if (currentSortOrder == sort_order_t::asc) { newSortOrder = sort_order_t::desc; }
+            if (currentSortOrder == sort_order_t::desc) { newSortOrder = sort_order_t::asc; }
+
+            for (auto &it : lv->columns_)
+            {
+                lv->set_column_sort(it.first, sort_order_t::unknown);
+            }
+
+            lv->on_sort_.emit({ col.id, newSortOrder });
+
+            lv->refresh();
+            lv->set_column_sort(col.id, newSortOrder);
+
+            break;
+        }
         case LVN_GETDISPINFO:
         {
             NMLVDISPINFO* inf = reinterpret_cast<NMLVDISPINFO*>(nmhdr);
