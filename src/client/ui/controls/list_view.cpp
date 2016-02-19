@@ -152,7 +152,7 @@ signal_connector<float, const std::pair<int, int>&>& list_view::on_progress()
     return on_progress_;
 }
 
-signal_connector<void, const std::pair<int, list_view::sort_order_t>&> list_view::on_sort()
+signal_connector<void, const std::pair<int, list_view::sort_order_t>&>& list_view::on_sort()
 
 {
     return on_sort_;

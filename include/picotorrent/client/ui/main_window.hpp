@@ -61,6 +61,7 @@ namespace controls
     private:
         std::wstring on_list_display(const std::pair<int, int> &p);
         float on_list_progress(const std::pair<int, int> &p);
+        void on_list_sort(const std::pair<int, int> &p);
 
         LRESULT CALLBACK wnd_proc(_In_ HWND, _In_ UINT, _In_ WPARAM, _In_ LPARAM);
         static LRESULT CALLBACK wnd_proc_proxy(_In_ HWND, _In_ UINT, _In_ WPARAM, _In_ LPARAM);

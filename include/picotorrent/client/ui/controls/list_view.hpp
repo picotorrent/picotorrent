@@ -45,7 +45,7 @@ namespace controls
         core::signals::signal_connector<void, const std::vector<int>&>& on_item_context_menu();
         core::signals::signal_connector<int, const std::pair<int, int>&>& on_item_image();
         core::signals::signal_connector<float, const std::pair<int, int>&>& on_progress();
-        core::signals::signal_connector<void, const std::pair<int, sort_order_t>&> on_sort();
+        core::signals::signal_connector<void, const std::pair<int, sort_order_t>&>& on_sort();
 
         void refresh();
         void resize(int width, int height);

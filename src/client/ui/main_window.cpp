@@ -117,6 +117,7 @@ void main_window::exit()
 void main_window::torrent_added(const std::shared_ptr<core::torrent> &t)
 {
     torrents_.push_back(t);
+    if (sort_items_) { sort_items_(); }
     list_view_->set_item_count((int)torrents_.size());
 }
 
@@ -336,6 +337,7 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         list_view_ = std::make_unique<list_view>(hList);
         list_view_->on_display().connect(std::bind(&main_window::on_list_display, this, std::placeholders::_1));
         list_view_->on_progress().connect(std::bind(&main_window::on_list_progress, this, std::placeholders::_1));
+        list_view_->on_sort().connect(std::bind(&main_window::on_list_sort, this, std::placeholders::_1));
 
         // Add columns
         list_view_->add_column(COLUMN_NAME,           TR("name"),           scaler::x(280), list_view::text);
@@ -601,4 +603,97 @@ float main_window::on_list_progress(const std::pair<int, int> &p)
     }
 
     return 0;
+}
+
+void main_window::on_list_sort(const std::pair<int, int> &p)
+{
+    list_view::sort_order_t order = (list_view::sort_order_t)p.second;
+    bool asc = order == list_view::sort_order_t::asc;
+
+    std::function<bool(const core::torrent_ptr&, const core::torrent_ptr&)> sort_func;
+
+    switch (p.first)
+    {
+    case COLUMN_NAME:
+    {
+        sort_func = [asc](const core::torrent_ptr &t1, const core::torrent_ptr &t2)
+        {
+            if (asc) { return t1->name() < t2->name(); }
+            return t1->name() > t2->name();
+        };
+        break;
+    }
+    case COLUMN_QUEUE_POSITION:
+    {
+        sort_func = [asc](const core::torrent_ptr &t1, const core::torrent_ptr &t2)
+        {
+            if (asc) { return t1->queue_position() < t2->queue_position(); }
+            return t1->queue_position() > t2->queue_position();
+        };
+        break;
+    }
+    case COLUMN_SIZE:
+    {
+        sort_func = [asc](const core::torrent_ptr &t1, const core::torrent_ptr &t2)
+        {
+            if (asc) { return t1->size() < t2->size(); }
+            return t1->size() > t2->size();
+        };
+        break;
+    }
+    case COLUMN_STATUS:
+    {
+        sort_func = [asc](const core::torrent_ptr &t1, const core::torrent_ptr &t2)
+        {
+            if (asc) { return t1->state() < t2->state(); }
+            return t1->state() > t2->state();
+        };
+        break;
+    }
+    case COLUMN_PROGRESS:
+    {
+        sort_func = [asc](const core::torrent_ptr &t1, const core::torrent_ptr &t2)
+        {
+            if (asc) { return t1->progress() < t2->progress(); }
+            return t1->progress() > t2->progress();
+        };
+        break;
+    }
+    case COLUMN_ETA:
+    {
+        sort_func = [asc](const core::torrent_ptr &t1, const core::torrent_ptr &t2)
+        {
+            if (asc) { return t1->eta() < t2->eta(); }
+            return t1->eta() > t2->eta();
+        };
+        break;
+    }
+    case COLUMN_DL:
+    {
+        sort_func = [asc](const core::torrent_ptr &t1, const core::torrent_ptr &t2)
+        {
+            if (asc) { return t1->download_rate() < t2->download_rate(); }
+            return t1->download_rate() > t2->download_rate();
+        };
+        break;
+    }
+    case COLUMN_UL:
+    {
+        sort_func = [asc](const core::torrent_ptr &t1, const core::torrent_ptr &t2)
+        {
+            if (asc) { return t1->upload_rate() < t2->upload_rate(); }
+            return t1->upload_rate() > t2->upload_rate();
+        };
+        break;
+    }
+    }
+
+    if (sort_func)
+    {
+        sort_items_ = [this, sort_func]()
+        {
+            std::sort(torrents_.begin(), torrents_.end(), sort_func);
+        };
+        sort_items_();
+    }
 }
