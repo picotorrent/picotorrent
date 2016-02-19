@@ -26,18 +26,30 @@ namespace controls
             progress
         };
 
+        enum sort_order_t
+        {
+            unknown,
+            asc,
+            desc
+        };
+
         list_view(HWND handle);
         ~list_view();
 
         void add_column(int id, const std::wstring &text, int width, col_type_t type = col_type_t::text);
+        int get_column_count();
         std::vector<int> get_selection();
+        sort_order_t get_sort_order(int columnId);
         
         core::signals::signal_connector<std::wstring, const std::pair<int, int>&>& on_display();
         core::signals::signal_connector<void, const std::vector<int>&>& on_item_context_menu();
         core::signals::signal_connector<int, const std::pair<int, int>&>& on_item_image();
         core::signals::signal_connector<float, const std::pair<int, int>&>& on_progress();
+        core::signals::signal_connector<void, const std::pair<int, sort_order_t>&>& on_sort();
 
         void refresh();
+        void resize(int width, int height);
+        void set_column_sort(int columnId, sort_order_t order);
         void set_image_list(HIMAGELIST img);
         void set_item_count(int count);
 
@@ -64,6 +76,7 @@ namespace controls
         core::signals::signal<void, const std::vector<int>&> on_item_context_;
         core::signals::signal<int, const std::pair<int, int>&> on_item_image_;
         core::signals::signal<float, const std::pair<int, int>&> on_progress_;
+        core::signals::signal<void, const std::pair<int, sort_order_t>&> on_sort_;
     };
 }
 }
