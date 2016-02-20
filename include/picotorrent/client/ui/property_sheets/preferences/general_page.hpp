@@ -25,8 +25,10 @@ namespace preferences
         ~general_page();
 
         void add_languages(const std::vector<i18n::translation> &translations);
+        bool get_autostart_checked();
         int get_selected_language();
         void select_language(int langId);
+        void set_autostart_checked(bool value);
 
     protected:
         BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam);

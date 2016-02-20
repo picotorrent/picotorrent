@@ -172,14 +172,14 @@ void view_preferences_controller::on_connection_init()
 
 bool view_preferences_controller::on_connection_validate()
 {
-    int listenPort = conn_page_->get_listen_port();
-    if (listenPort < 1024 || listenPort > 65535)
-    {
-        conn_page_->show_error_message(TR("invalid_listen_port"));
-        return false;
-    }
+int listenPort = conn_page_->get_listen_port();
+if (listenPort < 1024 || listenPort > 65535)
+{
+    conn_page_->show_error_message(TR("invalid_listen_port"));
+    return false;
+}
 
-    return true;
+return true;
 }
 
 void view_preferences_controller::on_downloads_init()
@@ -230,7 +230,7 @@ void view_preferences_controller::on_connection_proxy_type_changed(int type)
     }
     }
 
-    switch(type)
+    switch (type)
     {
     case configuration::proxy_type_t::socks5_pw:
     case configuration::proxy_type_t::http_pw:
@@ -246,6 +246,15 @@ void view_preferences_controller::on_general_apply()
 {
     int currentLang = i18n::translator::instance().get_current_lang_id();
     int selectedLang = gen_page_->get_selected_language();
+
+    if (gen_page_->get_autostart_checked() && !has_run_key())
+    {
+        create_run_key();
+    }
+    else if (!gen_page_->get_autostart_checked() && has_run_key())
+    {
+        delete_run_key();
+    }
 
     if (currentLang == selectedLang)
     {
@@ -268,6 +277,101 @@ void view_preferences_controller::on_general_init()
 
     gen_page_->add_languages(langs);
     gen_page_->select_language(i18n::translator::instance().get_current_lang_id());
+    gen_page_->set_autostart_checked(has_run_key());
+}
+
+void view_preferences_controller::create_run_key()
+{
+    HKEY hKey = NULL;
+    if (RegCreateKeyEx(
+        HKEY_CURRENT_USER,
+        L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+        0,
+        NULL,
+        0,
+        KEY_WRITE,
+        NULL,
+        &hKey,
+        NULL) != ERROR_SUCCESS)
+    {
+        return;
+    }
+
+    TCHAR path[MAX_PATH];
+    TCHAR quoted[MAX_PATH];
+    GetModuleFileName(NULL, path, ARRAYSIZE(path));
+    StringCchPrintf(quoted, ARRAYSIZE(quoted), L"\"%s\"", path);
+
+    std::wstring p(quoted);
+
+    UINT res = RegSetValueEx(
+        hKey,
+        L"PicoTorrent",
+        0,
+        REG_SZ,
+        (const BYTE*)p.c_str(),
+        (DWORD)((p.size() + 1) * sizeof(wchar_t)));
+
+    if (res != ERROR_SUCCESS)
+    {
+        DWORD err = GetLastError();
+        printf("");
+    }
+
+    RegCloseKey(hKey);
+}
+
+void view_preferences_controller::delete_run_key()
+{
+    HKEY hKey = NULL;
+    if (RegCreateKeyEx(
+        HKEY_CURRENT_USER,
+        L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+        0,
+        NULL,
+        0,
+        KEY_WRITE,
+        NULL,
+        &hKey,
+        NULL) != ERROR_SUCCESS)
+    {
+        return;
+    }
+
+    RegDeleteValue(
+        hKey,
+        L"PicoTorrent");
+
+    RegCloseKey(hKey);
+}
+
+bool view_preferences_controller::has_run_key()
+{
+    HKEY hKey = NULL;
+    if (RegCreateKeyEx(
+        HKEY_CURRENT_USER,
+        L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+        0,
+        NULL,
+        0,
+        KEY_READ,
+        NULL,
+        &hKey,
+        NULL) != ERROR_SUCCESS)
+    {
+        return false;
+    }
+
+    UINT res = RegQueryValueEx(
+        hKey,
+        L"PicoTorrent",
+        NULL,
+        NULL,
+        NULL,
+        NULL);
+
+    RegCloseKey(hKey);
+    return res == ERROR_SUCCESS;
 }
 
 void view_preferences_controller::restart()
