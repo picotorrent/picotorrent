@@ -1,5 +1,6 @@
 #include <picotorrent/client/controllers/notifyicon_context_menu_controller.hpp>
 
+#include <picotorrent/client/controllers/add_magnet_link_controller.hpp>
 #include <picotorrent/client/controllers/add_torrent_controller.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
@@ -33,6 +34,12 @@ void notifyicon_context_menu_controller::execute(const POINT &p)
     case ID_NOTIFYICON_ADD:
     {
         controllers::add_torrent_controller add(sess_, wnd_);
+        add.execute();
+        break;
+    }
+    case ID_NOTIFYICON_ADD_MAGNET:
+    {
+        controllers::add_magnet_link_controller add(sess_, wnd_);
         add.execute();
         break;
     }

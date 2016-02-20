@@ -82,6 +82,28 @@ void add_torrent_controller::execute(const command_line &cmd)
     show_add_dialog();
 }
 
+void add_torrent_controller::execute(const std::vector<std::shared_ptr<core::torrent_info>> &torrents)
+{
+    if (torrents.empty())
+    {
+        return;
+    }
+
+    configuration &cfg = configuration::instance();
+    std::wstring default_save_path = cfg.default_save_path();
+
+    for (const std::shared_ptr<core::torrent_info> &ti : torrents)
+    {
+        auto req = std::make_shared<core::add_request>();
+        req->set_save_path(default_save_path);
+        req->set_torrent_info(ti);
+
+        requests_.push_back(req);
+    }
+
+    show_add_dialog();
+}
+
 void add_torrent_controller::add_files(const std::vector<fs::path> &paths)
 {
     configuration &cfg = configuration::instance();

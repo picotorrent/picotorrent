@@ -2,6 +2,7 @@
 
 #include <picotorrent/client/command_line.hpp>
 #include <picotorrent/client/message_loop.hpp>
+#include <picotorrent/client/controllers/add_magnet_link_controller.hpp>
 #include <picotorrent/client/controllers/add_torrent_controller.hpp>
 #include <picotorrent/client/controllers/application_close_controller.hpp>
 #include <picotorrent/client/controllers/application_update_controller.hpp>
@@ -40,7 +41,8 @@ application::application()
 {
     log::instance().set_unhandled_exception_callback(std::bind(&application::on_unhandled_exception, this, std::placeholders::_1));
 
-    main_window_->on_command(ID_FILE_ADDTORRENT, std::bind(&application::on_file_add_torrent, this));
+    main_window_->on_command(ID_FILE_ADD_TORRENT, std::bind(&application::on_file_add_torrent, this));
+    main_window_->on_command(ID_FILE_ADD_MAGNET_LINK, std::bind(&application::on_file_add_magnet_link, this));
     main_window_->on_command(IDA_REMOVE_TORRENTS, std::bind(&application::on_remove_torrents_accelerator, this, false));
     main_window_->on_command(IDA_REMOVE_TORRENTS_DATA, std::bind(&application::on_remove_torrents_accelerator, this, true));
     main_window_->on_command(IDA_SELECT_ALL, std::bind(&application::on_select_all_accelerator, this));
@@ -241,6 +243,12 @@ void application::on_destroy()
 
         configuration::instance().set_window_placement("main", wp);
     }
+}
+
+void application::on_file_add_magnet_link()
+{
+    controllers::add_magnet_link_controller add_controller(sess_, main_window_);
+    add_controller.execute();
 }
 
 void application::on_file_add_torrent()
