@@ -87,7 +87,8 @@ void main_window::create()
 
     // Create main menu
     HMENU file = CreateMenu();
-    AppendMenu(file, MF_STRING, ID_FILE_ADDTORRENT, TR("amp_add_torrent"));
+    AppendMenu(file, MF_STRING, ID_FILE_ADD_TORRENT, TR("amp_add_torrent"));
+    AppendMenu(file, MF_STRING, ID_FILE_ADD_MAGNET_LINK, TR("amp_add_magnet_link_s"));
     AppendMenu(file, MF_SEPARATOR, 0, NULL);
     AppendMenu(file, MF_STRING, ID_FILE_EXIT, TR("amp_exit"));
 
