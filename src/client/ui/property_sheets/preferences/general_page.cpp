@@ -31,6 +31,11 @@ void general_page::add_languages(const std::vector<i18n::translation> &translati
     }
 }
 
+bool general_page::get_autostart_checked()
+{
+    return IsDlgButtonChecked(handle(), ID_AUTOSTART_PICO) == BST_CHECKED;
+}
+
 int general_page::get_selected_language()
 {
     HWND ctl = GetDlgItem(handle(), ID_LANGUAGE);
@@ -53,6 +58,11 @@ void general_page::select_language(int langId)
     }
 }
 
+void general_page::set_autostart_checked(bool v)
+{
+    CheckDlgButton(handle(), ID_AUTOSTART_PICO, v ? BST_CHECKED : BST_UNCHECKED);
+}
+
 BOOL general_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam)
 {
     switch (uCtrlId)
@@ -62,8 +72,18 @@ BOOL general_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lPa
         if (!is_initializing() && HIWORD(wParam) == CBN_SELENDOK)
         {
             PropSheet_Changed(GetParent(hDlg), hDlg);
-            break;
         }
+        break;
+    }
+    case ID_AUTOSTART_PICO:
+    {
+        if (!is_initializing())
+        {
+            PropSheet_Changed(GetParent(hDlg), hDlg);
+            // Toggle the checkbox
+            set_autostart_checked(!get_autostart_checked());
+        }
+        break;
     }
     }
 
@@ -74,4 +94,6 @@ void general_page::on_init_dialog()
 {
     SetDlgItemText(handle(), ID_UI_GROUP, TR("user_interface"));
     SetDlgItemText(handle(), ID_LANGUAGE_TEXT, TR("language"));
+    SetDlgItemText(handle(), ID_MISC_GROUP, TR("miscellaneous"));
+    SetDlgItemText(handle(), ID_AUTOSTART_PICO, TR("start_with_windows"));
 }

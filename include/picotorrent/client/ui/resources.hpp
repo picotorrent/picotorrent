@@ -57,6 +57,8 @@
 #define ID_UI_GROUP 101
 #define ID_LANGUAGE_TEXT 102
 #define ID_LANGUAGE 103
+#define ID_MISC_GROUP 104
+#define ID_AUTOSTART_PICO 105
 
 // Download preferences dialog
 #define ID_TRANSFERS_GROUP 102

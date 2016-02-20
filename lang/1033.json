@@ -139,6 +139,8 @@
         "amp_add_magnet_link_s": "&Add magnet link(s)",
         "add_magnet_link_s": "Add magnet link(s)",
         "magnet_link_s": "Magnet link(s)",
-        "add_link_s": "Add link(s)"
+        "add_link_s": "Add link(s)",
+        "miscellaneous": "Miscellaneous",
+        "start_with_windows": "Start PicoTorrent with Windows"
     }
 }
