@@ -96,8 +96,15 @@ Task("Setup-Publish-Directory")
     .IsDependentOn("Build")
     .Does(() =>
 {
+    var redistDir = Directory("C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\redist");
+    var runtimeDir = redistDir + Directory(platform) + Directory("Microsoft.VC140.CRT");
+
     var files = new FilePath[]
     {
+        // runtime
+        runtimeDir + File("msvcp140.dll"),
+        runtimeDir + File("vcruntime140.dll"),
+        // picotorrent
         BuildDirectory + File("PicoTorrent.exe"),
         BuildDirectory + File("PicoTorrentCore.dll"),
         BuildDirectory + File("PicoTorrent.pdb"),
