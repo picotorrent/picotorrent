@@ -134,6 +134,13 @@
         "prompt_restart_title": "Neustart erforderlich",
         "add_torrent": "Torrent hinzufügen",
         "exit": "Schließen",
-        "details": "Details"
+        "details": "Details",
+        "global_limits": "Globale Limits",
+        "amp_add_magnet_link_s": "&Magnetlink(s) hinzufügen",
+        "add_magnet_link_s": "Magnetlink(s) hinzufügen",
+        "magnet_link_s": "Magnetlink(s)",
+        "add_link_s": "hinzufügen",
+        "miscellaneous": "Sonstiges",
+        "start_with_windows": "PicoTorrent mit Windows starten"
     }
 }
