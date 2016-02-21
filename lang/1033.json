@@ -143,7 +143,7 @@
         "miscellaneous": "Miscellaneous",
         "start_with_windows": "Start PicoTorrent with Windows",
         "start_position": "Start position",
-        "hidden": "Hidden",
+        "hidden": "System tray",
         "minimized": "Minimized"
     }
 }
