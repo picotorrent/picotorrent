@@ -256,6 +256,9 @@ void view_preferences_controller::on_general_apply()
         delete_run_key();
     }
 
+    int startPos = gen_page_->get_selected_start_position();
+    configuration::instance().set_start_position((configuration::start_position_t)startPos);
+
     if (currentLang == selectedLang)
     {
         return;
@@ -276,7 +279,11 @@ void view_preferences_controller::on_general_init()
     std::vector<i18n::translation> langs = i18n::translator::instance().get_available_translations();
 
     gen_page_->add_languages(langs);
+    gen_page_->add_start_position(configuration::start_position_t::normal, TR("normal"));
+    gen_page_->add_start_position(configuration::start_position_t::minimized, TR("minimized"));
+    gen_page_->add_start_position(configuration::start_position_t::hidden, TR("hidden"));
     gen_page_->select_language(i18n::translator::instance().get_current_lang_id());
+    gen_page_->select_start_position((int)configuration::instance().start_position());
     gen_page_->set_autostart_checked(has_run_key());
 }
 

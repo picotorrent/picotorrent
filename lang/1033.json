@@ -141,6 +141,9 @@
         "magnet_link_s": "Magnet link(s)",
         "add_link_s": "Add link(s)",
         "miscellaneous": "Miscellaneous",
-        "start_with_windows": "Start PicoTorrent with Windows"
+        "start_with_windows": "Start PicoTorrent with Windows",
+        "start_position": "Start position",
+        "hidden": "Hidden",
+        "minimized": "Minimized"
     }
 }

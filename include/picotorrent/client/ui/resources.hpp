@@ -59,6 +59,8 @@
 #define ID_LANGUAGE 103
 #define ID_MISC_GROUP 104
 #define ID_AUTOSTART_PICO 105
+#define ID_START_POSITION_TEXT 106
+#define ID_START_POSITION 107
 
 // Download preferences dialog
 #define ID_TRANSFERS_GROUP 102

@@ -25,9 +25,12 @@ namespace preferences
         ~general_page();
 
         void add_languages(const std::vector<i18n::translation> &translations);
+        void add_start_position(int id, const std::wstring &name);
         bool get_autostart_checked();
         int get_selected_language();
+        int get_selected_start_position();
         void select_language(int langId);
+        void select_start_position(int posId);
         void set_autostart_checked(bool value);
 
     protected:
