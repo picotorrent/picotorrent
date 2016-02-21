@@ -221,6 +221,16 @@ void configuration::set_proxy_trackers(bool value)
     set("proxy_trackers", value);
 }
 
+configuration::start_position_t configuration::start_position()
+{
+    return (start_position_t)get_or_default("start_position", (int64_t)start_position_t::normal);
+}
+
+void configuration::set_start_position(configuration::start_position_t pos)
+{
+    set("start_position", (int64_t)pos);
+}
+
 int configuration::stop_tracker_timeout()
 {
     return get_or_default("stop_tracker_timeout", 1);

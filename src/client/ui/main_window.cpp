@@ -455,19 +455,22 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             }
         }
 
-        if (wanted - done > 0)
-        {
-            taskbar_->set_progress_state(TBPF_NORMAL);
-            taskbar_->set_progress_value(done, wanted);
-        }
-        else
-        {
-            taskbar_->set_progress_state(TBPF_NOPROGRESS);
-        }
-
-
         sleep_manager_->refresh(hasActiveDownloads);
 
+        // If we start PicoTorrent minimized, the taskbar may not have been created
+        // yet, so check for null here.
+        if (taskbar_ != nullptr)
+        {
+            if (wanted - done > 0)
+            {
+                taskbar_->set_progress_state(TBPF_NORMAL);
+                taskbar_->set_progress_value(done, wanted);
+            }
+            else
+            {
+                taskbar_->set_progress_state(TBPF_NOPROGRESS);
+            }
+        }
         break;
     }
 

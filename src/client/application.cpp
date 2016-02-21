@@ -126,8 +126,21 @@ int application::run(const std::wstring &args)
 {
     main_window_->create();
 
+    configuration &cfg = configuration::instance();
+    UINT pos = SW_SHOWNORMAL;
+
+    switch (cfg.start_position())
+    {
+    case configuration::start_position_t::hidden:
+        pos = SW_HIDE;
+        break;
+    case configuration::start_position_t::minimized:
+        pos = SW_SHOWMINIMIZED;
+        break;
+    }
+
     // Set window placement
-    std::shared_ptr<configuration::placement> wp = configuration::instance().window_placement("main");
+    std::shared_ptr<configuration::placement> wp = cfg.window_placement("main");
     if (wp != nullptr)
     {
         WINDOWPLACEMENT winplace = { sizeof(WINDOWPLACEMENT) };
@@ -140,13 +153,13 @@ int application::run(const std::wstring &args)
         winplace.rcNormalPosition.left = wp->pos_left;
         winplace.rcNormalPosition.right = wp->pos_right;
         winplace.rcNormalPosition.top = wp->pos_top;
-        winplace.showCmd = wp->show;
+        winplace.showCmd = pos;
 
         SetWindowPlacement(main_window_->handle(), &winplace);
     }
     else
     {
-        ShowWindow(main_window_->handle(), SW_SHOW);
+        ShowWindow(main_window_->handle(), pos);
     }
 
     sess_->load(main_window_->handle());
