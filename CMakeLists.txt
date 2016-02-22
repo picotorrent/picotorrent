@@ -56,6 +56,7 @@ set(PICOTORRENTCORE_SOURCES
     src/core/hash
     src/core/peer
     src/core/session
+    src/core/session_metrics
     src/core/timer
     src/core/torrent
     src/core/torrent_info
@@ -106,6 +107,7 @@ set(PICOTORRENT_SOURCES
     src/client/ui/open_torrent_dialog
     src/client/ui/scaler
     src/client/ui/sleep_manager
+    src/client/ui/status_bar
     src/client/ui/task_dialog
     src/client/ui/taskbar_list
     src/client/ui/torrent_context_menu

@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <commctrl.h>
 #include <picotorrent/core/string_operations.hpp>
+#include <picotorrent/core/session.hpp>
+#include <picotorrent/core/session_metrics.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/filesystem/path.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
@@ -13,6 +15,7 @@
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
 #include <picotorrent/client/ui/sleep_manager.hpp>
+#include <picotorrent/client/ui/status_bar.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
 #include <picotorrent/client/ui/taskbar_list.hpp>
 #include <chrono>
@@ -48,8 +51,9 @@ using picotorrent::client::ui::sleep_manager;
 
 const UINT main_window::TaskbarButtonCreated = RegisterWindowMessage(L"TaskbarButtonCreated");
 
-main_window::main_window()
-    : hWnd_(NULL)
+main_window::main_window(const std::shared_ptr<core::session> &sess)
+    : hWnd_(NULL),
+    sess_(sess)
 {
 }
 
@@ -120,6 +124,7 @@ void main_window::torrent_added(const std::shared_ptr<core::torrent> &t)
     torrents_.push_back(t);
     if (sort_items_) { sort_items_(); }
     list_view_->set_item_count((int)torrents_.size());
+    status_->set_torrent_count((int)torrents_.size());
 }
 
 void main_window::torrent_finished(const std::shared_ptr<core::torrent> &t)
@@ -136,6 +141,7 @@ void main_window::torrent_removed(const std::shared_ptr<core::torrent> &t)
     {
         torrents_.erase(f);
         list_view_->set_item_count((int)torrents_.size());
+        status_->set_torrent_count((int)torrents_.size());
     }
 }
 
@@ -321,6 +327,15 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         RECT rcClient;
         GetClientRect(hWnd, &rcClient);
 
+        // Add status bar
+        status_ = std::make_unique<status_bar>(hWnd);
+        ShowWindow(status_->handle(), SW_SHOWNORMAL);
+        UpdateWindow(status_->handle());
+
+        RECT rcStatus;
+        GetClientRect(status_->handle(), &rcStatus);
+        int statusHeight = rcStatus.bottom - rcStatus.top;
+
         HWND hList = CreateWindowEx(
             0,
             WC_LISTVIEW,
@@ -329,7 +344,7 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             0,
             0,
             rcClient.right - rcClient.left,
-            rcClient.bottom - rcClient.top,
+            (rcClient.bottom - rcClient.top) - statusHeight,
             hWnd,
             NULL,
             GetModuleHandle(NULL),
@@ -429,11 +444,17 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     case WM_SIZE:
     {
+        SendMessage(status_->handle(), WM_SIZE, NULL, NULL);
+
         int width = LOWORD(lParam);
         int height = HIWORD(lParam);
 
+        RECT rcStatus;
+        GetClientRect(status_->handle(), &rcStatus);
+        int statusHeight = rcStatus.bottom - rcStatus.top;
+
         // Set new width and height for the torrent list view.
-        list_view_->resize(width, height);
+        list_view_->resize(width, height - statusHeight);
         break;
     }
 
@@ -443,9 +464,14 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         uint64_t active_wanted = 0;
         uint64_t paused_done = 0;
         uint64_t paused_wanted = 0;
+        int dl_rate = 0;
+        int ul_rate = 0;
 
         for (const core::torrent_ptr &t : torrents_)
         {
+            dl_rate += t->download_rate();
+            ul_rate += t->upload_rate();
+
             // Is the current item actively downloading?
             if (!t->is_seeding() && !t->is_paused())
             {
@@ -458,6 +484,9 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 paused_wanted += t->total_wanted();
             }
         }
+
+        std::shared_ptr<core::session_metrics> metrics = sess_->metrics();
+        status_->set_transfer_rates(dl_rate, ul_rate);
 
         sleep_manager_->refresh(active_wanted + active_done > 0 ? true : false);
 
