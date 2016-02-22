@@ -439,29 +439,41 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     case WM_TIMER:
     {
-        uint64_t done = 0;
-        uint64_t wanted = 0;
+        uint64_t active_done = 0;
+        uint64_t active_wanted = 0;
+        uint64_t paused_done = 0;
+        uint64_t paused_wanted = 0;
 
         for (const core::torrent_ptr &t : torrents_)
         {
             // Is the current item actively downloading?
             if (!t->is_seeding() && !t->is_paused())
             {
-                done += t->total_wanted_done();
-                wanted += t->total_wanted();
+                active_done += t->total_wanted_done();
+                active_wanted += t->total_wanted();
+            }
+            else if (!t->is_seeding() && t->is_paused())
+            {
+                paused_done += t->total_wanted_done();
+                paused_wanted += t->total_wanted();
             }
         }
 
-        sleep_manager_->refresh(wanted + done > 0 ? true : false);
+        sleep_manager_->refresh(active_wanted + active_done > 0 ? true : false);
 
         // If we start PicoTorrent minimized, the taskbar may not have been created
         // yet, so check for null here.
         if (taskbar_ != nullptr)
         {
-            if (wanted - done > 0)
+            if (active_wanted - active_done > 0)
             {
                 taskbar_->set_progress_state(TBPF_NORMAL);
-                taskbar_->set_progress_value(done, wanted);
+                taskbar_->set_progress_value(active_done, active_wanted);
+            }
+            else if (paused_wanted - paused_done > 0)
+            {
+                taskbar_->set_progress_state(TBPF_PAUSED);
+                taskbar_->set_progress_value(paused_done, paused_wanted);
             }
             else
             {
