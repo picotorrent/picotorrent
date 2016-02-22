@@ -242,7 +242,7 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     case WM_NOTIFYICON:
     {
         DWORD ev = LOWORD(lParam);
-        
+
         switch (ev)
         {
         case WM_LBUTTONDBLCLK:
@@ -367,7 +367,7 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         }
 
         bool res = close_cb_();
-    
+
         if (!res)
         {
             return FALSE;
@@ -441,21 +441,18 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     {
         uint64_t done = 0;
         uint64_t wanted = 0;
-        bool hasActiveDownloads = false;
 
         for (const core::torrent_ptr &t : torrents_)
         {
-            done += t->total_wanted_done();
-            wanted += t->total_wanted();
-
             // Is the current item actively downloading?
-            if (!t->is_seeding() && !t->is_paused() && (wanted + done > 0))
+            if (!t->is_seeding() && !t->is_paused())
             {
-                hasActiveDownloads = true;
+                done += t->total_wanted_done();
+                wanted += t->total_wanted();
             }
         }
 
-        sleep_manager_->refresh(hasActiveDownloads);
+        sleep_manager_->refresh(wanted + done > 0 ? true : false);
 
         // If we start PicoTorrent minimized, the taskbar may not have been created
         // yet, so check for null here.
