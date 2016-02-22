@@ -117,16 +117,16 @@ std::wstring peers_page::on_list_display(const std::pair<int, int> &p)
     case LIST_COLUMN_DOWNLOAD:
     case LIST_COLUMN_UPLOAD:
     {
+        int rate = p.first == LIST_COLUMN_DOWNLOAD ? ps.peer.download_rate() : ps.peer.upload_rate();
+
+        if (rate < 1024)
+        {
+            return L"-";
+        }
+
         TCHAR result[100];
-
-        StrFormatByteSize64(
-            p.first == LIST_COLUMN_DOWNLOAD
-            ? ps.peer.download_rate()
-            : ps.peer.upload_rate(),
-            result,
-            ARRAYSIZE(result));
-
-        StringCchPrintf(result, ARRAYSIZE(result), TEXT("%s/s"), result);
+        StrFormatByteSize64(rate, result, ARRAYSIZE(result));
+        StringCchPrintf(result, ARRAYSIZE(result), L"%s/s", result);
         return result;
     }
     default:
