@@ -15,15 +15,20 @@ namespace core
 
 namespace client
 {
-    namespace controllers
-    {
-        class application_update_controller;
-    }
+namespace controllers
+{
+    class application_update_controller;
+}
 
-    namespace ui
-    {
-        class main_window;
-    }
+namespace plugins
+{
+    class plugin_host;
+}
+
+namespace ui
+{
+    class main_window;
+}
 
     class application
     {
@@ -58,6 +63,7 @@ namespace client
         HACCEL accelerators_;
         std::shared_ptr<ui::main_window> main_window_;
         std::shared_ptr<core::session> sess_;
+        std::shared_ptr<plugins::plugin_host> plugin_host_;
 
         std::shared_ptr<controllers::application_update_controller> updater_;
     };

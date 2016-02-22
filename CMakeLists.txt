@@ -82,6 +82,7 @@ set(PICOTORRENT_SOURCES
     src/client/net/http_client
     src/client/net/http_response
     src/client/net/uri
+    src/client/plugins/plugin_host
     src/client/ui/controls/control_base
     src/client/ui/controls/list_view
     src/client/ui/controls/menu
@@ -191,4 +192,17 @@ target_link_libraries(
     comctl32
     UxTheme
     winhttp
+)
+
+# Plugins
+add_library(
+    JavaScriptPlugin
+    SHARED
+    src/plugins/javascript/duktape
+    src/plugins/javascript/plugin
+)
+
+target_link_libraries(
+    JavaScriptPlugin
+    PicoTorrentCore
 )

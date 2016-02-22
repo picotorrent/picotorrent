@@ -12,6 +12,7 @@
 #include <picotorrent/client/controllers/torrent_details_controller.hpp>
 #include <picotorrent/client/controllers/unhandled_exception_controller.hpp>
 #include <picotorrent/client/controllers/view_preferences_controller.hpp>
+#include <picotorrent/client/plugins/plugin_host.hpp>
 #include <picotorrent/core/configuration.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/filesystem/path.hpp>
@@ -30,6 +31,7 @@ namespace fs = picotorrent::core::filesystem;
 namespace ui = picotorrent::client::ui;
 using picotorrent::client::application;
 using picotorrent::client::command_line;
+using picotorrent::client::plugins::plugin_host;
 using picotorrent::core::configuration;
 using picotorrent::core::logging::log;
 
@@ -37,7 +39,8 @@ application::application()
     : mtx_(NULL),
     main_window_(std::make_shared<ui::main_window>()),
     sess_(std::make_shared<core::session>()),
-    accelerators_(LoadAccelerators(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_PICO_ACCELERATORS)))
+    accelerators_(LoadAccelerators(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_PICO_ACCELERATORS))),
+    plugin_host_(std::make_shared<plugin_host>())
 {
     log::instance().set_unhandled_exception_callback(std::bind(&application::on_unhandled_exception, this, std::placeholders::_1));
 
@@ -163,6 +166,7 @@ int application::run(const std::wstring &args)
     }
 
     sess_->load(main_window_->handle());
+    plugin_host_->load_plugins();
 
     if (!args.empty())
     {
@@ -178,6 +182,7 @@ int application::run(const std::wstring &args)
 
     int result = message_loop::run(main_window_->handle(), accelerators_);
 
+    plugin_host_->unload_plugins();
     sess_->unload();
     return result;
 }
