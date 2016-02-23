@@ -19,6 +19,7 @@ var Version            = System.IO.File.ReadAllText("VERSION").Trim();
 var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version, platform);
 var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version, platform);
 var PortablePackage    = string.Format("PicoTorrent-{0}-{1}.zip", Version, platform);
+var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Version, platform);
 
 public void SignTool(FilePath file)
 {
@@ -99,9 +100,7 @@ Task("Setup-Publish-Directory")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.exe"),
-        BuildDirectory + File("PicoTorrentCore.dll"),
-        BuildDirectory + File("PicoTorrent.pdb"),
-        BuildDirectory + File("PicoTorrentCore.pdb")
+        BuildDirectory + File("PicoTorrentCore.dll")
     };
 
     CreateDirectory(PublishDirectory);
@@ -180,6 +179,19 @@ Task("Build-Portable-Package")
     Zip(PublishDirectory, BuildDirectory + File(PortablePackage));
 });
 
+Task("Build-Symbols-Package")
+    .IsDependentOn("Build")
+    .Does(() =>
+{
+    var files = new FilePath[]
+    {
+        BuildDirectory + File("PicoTorrent.pdb"),
+        BuildDirectory + File("PicoTorrentCore.pdb")
+    };
+
+    Zip(BuildDirectory, BuildDirectory + File(SymbolsPackage), files);
+});
+
 Task("Build-Chocolatey-Package")
     .IsDependentOn("Build-Installer")
     .Does(() =>
@@ -250,7 +262,8 @@ Task("Default")
     .IsDependentOn("Build-Installer")
     .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package")
-    .IsDependentOn("Build-Portable-Package");
+    .IsDependentOn("Build-Portable-Package")
+    .IsDependentOn("Build-Symbols-Package");
 
 Task("Publish")
     .IsDependentOn("Build")
@@ -260,7 +273,8 @@ Task("Publish")
     .IsDependentOn("Sign-Installer")
     .IsDependentOn("Sign-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package")
-    .IsDependentOn("Build-Portable-Package");
+    .IsDependentOn("Build-Portable-Package")
+    .IsDependentOn("Build-Symbols-Package");
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION
