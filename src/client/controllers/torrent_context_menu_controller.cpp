@@ -58,6 +58,7 @@ void torrent_context_menu_controller::execute(const POINT &p)
     if (torrents_.size() > 1)
     {
         menu.disable_open_in_explorer();
+        menu.disable_queuing();
     }
 
     switch (menu.show(wnd_->handle(), p))
@@ -80,6 +81,22 @@ void torrent_context_menu_controller::execute(const POINT &p)
         move_controller.execute();
         break;
     }
+
+    case TORRENT_CONTEXT_MENU_QUEUE_UP:
+        torrents_[0]->queue_up();
+        break;
+
+    case TORRENT_CONTEXT_MENU_QUEUE_DOWN:
+        torrents_[0]->queue_down();
+        break;
+
+    case TORRENT_CONTEXT_MENU_QUEUE_TOP:
+        torrents_[0]->queue_top();
+        break;
+
+    case TORRENT_CONTEXT_MENU_QUEUE_BOTTOM:
+        torrents_[0]->queue_bottom();
+        break;
 
     case TORRENT_CONTEXT_MENU_REMOVE:
     {
