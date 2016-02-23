@@ -145,6 +145,11 @@
         "start_position": "Start position",
         "hidden": "System tray",
         "minimized": "Minimized",
-        "_torrent_s": "%d torrent(s)"
+        "_torrent_s": "%d torrent(s)",
+        "queuing": "Queuing",
+        "up": "Up",
+        "down": "Down",
+        "top": "Top",
+        "bottom": "Bottom"
     }
 }

@@ -179,6 +179,26 @@ int torrent::queue_position()
     return status_->queue_position;
 }
 
+void torrent::queue_up()
+{
+    status_->handle.queue_position_up();
+}
+
+void torrent::queue_down()
+{
+    status_->handle.queue_position_down();
+}
+
+void torrent::queue_top()
+{
+    status_->handle.queue_position_top();
+}
+
+void torrent::queue_bottom()
+{
+    status_->handle.queue_position_bottom();
+}
+
 void torrent::resume(bool force)
 {
     if (has_error())

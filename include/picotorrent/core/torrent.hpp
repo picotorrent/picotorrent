@@ -77,6 +77,10 @@ namespace core
         DLL_EXPORT void pause();
         DLL_EXPORT float progress() const;
         DLL_EXPORT int queue_position();
+        DLL_EXPORT void queue_up();
+        DLL_EXPORT void queue_down();
+        DLL_EXPORT void queue_top();
+        DLL_EXPORT void queue_bottom();
         DLL_EXPORT void resume(bool force);
         DLL_EXPORT std::string save_path() const;
         DLL_EXPORT void set_download_limit(int limit);
