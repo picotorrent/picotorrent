@@ -30,6 +30,7 @@ namespace picotorrent
 namespace core
 {
     class add_request;
+    class session_metrics;
     class timer;
     class torrent;
     class torrent_info;
@@ -42,6 +43,7 @@ namespace core
 
         DLL_EXPORT void add_torrent(const std::shared_ptr<add_request> &add);
         DLL_EXPORT void get_metadata(const std::string &magnet_link);
+        DLL_EXPORT std::shared_ptr<session_metrics> metrics();
 
         DLL_EXPORT void load(HWND hWnd);
         DLL_EXPORT void unload();
@@ -80,6 +82,7 @@ namespace core
         std::map<libtorrent::sha1_hash, std::shared_ptr<torrent_info>> loading_metadata_;
         torrent_map_t torrents_;
         session_ptr sess_;
+        std::shared_ptr<session_metrics> metrics_;
 
         // Handle to our main window
         HWND hWnd_;

@@ -35,11 +35,12 @@ using picotorrent::core::logging::log;
 
 application::application()
     : mtx_(NULL),
-    main_window_(std::make_shared<ui::main_window>()),
-    sess_(std::make_shared<core::session>()),
     accelerators_(LoadAccelerators(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_PICO_ACCELERATORS)))
 {
     log::instance().set_unhandled_exception_callback(std::bind(&application::on_unhandled_exception, this, std::placeholders::_1));
+
+    sess_ = std::make_shared<core::session>();
+    main_window_ = std::make_shared<ui::main_window>(sess_);
 
     main_window_->on_command(ID_FILE_ADD_TORRENT, std::bind(&application::on_file_add_torrent, this));
     main_window_->on_command(ID_FILE_ADD_MAGNET_LINK, std::bind(&application::on_file_add_magnet_link, this));

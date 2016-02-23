@@ -144,6 +144,7 @@
         "start_with_windows": "Start PicoTorrent with Windows",
         "start_position": "Start position",
         "hidden": "System tray",
-        "minimized": "Minimized"
+        "minimized": "Minimized",
+        "_torrent_s": "%d torrent(s)"
     }
 }
