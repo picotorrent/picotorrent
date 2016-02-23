@@ -126,7 +126,7 @@
         "state_uploading_forced": "[F] Seeding",
         "state_uploading_paused": "Completed",
         "state_uploading_queued": "Queued",
-        "state_uploading_stalled": "Seeding",
+        "state_uploading_stalled": "Stalled (seeding)",
         "general": "General",
         "user_interface": "User interface",
         "language": "Language",
