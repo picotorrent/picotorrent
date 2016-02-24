@@ -6,7 +6,6 @@
 #include <picotorrent/core/add_request.hpp>
 #include <picotorrent/core/configuration.hpp>
 #include <picotorrent/core/session_metrics.hpp>
-#include <picotorrent/core/timer.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/core/filesystem/directory.hpp>
@@ -40,7 +39,6 @@ using picotorrent::core::add_request;
 using picotorrent::core::configuration;
 using picotorrent::core::session;
 using picotorrent::core::session_metrics;
-using picotorrent::core::timer;
 using picotorrent::core::torrent;
 using picotorrent::core::torrent_info;
 
@@ -58,8 +56,7 @@ struct load_item
 };
 
 session::session()
-    : timer_(std::make_unique<timer>(std::bind(&session::timer_callback, this), 1000)),
-    hWnd_(NULL),
+    : hWnd_(NULL),
     metrics_(std::make_shared<session_metrics>(lt::session_stats_metrics()))
 {
 }
@@ -132,15 +129,12 @@ void session::load(HWND hWnd)
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3));
-
-    timer_->start();
 }
 
 void session::unload()
 {
     LOG(info) << "Unloading session";
     sess_->set_alert_notify([] {});
-    timer_->stop();
 
     save_state();
     save_torrents();
@@ -584,6 +578,13 @@ void session::notify()
     }
 }
 
+void session::post_updates()
+{
+    sess_->post_dht_stats();
+    sess_->post_session_stats();
+    sess_->post_torrent_updates();
+}
+
 void session::reload_settings()
 {
     sess_->apply_settings(*get_session_settings());
@@ -766,11 +767,4 @@ void session::save_torrents()
             }
         }
     }
-}
-
-void session::timer_callback()
-{
-    sess_->post_dht_stats();
-    sess_->post_session_stats();
-    sess_->post_torrent_updates();
 }

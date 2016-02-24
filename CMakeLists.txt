@@ -57,7 +57,6 @@ set(PICOTORRENTCORE_SOURCES
     src/core/peer
     src/core/session
     src/core/session_metrics
-    src/core/timer
     src/core/torrent
     src/core/torrent_info
     src/core/torrent_state
