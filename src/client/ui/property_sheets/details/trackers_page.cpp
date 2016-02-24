@@ -14,6 +14,9 @@
 #include <shlwapi.h>
 #include <strsafe.h>
 
+#define CTX_ADD 100
+#define CTX_REMOVE 101
+
 #define LIST_COLUMN_URL    1
 #define LIST_COLUMN_STATUS 2
 #define LIST_COLUMN_UPDATE 3
@@ -102,6 +105,7 @@ void trackers_page::on_init_dialog()
     list_->add_column(LIST_COLUMN_SCRAPE, TR("scrape"),        scaler::x(80),  list_view::number);
 
     list_->on_display().connect(std::bind(&trackers_page::on_list_display, this, std::placeholders::_1));
+    list_->on_item_context_menu().connect(std::bind(&trackers_page::on_trackers_context_menu, this, std::placeholders::_1));
 }
 
 std::wstring trackers_page::on_list_display(const std::pair<int, int> &p)
@@ -176,5 +180,51 @@ std::wstring trackers_page::on_list_display(const std::pair<int, int> &p)
     }
     default:
         return L"<unknown column>";
+    }
+}
+
+void trackers_page::on_trackers_context_menu(const std::vector<int> &items)
+{
+    HMENU menu = CreatePopupMenu();
+
+    if (items.size() > 0)
+    {
+        // Remove
+        AppendMenu(menu, MF_STRING, CTX_REMOVE, TR("remove_tracker_s"));
+    }
+    else
+    {
+        // Add
+        AppendMenu(menu, MF_STRING, CTX_ADD, TR("add_tracker"));
+    }
+
+    POINT pt;
+    GetCursorPos(&pt);
+
+    int res = TrackPopupMenu(
+        menu,
+        TPM_NONOTIFY | TPM_RETURNCMD,
+        pt.x,
+        pt.y,
+        0,
+        list_->handle(),
+        NULL);
+
+    switch (res)
+    {
+    case CTX_ADD:
+    {
+        break;
+    }
+    case CTX_REMOVE:
+    {
+        std::vector<std::string> trackers;
+        for (int i : items)
+        {
+            trackers.push_back(trackers_[i].tracker.url());
+        }
+        on_remove_trackers_.emit(trackers);
+        break;
+    }
     }
 }

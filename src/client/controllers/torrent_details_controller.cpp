@@ -43,6 +43,7 @@ torrent_details_controller::torrent_details_controller(
     peers_->on_activate().connect([this]() { set_active_page(torrent_details_controller::peers); });
     
     trackers_->on_activate().connect([this]() { set_active_page(torrent_details_controller::trackers); });
+    trackers_->on_remove_trackers().connect(std::bind(&torrent_details_controller::on_trackers_remove, this, std::placeholders::_1));
 
     torrent_->on_updated().connect(std::bind(&torrent_details_controller::on_torrent_updated, this));
 }
@@ -162,6 +163,12 @@ void torrent_details_controller::on_torrent_updated()
         update_trackers();
         break;
     }
+}
+
+void torrent_details_controller::on_trackers_remove(const std::vector<std::string> &trackers)
+{
+    torrent_->remove_trackers(trackers);
+    update_trackers();
 }
 
 void torrent_details_controller::set_active_page(torrent_details_controller::active_page_t page)

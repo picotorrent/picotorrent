@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace picotorrent
 {
@@ -54,6 +56,7 @@ namespace controllers
         void on_overview_init();
 
         void on_torrent_updated();
+        void on_trackers_remove(const std::vector<std::string> &);
 
         void set_active_page(active_page_t page);
         void update_files();
