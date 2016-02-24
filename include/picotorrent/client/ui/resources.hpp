@@ -18,6 +18,7 @@
 #define IDD_ABOUT 302
 #define IDD_ADD_TORRENT 303
 #define IDD_ADD_MAGNET_LINK 304
+#define IDD_ADD_TRACKER 305
 #define IDD_DETAILS_OVERVIEW 310
 #define IDD_DETAILS_FILES 311
 #define IDD_DETAILS_PEERS 312
@@ -52,6 +53,9 @@
 #define ID_MAGNET_PROGRESS 103
 #define ID_MAGNET_CURRENT_STATUS 104
 #define ID_MAGNET_ADD_LINKS 105
+
+// Add tracker dialog
+#define ID_ADD_TRACKER_URL 101
 
 // General preferences dialog
 #define ID_UI_GROUP 101

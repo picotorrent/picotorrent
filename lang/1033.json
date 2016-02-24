@@ -150,6 +150,8 @@
         "up": "Up",
         "down": "Down",
         "top": "Top",
-        "bottom": "Bottom"
+        "bottom": "Bottom",
+        "remove_tracker_s": "Remove tracker(s)",
+        "add_tracker": "Add tracker"
     }
 }

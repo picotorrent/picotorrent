@@ -36,6 +36,11 @@ torrent::~torrent()
 {
 }
 
+void torrent::add_tracker(const std::string &url)
+{
+    status_->handle.add_tracker(lt::announce_entry(url));
+}
+
 int torrent::download_limit() const
 {
     return status_->handle.download_limit();
@@ -197,6 +202,18 @@ void torrent::queue_top()
 void torrent::queue_bottom()
 {
     status_->handle.queue_position_bottom();
+}
+
+void torrent::remove_trackers(const std::vector<std::string> &trackers)
+{
+    std::vector<lt::announce_entry> ae = status_->handle.trackers();
+    ae.erase(std::remove_if(ae.begin(), ae.end(),
+        [trackers](const lt::announce_entry &e)
+    {
+        return std::find(trackers.begin(), trackers.end(), e.url) != trackers.end();
+    }), ae.end());
+
+    status_->handle.replace_trackers(ae);
 }
 
 void torrent::resume(bool force)
