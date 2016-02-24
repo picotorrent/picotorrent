@@ -214,6 +214,7 @@ void trackers_page::on_trackers_context_menu(const std::vector<int> &items)
     {
     case CTX_ADD:
     {
+        on_add_tracker_.emit();
         break;
     }
     case CTX_REMOVE:

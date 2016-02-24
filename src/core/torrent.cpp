@@ -36,6 +36,11 @@ torrent::~torrent()
 {
 }
 
+void torrent::add_tracker(const std::string &url)
+{
+    status_->handle.add_tracker(lt::announce_entry(url));
+}
+
 int torrent::download_limit() const
 {
     return status_->handle.download_limit();

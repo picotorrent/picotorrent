@@ -5,6 +5,7 @@
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/core/tracker.hpp>
+#include <picotorrent/client/ui/dialogs/add_tracker_dialog.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/property_sheets/details/files_page.hpp>
 #include <picotorrent/client/ui/property_sheets/details/overview_page.hpp>
@@ -16,11 +17,13 @@
 
 namespace details = picotorrent::client::ui::property_sheets::details;
 using picotorrent::client::controllers::torrent_details_controller;
+using picotorrent::client::ui::dialogs::add_tracker_dialog;
 using picotorrent::client::ui::main_window;
 using picotorrent::core::peer;
 using picotorrent::core::torrent;
 using picotorrent::core::torrent_info;
 using picotorrent::core::tracker;
+using picotorrent::core::to_string;
 using picotorrent::core::to_wstring;
 
 torrent_details_controller::torrent_details_controller(
@@ -43,6 +46,7 @@ torrent_details_controller::torrent_details_controller(
     peers_->on_activate().connect([this]() { set_active_page(torrent_details_controller::peers); });
     
     trackers_->on_activate().connect([this]() { set_active_page(torrent_details_controller::trackers); });
+    trackers_->on_add_tracker().connect(std::bind(&torrent_details_controller::on_trackers_add, this));
     trackers_->on_remove_trackers().connect(std::bind(&torrent_details_controller::on_trackers_remove, this, std::placeholders::_1));
 
     torrent_->on_updated().connect(std::bind(&torrent_details_controller::on_torrent_updated, this));
@@ -162,6 +166,21 @@ void torrent_details_controller::on_torrent_updated()
     case torrent_details_controller::trackers:
         update_trackers();
         break;
+    }
+}
+
+void torrent_details_controller::on_trackers_add()
+{
+    add_tracker_dialog add_tracker;
+    switch (add_tracker.show_modal(trackers_->handle()))
+    {
+    case IDOK:
+    {
+        std::wstring url = add_tracker.get_url();
+        torrent_->add_tracker(to_string(url));
+        update_trackers();
+        break;
+    }
     }
 }
 

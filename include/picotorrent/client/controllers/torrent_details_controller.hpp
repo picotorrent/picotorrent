@@ -56,6 +56,7 @@ namespace controllers
         void on_overview_init();
 
         void on_torrent_updated();
+        void on_trackers_add();
         void on_trackers_remove(const std::vector<std::string> &);
 
         void set_active_page(active_page_t page);

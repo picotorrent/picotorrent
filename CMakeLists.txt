@@ -89,6 +89,7 @@ set(PICOTORRENT_SOURCES
     src/client/ui/dialogs/dialog_base
     src/client/ui/dialogs/about_dialog
     src/client/ui/dialogs/add_torrent_dialog
+    src/client/ui/dialogs/add_tracker_dialog
     src/client/ui/dialogs/magnet_link_dialog
     src/client/ui/property_sheets/property_sheet_page
     src/client/ui/property_sheets/details/files_page
