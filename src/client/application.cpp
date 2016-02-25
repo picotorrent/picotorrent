@@ -125,8 +125,6 @@ bool application::is_single_instance()
 
 int application::run(const std::wstring &args)
 {
-    main_window_->create();
-
     configuration &cfg = configuration::instance();
     UINT pos = SW_SHOWNORMAL;
 
