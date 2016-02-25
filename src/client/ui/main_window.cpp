@@ -460,6 +460,9 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     case WM_TIMER:
     {
+        // Post session updates
+        sess_->post_updates();
+
         uint64_t active_done = 0;
         uint64_t active_wanted = 0;
         uint64_t paused_done = 0;
