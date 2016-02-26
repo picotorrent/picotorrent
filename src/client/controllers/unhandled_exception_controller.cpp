@@ -49,7 +49,8 @@ void unhandled_exception_controller::execute()
 
         picojson::object obj = v.get<picojson::object>();
 
-        if (obj.at("Status").get<std::string>() != "201 Created")
+        //key files is inside only on success.
+        if (obj.find("files") == obj.end())
         {
             return false;
         }
