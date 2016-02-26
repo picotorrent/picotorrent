@@ -92,7 +92,11 @@ void session::get_metadata(const std::string &magnet)
     p.flags &= ~lt::add_torrent_params::flag_paused;
     p.flags &= ~lt::add_torrent_params::flag_auto_managed;
     p.flags |=  lt::add_torrent_params::flag_upload_mode;
-    p.save_path = "C:\\Downloads";
+
+    // Set a temporary save path
+    fs::path temp = environment::get_temporary_directory();
+    std::wstring ih = to_wstring(lt::to_hex(p.info_hash.to_string()));
+    p.save_path = to_string(temp.combine(ih).to_string());
 
     // Add the info hash to our list of currently requested metadata files.
     loading_metadata_.insert({ p.info_hash, nullptr });
