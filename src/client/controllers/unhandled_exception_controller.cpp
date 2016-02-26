@@ -21,6 +21,7 @@ unhandled_exception_controller::unhandled_exception_controller(
 {
 }
 
+#define JSON_VAL(key, val) {(key), picojson::value(val)}
 void unhandled_exception_controller::execute()
 {
     wnd_->hide();
@@ -31,17 +32,14 @@ void unhandled_exception_controller::execute()
         L"Create GitHub issue\nRequires a GitHub account",
         [this]()
     {
-        picojson::object paste;
-        paste.insert({"description", picojson::value("PicoTorrent crach report")});
-        paste.insert({"public", picojson::value(true)});
-        {
-            picojson::object files;
-            picojson::object file_paste;
+        picojson::object file_paste = {JSON_VAL("content", stacktrace_)};
+        picojson::object files = {JSON_VAL("PicoTorrent_crash_report.txt", file_paste)};
 
-            file_paste.insert({"content", picojson::value(stacktrace_)});
-            files.insert({"PicoTorrent_crash_report.txt", picojson::value(file_paste)});
-            paste.insert({"files", picojson::value(files)});
-        }
+        picojson::object paste = {
+            JSON_VAL("description","PicoTorrent crach report"),
+            JSON_VAL("public", true),
+            JSON_VAL("files", files)
+        };
 
         picotorrent::client::net::http_client http;
         std::string result = http.post(L"https://api.github.com/gists", picojson::value(paste).serialize());
