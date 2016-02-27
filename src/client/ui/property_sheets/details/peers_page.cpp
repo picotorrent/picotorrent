@@ -31,7 +31,7 @@ struct peers_page::peer_state
     }
 
     peer peer;
-    bool dirty;
+    bool dirty = false;
 };
 
 peers_page::peers_page()
@@ -48,11 +48,6 @@ peers_page::~peers_page()
 
 void peers_page::refresh(const std::vector<peer> &peers)
 {
-    for (peer_state &ps : peers_)
-    {
-        ps.dirty = false;
-    }
-
     for (const peer &p : peers)
     {
         // TODO: std::find_if uses moderate CPU here, and in a loop as well. maybe a std::map is better for peers_.
