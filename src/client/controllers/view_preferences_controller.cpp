@@ -12,6 +12,7 @@
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
+#include <picotorrent/core/logging/log.hpp>
 #include <vector>
 
 #include <iphlpapi.h>
@@ -322,7 +323,7 @@ void view_preferences_controller::create_run_key()
     if (res != ERROR_SUCCESS)
     {
         DWORD err = GetLastError();
-        printf("");
+        LOG(warning) << "PicoTorrent could not be registered to run at start-up. Error: " << err;
     }
 
     RegCloseKey(hKey);
