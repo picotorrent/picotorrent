@@ -12,7 +12,6 @@ var platform      = Argument("platform", "x64");
 var OutputDirectory    = Directory("./build-" + platform);
 var BuildDirectory     = OutputDirectory + Directory(configuration);
 var PublishDirectory   = BuildDirectory + Directory("publish");
-var RuntimeDirectory   = BuildDirectory + Directory("runtime");
 var ResourceDirectory  = Directory("./res");
 var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
@@ -20,7 +19,7 @@ var Version            = System.IO.File.ReadAllText("VERSION").Trim();
 var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version, platform);
 var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version, platform);
 var PortablePackage    = string.Format("PicoTorrent-{0}-{1}.zip", Version, platform);
-var RuntimePackage     = string.Format("PicoTorrent-{0}-{1}.runtime.zip", Version, platform);
+var PortableBundle     = string.Format("PicoTorrent-{0}-{1}.portable.zip", Version, platform);
 var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Version, platform);
 
 public void SignTool(FilePath file)
@@ -111,7 +110,8 @@ Task("Setup-Publish-Directory")
     DeleteFile(PublishDirectory + Directory("lang") + File("1033.json"));
 });
 
-Task("Setup-Runtime-Directory")
+Task("Setup-Portable-Bundle")
+    .IsDependentOn("Setup-Publish-Directory")
     .Does(() =>
 {
     var VCRedist = Directory("C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\redist");
@@ -146,8 +146,7 @@ Task("Setup-Runtime-Directory")
         CRTDir + File("ucrtbase.dll")
     };
 
-    CreateDirectory(RuntimeDirectory);
-    CopyFiles(files, RuntimeDirectory);
+    CopyFiles(files, PublishDirectory);
 });
 
 Task("Build-Installer")
@@ -220,11 +219,12 @@ Task("Build-Portable-Package")
     Zip(PublishDirectory, BuildDirectory + File(PortablePackage));
 });
 
-Task("Build-Runtime-Package")
-    .IsDependentOn("Setup-Runtime-Directory")
+Task("Build-Portable-Bundle")
+    .IsDependentOn("Build-Portable-Package")
+    .IsDependentOn("Setup-Portable-Bundle")
     .Does(() =>
 {
-    Zip(RuntimeDirectory, BuildDirectory + File(RuntimePackage));
+    Zip(PublishDirectory, BuildDirectory + File(PortableBundle));
 });
 
 Task("Build-Symbols-Package")
@@ -312,7 +312,7 @@ Task("Default")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
     .IsDependentOn("Build-Symbols-Package")
-    .IsDependentOn("Build-Runtime-Package");
+    .IsDependentOn("Build-Portable-Bundle");
 
 Task("Publish")
     .IsDependentOn("Build")
@@ -324,7 +324,7 @@ Task("Publish")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
     .IsDependentOn("Build-Symbols-Package")
-    .IsDependentOn("Build-Runtime-Package");
+    .IsDependentOn("Build-Portable-Bundle");
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION
