@@ -12,6 +12,7 @@ var platform      = Argument("platform", "x64");
 var OutputDirectory    = Directory("./build-" + platform);
 var BuildDirectory     = OutputDirectory + Directory(configuration);
 var PublishDirectory   = BuildDirectory + Directory("publish");
+var RuntimeDirectory   = BuildDirectory + Directory("runtime");
 var ResourceDirectory  = Directory("./res");
 var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
@@ -19,6 +20,7 @@ var Version            = System.IO.File.ReadAllText("VERSION").Trim();
 var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version, platform);
 var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version, platform);
 var PortablePackage    = string.Format("PicoTorrent-{0}-{1}.zip", Version, platform);
+var RuntimePackage     = string.Format("PicoTorrent-{0}-{1}.runtime.zip", Version, platform);
 var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Version, platform);
 
 public void SignTool(FilePath file)
@@ -109,6 +111,45 @@ Task("Setup-Publish-Directory")
     DeleteFile(PublishDirectory + Directory("lang") + File("1033.json"));
 });
 
+Task("Setup-Runtime-Directory")
+    .Does(() =>
+{
+    var VCRedist = Directory("C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\redist");
+    var VCDir = VCRedist + Directory(platform) + Directory("Microsoft.VC140.CRT");
+
+    var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs");
+    var CRTDir = CRTRedist + Directory(platform);
+
+    var files = new FilePath[]
+    {
+        VCDir + File("msvcp140.dll"),
+        VCDir + File("vcruntime140.dll"),
+        CRTDir + File("api-ms-win-core-file-l1-2-0.dll"),
+        CRTDir + File("api-ms-win-core-file-l2-1-0.dll"),
+        CRTDir + File("api-ms-win-core-localization-l1-2-0.dll"),
+        CRTDir + File("api-ms-win-core-processthreads-l1-1-1.dll"),
+        CRTDir + File("api-ms-win-core-synch-l1-2-0.dll"),
+        CRTDir + File("api-ms-win-core-timezone-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-conio-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-convert-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-environment-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-filesystem-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-heap-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-locale-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-math-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-multibyte-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-runtime-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-stdio-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-string-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-time-l1-1-0.dll"),
+        CRTDir + File("api-ms-win-crt-utility-l1-1-0.dll"),
+        CRTDir + File("ucrtbase.dll")
+    };
+
+    CreateDirectory(RuntimeDirectory);
+    CopyFiles(files, RuntimeDirectory);
+});
+
 Task("Build-Installer")
     .IsDependentOn("Build")
     .IsDependentOn("Setup-Publish-Directory")
@@ -177,6 +218,13 @@ Task("Build-Portable-Package")
     .Does(() =>
 {
     Zip(PublishDirectory, BuildDirectory + File(PortablePackage));
+});
+
+Task("Build-Runtime-Package")
+    .IsDependentOn("Setup-Runtime-Directory")
+    .Does(() =>
+{
+    Zip(RuntimeDirectory, BuildDirectory + File(RuntimePackage));
 });
 
 Task("Build-Symbols-Package")
@@ -263,7 +311,8 @@ Task("Default")
     .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
-    .IsDependentOn("Build-Symbols-Package");
+    .IsDependentOn("Build-Symbols-Package")
+    .IsDependentOn("Build-Runtime-Package");
 
 Task("Publish")
     .IsDependentOn("Build")
@@ -274,7 +323,8 @@ Task("Publish")
     .IsDependentOn("Sign-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
-    .IsDependentOn("Build-Symbols-Package");
+    .IsDependentOn("Build-Symbols-Package")
+    .IsDependentOn("Build-Runtime-Package");
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION
