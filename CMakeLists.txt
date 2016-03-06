@@ -56,7 +56,7 @@ set(PICOTORRENTCORE_SOURCES
     src/core/hash
     src/core/peer
     src/core/session
-    src/core/timer
+    src/core/session_metrics
     src/core/torrent
     src/core/torrent_info
     src/core/torrent_state
@@ -67,6 +67,7 @@ set(PICOTORRENT_SOURCES
     src/client/application
     src/client/command_line
     src/client/message_loop
+    src/client/controllers/add_magnet_link_controller
     src/client/controllers/add_torrent_controller
     src/client/controllers/application_close_controller
     src/client/controllers/application_update_controller
@@ -87,6 +88,8 @@ set(PICOTORRENT_SOURCES
     src/client/ui/dialogs/dialog_base
     src/client/ui/dialogs/about_dialog
     src/client/ui/dialogs/add_torrent_dialog
+    src/client/ui/dialogs/add_tracker_dialog
+    src/client/ui/dialogs/magnet_link_dialog
     src/client/ui/property_sheets/property_sheet_page
     src/client/ui/property_sheets/details/files_page
     src/client/ui/property_sheets/details/overview_page
@@ -104,6 +107,7 @@ set(PICOTORRENT_SOURCES
     src/client/ui/open_torrent_dialog
     src/client/ui/scaler
     src/client/ui/sleep_manager
+    src/client/ui/status_bar
     src/client/ui/task_dialog
     src/client/ui/taskbar_list
     src/client/ui/torrent_context_menu

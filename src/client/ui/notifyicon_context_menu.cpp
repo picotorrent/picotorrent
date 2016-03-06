@@ -9,6 +9,7 @@ notifyicon_context_menu::notifyicon_context_menu()
 {
     menu_ = CreatePopupMenu();
     AppendMenu(menu_, MF_STRING, ID_NOTIFYICON_ADD, TR("add_torrent"));
+    AppendMenu(menu_, MF_STRING, ID_NOTIFYICON_ADD_MAGNET, TR("add_magnet_link_s"));
     AppendMenu(menu_, MF_SEPARATOR, 0, NULL);
     AppendMenu(menu_, MF_STRING, ID_NOTIFYICON_EXIT, TR("exit"));
 }

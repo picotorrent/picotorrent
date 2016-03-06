@@ -21,6 +21,7 @@ unhandled_exception_controller::unhandled_exception_controller(
 {
 }
 
+#define JSON_VAL(key, val) {(key), picojson::value(val)}
 void unhandled_exception_controller::execute()
 {
     wnd_->hide();
@@ -31,24 +32,32 @@ void unhandled_exception_controller::execute()
         L"Create GitHub issue\nRequires a GitHub account",
         [this]()
     {
-        picojson::object paste;
-        paste.insert({ "key", picojson::value("<api-key>") });
-        paste.insert({ "paste", picojson::value(stacktrace_) });
+        picojson::object file_paste = {JSON_VAL("content", stacktrace_)};
+        picojson::object files = {JSON_VAL("PicoTorrent_crash_report.txt", file_paste)};
+
+        picojson::object paste = {
+            JSON_VAL("description","PicoTorrent crach report"),
+            JSON_VAL("public", true),
+            JSON_VAL("files", files)
+        };
 
         picotorrent::client::net::http_client http;
-        std::string result = http.post(L"https://paste.ee/api", picojson::value(paste).serialize());
+        std::string result = http.post(L"https://api.github.com/gists", picojson::value(paste).serialize());
 
         picojson::value v;
         picojson::parse(v, result);
 
         picojson::object obj = v.get<picojson::object>();
 
-        if (obj.at("status").get<std::string>() != "success")
+        //key files is inside only on success.
+        if (obj.find("files") == obj.end())
         {
             return false;
         }
 
-        std::string rawUrl = obj.at("paste").get<picojson::object>().at("raw").get<std::string>();
+        std::string rawUrl = obj.at("files").get<picojson::object>()
+                                .at("PicoTorrent_crash_report.txt").get<picojson::object>()
+                                .at("raw_url").get<std::string>();
         ShellExecuteA(
             wnd_->handle(),
             "open",

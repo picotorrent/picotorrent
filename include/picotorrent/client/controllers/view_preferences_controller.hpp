@@ -53,6 +53,9 @@ namespace controllers
         void on_general_init();
 
     private:
+        void create_run_key();
+        void delete_run_key();
+        bool has_run_key();
         void restart();
         bool should_restart();
 

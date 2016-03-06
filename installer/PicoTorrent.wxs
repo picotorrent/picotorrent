@@ -24,7 +24,7 @@
 
         <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit." />
 
-        <Media Id="1" Cabinet="PicoTorrent.cab" EmbedCab="yes" />
+        <Media Id="1" Cabinet="PicoTorrent.cab" EmbedCab="yes" CompressionLevel="high" />
         <Icon Id="I_PicoTorrent.ico" SourceFile="$(var.ResourceDirectory)\app.ico" />
 
         <Directory Id="TARGETDIR" Name="SourceDir">
@@ -169,14 +169,6 @@
                                        Value="&quot;[INSTALLDIR]PicoTorrent.exe&quot; &quot;%1&quot;"
                                        Type="string" />
                     </Component>
-
-                    <Component Id="C_PicoDebug">
-                        <File Id="F_PicoTorrent.pdb" Name="PicoTorrent.pdb" Source="$(var.PublishDirectory)\PicoTorrent.pdb" />
-                    </Component>
-
-                    <Component Id="C_PicoCoreDebug">
-                        <File Id="F_PicoTorrentCore.pdb" Name="PicoTorrentCore.pdb" Source="$(var.PublishDirectory)\PicoTorrentCore.pdb" />
-                    </Component>
                 </Directory>
             </Directory>
 
@@ -186,6 +178,10 @@
         <ComponentGroup Id="CG_Languages" Directory="LANGDIR">
           <Component Id="C_Lang_1031">
             <File Name="1031.json" Source="$(var.PublishDirectory)\lang\1031.json" />
+          </Component>
+
+          <Component Id="C_Lang_1040">
+            <File Name="1040.json" Source="$(var.PublishDirectory)\lang\1040.json" />
           </Component>
 
           <Component Id="C_Lang_1049">
@@ -216,15 +212,6 @@
                      Level="1">
 
               <ComponentGroupRef Id="CG_Languages" />
-            </Feature>
-
-            <Feature Id="F_DebugSymbols"
-                     Title="PDB files"
-                     Description="The PDB files contains symbols which are helpful when debugging issues with PicoTorrent."
-                     Level="1">
-
-                <ComponentRef Id="C_PicoDebug" />
-                <ComponentRef Id="C_PicoCoreDebug" />
             </Feature>
         </Feature>
 

@@ -53,6 +53,7 @@ namespace core
         DLL_EXPORT torrent(const torrent &that) = delete;
         DLL_EXPORT ~torrent();
 
+        DLL_EXPORT void add_tracker(const std::string &url);
         DLL_EXPORT int download_limit() const;
         DLL_EXPORT int download_rate();
 		DLL_EXPORT int eta() const;
@@ -77,6 +78,11 @@ namespace core
         DLL_EXPORT void pause();
         DLL_EXPORT float progress() const;
         DLL_EXPORT int queue_position();
+        DLL_EXPORT void queue_up();
+        DLL_EXPORT void queue_down();
+        DLL_EXPORT void queue_top();
+        DLL_EXPORT void queue_bottom();
+        DLL_EXPORT void remove_trackers(const std::vector<std::string> &trackers);
         DLL_EXPORT void resume(bool force);
         DLL_EXPORT std::string save_path() const;
         DLL_EXPORT void set_download_limit(int limit);

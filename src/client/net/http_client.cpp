@@ -38,7 +38,7 @@ public:
     std::stringstream response_body;
     DWORD data_size = 0;
     DWORD total_size = 0;
-    int response_status_code;
+    int response_status_code = 0;
     std::function<void(const http_response&)> callback;
 };
 
@@ -245,6 +245,7 @@ void http_client::callback_proxy(HINTERNET hInternet, DWORD_PTR dwContext, DWORD
     case WINHTTP_CALLBACK_STATUS_SENDREQUEST_COMPLETE:
     {
         request_state *state = (request_state*)dwContext;
+
         WinHttpReceiveResponse(state->request_handle, NULL);
         break;
     }

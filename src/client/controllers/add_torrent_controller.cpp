@@ -82,6 +82,28 @@ void add_torrent_controller::execute(const command_line &cmd)
     show_add_dialog();
 }
 
+void add_torrent_controller::execute(const std::vector<std::shared_ptr<core::torrent_info>> &torrents)
+{
+    if (torrents.empty())
+    {
+        return;
+    }
+
+    configuration &cfg = configuration::instance();
+    std::wstring default_save_path = cfg.default_save_path();
+
+    for (const std::shared_ptr<core::torrent_info> &ti : torrents)
+    {
+        auto req = std::make_shared<core::add_request>();
+        req->set_save_path(default_save_path);
+        req->set_torrent_info(ti);
+
+        requests_.push_back(req);
+    }
+
+    show_add_dialog();
+}
+
 void add_torrent_controller::add_files(const std::vector<fs::path> &paths)
 {
     configuration &cfg = configuration::instance();
@@ -188,7 +210,7 @@ void add_torrent_controller::on_torrent_files_context_menu(const std::vector<int
     if (files.size() == 1)
     {
         int prio = req->file_priority(files[0]);
-        
+
         switch (prio)
         {
         case core::torrent::do_not_download:
@@ -250,7 +272,7 @@ void add_torrent_controller::show_torrent(int index)
     if (ti)
     {
         std::wstring friendly_size(L"\0", 64);
-        StrFormatByteSize64((UINT)ti->total_size(), &friendly_size[0], (UINT)friendly_size.size());
+        StrFormatByteSize64(ti->total_size(), &friendly_size[0], (UINT)friendly_size.size());
         dlg_->set_size(friendly_size);
 
         dlg_->clear_torrent_files();
@@ -259,7 +281,7 @@ void add_torrent_controller::show_torrent(int index)
         for (int i = 0; i < ti->num_files(); i++)
         {
             std::wstring file_size(L"\0", 64);
-            StrFormatByteSize64((UINT)ti->file_size(i), &file_size[0], (UINT)file_size.size());
+            StrFormatByteSize64(ti->file_size(i), &file_size[0], (UINT)file_size.size());
 
             dlg_->add_torrent_file(
                 to_wstring(ti->file_path(i)),

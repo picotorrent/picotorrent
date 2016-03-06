@@ -42,6 +42,7 @@ namespace client
         bool on_close();
         void on_command_line_args(const std::wstring &args);
         void on_destroy();
+        void on_file_add_magnet_link();
         void on_file_add_torrent();
         void on_notifyicon_context_menu(const POINT &p);
         void on_remove_torrents_accelerator(bool remove_data);

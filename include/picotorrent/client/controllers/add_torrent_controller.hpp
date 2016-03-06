@@ -15,6 +15,7 @@ namespace filesystem
 
     class add_request;
     class session;
+    class torrent_info;
 }
 namespace client
 {
@@ -37,6 +38,7 @@ namespace controllers
 
         void execute();
         void execute(const command_line &cmd);
+        void execute(const std::vector<std::shared_ptr<core::torrent_info>> &torrents);
 
     protected:
         void on_dialog_init();

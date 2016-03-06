@@ -5,8 +5,9 @@
 #include <picotorrent/core/version_info.hpp>
 #include <picotorrent/core/add_request.hpp>
 #include <picotorrent/core/configuration.hpp>
-#include <picotorrent/core/timer.hpp>
+#include <picotorrent/core/session_metrics.hpp>
 #include <picotorrent/core/torrent.hpp>
+#include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/core/filesystem/directory.hpp>
 #include <picotorrent/core/filesystem/file.hpp>
 #include <picotorrent/core/filesystem/path.hpp>
@@ -18,8 +19,10 @@
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/create_torrent.hpp>
 #include <libtorrent/error_code.hpp>
+#include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/peer_info.hpp>
 #include <libtorrent/session.hpp>
+#include <libtorrent/session_stats.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 #include <queue>
@@ -35,8 +38,9 @@ using picotorrent::core::signals::signal_connector;
 using picotorrent::core::add_request;
 using picotorrent::core::configuration;
 using picotorrent::core::session;
-using picotorrent::core::timer;
+using picotorrent::core::session_metrics;
 using picotorrent::core::torrent;
+using picotorrent::core::torrent_info;
 
 struct load_item
 {
@@ -52,8 +56,8 @@ struct load_item
 };
 
 session::session()
-    : timer_(std::make_unique<timer>(std::bind(&session::timer_callback, this), 1000)),
-    hWnd_(NULL)
+    : hWnd_(NULL),
+    metrics_(std::make_shared<session_metrics>(lt::session_stats_metrics()))
 {
 }
 
@@ -66,12 +70,52 @@ void session::add_torrent(const std::shared_ptr<add_request> &add)
     sess_->async_add_torrent(*add->params_);
 }
 
+void session::get_metadata(const std::string &magnet)
+{
+    lt::add_torrent_params p;
+    lt::error_code ec;
+    lt::parse_magnet_uri(magnet, p, ec);
+
+    if (ec)
+    {
+        LOG(error) << "Could not parse magnet link: " << ec.message();
+        return;
+    }
+
+    if (loading_metadata_.find(p.info_hash) != loading_metadata_.end())
+    {
+        LOG(warning) << "Torrent already exists in session: " << p.info_hash;
+        return;
+    }
+
+    // Forced start
+    p.flags &= ~lt::add_torrent_params::flag_paused;
+    p.flags &= ~lt::add_torrent_params::flag_auto_managed;
+    p.flags |=  lt::add_torrent_params::flag_upload_mode;
+    p.save_path = "C:\\Downloads";
+
+    // Add the info hash to our list of currently requested metadata files.
+    loading_metadata_.insert({ p.info_hash, nullptr });
+
+    sess_->async_add_torrent(p);
+}
+
+std::shared_ptr<session_metrics> session::metrics()
+{
+    return metrics_;
+}
+
 void session::load(HWND hWnd)
 {
     LOG(info) << "Loading session";
 
     std::shared_ptr<lt::settings_pack> settings = get_session_settings();
     sess_ = std::make_unique<lt::session>(*settings);
+
+    sess_->add_dht_router({ "router.bittorrent.com", 6881 });
+    sess_->add_dht_router({ "router.utorrent.com", 6881 });
+    sess_->add_dht_router({ "dht.transmissionbt.com", 6881 });
+    sess_->add_dht_router({ "dht.aelitis.com", 6881 }); // Vuze
 
     load_state();
     load_torrents();
@@ -85,15 +129,12 @@ void session::load(HWND hWnd)
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3));
-
-    timer_->start();
 }
 
 void session::unload()
 {
     LOG(info) << "Unloading session";
     sess_->set_alert_notify([] {});
-    timer_->stop();
 
     save_state();
     save_torrents();
@@ -103,6 +144,12 @@ void session::remove_torrent(const torrent_ptr &torrent, bool remove_data)
 {
     sess_->remove_torrent(torrent->status_->handle, remove_data ? lt::session::delete_files : 0);
 }
+
+signal_connector<void, const std::shared_ptr<torrent_info>&>& session::on_metadata_received()
+{
+    return on_metadata_received_;
+}
+
 
 signal_connector<void, const session::torrent_ptr&>& session::on_torrent_added()
 {
@@ -162,6 +209,7 @@ std::shared_ptr<lt::settings_pack> session::get_session_settings()
     wchar_t iface[128];
     StringCchPrintf(iface, ARRAYSIZE(iface), L"%s:%d", cfg.listen_address().c_str(), cfg.listen_port());
 
+    settings->set_bool(lt::settings_pack::enable_dht, true);
     settings->set_int(lt::settings_pack::alert_mask, lt::alert::all_categories);
     settings->set_int(lt::settings_pack::alert_queue_size, cfg.alert_queue_size());
     settings->set_str(lt::settings_pack::listen_interfaces, to_string(iface));
@@ -385,6 +433,12 @@ void session::notify()
                 continue;
             }
 
+            if (loading_metadata_.find(al->handle.info_hash()) != loading_metadata_.end())
+            {
+                // Ignore the torrent if we only search for its metadata
+                continue;
+            }
+
             if (torrents_.find(al->handle.info_hash()) != torrents_.end())
             {
                 LOG(warning) << "Torrent already in session: " << lt::to_hex(al->handle.info_hash().to_string());
@@ -434,6 +488,15 @@ void session::notify()
         {
             lt::metadata_received_alert *al = lt::alert_cast<lt::metadata_received_alert>(alert);
 
+            if (loading_metadata_.find(al->handle.info_hash()) != loading_metadata_.end())
+            {
+                // We have the metadata. Load it into a shared pointer and emit an event.
+                std::shared_ptr<torrent_info> ti = std::make_shared<torrent_info>(*al->handle.torrent_file());
+                sess_->remove_torrent(al->handle);
+                on_metadata_received_.emit(ti);
+                continue;
+            }
+
             if (al->handle.torrent_file())
             {
                 save_torrent(*al->handle.torrent_file());
@@ -446,12 +509,23 @@ void session::notify()
             }
             break;
         }
+        case lt::session_stats_alert::alert_type:
+        {
+            lt::session_stats_alert *al = lt::alert_cast<lt::session_stats_alert>(alert);
+            metrics_->update(al->values, ARRAYSIZE(al->values));
+            break;
+        }
         case lt::state_update_alert::alert_type:
         {
             lt::state_update_alert *al = lt::alert_cast<lt::state_update_alert>(alert);
 
             for (lt::torrent_status &st : al->status)
             {
+                if (loading_metadata_.find(st.info_hash) != loading_metadata_.end())
+                {
+                    continue;
+                }
+
                 const torrent_ptr &t = torrents_.find(st.info_hash)->second;
                 t->update(std::make_unique<lt::torrent_status>(st));
                 on_torrent_updated_.emit(t);
@@ -474,6 +548,13 @@ void session::notify()
         case lt::torrent_removed_alert::alert_type:
         {
             lt::torrent_removed_alert *al = lt::alert_cast<lt::torrent_removed_alert>(alert);
+
+            if (loading_metadata_.find(al->info_hash) != loading_metadata_.end())
+            {
+                loading_metadata_.erase(al->info_hash);
+                continue;
+            }
+
             torrent_ptr &torrent = torrents_.at(al->info_hash);
 
             remove_torrent_files(torrent);
@@ -495,6 +576,13 @@ void session::notify()
             break;
         }
     }
+}
+
+void session::post_updates()
+{
+    sess_->post_dht_stats();
+    sess_->post_session_stats();
+    sess_->post_torrent_updates();
 }
 
 void session::reload_settings()
@@ -679,11 +767,4 @@ void session::save_torrents()
             }
         }
     }
-}
-
-void session::timer_callback()
-{
-    sess_->post_dht_stats();
-    sess_->post_session_stats();
-    sess_->post_torrent_updates();
 }

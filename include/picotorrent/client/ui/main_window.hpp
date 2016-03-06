@@ -12,6 +12,7 @@ namespace picotorrent
 {
 namespace core
 {
+    class session;
     class torrent;
 }
 namespace client
@@ -26,6 +27,7 @@ namespace controls
     class notify_icon;
     class taskbar_list;
     class sleep_manager;
+    class status_bar;
 
     class main_window
     {
@@ -33,7 +35,7 @@ namespace controls
         typedef std::function<void()> command_func_t;
         typedef std::map<int, command_func_t> command_map_t;
 
-        main_window();
+        main_window(const std::shared_ptr<core::session> &sess);
         ~main_window();
 
         void torrent_added(const std::shared_ptr<core::torrent>&);
@@ -79,6 +81,8 @@ namespace controls
         std::vector<std::shared_ptr<core::torrent>> torrents_;
         std::shared_ptr<notify_icon> noticon_;
         std::unique_ptr<controls::list_view> list_view_;
+        std::shared_ptr<core::session> sess_;
+        std::unique_ptr<status_bar> status_;
         std::shared_ptr<taskbar_list> taskbar_;
         std::wstring last_finished_save_path_;
         std::unique_ptr<sleep_manager> sleep_manager_;

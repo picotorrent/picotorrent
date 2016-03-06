@@ -36,6 +36,13 @@ namespace core
             i2p
         };
 
+        enum start_position_t
+        {
+            normal,
+            minimized,
+            hidden
+        };
+
         struct placement
         {
             uint32_t flags;
@@ -112,6 +119,9 @@ namespace core
 
         DLL_EXPORT bool prompt_for_save_path();
         DLL_EXPORT void set_prompt_for_save_path(bool value);
+
+        DLL_EXPORT start_position_t start_position();
+        DLL_EXPORT void set_start_position(start_position_t pos);
 
         DLL_EXPORT int stop_tracker_timeout();
         DLL_EXPORT std::wstring update_url();
