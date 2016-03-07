@@ -49,7 +49,7 @@ translator::translator()
         // Load JSON from our resource
         HRSRC rc = FindResource(instance_, MAKEINTRESOURCE(1337), MAKEINTRESOURCE(TEXTFILE));
         HGLOBAL data = LoadResource(instance_, rc);
-        DWORD size = SizeofResource(instance_, rc);
+        //DWORD size = SizeofResource(instance_, rc);
         std::string json = static_cast<const char*>(LockResource(data));
 
         pj::value v;

@@ -126,7 +126,7 @@
         "state_uploading_forced": "[F] Seeding",
         "state_uploading_paused": "Completed",
         "state_uploading_queued": "Queued",
-        "state_uploading_stalled": "Seeding",
+        "state_uploading_stalled": "Stalled (seeding)",
         "general": "General",
         "user_interface": "User interface",
         "language": "Language",
@@ -143,7 +143,15 @@
         "miscellaneous": "Miscellaneous",
         "start_with_windows": "Start PicoTorrent with Windows",
         "start_position": "Start position",
-        "hidden": "Hidden",
-        "minimized": "Minimized"
+        "hidden": "System tray",
+        "minimized": "Minimized",
+        "_torrent_s": "%d torrent(s)",
+        "queuing": "Queuing",
+        "up": "Up",
+        "down": "Down",
+        "top": "Top",
+        "bottom": "Bottom",
+        "remove_tracker_s": "Remove tracker(s)",
+        "add_tracker": "Add tracker"
     }
 }

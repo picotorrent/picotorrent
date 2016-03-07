@@ -1,6 +1,7 @@
 #pragma once
 
 #include <picotorrent/client/ui/property_sheets/property_sheet_page.hpp>
+#include <picotorrent/core/signals/signal.hpp>
 #include <string>
 #include <vector>
 
@@ -31,13 +32,19 @@ namespace details
 
         void refresh(const std::shared_ptr<core::torrent> &torrent);
 
+        inline core::signals::signal_connector<void, void>& on_add_tracker() { return on_add_tracker_; }
+        inline core::signals::signal_connector<void, const std::vector<std::string>&>& on_remove_trackers() {return on_remove_trackers_;}
     protected:
         void on_init_dialog();
 
     private:
         std::wstring on_list_display(const std::pair<int, int> &p);
+        void on_trackers_context_menu(const std::vector<int> &items);
 
         struct tracker_state;
+
+        core::signals::signal<void, void> on_add_tracker_;
+        core::signals::signal<void, const std::vector<std::string>&> on_remove_trackers_;
         std::unique_ptr<controls::list_view> list_;
         std::vector<tracker_state> trackers_;
 

@@ -141,6 +141,9 @@
         "magnet_link_s": "Magnetlink(s)",
         "add_link_s": "hinzufügen",
         "miscellaneous": "Sonstiges",
-        "start_with_windows": "PicoTorrent mit Windows starten"
+        "start_with_windows": "PicoTorrent mit Windows starten",
+        "start_position": "Startposition",
+        "hidden": "System Tray",
+        "minimized": "Minimiert"
     }
 }

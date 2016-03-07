@@ -15,6 +15,7 @@ namespace ui
         ~torrent_context_menu();
 
         void disable_open_in_explorer();
+        void disable_queuing();
         void highlight_pause();
         void highlight_resume();
         void remove_pause();

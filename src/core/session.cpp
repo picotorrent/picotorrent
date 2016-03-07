@@ -5,7 +5,7 @@
 #include <picotorrent/core/version_info.hpp>
 #include <picotorrent/core/add_request.hpp>
 #include <picotorrent/core/configuration.hpp>
-#include <picotorrent/core/timer.hpp>
+#include <picotorrent/core/session_metrics.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/core/filesystem/directory.hpp>
@@ -22,6 +22,7 @@
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/peer_info.hpp>
 #include <libtorrent/session.hpp>
+#include <libtorrent/session_stats.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 #include <queue>
@@ -37,7 +38,7 @@ using picotorrent::core::signals::signal_connector;
 using picotorrent::core::add_request;
 using picotorrent::core::configuration;
 using picotorrent::core::session;
-using picotorrent::core::timer;
+using picotorrent::core::session_metrics;
 using picotorrent::core::torrent;
 using picotorrent::core::torrent_info;
 
@@ -55,8 +56,8 @@ struct load_item
 };
 
 session::session()
-    : timer_(std::make_unique<timer>(std::bind(&session::timer_callback, this), 1000)),
-    hWnd_(NULL)
+    : hWnd_(NULL),
+    metrics_(std::make_shared<session_metrics>(lt::session_stats_metrics()))
 {
 }
 
@@ -99,6 +100,11 @@ void session::get_metadata(const std::string &magnet)
     sess_->async_add_torrent(p);
 }
 
+std::shared_ptr<session_metrics> session::metrics()
+{
+    return metrics_;
+}
+
 void session::load(HWND hWnd)
 {
     LOG(info) << "Loading session";
@@ -123,15 +129,12 @@ void session::load(HWND hWnd)
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3));
-
-    timer_->start();
 }
 
 void session::unload()
 {
     LOG(info) << "Unloading session";
     sess_->set_alert_notify([] {});
-    timer_->stop();
 
     save_state();
     save_torrents();
@@ -506,6 +509,12 @@ void session::notify()
             }
             break;
         }
+        case lt::session_stats_alert::alert_type:
+        {
+            lt::session_stats_alert *al = lt::alert_cast<lt::session_stats_alert>(alert);
+            metrics_->update(al->values, ARRAYSIZE(al->values));
+            break;
+        }
         case lt::state_update_alert::alert_type:
         {
             lt::state_update_alert *al = lt::alert_cast<lt::state_update_alert>(alert);
@@ -567,6 +576,13 @@ void session::notify()
             break;
         }
     }
+}
+
+void session::post_updates()
+{
+    sess_->post_dht_stats();
+    sess_->post_session_stats();
+    sess_->post_torrent_updates();
 }
 
 void session::reload_settings()
@@ -751,11 +767,4 @@ void session::save_torrents()
             }
         }
     }
-}
-
-void session::timer_callback()
-{
-    sess_->post_dht_stats();
-    sess_->post_session_stats();
-    sess_->post_torrent_updates();
 }

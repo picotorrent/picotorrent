@@ -31,7 +31,7 @@ struct peers_page::peer_state
     }
 
     peer peer;
-    bool dirty;
+    bool dirty = false;
 };
 
 peers_page::peers_page()
@@ -48,11 +48,6 @@ peers_page::~peers_page()
 
 void peers_page::refresh(const std::vector<peer> &peers)
 {
-    for (peer_state &ps : peers_)
-    {
-        ps.dirty = false;
-    }
-
     for (const peer &p : peers)
     {
         // TODO: std::find_if uses moderate CPU here, and in a loop as well. maybe a std::map is better for peers_.
@@ -117,16 +112,16 @@ std::wstring peers_page::on_list_display(const std::pair<int, int> &p)
     case LIST_COLUMN_DOWNLOAD:
     case LIST_COLUMN_UPLOAD:
     {
+        int rate = p.first == LIST_COLUMN_DOWNLOAD ? ps.peer.download_rate() : ps.peer.upload_rate();
+
+        if (rate < 1024)
+        {
+            return L"-";
+        }
+
         TCHAR result[100];
-
-        StrFormatByteSize64(
-            p.first == LIST_COLUMN_DOWNLOAD
-            ? ps.peer.download_rate()
-            : ps.peer.upload_rate(),
-            result,
-            ARRAYSIZE(result));
-
-        StringCchPrintf(result, ARRAYSIZE(result), TEXT("%s/s"), result);
+        StrFormatByteSize64(rate, result, ARRAYSIZE(result));
+        StringCchPrintf(result, ARRAYSIZE(result), L"%s/s", result);
         return result;
     }
     default:
