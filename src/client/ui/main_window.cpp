@@ -51,33 +51,34 @@ using picotorrent::client::ui::sleep_manager;
 
 const UINT main_window::TaskbarButtonCreated = RegisterWindowMessage(L"TaskbarButtonCreated");
 
+struct main_window::wnd_class_initializer
+{
+    wnd_class_initializer()
+    {
+        WNDCLASSEX wnd = { 0 };
+        wnd.cbSize = sizeof(WNDCLASSEX);
+        wnd.cbWndExtra = sizeof(main_window*);
+        wnd.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+        wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
+        wnd.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_APPICON));
+        wnd.lpfnWndProc = &main_window::wnd_proc_proxy;
+        wnd.lpszClassName = TEXT("PicoTorrent/MainWindow");
+        wnd.style = CS_HREDRAW | CS_VREDRAW;
+
+        RegisterClassEx(&wnd);
+    }
+};
+
 main_window::main_window(const std::shared_ptr<core::session> &sess)
     : hWnd_(NULL),
-    sess_(sess)
+    sess_(sess),
+    sleep_manager_(std::make_unique<sleep_manager>())
 {
-}
-
-main_window::~main_window()
-{
-}
-
-void main_window::create()
-{
-    WNDCLASSEX wnd = { 0 };
-    wnd.cbSize = sizeof(WNDCLASSEX);
-    wnd.cbWndExtra = sizeof(main_window*);
-    wnd.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
-    wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wnd.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_APPICON));
-    wnd.lpfnWndProc = &main_window::wnd_proc_proxy;
-    wnd.lpszClassName = TEXT("PicoTorrent/MainWindow");
-    wnd.style = CS_HREDRAW | CS_VREDRAW;
-
-    RegisterClassEx(&wnd);
+    static wnd_class_initializer instance;
 
     hWnd_ = CreateWindowEx(
         0,
-        wnd.lpszClassName,
+        L"PicoTorrent/MainWindow",
         TEXT("PicoTorrent"),
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
@@ -110,8 +111,10 @@ void main_window::create()
     AppendMenu(menuBar, MF_POPUP, (UINT_PTR)help, TR("amp_help"));
 
     SetMenu(hWnd_, menuBar);
+}
 
-    sleep_manager_ = std::make_unique<sleep_manager>();
+main_window::~main_window()
+{
 }
 
 void main_window::exit()

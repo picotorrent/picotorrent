@@ -46,6 +46,13 @@ fs::path environment::get_special_folder(picotorrent::core::special_folder folde
     return p;
 }
 
+fs::path environment::get_temporary_directory()
+{
+    TCHAR p[MAX_PATH];
+    GetTempPath(ARRAYSIZE(p), p);
+    return p;
+}
+
 bool environment::is_installed()
 {
     HKEY hKey = NULL;

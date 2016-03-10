@@ -43,7 +43,6 @@ namespace controls
         void torrent_removed(const std::shared_ptr<core::torrent>&);
         void torrent_updated(const std::shared_ptr<core::torrent>&);
 
-        void create();
         void exit();
         std::vector<std::shared_ptr<core::torrent>> get_selected_torrents();
         HWND handle();
@@ -61,6 +60,8 @@ namespace controls
         void select_all_torrents();
 
     private:
+        struct wnd_class_initializer;
+
         std::wstring on_list_display(const std::pair<int, int> &p);
         float on_list_progress(const std::pair<int, int> &p);
         void on_list_sort(const std::pair<int, int> &p);
