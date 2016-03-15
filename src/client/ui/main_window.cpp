@@ -512,7 +512,7 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             }
             else if (paused_wanted - paused_done > 0)
             {
-                taskbar_->set_progress_state(has_error ? TBPF_ERROR : TBPF_NORMAL);
+                taskbar_->set_progress_state(has_error ? TBPF_ERROR : TBPF_PAUSED);
                 taskbar_->set_progress_value(paused_done, paused_wanted);
             }
             else
