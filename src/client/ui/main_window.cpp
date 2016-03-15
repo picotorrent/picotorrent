@@ -18,6 +18,7 @@
 #include <picotorrent/client/ui/status_bar.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
 #include <picotorrent/client/ui/taskbar_list.hpp>
+#include <picotorrent/client/ui/torrent_drop_target.hpp>
 #include <chrono>
 #include <shellapi.h>
 #include <shlwapi.h>
@@ -48,6 +49,7 @@ using picotorrent::client::ui::open_file_dialog;
 using picotorrent::client::ui::scaler;
 using picotorrent::client::ui::taskbar_list;
 using picotorrent::client::ui::sleep_manager;
+using picotorrent::client::ui::torrent_drop_target;
 
 const UINT main_window::TaskbarButtonCreated = RegisterWindowMessage(L"TaskbarButtonCreated");
 
@@ -89,6 +91,9 @@ main_window::main_window(const std::shared_ptr<core::session> &sess)
         NULL,
         GetModuleHandle(NULL),
         static_cast<LPVOID>(this));
+
+    // Create the drop target
+    drop_target_ = std::make_unique<torrent_drop_target>(hWnd_);
 
     // Create main menu
     HMENU file = CreateMenu();
@@ -210,6 +215,11 @@ void main_window::on_torrent_activated(const std::function<void(const std::share
 void main_window::on_torrent_context_menu(const std::function<void(const POINT &p, const std::vector<std::shared_ptr<core::torrent>>&)> &callback)
 {
     torrent_context_cb_ = callback;
+}
+
+signal_connector<void, const std::vector<core::filesystem::path>&>& main_window::on_torrents_dropped()
+{
+    return drop_target_->on_torrents_dropped();
 }
 
 void main_window::post_message(UINT uMsg, WPARAM wParam, LPARAM lParam)

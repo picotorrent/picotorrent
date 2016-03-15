@@ -38,6 +38,7 @@ namespace controllers
 
         void execute();
         void execute(const command_line &cmd);
+        void execute(const std::vector<core::filesystem::path> &files);
         void execute(const std::vector<std::shared_ptr<core::torrent_info>> &torrents);
 
     protected:
