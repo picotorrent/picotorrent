@@ -57,6 +57,7 @@ application::application()
     main_window_->on_session_alert_notify().connect(std::bind(&application::on_session_alert_notify, this));
     main_window_->on_torrent_activated(std::bind(&application::on_torrent_activated, this, std::placeholders::_1));
     main_window_->on_torrent_context_menu(std::bind(&application::on_torrent_context_menu, this, std::placeholders::_1, std::placeholders::_2));
+    main_window_->on_torrents_dropped().connect(std::bind(&application::on_torrents_dropped, this, std::placeholders::_1));
 
     sess_->on_torrent_added().connect(std::bind(&ui::main_window::torrent_added, main_window_, std::placeholders::_1));
     sess_->on_torrent_finished().connect(std::bind(&ui::main_window::torrent_finished, main_window_, std::placeholders::_1));
@@ -305,6 +306,12 @@ void application::on_torrent_context_menu(const POINT &p, const std::vector<std:
 {
     controllers::torrent_context_menu_controller menu_controller(sess_, torrents, main_window_);
     menu_controller.execute(p);
+}
+
+void application::on_torrents_dropped(const std::vector<fs::path> &files)
+{
+    controllers::add_torrent_controller add_controller(sess_, main_window_);
+    add_controller.execute(files);
 }
 
 void application::on_view_preferences()
