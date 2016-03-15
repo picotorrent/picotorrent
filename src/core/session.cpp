@@ -513,6 +513,13 @@ void session::notify()
             }
             break;
         }
+        case lt::save_resume_data_alert::alert_type:
+        {
+            lt::save_resume_data_alert *al = lt::alert_cast<lt::save_resume_data_alert>(alert);
+            if (!al->resume_data) { continue; }
+            save_resume_data(al->handle, *al->resume_data);
+            break;
+        }
         case lt::session_stats_alert::alert_type:
         {
             lt::session_stats_alert *al = lt::alert_cast<lt::session_stats_alert>(alert);
@@ -536,9 +543,17 @@ void session::notify()
             }
             break;
         }
+        case lt::torrent_added_alert::alert_type:
+        {
+            lt::torrent_added_alert *al = lt::alert_cast<lt::torrent_added_alert>(alert);
+            if (al->handle.need_save_resume_data()) { al->handle.save_resume_data(); }
+            break;
+        }
         case lt::torrent_finished_alert::alert_type:
         {
             lt::torrent_finished_alert *al = lt::alert_cast<lt::torrent_finished_alert>(alert);
+            if (al->handle.need_save_resume_data()) { al->handle.save_resume_data(); }
+
             torrent_map_t::iterator &find = torrents_.find(al->handle.info_hash());
 
             // Check `total_download` to see if we have a real finished torrent or one that
@@ -611,6 +626,35 @@ void session::remove_torrent_files(const torrent_ptr &torrent)
     if (file.path().exists())
     {
         file.remove();
+    }
+}
+
+void session::save_resume_data(const lt::torrent_handle &th, lt::entry &entry)
+{
+    fs::path data = environment::get_data_path();
+    fs::directory dir = data.combine(L"Torrents");
+
+    if (!dir.path().exists())
+    {
+        dir.create();
+    }
+
+    // Insert PicoTorrent-specific state
+    entry.dict().insert({ "pT-queuePosition", th.status().queue_position });
+
+    std::vector<char> buffer;
+    lt::bencode(std::back_inserter(buffer), entry);
+
+    std::wstring hash = lt::convert_to_wstring(lt::to_hex(th.info_hash().to_string()));
+    fs::file torrentFile(dir.path().combine((hash + L".dat")));
+
+    try
+    {
+        torrentFile.write_all(buffer);
+    }
+    catch (const std::exception& e)
+    {
+        LOG(error) << "Error when writing resume data file: " << e.what();
     }
 }
 
@@ -752,23 +796,7 @@ void session::save_torrents()
             --numOutstandingResumeData;
             if (!rd->resume_data) { continue; }
 
-            // Insert PicoTorrent-specific state
-            rd->resume_data->dict().insert({ "pT-queuePosition", rd->handle.status().queue_position });
-
-            std::vector<char> buffer;
-            lt::bencode(std::back_inserter(buffer), *rd->resume_data);
-
-            std::wstring hash = lt::convert_to_wstring(lt::to_hex(rd->handle.info_hash().to_string()));
-            fs::file torrentFile(dir.path().combine((hash + L".dat")));
-
-            try
-            {
-                torrentFile.write_all(buffer);
-            }
-            catch (const std::exception& e)
-            {
-                LOG(error) << "Error when writing resume data file: " << e.what();
-            }
+            save_resume_data(rd->handle, *rd->resume_data);
         }
     }
 }

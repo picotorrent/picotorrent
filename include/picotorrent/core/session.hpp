@@ -19,9 +19,11 @@ namespace boost {
 namespace libtorrent
 {
     typedef boost::system::error_code error_code;
+    class entry;
     class session;
     class sha1_hash;
     struct settings_pack;
+    struct torrent_handle;
     class torrent_info;
 }
 
@@ -72,6 +74,7 @@ namespace core
         void load_state();
         void load_torrents();
         void remove_torrent_files(const torrent_ptr &torrent);
+        void save_resume_data(const libtorrent::torrent_handle &th, libtorrent::entry &entry);
         void save_state();
         void save_torrent(const libtorrent::torrent_info &ti);
         void save_torrents();
