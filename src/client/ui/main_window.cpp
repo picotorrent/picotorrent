@@ -472,13 +472,18 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         uint64_t paused_wanted = 0;
         int dl_rate = 0;
         int ul_rate = 0;
+        bool has_error = false;
 
         for (const core::torrent_ptr &t : torrents_)
         {
             dl_rate += t->download_rate();
             ul_rate += t->upload_rate();
 
-            // Is the current item actively downloading?
+            if (t->has_error())
+            {
+                has_error = true;
+            }
+
             if (!t->is_seeding() && !t->is_paused())
             {
                 active_done += t->total_wanted_done();
@@ -502,12 +507,12 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
             if (active_wanted - active_done > 0)
             {
-                taskbar_->set_progress_state(TBPF_NORMAL);
+                taskbar_->set_progress_state(has_error ? TBPF_ERROR : TBPF_NORMAL);
                 taskbar_->set_progress_value(active_done, active_wanted);
             }
             else if (paused_wanted - paused_done > 0)
             {
-                taskbar_->set_progress_state(TBPF_PAUSED);
+                taskbar_->set_progress_state(has_error ? TBPF_ERROR : TBPF_PAUSED);
                 taskbar_->set_progress_value(paused_done, paused_wanted);
             }
             else
@@ -578,7 +583,13 @@ std::wstring main_window::on_list_display(const std::pair<int, int> &p)
         case core::torrent_state::state_t::downloading_stalled:
             return TR("state_downloading_stalled");
         case core::torrent_state::state_t::error:
-            return TR("state_error");
+            TCHAR err[1024];
+            StringCchPrintf(
+                err,
+                ARRAYSIZE(err),
+                TR("state_error"),
+                to_wstring(t->error_message()).c_str());
+            return err;
         case core::torrent_state::state_t::unknown:
             return TR("state_unknown");
         case core::torrent_state::state_t::uploading:

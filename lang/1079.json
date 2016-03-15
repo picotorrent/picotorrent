@@ -119,7 +119,7 @@
         "state_downloading_paused": "დაპაუზებული",
         "state_downloading_queued": "რიგშია",
         "state_downloading_stalled": "დაყოვნებული",
-        "state_error": "შეცდომა",
+        "state_error": "შეცდომა: %s",
         "state_unknown": "უცნობი",
         "state_uploading": "სიდირდება",
         "state_uploading_checking": "მოწმდება",
