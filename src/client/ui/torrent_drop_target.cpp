@@ -29,7 +29,7 @@ public:
 #pragma warning( push )
 #pragma warning( disable : 4838 )
         static const QITAB qit[] = {
-            QITABENT(torrent_drop_target, IDropTarget),
+            QITABENT(PicoDropTarget, IDropTarget),
             { 0 }
         };
 #pragma warning( pop )
