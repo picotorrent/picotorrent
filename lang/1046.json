@@ -119,7 +119,7 @@
         "state_downloading_paused": "Pausado",
         "state_downloading_queued": "Na Fila",
         "state_downloading_stalled": "Estagnou",
-        "state_error": "Erro",
+        "state_error": "Erro: %s",
         "state_unknown": "Desconhecido",
         "state_uploading": "Enviando",
         "state_uploading_checking": "Verificando",

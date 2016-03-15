@@ -119,7 +119,7 @@
         "state_downloading_paused": "In pausa",
         "state_downloading_queued": "In attesa",
         "state_downloading_stalled": "In stallo",
-        "state_error": "Errore",
+        "state_error": "Errore: %s",
         "state_unknown": "Sconosciuto",
         "state_uploading": "In seed",
         "state_uploading_checking": "Controllo in corso",

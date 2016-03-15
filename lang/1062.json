@@ -119,7 +119,7 @@
         "state_downloading_paused": "Pauzēts",
         "state_downloading_queued": "Ierindots",
         "state_downloading_stalled": "Apstājies",
-        "state_error": "Kļūda",
+        "state_error": "Kļūda: %s",
         "state_unknown": "Nezināms",
         "state_uploading": "Dod",
         "state_uploading_checking": "Pārbauda",

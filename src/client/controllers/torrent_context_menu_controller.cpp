@@ -68,11 +68,29 @@ void torrent_context_menu_controller::execute(const POINT &p)
         break;
 
     case TORRENT_CONTEXT_MENU_RESUME:
-        std::for_each(torrents_.begin(), torrents_.end(), [](const torrent_ptr &t) { t->resume(false); });
+        std::for_each(torrents_.begin(), torrents_.end(),
+            [](const torrent_ptr &t)
+        {
+            if (t->has_error())
+            {
+                t->clear_error();
+            }
+
+            t->resume(false);
+        });
         break;
 
     case TORRENT_CONTEXT_MENU_RESUME_FORCE:
-        std::for_each(torrents_.begin(), torrents_.end(), [](const torrent_ptr &t) { t->resume(true); });
+        std::for_each(torrents_.begin(), torrents_.end(),
+            [](const torrent_ptr &t)
+        {
+            if (t->has_error())
+            {
+                t->clear_error();
+            }
+
+            t->resume(true);
+        });
         break;
 
     case TORRENT_CONTEXT_MENU_MOVE:

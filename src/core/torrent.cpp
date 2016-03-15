@@ -41,6 +41,11 @@ void torrent::add_tracker(const std::string &url)
     status_->handle.add_tracker(lt::announce_entry(url));
 }
 
+void torrent::clear_error()
+{
+    status_->handle.clear_error();
+}
+
 int torrent::download_limit() const
 {
     return status_->handle.download_limit();
@@ -49,6 +54,11 @@ int torrent::download_limit() const
 int torrent::download_rate()
 {
     return status_->download_payload_rate;
+}
+
+std::string torrent::error_message() const
+{
+    return status_->errc.message();
 }
 
 int torrent::eta() const

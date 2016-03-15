@@ -54,8 +54,10 @@ namespace core
         DLL_EXPORT ~torrent();
 
         DLL_EXPORT void add_tracker(const std::string &url);
+        DLL_EXPORT void clear_error();
         DLL_EXPORT int download_limit() const;
         DLL_EXPORT int download_rate();
+        DLL_EXPORT std::string error_message() const;
 		DLL_EXPORT int eta() const;
         DLL_EXPORT std::vector<int> file_priorities() const;
         DLL_EXPORT void file_priority(int file_index, int priority);
