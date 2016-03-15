@@ -144,6 +144,14 @@
         "start_with_windows": "PicoTorrent mit Windows starten",
         "start_position": "Startposition",
         "hidden": "System Tray",
-        "minimized": "Minimiert"
+        "minimized": "Minimiert",
+        "_torrent_s": "%d Torrent(s)",
+        "queuing": "in Warteschlange",
+        "up": "Hoch",
+        "down": "Runter",
+        "top": "Oben",
+        "bottom": "Unten",
+        "remove_tracker_s": "Tracker entfernen",
+        "add_tracker": "Tracker hinzufügen"
     }
 }
