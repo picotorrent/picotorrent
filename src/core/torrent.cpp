@@ -173,6 +173,16 @@ std::string& torrent::name() const
     return status_->name;
 }
 
+int torrent::connected_nonseeds() const
+{
+    return status_->num_peers - status_->num_seeds;
+}
+
+int torrent::connected_seeds() const
+{
+    return status_->num_seeds;
+}
+
 void torrent::pause()
 {
     if (is_paused())
@@ -296,6 +306,16 @@ std::shared_ptr<const torrent_info> torrent::torrent_info() const
     }
 
     return std::make_shared<core::torrent_info>(*status_->handle.torrent_file());
+}
+
+int torrent::total_nonseeds() const
+{
+    return status_->list_peers - status_->list_seeds;
+}
+
+int torrent::total_seeds() const
+{
+    return status_->list_seeds;
 }
 
 uint64_t torrent::total_wanted()

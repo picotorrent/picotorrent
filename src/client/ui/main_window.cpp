@@ -35,6 +35,8 @@
 #define COLUMN_ETA 6
 #define COLUMN_DL 7
 #define COLUMN_UL 8
+#define COLUMN_SEEDS 9
+#define COLUMN_PEERS 10
 
 namespace core = picotorrent::core;
 namespace fs = picotorrent::core::filesystem;
@@ -377,6 +379,8 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         list_view_->add_column(COLUMN_ETA,            TR("eta"),            scaler::x(80),  list_view::number);
         list_view_->add_column(COLUMN_DL,             TR("dl"),             scaler::x(80),  list_view::number);
         list_view_->add_column(COLUMN_UL,             TR("ul"),             scaler::x(80),  list_view::number);
+        list_view_->add_column(COLUMN_SEEDS,          TR("seeds"),          scaler::x(80),  list_view::number);
+        list_view_->add_column(COLUMN_PEERS,          TR("peers"),          scaler::x(80),  list_view::number);
 
         noticon_ = std::make_shared<notify_icon>(hWnd);
         noticon_->add();
@@ -655,6 +659,18 @@ std::wstring main_window::on_list_display(const std::pair<int, int> &p)
         StrFormatByteSize64(rate, speed, ARRAYSIZE(speed));
         StringCchPrintf(speed, ARRAYSIZE(speed), L"%s/s", speed);
         return speed;
+    }
+    case COLUMN_SEEDS:
+    {
+        TCHAR seeds[1024];
+        StringCchPrintf(seeds, ARRAYSIZE(seeds), L"%d (%d)", t->connected_seeds(), t->total_seeds());
+        return seeds;
+    }
+    case COLUMN_PEERS:
+    {
+        TCHAR peers[1024];
+        StringCchPrintf(peers, ARRAYSIZE(peers), L"%d (%d)", t->connected_nonseeds(), t->total_nonseeds());
+        return peers;
     }
     }
 
