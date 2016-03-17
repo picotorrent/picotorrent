@@ -4,6 +4,7 @@
 #include <memory>
 #include <picotorrent/common.hpp>
 #include <string>
+#include <vector>
 
 namespace picojson
 {
@@ -81,11 +82,8 @@ namespace core
         DLL_EXPORT std::wstring ignored_update();
         DLL_EXPORT void set_ignored_update(const std::wstring &version);
 
-        DLL_EXPORT std::wstring listen_address();
-        DLL_EXPORT void set_listen_address(const std::wstring &address);
-        
-        DLL_EXPORT int listen_port();
-        DLL_EXPORT void set_listen_port(int port);
+        DLL_EXPORT std::vector<std::wstring> listen_interfaces();
+        DLL_EXPORT void set_listen_interfaces(const std::vector<std::wstring> &interfaces);
 
         DLL_EXPORT bool prompt_for_remove_data();
         DLL_EXPORT void set_prompt_for_remove_data(bool value);

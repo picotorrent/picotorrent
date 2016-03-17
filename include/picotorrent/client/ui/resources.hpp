@@ -82,10 +82,7 @@
 
 // Connection preferences dialog
 #define ID_LISTEN_INTERFACE_GROUP 101
-#define ID_ADDRESS_TEXT 102
-#define ID_IPADDRESS 103
-#define ID_PORT_TEXT 104
-#define ID_LISTENPORT 105
+#define ID_LISTEN_INTERFACES 105
 #define ID_PROXY_GROUP 106
 #define ID_TYPE_TEXT 107
 #define ID_PROXY_TYPE 108

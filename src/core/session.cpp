@@ -32,6 +32,7 @@
 
 namespace fs = picotorrent::core::filesystem;
 namespace lt = libtorrent;
+using picotorrent::core::join;
 using picotorrent::core::to_wstring;
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
@@ -209,14 +210,12 @@ std::shared_ptr<lt::settings_pack> session::get_session_settings()
     std::shared_ptr<lt::settings_pack> settings = std::make_shared<lt::settings_pack>();
 
     configuration &cfg = configuration::instance();
-
-    wchar_t iface[128];
-    StringCchPrintf(iface, ARRAYSIZE(iface), L"%s:%d", cfg.listen_address().c_str(), cfg.listen_port());
+    std::vector<std::wstring> ifaces = cfg.listen_interfaces();
 
     settings->set_bool(lt::settings_pack::enable_dht, true);
     settings->set_int(lt::settings_pack::alert_mask, lt::alert::all_categories);
     settings->set_int(lt::settings_pack::alert_queue_size, cfg.alert_queue_size());
-    settings->set_str(lt::settings_pack::listen_interfaces, to_string(iface));
+    settings->set_str(lt::settings_pack::listen_interfaces, to_string(join(ifaces, L",")));
     settings->set_int(lt::settings_pack::stop_tracker_timeout, cfg.stop_tracker_timeout());
     settings->set_int(lt::settings_pack::download_rate_limit, cfg.download_rate_limit());
     settings->set_int(lt::settings_pack::upload_rate_limit, cfg.upload_rate_limit());
