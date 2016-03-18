@@ -152,6 +152,7 @@
         "top": "Deasupra",
         "bottom": "Dedesubt",
         "remove_tracker_s": "Elimină tracker(e)",
-        "add_tracker": "Adaugă tracker"
+        "add_tracker": "Adaugă tracker",
+        "seeds": "Semințe"
     }
 }
