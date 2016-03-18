@@ -2,6 +2,7 @@
 
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+#include <picotorrent/core/string_operations.hpp>
 
 #include <windowsx.h>
 #include <commctrl.h>
@@ -10,6 +11,8 @@
 #include <strsafe.h>
 
 using picotorrent::client::ui::property_sheets::preferences::connection_page;
+using picotorrent::core::join;
+using picotorrent::core::trim;
 
 connection_page::connection_page()
 {
@@ -27,27 +30,26 @@ void connection_page::add_proxy_type(const std::wstring &name, int type)
     ComboBox_SetItemData(ctl, index, type);
 }
 
-std::wstring connection_page::get_listen_address()
+std::vector<std::wstring> connection_page::get_listen_interfaces()
 {
-    HWND ctl = GetDlgItem(handle(), ID_IPADDRESS);
-    DWORD dwAddr = 0;
+    std::vector<std::wstring> result;
+    std::wstring::size_type pos = 0;
+    std::wstring::size_type prev = 0;
 
-    SendMessage(ctl, IPM_GETADDRESS, 0, (LPARAM)&dwAddr);
-    wchar_t wchAddr[20];
-    StringCchPrintf(wchAddr, _countof(wchAddr), L"%ld.%ld.%ld.%ld",
-        FIRST_IPADDRESS(dwAddr),
-        SECOND_IPADDRESS(dwAddr),
-        THIRD_IPADDRESS(dwAddr),
-        FOURTH_IPADDRESS(dwAddr));
+    TCHAR links[4096];
+    GetDlgItemText(handle(), ID_LISTEN_INTERFACES, links, ARRAYSIZE(links));
+    std::wstring l = links;
 
-    return wchAddr;
-}
+    while ((pos = l.find(L'\n', prev)) != std::wstring::npos)
+    {
+        result.push_back(trim(l.substr(prev, pos - prev)));
+        prev = pos + 1;
+    }
 
-int connection_page::get_listen_port()
-{
-    std::wstring text = get_window_text(ID_LISTENPORT);
-    if (text.empty()) { return -1; }
-    return std::stoi(text);
+    // To get the last substring (or only, if delimiter is not found)
+    result.push_back(trim(l.substr(prev)));
+
+    return result;
 }
 
 int connection_page::get_proxy_type()
@@ -100,16 +102,9 @@ bool connection_page::get_proxy_trackers_checked()
     return is_checked(ID_PROXY_TRACKERS);
 }
 
-void connection_page::set_listen_address(const std::wstring &address)
+void connection_page::set_listen_interfaces(const std::vector<std::wstring> &interfaces)
 {
-    std::vector<BYTE> addr = get_address_bytes(address);
-    LPARAM l = MAKEIPADDRESS(addr[0], addr[1], addr[2], addr[3]);
-    SendDlgItemMessage(handle(), ID_IPADDRESS, IPM_SETADDRESS, 0, l);
-}
-
-void connection_page::set_listen_port(int port)
-{
-    SetDlgItemText(handle(), ID_LISTENPORT, std::to_wstring(port).c_str());
+    SetDlgItemText(handle(), ID_LISTEN_INTERFACES, join(interfaces, L"\r\n").c_str());
 }
 
 void connection_page::set_proxy_force_enabled(bool enabled)
@@ -265,8 +260,6 @@ BOOL connection_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM 
 void connection_page::on_init_dialog()
 {
     SetDlgItemText(handle(), ID_LISTEN_INTERFACE_GROUP, TR("listen_interface"));
-    SetDlgItemText(handle(), ID_ADDRESS_TEXT, TR("address"));
-    SetDlgItemText(handle(), ID_PORT_TEXT, TR("port"));
     SetDlgItemText(handle(), ID_PROXY_GROUP, TR("proxy"));
     SetDlgItemText(handle(), ID_TYPE_TEXT, TR("type"));
     SetDlgItemText(handle(), ID_HOST_TEXT, TR("host"));
@@ -291,8 +284,7 @@ void connection_page::check_changed(HWND hDlg, UINT uCtrlId, UINT uCommand)
 {
     switch (uCtrlId)
     {
-    case ID_IPADDRESS:
-    case ID_LISTENPORT:
+    case ID_LISTEN_INTERFACES:
     case ID_PROXY_FORCE:
     case ID_PROXY_HOST:
     case ID_PROXY_HOSTNAMES:

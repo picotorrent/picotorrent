@@ -82,6 +82,17 @@ void add_torrent_controller::execute(const command_line &cmd)
     show_add_dialog();
 }
 
+void add_torrent_controller::execute(const std::vector<fs::path> &files)
+{
+    if (files.empty())
+    {
+        return;
+    }
+
+    add_files(files);
+    show_add_dialog();
+}
+
 void add_torrent_controller::execute(const std::vector<std::shared_ptr<core::torrent_info>> &torrents)
 {
     if (torrents.empty())

@@ -119,7 +119,7 @@
         "state_downloading_paused": "Întrerupt",
         "state_downloading_queued": "În așteptare",
         "state_downloading_stalled": "Blocat",
-        "state_error": "Eroare",
+        "state_error": "Eroare: %s",
         "state_unknown": "Necunoscut",
         "state_uploading": "Însămânțând",
         "state_uploading_checking": "Verificând",

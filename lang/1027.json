@@ -119,7 +119,7 @@
         "state_downloading_paused": "Pausat",
         "state_downloading_queued": "En cua",
         "state_downloading_stalled": "Estancat",
-        "state_error": "Error",
+        "state_error": "Error: %s",
         "state_unknown": "Desconegut",
         "state_uploading": "Sembrant",
         "state_uploading_checking": "Verificant",

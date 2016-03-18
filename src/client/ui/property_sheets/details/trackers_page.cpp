@@ -40,7 +40,7 @@ struct trackers_page::tracker_state
 
     tracker tracker;
     tracker_status status;
-    bool dirty = false;
+    bool dirty;
 };
 
 trackers_page::trackers_page()
@@ -57,6 +57,11 @@ trackers_page::~trackers_page()
 
 void trackers_page::refresh(const std::shared_ptr<torrent> &torrent)
 {
+    for (tracker_state &ts : trackers_)
+    {
+        ts.dirty = false;
+    }
+
     for (const tracker &t : torrent->get_trackers())
     {
         tracker_status &ts = torrent->get_tracker_status(t.url());

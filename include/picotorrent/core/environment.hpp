@@ -23,6 +23,8 @@ namespace filesystem
 
         DLL_EXPORT static core::filesystem::path get_special_folder(special_folder folder);
 
+        DLL_EXPORT static core::filesystem::path get_temporary_directory();
+
         DLL_EXPORT static bool is_installed();
     };
 }

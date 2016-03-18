@@ -119,7 +119,7 @@
         "state_downloading_paused": "Paused",
         "state_downloading_queued": "Queued",
         "state_downloading_stalled": "Stalled",
-        "state_error": "Error",
+        "state_error": "Error: %s",
         "state_unknown": "Unknown",
         "state_uploading": "Seeding",
         "state_uploading_checking": "Checking",
@@ -152,6 +152,7 @@
         "top": "Top",
         "bottom": "Bottom",
         "remove_tracker_s": "Remove tracker(s)",
-        "add_tracker": "Add tracker"
+        "add_tracker": "Add tracker",
+        "seeds": "Seeds"
     }
 }

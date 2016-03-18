@@ -24,8 +24,7 @@ namespace preferences
 
         void add_proxy_type(const std::wstring &name, int type);
 
-        std::wstring get_listen_address();
-        int get_listen_port();
+        std::vector<std::wstring> get_listen_interfaces();
         int get_proxy_type();
         std::wstring get_proxy_host();
         int get_proxy_port();
@@ -36,8 +35,7 @@ namespace preferences
         bool get_proxy_peers_checked();
         bool get_proxy_trackers_checked();
 
-        void set_listen_address(const std::wstring &address);
-        void set_listen_port(int port);
+        void set_listen_interfaces(const std::vector<std::wstring> &interfaces);
         void set_proxy_force_checked(bool enabled);
         void set_proxy_force_enabled(bool enabled);
         void set_proxy_hostnames_checked(bool enabled);

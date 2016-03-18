@@ -41,6 +41,11 @@ void torrent::add_tracker(const std::string &url)
     status_->handle.add_tracker(lt::announce_entry(url));
 }
 
+void torrent::clear_error()
+{
+    status_->handle.clear_error();
+}
+
 int torrent::download_limit() const
 {
     return status_->handle.download_limit();
@@ -49,6 +54,11 @@ int torrent::download_limit() const
 int torrent::download_rate()
 {
     return status_->download_payload_rate;
+}
+
+std::string torrent::error_message() const
+{
+    return status_->errc.message();
 }
 
 int torrent::eta() const
@@ -161,6 +171,16 @@ void torrent::move_storage(const std::string &path)
 std::string& torrent::name() const
 {
     return status_->name;
+}
+
+int torrent::connected_nonseeds() const
+{
+    return status_->num_peers - status_->num_seeds;
+}
+
+int torrent::connected_seeds() const
+{
+    return status_->num_seeds;
 }
 
 void torrent::pause()
@@ -286,6 +306,16 @@ std::shared_ptr<const torrent_info> torrent::torrent_info() const
     }
 
     return std::make_shared<core::torrent_info>(*status_->handle.torrent_file());
+}
+
+int torrent::total_nonseeds() const
+{
+    return status_->list_peers - status_->list_seeds;
+}
+
+int torrent::total_seeds() const
+{
+    return status_->list_seeds;
 }
 
 uint64_t torrent::total_wanted()

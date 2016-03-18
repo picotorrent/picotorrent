@@ -54,8 +54,10 @@ namespace core
         DLL_EXPORT ~torrent();
 
         DLL_EXPORT void add_tracker(const std::string &url);
+        DLL_EXPORT void clear_error();
         DLL_EXPORT int download_limit() const;
         DLL_EXPORT int download_rate();
+        DLL_EXPORT std::string error_message() const;
 		DLL_EXPORT int eta() const;
         DLL_EXPORT std::vector<int> file_priorities() const;
         DLL_EXPORT void file_priority(int file_index, int priority);
@@ -75,6 +77,8 @@ namespace core
         DLL_EXPORT int max_uploads() const;
         DLL_EXPORT void move_storage(const std::string &path);
         DLL_EXPORT std::string& name() const;
+        DLL_EXPORT int connected_nonseeds() const;
+        DLL_EXPORT int connected_seeds() const;
         DLL_EXPORT void pause();
         DLL_EXPORT float progress() const;
         DLL_EXPORT int queue_position();
@@ -94,6 +98,8 @@ namespace core
         DLL_EXPORT int64_t size();
         DLL_EXPORT torrent_state state();
         DLL_EXPORT std::shared_ptr<const torrent_info> torrent_info() const;
+        DLL_EXPORT int total_nonseeds() const;
+        DLL_EXPORT int total_seeds() const;
         DLL_EXPORT uint64_t total_wanted();
         DLL_EXPORT uint64_t total_wanted_done();
         DLL_EXPORT int upload_limit() const;

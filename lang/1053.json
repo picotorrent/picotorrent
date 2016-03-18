@@ -119,7 +119,7 @@
         "state_downloading_paused": "Pausad",
         "state_downloading_queued": "Köad",
         "state_downloading_stalled": "Väntar på peers",
-        "state_error": "Fel",
+        "state_error": "Fel: %s",
         "state_unknown": "Okänd",
         "state_uploading": "Seedar",
         "state_uploading_checking": "Kontrollerar",

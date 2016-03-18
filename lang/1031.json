@@ -119,7 +119,7 @@
         "state_downloading_paused": "Pausiert",
         "state_downloading_queued": "in Warteschlange",
         "state_downloading_stalled": "warte auf Peers...",
-        "state_error": "Fehler",
+        "state_error": "Fehler: %s",
         "state_unknown": "Unbekannt",
         "state_uploading": "Seeden",
         "state_uploading_checking": "Überprüfen",
@@ -144,6 +144,14 @@
         "start_with_windows": "PicoTorrent mit Windows starten",
         "start_position": "Startposition",
         "hidden": "System Tray",
-        "minimized": "Minimiert"
+        "minimized": "Minimiert",
+        "_torrent_s": "%d Torrent(s)",
+        "queuing": "in Warteschlange",
+        "up": "Hoch",
+        "down": "Runter",
+        "top": "Oben",
+        "bottom": "Unten",
+        "remove_tracker_s": "Tracker entfernen",
+        "add_tracker": "Tracker hinzufügen"
     }
 }

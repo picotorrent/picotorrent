@@ -129,8 +129,7 @@ bool view_preferences_controller::on_downloads_validate()
 void view_preferences_controller::on_connection_apply()
 {
     configuration &cfg = configuration::instance();
-    cfg.set_listen_address(conn_page_->get_listen_address());
-    cfg.set_listen_port(conn_page_->get_listen_port());
+    cfg.set_listen_interfaces(conn_page_->get_listen_interfaces());
 
     cfg.set_proxy_type((configuration::proxy_type_t)conn_page_->get_proxy_type());
     cfg.set_proxy_host(conn_page_->get_proxy_host());
@@ -146,8 +145,7 @@ void view_preferences_controller::on_connection_apply()
 void view_preferences_controller::on_connection_init()
 {
     configuration &cfg = configuration::instance();
-    conn_page_->set_listen_address(cfg.listen_address());
-    conn_page_->set_listen_port(cfg.listen_port());
+    conn_page_->set_listen_interfaces(cfg.listen_interfaces());
 
     // Add proxy types
     conn_page_->add_proxy_type(TR("none"), configuration::proxy_type_t::none);
@@ -173,14 +171,15 @@ void view_preferences_controller::on_connection_init()
 
 bool view_preferences_controller::on_connection_validate()
 {
-int listenPort = conn_page_->get_listen_port();
-if (listenPort < 1024 || listenPort > 65535)
-{
-    conn_page_->show_error_message(TR("invalid_listen_port"));
-    return false;
-}
+    std::vector<std::wstring> ifaces = conn_page_->get_listen_interfaces();
 
-return true;
+    if (ifaces.empty())
+    {
+        // TODO show error
+        return false;
+    }
+
+    return true;
 }
 
 void view_preferences_controller::on_downloads_init()

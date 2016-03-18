@@ -119,7 +119,7 @@
         "state_downloading_paused": "Приостановлено",
         "state_downloading_queued": "В очереди",
         "state_downloading_stalled": "Ожидание",
-        "state_error": "Ошибка",
+        "state_error": "Ошибка: %s",
         "state_unknown": "Неизвестно",
         "state_uploading": "Раздаётся",
         "state_uploading_checking": "Проверка",

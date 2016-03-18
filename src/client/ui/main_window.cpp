@@ -18,6 +18,7 @@
 #include <picotorrent/client/ui/status_bar.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
 #include <picotorrent/client/ui/taskbar_list.hpp>
+#include <picotorrent/client/ui/torrent_drop_target.hpp>
 #include <chrono>
 #include <shellapi.h>
 #include <shlwapi.h>
@@ -34,6 +35,8 @@
 #define COLUMN_ETA 6
 #define COLUMN_DL 7
 #define COLUMN_UL 8
+#define COLUMN_SEEDS 9
+#define COLUMN_PEERS 10
 
 namespace core = picotorrent::core;
 namespace fs = picotorrent::core::filesystem;
@@ -48,36 +51,38 @@ using picotorrent::client::ui::open_file_dialog;
 using picotorrent::client::ui::scaler;
 using picotorrent::client::ui::taskbar_list;
 using picotorrent::client::ui::sleep_manager;
+using picotorrent::client::ui::torrent_drop_target;
 
 const UINT main_window::TaskbarButtonCreated = RegisterWindowMessage(L"TaskbarButtonCreated");
 
+struct main_window::wnd_class_initializer
+{
+    wnd_class_initializer()
+    {
+        WNDCLASSEX wnd = { 0 };
+        wnd.cbSize = sizeof(WNDCLASSEX);
+        wnd.cbWndExtra = sizeof(main_window*);
+        wnd.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+        wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
+        wnd.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_APPICON));
+        wnd.lpfnWndProc = &main_window::wnd_proc_proxy;
+        wnd.lpszClassName = TEXT("PicoTorrent/MainWindow");
+        wnd.style = CS_HREDRAW | CS_VREDRAW;
+
+        RegisterClassEx(&wnd);
+    }
+};
+
 main_window::main_window(const std::shared_ptr<core::session> &sess)
     : hWnd_(NULL),
-    sess_(sess)
+    sess_(sess),
+    sleep_manager_(std::make_unique<sleep_manager>())
 {
-}
-
-main_window::~main_window()
-{
-}
-
-void main_window::create()
-{
-    WNDCLASSEX wnd = { 0 };
-    wnd.cbSize = sizeof(WNDCLASSEX);
-    wnd.cbWndExtra = sizeof(main_window*);
-    wnd.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
-    wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wnd.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_APPICON));
-    wnd.lpfnWndProc = &main_window::wnd_proc_proxy;
-    wnd.lpszClassName = TEXT("PicoTorrent/MainWindow");
-    wnd.style = CS_HREDRAW | CS_VREDRAW;
-
-    RegisterClassEx(&wnd);
+    static wnd_class_initializer instance;
 
     hWnd_ = CreateWindowEx(
         0,
-        wnd.lpszClassName,
+        L"PicoTorrent/MainWindow",
         TEXT("PicoTorrent"),
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
@@ -88,6 +93,9 @@ void main_window::create()
         NULL,
         GetModuleHandle(NULL),
         static_cast<LPVOID>(this));
+
+    // Create the drop target
+    drop_target_ = std::make_unique<torrent_drop_target>(hWnd_);
 
     // Create main menu
     HMENU file = CreateMenu();
@@ -110,8 +118,10 @@ void main_window::create()
     AppendMenu(menuBar, MF_POPUP, (UINT_PTR)help, TR("amp_help"));
 
     SetMenu(hWnd_, menuBar);
+}
 
-    sleep_manager_ = std::make_unique<sleep_manager>();
+main_window::~main_window()
+{
 }
 
 void main_window::exit()
@@ -207,6 +217,11 @@ void main_window::on_torrent_activated(const std::function<void(const std::share
 void main_window::on_torrent_context_menu(const std::function<void(const POINT &p, const std::vector<std::shared_ptr<core::torrent>>&)> &callback)
 {
     torrent_context_cb_ = callback;
+}
+
+signal_connector<void, const std::vector<core::filesystem::path>&>& main_window::on_torrents_dropped()
+{
+    return drop_target_->on_torrents_dropped();
 }
 
 void main_window::post_message(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -364,6 +379,8 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         list_view_->add_column(COLUMN_ETA,            TR("eta"),            scaler::x(80),  list_view::number);
         list_view_->add_column(COLUMN_DL,             TR("dl"),             scaler::x(80),  list_view::number);
         list_view_->add_column(COLUMN_UL,             TR("ul"),             scaler::x(80),  list_view::number);
+        list_view_->add_column(COLUMN_SEEDS,          TR("seeds"),          scaler::x(80),  list_view::number);
+        list_view_->add_column(COLUMN_PEERS,          TR("peers"),          scaler::x(80),  list_view::number);
 
         noticon_ = std::make_shared<notify_icon>(hWnd);
         noticon_->add();
@@ -469,13 +486,18 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         uint64_t paused_wanted = 0;
         int dl_rate = 0;
         int ul_rate = 0;
+        bool has_error = false;
 
         for (const core::torrent_ptr &t : torrents_)
         {
             dl_rate += t->download_rate();
             ul_rate += t->upload_rate();
 
-            // Is the current item actively downloading?
+            if (t->has_error())
+            {
+                has_error = true;
+            }
+
             if (!t->is_seeding() && !t->is_paused())
             {
                 active_done += t->total_wanted_done();
@@ -499,12 +521,12 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
             if (active_wanted - active_done > 0)
             {
-                taskbar_->set_progress_state(TBPF_NORMAL);
+                taskbar_->set_progress_state(has_error ? TBPF_ERROR : TBPF_NORMAL);
                 taskbar_->set_progress_value(active_done, active_wanted);
             }
             else if (paused_wanted - paused_done > 0)
             {
-                taskbar_->set_progress_state(TBPF_PAUSED);
+                taskbar_->set_progress_state(has_error ? TBPF_ERROR : TBPF_PAUSED);
                 taskbar_->set_progress_value(paused_done, paused_wanted);
             }
             else
@@ -575,7 +597,13 @@ std::wstring main_window::on_list_display(const std::pair<int, int> &p)
         case core::torrent_state::state_t::downloading_stalled:
             return TR("state_downloading_stalled");
         case core::torrent_state::state_t::error:
-            return TR("state_error");
+            TCHAR err[1024];
+            StringCchPrintf(
+                err,
+                ARRAYSIZE(err),
+                TR("state_error"),
+                to_wstring(t->error_message()).c_str());
+            return err;
         case core::torrent_state::state_t::unknown:
             return TR("state_unknown");
         case core::torrent_state::state_t::uploading:
@@ -631,6 +659,18 @@ std::wstring main_window::on_list_display(const std::pair<int, int> &p)
         StrFormatByteSize64(rate, speed, ARRAYSIZE(speed));
         StringCchPrintf(speed, ARRAYSIZE(speed), L"%s/s", speed);
         return speed;
+    }
+    case COLUMN_SEEDS:
+    {
+        TCHAR seeds[1024];
+        StringCchPrintf(seeds, ARRAYSIZE(seeds), L"%d (%d)", t->connected_seeds(), t->total_seeds());
+        return seeds;
+    }
+    case COLUMN_PEERS:
+    {
+        TCHAR peers[1024];
+        StringCchPrintf(peers, ARRAYSIZE(peers), L"%d (%d)", t->connected_nonseeds(), t->total_nonseeds());
+        return peers;
     }
     }
 

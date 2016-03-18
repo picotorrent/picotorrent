@@ -32,6 +32,7 @@
 
 namespace fs = picotorrent::core::filesystem;
 namespace lt = libtorrent;
+using picotorrent::core::join;
 using picotorrent::core::to_wstring;
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
@@ -56,8 +57,7 @@ struct load_item
 };
 
 session::session()
-    : hWnd_(NULL),
-    metrics_(std::make_shared<session_metrics>(lt::session_stats_metrics()))
+    : metrics_(std::make_shared<session_metrics>(lt::session_stats_metrics()))
 {
 }
 
@@ -92,7 +92,11 @@ void session::get_metadata(const std::string &magnet)
     p.flags &= ~lt::add_torrent_params::flag_paused;
     p.flags &= ~lt::add_torrent_params::flag_auto_managed;
     p.flags |=  lt::add_torrent_params::flag_upload_mode;
-    p.save_path = "C:\\Downloads";
+
+    // Set a temporary save path
+    fs::path temp = environment::get_temporary_directory();
+    std::wstring ih = to_wstring(lt::to_hex(p.info_hash.to_string()));
+    p.save_path = to_string(temp.combine(ih).to_string());
 
     // Add the info hash to our list of currently requested metadata files.
     loading_metadata_.insert({ p.info_hash, nullptr });
@@ -105,7 +109,7 @@ std::shared_ptr<session_metrics> session::metrics()
     return metrics_;
 }
 
-void session::load(HWND hWnd)
+void session::load()
 {
     LOG(info) << "Loading session";
 
@@ -120,8 +124,10 @@ void session::load(HWND hWnd)
     load_state();
     load_torrents();
 
-    hWnd_ = hWnd;
-    sess_->set_alert_notify(std::bind(&session::on_alert_notify, this));
+    sess_->set_alert_notify([this] {
+        on_notifications_available_.emit();
+    });
+
     sess_->set_load_function(
         std::bind(
             &session::on_load_torrent,
@@ -150,6 +156,10 @@ signal_connector<void, const std::shared_ptr<torrent_info>&>& session::on_metada
     return on_metadata_received_;
 }
 
+signal_connector<void, void>& session::on_notifications_available()
+{
+    return on_notifications_available_;
+}
 
 signal_connector<void, const session::torrent_ptr&>& session::on_torrent_added()
 {
@@ -169,11 +179,6 @@ signal_connector<void, const session::torrent_ptr&>& session::on_torrent_removed
 signal_connector<void, const session::torrent_ptr&>& session::on_torrent_updated()
 {
     return on_torrent_updated_;
-}
-
-void session::on_alert_notify()
-{
-    PostMessage(hWnd_, WM_USER + 1337, NULL, NULL);
 }
 
 void session::on_load_torrent(const lt::sha1_hash &hash, std::vector<char> &buf, lt::error_code &ec)
@@ -205,14 +210,12 @@ std::shared_ptr<lt::settings_pack> session::get_session_settings()
     std::shared_ptr<lt::settings_pack> settings = std::make_shared<lt::settings_pack>();
 
     configuration &cfg = configuration::instance();
-
-    wchar_t iface[128];
-    StringCchPrintf(iface, ARRAYSIZE(iface), L"%s:%d", cfg.listen_address().c_str(), cfg.listen_port());
+    std::vector<std::wstring> ifaces = cfg.listen_interfaces();
 
     settings->set_bool(lt::settings_pack::enable_dht, true);
     settings->set_int(lt::settings_pack::alert_mask, lt::alert::all_categories);
     settings->set_int(lt::settings_pack::alert_queue_size, cfg.alert_queue_size());
-    settings->set_str(lt::settings_pack::listen_interfaces, to_string(iface));
+    settings->set_str(lt::settings_pack::listen_interfaces, to_string(join(ifaces, L",")));
     settings->set_int(lt::settings_pack::stop_tracker_timeout, cfg.stop_tracker_timeout());
     settings->set_int(lt::settings_pack::download_rate_limit, cfg.download_rate_limit());
     settings->set_int(lt::settings_pack::upload_rate_limit, cfg.upload_rate_limit());
@@ -509,6 +512,13 @@ void session::notify()
             }
             break;
         }
+        case lt::save_resume_data_alert::alert_type:
+        {
+            lt::save_resume_data_alert *al = lt::alert_cast<lt::save_resume_data_alert>(alert);
+            if (!al->resume_data) { continue; }
+            save_resume_data(al->handle, *al->resume_data);
+            break;
+        }
         case lt::session_stats_alert::alert_type:
         {
             lt::session_stats_alert *al = lt::alert_cast<lt::session_stats_alert>(alert);
@@ -532,9 +542,17 @@ void session::notify()
             }
             break;
         }
+        case lt::torrent_added_alert::alert_type:
+        {
+            lt::torrent_added_alert *al = lt::alert_cast<lt::torrent_added_alert>(alert);
+            if (al->handle.need_save_resume_data()) { al->handle.save_resume_data(); }
+            break;
+        }
         case lt::torrent_finished_alert::alert_type:
         {
             lt::torrent_finished_alert *al = lt::alert_cast<lt::torrent_finished_alert>(alert);
+            if (al->handle.need_save_resume_data()) { al->handle.save_resume_data(); }
+
             torrent_map_t::iterator &find = torrents_.find(al->handle.info_hash());
 
             // Check `total_download` to see if we have a real finished torrent or one that
@@ -607,6 +625,35 @@ void session::remove_torrent_files(const torrent_ptr &torrent)
     if (file.path().exists())
     {
         file.remove();
+    }
+}
+
+void session::save_resume_data(const lt::torrent_handle &th, lt::entry &entry)
+{
+    fs::path data = environment::get_data_path();
+    fs::directory dir = data.combine(L"Torrents");
+
+    if (!dir.path().exists())
+    {
+        dir.create();
+    }
+
+    // Insert PicoTorrent-specific state
+    entry.dict().insert({ "pT-queuePosition", th.status().queue_position });
+
+    std::vector<char> buffer;
+    lt::bencode(std::back_inserter(buffer), entry);
+
+    std::wstring hash = lt::convert_to_wstring(lt::to_hex(th.info_hash().to_string()));
+    fs::file torrentFile(dir.path().combine((hash + L".dat")));
+
+    try
+    {
+        torrentFile.write_all(buffer);
+    }
+    catch (const std::exception& e)
+    {
+        LOG(error) << "Error when writing resume data file: " << e.what();
     }
 }
 
@@ -748,23 +795,7 @@ void session::save_torrents()
             --numOutstandingResumeData;
             if (!rd->resume_data) { continue; }
 
-            // Insert PicoTorrent-specific state
-            rd->resume_data->dict().insert({ "pT-queuePosition", rd->handle.status().queue_position });
-
-            std::vector<char> buffer;
-            lt::bencode(std::back_inserter(buffer), *rd->resume_data);
-
-            std::wstring hash = lt::convert_to_wstring(lt::to_hex(rd->handle.info_hash().to_string()));
-            fs::file torrentFile(dir.path().combine((hash + L".dat")));
-
-            try
-            {
-                torrentFile.write_all(buffer);
-            }
-            catch (const std::exception& e)
-            {
-                LOG(error) << "Error when writing resume data file: " << e.what();
-            }
+            save_resume_data(rd->handle, *rd->resume_data);
         }
     }
 }

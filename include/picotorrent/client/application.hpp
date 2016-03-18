@@ -9,6 +9,10 @@ namespace picotorrent
 {
 namespace core
 {
+namespace filesystem
+{
+    class path;
+}
     class session;
     class torrent;
 }
@@ -50,6 +54,7 @@ namespace client
         void on_session_alert_notify();
         void on_torrent_activated(const std::shared_ptr<core::torrent> &torrent);
         void on_torrent_context_menu(const POINT &p, const std::vector<std::shared_ptr<core::torrent>> &torrents);
+        void on_torrents_dropped(const std::vector<core::filesystem::path> &files);
         void on_view_preferences();
 
         void on_unhandled_exception(const std::string& stacktrace);

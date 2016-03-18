@@ -34,6 +34,24 @@ picotorrent::core::logging::log& log::instance()
 
 void log::init()
 {
+    bool is_debug = true;
+
+#ifdef NDEBUG
+    is_debug = false;
+#endif
+
+    SetUnhandledExceptionFilter(
+        &log::on_unhandled_exception);
+
+    // Only do the following if we have a debug build
+    // or passed --enable-logging on the command line
+    std::wstring cmd = GetCommandLine();
+    if (!is_debug && cmd.find(L"--enable-logging") == std::wstring::npos)
+    {
+        out_ = std::make_unique<std::ostringstream>();
+        return;
+    }
+
     DWORD pid = GetCurrentProcessId();
 
     fs::path data = environment::get_data_path();

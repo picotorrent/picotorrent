@@ -91,24 +91,40 @@ void configuration::set_ignored_update(const std::wstring &version)
     set("ignored_update", version);
 }
 
-std::wstring configuration::listen_address()
+std::vector<std::wstring> configuration::listen_interfaces()
 {
-    return get_or_default<std::wstring>("listen_address", L"0.0.0.0");
+    std::vector<std::wstring> defaultInterfaces = {
+        L"0.0.0.0:6881",
+        L"[::]:6881"
+    };
+
+    if (value_->find("listen_interfaces") == value_->end())
+    {
+        return defaultInterfaces;
+    }
+
+    pj::array ifaces = value_->at("listen_interfaces").get<pj::array>();
+    std::vector<std::wstring> result;
+
+    for (const pj::value &v : ifaces)
+    {
+        std::wstring iv = to_wstring(v.get<std::string>());
+        result.push_back(iv);
+    }
+
+    return result;
 }
 
-void configuration::set_listen_address(const std::wstring &address)
+void configuration::set_listen_interfaces(const std::vector<std::wstring> &interfaces)
 {
-    set("listen_address", address);
-}
+    pj::array ifaces;
 
-int configuration::listen_port()
-{
-    return get_or_default("listen_port", 6881);
-}
+    for (const std::wstring &v : interfaces)
+    {
+        ifaces.push_back(pj::value(to_string(v)));
+    }
 
-void configuration::set_listen_port(int port)
-{
-    set("listen_port", port);
+    (*value_)["listen_interfaces"] = pj::value(ifaces);
 }
 
 bool configuration::prompt_for_remove_data()
