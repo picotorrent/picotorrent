@@ -57,8 +57,7 @@ struct load_item
 };
 
 session::session()
-    : hWnd_(NULL),
-    metrics_(std::make_shared<session_metrics>(lt::session_stats_metrics()))
+    : metrics_(std::make_shared<session_metrics>(lt::session_stats_metrics()))
 {
 }
 
@@ -110,7 +109,7 @@ std::shared_ptr<session_metrics> session::metrics()
     return metrics_;
 }
 
-void session::load(HWND hWnd)
+void session::load()
 {
     LOG(info) << "Loading session";
 
@@ -125,8 +124,10 @@ void session::load(HWND hWnd)
     load_state();
     load_torrents();
 
-    hWnd_ = hWnd;
-    sess_->set_alert_notify(std::bind(&session::on_alert_notify, this));
+    sess_->set_alert_notify([this] {
+        on_notifications_available_.emit();
+    });
+
     sess_->set_load_function(
         std::bind(
             &session::on_load_torrent,
@@ -155,6 +156,10 @@ signal_connector<void, const std::shared_ptr<torrent_info>&>& session::on_metada
     return on_metadata_received_;
 }
 
+signal_connector<void, void>& session::on_notifications_available()
+{
+    return on_notifications_available_;
+}
 
 signal_connector<void, const session::torrent_ptr&>& session::on_torrent_added()
 {
@@ -174,11 +179,6 @@ signal_connector<void, const session::torrent_ptr&>& session::on_torrent_removed
 signal_connector<void, const session::torrent_ptr&>& session::on_torrent_updated()
 {
     return on_torrent_updated_;
-}
-
-void session::on_alert_notify()
-{
-    PostMessage(hWnd_, WM_USER + 1337, NULL, NULL);
 }
 
 void session::on_load_torrent(const lt::sha1_hash &hash, std::vector<char> &buf, lt::error_code &ec)

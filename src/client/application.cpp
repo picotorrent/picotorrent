@@ -59,6 +59,11 @@ application::application()
     main_window_->on_torrent_context_menu(std::bind(&application::on_torrent_context_menu, this, std::placeholders::_1, std::placeholders::_2));
     main_window_->on_torrents_dropped().connect(std::bind(&application::on_torrents_dropped, this, std::placeholders::_1));
 
+    sess_->on_notifications_available().connect([this]()
+    {
+        PostMessage(main_window_->handle(), WM_USER + 1337, NULL, NULL);
+    });
+
     sess_->on_torrent_added().connect(std::bind(&ui::main_window::torrent_added, main_window_, std::placeholders::_1));
     sess_->on_torrent_finished().connect(std::bind(&ui::main_window::torrent_finished, main_window_, std::placeholders::_1));
     sess_->on_torrent_removed().connect(std::bind(&ui::main_window::torrent_removed, main_window_, std::placeholders::_1));
@@ -162,7 +167,7 @@ int application::run(const std::wstring &args)
         ShowWindow(main_window_->handle(), pos);
     }
 
-    sess_->load(main_window_->handle());
+    sess_->load();
 
     if (!args.empty())
     {
