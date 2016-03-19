@@ -152,6 +152,7 @@
         "top": "A sobre",
         "bottom": "A sota",
         "remove_tracker_s": "Elimina tracker(s)",
-        "add_tracker": "Afegeix tracker"
+        "add_tracker": "Afegeix tracker",
+        "seeds": "Llavors"
     }
 }

@@ -152,6 +152,7 @@
         "top": "Superior",
         "bottom": "Inferior",
         "remove_tracker_s": "Elimina tracker(s)",
-        "add_tracker": "Añade tracker"
+        "add_tracker": "Añade tracker",
+        "seeds": "Semillas"
     }
 }
