@@ -2,6 +2,7 @@
 
 #include <picotorrent/core/filesystem/path.hpp>
 #include <shlobj.h>
+#include <shlwapi.h>
 
 namespace fs = picotorrent::core::filesystem;
 using picotorrent::core::environment;
@@ -14,7 +15,8 @@ fs::path environment::get_data_path()
     }
 
     TCHAR buf[MAX_PATH];
-    GetCurrentDirectory(MAX_PATH, buf);
+    GetModuleFileName(NULL, buf, ARRAYSIZE(buf));
+    PathRemoveFileSpec(buf);
 
     return buf;
 }

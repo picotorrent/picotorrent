@@ -38,7 +38,39 @@ application::application()
     accelerators_(LoadAccelerators(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_PICO_ACCELERATORS)))
 {
     log::instance().set_unhandled_exception_callback(std::bind(&application::on_unhandled_exception, this, std::placeholders::_1));
+}
 
+application::~application()
+{
+    if (mtx_ != NULL)
+    {
+        CloseHandle(mtx_);
+        mtx_ = NULL;
+    }
+}
+
+void application::activate_other_instance(const std::wstring &args)
+{
+    HWND otherWindow = FindWindow(L"PicoTorrent/MainWindow", NULL);
+
+    COPYDATASTRUCT cds;
+
+    if (!args.empty())
+    {
+        cds.cbData = (DWORD)(sizeof(wchar_t) * (args.size() + 1));
+        cds.dwData = 1;
+        cds.lpData = (PVOID)&args[0];
+    }
+
+    // Activate other window
+    SetForegroundWindow(otherWindow);
+    ShowWindow(otherWindow, SW_RESTORE);
+
+    SendMessage(otherWindow, WM_COPYDATA, NULL, (LPARAM)&cds);
+}
+
+bool application::init()
+{
     sess_ = std::make_shared<core::session>();
     main_window_ = std::make_shared<ui::main_window>(sess_);
 
@@ -68,35 +100,7 @@ application::application()
     sess_->on_torrent_finished().connect(std::bind(&ui::main_window::torrent_finished, main_window_, std::placeholders::_1));
     sess_->on_torrent_removed().connect(std::bind(&ui::main_window::torrent_removed, main_window_, std::placeholders::_1));
     sess_->on_torrent_updated().connect(std::bind(&ui::main_window::torrent_updated, main_window_, std::placeholders::_1));
-}
 
-application::~application()
-{
-    if (mtx_ != NULL)
-    {
-        CloseHandle(mtx_);
-        mtx_ = NULL;
-    }
-}
-
-void application::activate_other_instance(const std::wstring &args)
-{
-    HWND otherWindow = FindWindow(L"PicoTorrent/MainWindow", NULL);
-
-    COPYDATASTRUCT cds;
-    cds.cbData = (DWORD)(sizeof(wchar_t) * (args.size() + 1));
-    cds.dwData = 1;
-    cds.lpData = (PVOID)&args[0];
-
-    // Activate other window
-    SetForegroundWindow(otherWindow);
-    ShowWindow(otherWindow, SW_RESTORE);
-
-    SendMessage(otherWindow, WM_COPYDATA, NULL, (LPARAM)&cds);
-}
-
-bool application::init()
-{
     // Set our process to be DPI aware so we look good everywhere.
     if (!SetProcessDPIAware())
     {
@@ -208,7 +212,7 @@ void application::wait_for_restart(const std::wstring &args)
     LOG(debug) << "Waiting for previous instance of PicoTorrent to shut down";
     DWORD res = WaitForSingleObject(hProc, 10000);
     CloseHandle(hProc);
-    
+
     switch (res)
     {
     case WAIT_FAILED:
