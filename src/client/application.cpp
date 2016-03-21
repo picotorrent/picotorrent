@@ -71,6 +71,12 @@ void application::activate_other_instance(const std::wstring &args)
 
 bool application::init()
 {
+    // Set our process to be DPI aware so we look good everywhere.
+    if (!SetProcessDPIAware())
+    {
+        return false;
+    }
+
     sess_ = std::make_shared<core::session>();
     main_window_ = std::make_shared<ui::main_window>(sess_);
 
@@ -100,12 +106,6 @@ bool application::init()
     sess_->on_torrent_finished().connect(std::bind(&ui::main_window::torrent_finished, main_window_, std::placeholders::_1));
     sess_->on_torrent_removed().connect(std::bind(&ui::main_window::torrent_removed, main_window_, std::placeholders::_1));
     sess_->on_torrent_updated().connect(std::bind(&ui::main_window::torrent_updated, main_window_, std::placeholders::_1));
-
-    // Set our process to be DPI aware so we look good everywhere.
-    if (!SetProcessDPIAware())
-    {
-        return false;
-    }
 
     INITCOMMONCONTROLSEX icex = { 0 };
     icex.dwICC = ICC_LISTVIEW_CLASSES;
