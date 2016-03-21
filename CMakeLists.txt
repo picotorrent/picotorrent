@@ -30,10 +30,6 @@ endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 configure_file("${CMAKE_SOURCE_DIR}/src/core/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/core/version_info.cpp" @ONLY)
 
-set(BOOST_ROOT      $ENV{BOOST_ROOT})
-set(LIBTORRENT_ROOT $ENV{LIBTORRENT_ROOT})
-set(OPENSSL_ROOT    $ENV{OPENSSL_ROOT})
-
 set(PICOTORRENTCORE_SOURCES
     # File system components
     src/core/filesystem/directory
@@ -114,11 +110,16 @@ set(PICOTORRENT_SOURCES
     src/client/ui/torrent_drop_target
 )
 
+# Shared flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+# Debug flags
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /Zi")
+
+# Release flags
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /Zi")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
@@ -139,7 +140,6 @@ add_definitions(
     -DNOMINMAX
     -DPICOJSON_USE_INT64
     -DTORRENT_NO_DEPRECATE
-    -DTORRENT_USE_OPENSSL
     -DUNICODE
     -DWIN32
     -DWIN32_LEAN_AND_MEAN
@@ -170,20 +170,16 @@ target_link_libraries(
     shlwapi
 
     # Boost.Random
-    debug     libboost_random-vc140-mt-gd-1_60
-    optimized libboost_random-vc140-mt-1_60
+    debug     libboost_random-vc140-mt-sgd-1_60
+    optimized libboost_random-vc140-mt-s-1_60
 
     # Boost.System
-    debug     libboost_system-vc140-mt-gd-1_60
-    optimized libboost_system-vc140-mt-1_60
-
-    # OpenSSL
-    libeay32
-    ssleay32
+    debug     libboost_system-vc140-mt-sgd-1_60
+    optimized libboost_system-vc140-mt-s-1_60
 
     # Rasterbar-libtorrent
-    debug     libtorrent-vc140-mt-gd
-    optimized libtorrent-vc140-mt
+    debug     libtorrent-vc140-mt-sgd
+    optimized libtorrent-vc140-mt-s
 )
 
 target_link_libraries(

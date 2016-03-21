@@ -20,6 +20,7 @@
 #include <libtorrent/create_torrent.hpp>
 #include <libtorrent/error_code.hpp>
 #include <libtorrent/magnet_uri.hpp>
+#include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/peer_info.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/session_stats.hpp>
@@ -373,6 +374,18 @@ void session::load_torrents()
 
         lt::add_torrent_params params;
 
+        if (!item.buffer.empty())
+        {
+            lt::error_code ec;
+            params = lt::read_resume_data(&item.buffer[0], (int)item.buffer.size(), ec);
+
+            if (ec)
+            {
+                LOG(error) << "Failed to read resume data, " << ec.message();
+                continue;
+            }
+        }
+
         if (torrentPath.exists())
         {
             fs::file torrent(torrentPath);
@@ -404,14 +417,12 @@ void session::load_torrents()
             hash_to_path_.insert({ params.ti->info_hash(), torrent.path().to_string() });
         }
 
-        params.flags |= lt::add_torrent_params::flags_t::flag_use_resume_save_path;
-        params.save_path = item.save_path;
-        params.url = item.magnet_uri;
-
-        if(!item.buffer.empty())
+        if (params.save_path.empty())
         {
-            params.resume_data = item.buffer;
+            params.save_path = item.save_path;
         }
+
+        params.url = item.magnet_uri;
 
         sess_->async_add_torrent(params);
     }
