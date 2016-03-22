@@ -34,7 +34,6 @@
 
                     <Component Id="C_PicoTorrent" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205">
                         <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" Source="$(var.PublishDirectory)\PicoTorrent.exe" KeyPath="yes" />
-                        <File Id="F_PicoTorrentCore.dll" Name="PicoTorrentCore.dll" Source="$(var.PublishDirectory)\PicoTorrentCore.dll" />
 
                         <!-- Shortcut -->
                         <Shortcut Id="S_PicoTorrent"
