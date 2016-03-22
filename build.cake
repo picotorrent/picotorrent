@@ -99,8 +99,7 @@ Task("Setup-Publish-Directory")
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.exe"),
-        BuildDirectory + File("PicoTorrentCore.dll")
+        BuildDirectory + File("PicoTorrent.exe")
     };
 
     CreateDirectory(PublishDirectory);
@@ -185,8 +184,7 @@ Task("Build-Symbols-Package")
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.pdb"),
-        BuildDirectory + File("PicoTorrentCore.pdb")
+        BuildDirectory + File("PicoTorrent.pdb")
     };
 
     Zip(BuildDirectory, BuildDirectory + File(SymbolsPackage), files);
@@ -221,7 +219,6 @@ Task("Sign")
     .Does(() =>
 {
     SignTool(BuildDirectory + File("PicoTorrent.exe"));
-    SignTool(BuildDirectory + File("PicoTorrentCore.dll"));
 });
 
 Task("Sign-Installer")

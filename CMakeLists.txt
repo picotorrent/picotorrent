@@ -147,7 +147,7 @@ add_definitions(
 
 add_library(
     PicoTorrentCore
-    SHARED
+    STATIC
     ${PICOTORRENTCORE_SOURCES}
 )
 
