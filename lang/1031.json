@@ -152,6 +152,7 @@
         "top": "Oben",
         "bottom": "Unten",
         "remove_tracker_s": "Tracker entfernen",
-        "add_tracker": "Tracker hinzufügen"
+        "add_tracker": "Tracker hinzufügen",
+        "seeds": "Seeds"
     }
 }
