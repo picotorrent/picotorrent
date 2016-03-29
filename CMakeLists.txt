@@ -59,6 +59,12 @@ set(PICOTORRENTCORE_SOURCES
     src/core/tracker
 )
 
+# Append the correct PAL file to the core sources
+if(WIN32)
+    list(APPEND PICOTORRENTCORE_SOURCES src/core/pal_win32)
+else()
+endif()
+
 set(PICOTORRENT_SOURCES
     src/client/application
     src/client/command_line

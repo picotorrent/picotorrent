@@ -30,6 +30,7 @@ namespace picotorrent
 namespace core
 {
     class add_request;
+    struct session_configuration;
     class session_metrics;
     class torrent;
     class torrent_info;
@@ -37,7 +38,7 @@ namespace core
     class session
     {
     public:
-        DLL_EXPORT session();
+        DLL_EXPORT session(const std::shared_ptr<session_configuration> &config);
         DLL_EXPORT ~session();
 
         DLL_EXPORT void add_torrent(const std::shared_ptr<add_request> &add);
@@ -68,6 +69,7 @@ namespace core
         typedef std::shared_ptr<torrent> torrent_ptr;
         typedef std::map<libtorrent::sha1_hash, torrent_ptr> torrent_map_t;
 
+        std::shared_ptr<session_configuration> config_;
         std::shared_ptr<libtorrent::settings_pack> get_session_settings();
         void load_state();
         void load_torrents();
@@ -78,7 +80,7 @@ namespace core
         void save_torrents();
         void timer_callback();
 
-        std::map<libtorrent::sha1_hash, std::wstring> hash_to_path_;
+        std::map<libtorrent::sha1_hash, std::string> hash_to_path_;
         std::map<libtorrent::sha1_hash, std::shared_ptr<torrent_info>> loading_metadata_;
         torrent_map_t torrents_;
         session_ptr sess_;

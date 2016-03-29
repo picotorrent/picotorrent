@@ -1,20 +1,18 @@
 #include <picotorrent/core/session.hpp>
 
-#include <picotorrent/core/environment.hpp>
-#include <picotorrent/core/string_operations.hpp>
-#include <picotorrent/core/version_info.hpp>
 #include <picotorrent/core/add_request.hpp>
-#include <picotorrent/core/configuration.hpp>
+#include <picotorrent/core/logging/log.hpp>
+#include <picotorrent/core/pal.hpp>
+#include <picotorrent/core/session_configuration.hpp>
 #include <picotorrent/core/session_metrics.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/torrent_info.hpp>
-#include <picotorrent/core/filesystem/directory.hpp>
-#include <picotorrent/core/filesystem/file.hpp>
-#include <picotorrent/core/filesystem/path.hpp>
-#include <picotorrent/core/logging/log.hpp>
+#include <picotorrent/core/version_info.hpp>
 #include <semver.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
+#include <fstream>
+#include <iomanip>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/create_torrent.hpp>
@@ -29,36 +27,33 @@
 #include <queue>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
-#include <strsafe.h>
-
-namespace fs = picotorrent::core::filesystem;
 namespace lt = libtorrent;
-using picotorrent::core::join;
-using picotorrent::core::to_wstring;
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
 using picotorrent::core::add_request;
-using picotorrent::core::configuration;
+using picotorrent::core::pal;
 using picotorrent::core::session;
+using picotorrent::core::session_configuration;
 using picotorrent::core::session_metrics;
 using picotorrent::core::torrent;
 using picotorrent::core::torrent_info;
 
 struct load_item
 {
-    load_item(const fs::path &p)
+    load_item(const std::string &p)
         : path(p)
     {
     }
 
-    fs::path path;
+    std::string path;
     std::vector<char> buffer;
     std::string magnet_uri;
     std::string save_path;
 };
 
-session::session()
-    : metrics_(std::make_shared<session_metrics>(lt::session_stats_metrics()))
+session::session(const std::shared_ptr<session_configuration> &config)
+    : metrics_(std::make_shared<session_metrics>(lt::session_stats_metrics())),
+    config_(config)
 {
 }
 
@@ -95,13 +90,11 @@ void session::get_metadata(const std::string &magnet)
     p.flags |=  lt::add_torrent_params::flag_upload_mode;
 
     // Set a temporary save path
-    fs::path temp = environment::get_temporary_directory();
-    std::wstring ih = to_wstring(lt::to_hex(p.info_hash.to_string()));
-    p.save_path = to_string(temp.combine(ih).to_string());
+    std::string ih = lt::to_hex(p.info_hash.to_string());
+    p.save_path = pal::combine_paths(config_->temporary_directory, ih);
 
     // Add the info hash to our list of currently requested metadata files.
     loading_metadata_.insert({ p.info_hash, nullptr });
-
     sess_->async_add_torrent(p);
 }
 
@@ -193,51 +186,57 @@ void session::on_load_torrent(const lt::sha1_hash &hash, std::vector<char> &buf,
         return;
     }
 
-    fs::file torrent(it->second);
+    std::ifstream input(it->second, std::ios::binary);
 
-    if (!torrent.path().exists())
+    if (!input)
     {
         LOG(error) << "Torrent file did not exist when lazy loading.";
         ec.assign(boost::system::errc::no_such_file_or_directory, boost::system::generic_category());
     }
-    else
-    {
-        torrent.read_all(buf);
-    }
+
+    input.seekg(0, std::ios::end);
+    std::streampos size = input.tellg();
+    input.seekg(0, std::ios::beg);
+
+    buf.reserve(size);
+    buf.insert(
+        buf.begin(),
+        std::istream_iterator<char>(input),
+        std::istream_iterator<char>());
 }
 
 std::shared_ptr<lt::settings_pack> session::get_session_settings()
 {
     std::shared_ptr<lt::settings_pack> settings = std::make_shared<lt::settings_pack>();
 
-    configuration &cfg = configuration::instance();
-    std::vector<std::wstring> ifaces = cfg.listen_interfaces();
+    std::stringstream ifaces;
+    for (auto &p : config_->listen_interfaces)
+    {
+        ifaces << "," << p.first << ":" << p.second;
+    }
 
-    settings->set_bool(lt::settings_pack::enable_dht, true);
+    settings->set_bool(lt::settings_pack::enable_dht, config_->enable_dht);
     settings->set_int(lt::settings_pack::alert_mask, lt::alert::all_categories);
-    settings->set_int(lt::settings_pack::alert_queue_size, cfg.alert_queue_size());
-    settings->set_str(lt::settings_pack::listen_interfaces, to_string(join(ifaces, L",")));
-    settings->set_int(lt::settings_pack::stop_tracker_timeout, cfg.stop_tracker_timeout());
-    settings->set_int(lt::settings_pack::download_rate_limit, cfg.download_rate_limit());
-    settings->set_int(lt::settings_pack::upload_rate_limit, cfg.upload_rate_limit());
+    settings->set_int(lt::settings_pack::alert_queue_size, config_->alert_queue_size);
+    settings->set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
+    settings->set_int(lt::settings_pack::stop_tracker_timeout, config_->stop_tracker_timeout);
+    settings->set_int(lt::settings_pack::download_rate_limit, config_->download_rate_limit);
+    settings->set_int(lt::settings_pack::upload_rate_limit, config_->upload_rate_limit);
 
     // Set PicoTorrent peer id and user agent
-    if (cfg.use_picotorrent_peer_id())
+    if (config_->use_picotorrent_peer_id)
     {
-        std::wstring version = to_wstring(version_info::current_version());
-
         // Calculate user agent
-        std::wstring user_agent = L"PicoTorrent/";
-        user_agent.resize(user_agent.size() + version.size());
-        StringCchPrintf(&user_agent[0], user_agent.size(), L"PicoTorrent/%s", version.c_str());
+        std::stringstream user_agent;
+        user_agent << "PicoTorrent/" << version_info::current_version();
 
         // Calculate peer id
         semver::version v(version_info::current_version());
-        std::wstring peer_id(L"-", 9);
-        StringCchPrintf(&peer_id[0], peer_id.size(), L"-PI%d%02d%d-", v.getMajor(), v.getMinor(), v.getPatch());
+        std::stringstream peer_id;
+        peer_id << "-PI" << v.getMajor() << std::setfill('0') << std::setw(2) << v.getMinor() << v.getPatch() << "-";
 
-        settings->set_str(lt::settings_pack::user_agent, to_string(user_agent));
-        settings->set_str(lt::settings_pack::peer_fingerprint, to_string(peer_id));
+        settings->set_str(lt::settings_pack::user_agent, user_agent.str());
+        settings->set_str(lt::settings_pack::peer_fingerprint, peer_id.str());
     }
     else
     {
@@ -246,13 +245,13 @@ std::shared_ptr<lt::settings_pack> session::get_session_settings()
     }
 
     // Proxy settings
-    settings->set_int(lt::settings_pack::proxy_type, cfg.proxy_type());
-    settings->set_str(lt::settings_pack::proxy_hostname, to_string(cfg.proxy_host()));
-    settings->set_int(lt::settings_pack::proxy_port, cfg.proxy_port());
-    settings->set_bool(lt::settings_pack::force_proxy, cfg.proxy_force());
-    settings->set_bool(lt::settings_pack::proxy_hostnames, cfg.proxy_hostnames());
-    settings->set_bool(lt::settings_pack::proxy_peer_connections, cfg.proxy_peers());
-    settings->set_bool(lt::settings_pack::proxy_tracker_connections, cfg.proxy_trackers());
+    settings->set_int(lt::settings_pack::proxy_type, config_->proxy_type);
+    settings->set_str(lt::settings_pack::proxy_hostname, config_->proxy_host);
+    settings->set_int(lt::settings_pack::proxy_port, config_->proxy_port);
+    settings->set_bool(lt::settings_pack::force_proxy, config_->proxy_force);
+    settings->set_bool(lt::settings_pack::proxy_hostnames, config_->proxy_hostnames);
+    settings->set_bool(lt::settings_pack::proxy_peer_connections, config_->proxy_peers);
+    settings->set_bool(lt::settings_pack::proxy_tracker_connections, config_->proxy_trackers);
 
     return settings;
 
@@ -260,29 +259,16 @@ std::shared_ptr<lt::settings_pack> session::get_session_settings()
 
 void session::load_state()
 {
-    fs::directory data = environment::get_data_path();
-    fs::file state = data.path().combine(L"Session.dat");
-    std::vector<char> buffer;
+    std::ifstream sf(config_->session_state_file, std::ifstream::in | std::ifstream::binary);
+    if (!sf) { return; }
 
-    if (!state.path().exists())
-    {
-        LOG(trace) << "State file does not exist";
-        return;
-    }
-
-    try
-    {
-        state.read_all(buffer);
-    }
-    catch (const std::exception& e)
-    {
-        LOG(error) << "Error when reading file: " << e.what();
-        return;
-    }
+    std::stringstream buf;
+    buf << sf.rdbuf();
+    std::string contents = buf.str();
 
     lt::bdecode_node node;
     lt::error_code ec;
-    lt::bdecode(&buffer[0], &buffer[0] + buffer.size(), node, ec);
+    lt::bdecode(&contents[0], &contents[0] + contents.size(), node, ec);
 
     if (ec)
     {
@@ -296,18 +282,14 @@ void session::load_state()
 
 void session::load_torrents()
 {
-    fs::path data = environment::get_data_path();
-    fs::directory torrents = data.combine(L"Torrents");
-
-    if (!torrents.path().exists())
+    if (!pal::directory_exists(config_->torrents_directory))
     {
         LOG(trace) << "Torrents directory does not exist";
         return;
     }
 
-    std::vector<fs::path> files = torrents.get_files(torrents.path().combine(L"*.dat"));
-
-    LOG(info) << "Loading " << files.size() << " torrent(s)";
+    std::vector<std::string> torrents = pal::get_directory_entries(config_->torrents_directory, "*.torrent");
+    LOG(info) << "Loading " << torrents.size() << " torrent(s)";
 
     typedef std::pair<int64_t, load_item> prio_item_t;
     auto comparer = [](const prio_item_t &lhs, const prio_item_t &rhs)
@@ -318,20 +300,17 @@ void session::load_torrents()
     std::priority_queue<prio_item_t, std::vector<prio_item_t>, decltype(comparer)> queue(comparer);
     int64_t maxPosition = std::numeric_limits<int64_t>::max();
 
-    for (fs::path &path : files)
+    for (std::string &path : torrents)
     {
         load_item item(path);
-        fs::file resumeFile(path);
 
-        try
-        {
-            resumeFile.read_all(item.buffer);
-        }
-        catch (const std::exception& e)
-        {
-            LOG(error) << "Error when reading file: " << e.what();
-            continue;
-        }
+        std::ifstream sf(path, std::ifstream::binary);
+        if (!sf) { continue; }
+
+        item.buffer.insert(
+            item.buffer.begin(),
+            std::istream_iterator<char>(sf),
+            std::istream_iterator<char>());
 
         lt::error_code ec;
         lt::bdecode_node node;
@@ -350,7 +329,7 @@ void session::load_torrents()
         }
 
         item.magnet_uri = node.dict_find_string_value("pT-url");
-        item.save_path = node.dict_find_string_value("pT-savePath", "C:\\Downloads");
+        item.save_path = node.dict_find_string_value("pT-savePath", config_->default_save_path.c_str());
 
         int64_t queuePosition = node.dict_find_int_value("pT-queuePosition", maxPosition);
         if (queuePosition < 0) { queuePosition = maxPosition; }
@@ -363,12 +342,12 @@ void session::load_torrents()
         load_item item = queue.top().second;
         queue.pop();
 
-        fs::path torrentPath = item.path.replace_extension(L".torrent");
+        std::string torrent_file = pal::replace_extension(item.path, ".torrent");
 
-        if (!torrentPath.exists() && item.magnet_uri.empty())
+        if (!pal::file_exists(torrent_file) && item.magnet_uri.empty())
         {
             LOG(error) << "Torrent does not exist (although resume file does)";
-            fs::file(item.path).remove();
+            pal::remove_file(item.path);
             continue;
         }
 
@@ -386,24 +365,22 @@ void session::load_torrents()
             }
         }
 
-        if (torrentPath.exists())
+        if (pal::file_exists(torrent_file))
         {
-            fs::file torrent(torrentPath);
-            std::vector<char> buffer;
-
-            try
+            std::ifstream sf(config_->session_state_file, std::ifstream::in | std::ifstream::binary);
+            if (!sf)
             {
-                torrent.read_all(buffer);
-            }
-            catch (const std::exception &ex)
-            {
-                LOG(error) << "Error when reading file: " << ex.what();
+                LOG(error) << "Error when reading file: " << torrent_file;
                 continue;
             }
 
+            std::stringstream buf;
+            buf << sf.rdbuf();
+            std::string contents = buf.str();
+
             lt::bdecode_node node;
             lt::error_code ec;
-            lt::bdecode(&buffer[0], &buffer[0] + buffer.size(), node, ec);
+            lt::bdecode(&contents[0], &contents[0] + contents.size(), node, ec);
 
             if (ec)
             {
@@ -414,7 +391,7 @@ void session::load_torrents()
             params.ti = boost::make_shared<lt::torrent_info>(node);
 
             // Insert into hash-to-path map
-            hash_to_path_.insert({ params.ti->info_hash(), torrent.path().to_string() });
+            hash_to_path_.insert({ params.ti->info_hash(), torrent_file });
         }
 
         if (params.save_path.empty())
@@ -472,25 +449,12 @@ void session::notify()
                 std::vector<char> buf;
                 lt::bencode(std::back_inserter(buf), e);
 
-                fs::path data = environment::get_data_path();
-                fs::directory dir = data.combine(L"Torrents");
+                std::string hash = lt::to_hex(al->handle.info_hash().to_string());
+                std::string torrent_dat = pal::combine_paths(config_->torrents_directory, (hash + ".dat"));
 
-                if (!dir.path().exists())
-                {
-                    dir.create();
-                }
-
-                std::wstring hash = lt::convert_to_wstring(lt::to_hex(al->handle.info_hash().to_string()));
-                fs::file torrentFile(dir.path().combine((hash + L".dat")));
-
-                try
-                {
-                    torrentFile.write_all(buf);
-                }
-                catch (const std::exception& e)
-                {
-                    LOG(error) << "Error when writing resume data file: " << e.what();
-                }
+                std::ofstream tos(torrent_dat, std::ios::binary);
+                tos.write(&buf[0], buf.size());
+                tos.close();
             }
 
             torrent_ptr torrent = std::make_shared<core::torrent>(al->handle.status());
@@ -515,11 +479,9 @@ void session::notify()
             {
                 save_torrent(*al->handle.torrent_file());
 
-                fs::directory torrents = environment::get_data_path().combine(L"Torrents");
-                std::wstring hash = lt::convert_to_wstring(lt::to_hex(al->handle.info_hash().to_string()));
-                fs::path torrent(torrents.path().combine((hash + L".torrent")));
-
-                hash_to_path_.insert({ al->handle.info_hash(), torrent.to_string() });
+                std::string hash = lt::to_hex(al->handle.info_hash().to_string());
+                std::string torrent_file = pal::combine_paths(config_->torrents_directory, (hash + ".torrent"));
+                hash_to_path_.insert({ al->handle.info_hash(), torrent_file });
             }
             break;
         }
@@ -621,51 +583,27 @@ void session::reload_settings()
 
 void session::remove_torrent_files(const torrent_ptr &torrent)
 {
-    std::wstring hash = lt::convert_to_wstring(lt::to_hex(torrent->status_->info_hash.to_string()));
+    std::string hash = lt::to_hex(torrent->status_->info_hash.to_string());
+    std::string torrent_file = pal::combine_paths(config_->torrents_directory, (hash + ".torrent"));
+    std::string torrent_dat = pal::combine_paths(config_->torrents_directory, (hash + ".dat"));
 
-    fs::path data = environment::get_data_path();
-    fs::file file = data.combine(L"Torrents").combine((hash + L".torrent"));
-
-    if (file.path().exists())
-    {
-        file.remove();
-    }
-
-    file = file.path().replace_extension(L".dat");
-
-    if (file.path().exists())
-    {
-        file.remove();
-    }
+    if (pal::file_exists(torrent_file)) { pal::remove_file(torrent_file); }
+    if (pal::file_exists(torrent_dat)) { pal::remove_file(torrent_dat); }
 }
 
 void session::save_resume_data(const lt::torrent_handle &th, lt::entry &entry)
 {
-    fs::path data = environment::get_data_path();
-    fs::directory dir = data.combine(L"Torrents");
-
-    if (!dir.path().exists())
-    {
-        dir.create();
-    }
-
     // Insert PicoTorrent-specific state
     entry.dict().insert({ "pT-queuePosition", th.status().queue_position });
 
     std::vector<char> buffer;
     lt::bencode(std::back_inserter(buffer), entry);
 
-    std::wstring hash = lt::convert_to_wstring(lt::to_hex(th.info_hash().to_string()));
-    fs::file torrentFile(dir.path().combine((hash + L".dat")));
-
-    try
-    {
-        torrentFile.write_all(buffer);
-    }
-    catch (const std::exception& e)
-    {
-        LOG(error) << "Error when writing resume data file: " << e.what();
-    }
+    std::string hash = lt::to_hex(th.info_hash().to_string());
+    std::string torrent_dat = pal::combine_paths(config_->torrents_directory, (hash + ".dat"));
+    
+    std::ofstream tos(torrent_dat, std::ios::binary);
+    tos.write(&buffer[0], buffer.size());
 }
 
 void session::save_state()
@@ -678,54 +616,25 @@ void session::save_state()
     std::vector<char> buf;
     lt::bencode(std::back_inserter(buf), e);
 
-    fs::directory data = environment::get_data_path();
-
-    if (!data.path().exists())
-    {
-        data.create();
-    }
-
-    fs::file state = data.path().combine(L"Session.dat");
-
-    try
-    {
-        state.write_all(buf);
-    }
-    catch (const std::exception& e)
-    {
-        LOG(error) << "Error when writing buffer: " << e.what();
-    }
+    std::ofstream tos(config_->session_state_file, std::ios::binary);
+    tos.write(&buf[0], buf.size());
 
     LOG(info) << "Session state saved";
 }
 
 void session::save_torrent(const lt::torrent_info &ti)
 {
-    fs::path data = environment::get_data_path();
-    fs::directory dir = data.combine(L"Torrents");
-
-    if (!dir.path().exists())
-    {
-        dir.create();
-    }
-
     lt::create_torrent ct(ti);
     lt::entry e = ct.generate();
 
     std::vector<char> buf;
     lt::bencode(std::back_inserter(buf), e);
 
-    std::wstring hash = lt::convert_to_wstring(lt::to_hex(ti.info_hash().to_string()));
-    fs::file torrentFile(dir.path().combine((hash + L".torrent")));
+    std::string hash = lt::to_hex(ti.info_hash().to_string());
+    std::string torrent_file = pal::combine_paths(config_->torrents_directory, (hash + ".torrent"));
 
-    try
-    {
-        torrentFile.write_all(buf);
-    }
-    catch (const std::exception &e)
-    {
-        LOG(error) << "Error when writing torrent file: " << e.what();
-    }
+    std::ofstream tos(torrent_file, std::ios::binary);
+    tos.write(&buf[0], buf.size());
 }
 
 void session::save_torrents()
@@ -765,14 +674,6 @@ void session::save_torrents()
     }
 
     LOG(info) << "Saving resume data for " << numOutstandingResumeData << " torrent(s)";
-
-    fs::path data = environment::get_data_path();
-    fs::directory dir = data.combine(L"Torrents");
-
-    if (!dir.path().exists())
-    {
-        dir.create();
-    }
 
     while (numOutstandingResumeData > 0)
     {
