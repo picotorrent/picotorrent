@@ -1,7 +1,7 @@
 #include <picotorrent/client/controllers/view_preferences_controller.hpp>
 
-#include <picotorrent/core/configuration.hpp>
 #include <picotorrent/core/session.hpp>
+#include <picotorrent/client/configuration.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/client/ui/property_sheets/property_sheet_page.hpp>
@@ -21,8 +21,8 @@
 
 namespace ui = picotorrent::client::ui;
 namespace prefs = picotorrent::client::ui::property_sheets::preferences;
-using picotorrent::core::configuration;
 using picotorrent::core::session;
+using picotorrent::client::configuration;
 using picotorrent::client::controllers::view_preferences_controller;
 using picotorrent::client::ui::dialogs::preferences_dialog;
 using picotorrent::client::ui::property_sheets::property_sheet_page;

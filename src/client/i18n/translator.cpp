@@ -1,8 +1,8 @@
 #include <picotorrent/client/i18n/translator.hpp>
 
 #include <picojson.hpp>
+#include <picotorrent/client/configuration.hpp>
 #include <picotorrent/core/string_operations.hpp>
-#include <picotorrent/core/configuration.hpp>
 #include <picotorrent/core/filesystem/file.hpp>
 #include <picotorrent/core/filesystem/directory.hpp>
 #include <picotorrent/core/filesystem/path.hpp>
@@ -16,7 +16,7 @@
 namespace fs = picotorrent::core::filesystem;
 namespace pj = picojson;
 using picotorrent::core::to_wstring;
-using picotorrent::core::configuration;
+using picotorrent::client::configuration;
 using picotorrent::client::i18n::translation;
 using picotorrent::client::i18n::translator;
 

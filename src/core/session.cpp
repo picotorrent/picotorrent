@@ -46,7 +46,7 @@ struct load_item
     }
 
     std::string path;
-    std::vector<char> buffer;
+    std::string resume_data;
     std::string magnet_uri;
     std::string save_path;
 };
@@ -288,7 +288,7 @@ void session::load_torrents()
         return;
     }
 
-    std::vector<std::string> torrents = pal::get_directory_entries(config_->torrents_directory, "*.torrent");
+    std::vector<std::string> torrents = pal::get_directory_entries(config_->torrents_directory, "*.dat");
     LOG(info) << "Loading " << torrents.size() << " torrent(s)";
 
     typedef std::pair<int64_t, load_item> prio_item_t;
@@ -304,17 +304,20 @@ void session::load_torrents()
     {
         load_item item(path);
 
-        std::ifstream sf(path, std::ifstream::binary);
+        std::ifstream sf(path, std::ios::binary);
         if (!sf) { continue; }
 
-        item.buffer.insert(
-            item.buffer.begin(),
-            std::istream_iterator<char>(sf),
-            std::istream_iterator<char>());
+        std::stringstream buf;
+        buf << sf.rdbuf();
+        item.resume_data = buf.str();
 
         lt::error_code ec;
         lt::bdecode_node node;
-        lt::bdecode(&item.buffer[0], &item.buffer[0] + item.buffer.size(), node, ec);
+        lt::bdecode(
+            &item.resume_data[0],
+            &item.resume_data[0] + item.resume_data.size(),
+            node,
+            ec);
 
         if (ec)
         {
@@ -353,10 +356,13 @@ void session::load_torrents()
 
         lt::add_torrent_params params;
 
-        if (!item.buffer.empty())
+        if (!item.resume_data.empty())
         {
             lt::error_code ec;
-            params = lt::read_resume_data(&item.buffer[0], (int)item.buffer.size(), ec);
+            params = lt::read_resume_data(
+                &item.resume_data[0],
+                (int)item.resume_data.size(),
+                ec);
 
             if (ec)
             {
@@ -367,7 +373,8 @@ void session::load_torrents()
 
         if (pal::file_exists(torrent_file))
         {
-            std::ifstream sf(config_->session_state_file, std::ifstream::in | std::ifstream::binary);
+            std::ifstream sf(torrent_file, std::ifstream::in | std::ifstream::binary);
+
             if (!sf)
             {
                 LOG(error) << "Error when reading file: " << torrent_file;
@@ -451,6 +458,11 @@ void session::notify()
 
                 std::string hash = lt::to_hex(al->handle.info_hash().to_string());
                 std::string torrent_dat = pal::combine_paths(config_->torrents_directory, (hash + ".dat"));
+
+                if (!pal::directory_exists(config_->torrents_directory))
+                {
+                    pal::create_directories(config_->torrents_directory);
+                }
 
                 std::ofstream tos(torrent_dat, std::ios::binary);
                 tos.write(&buf[0], buf.size());
@@ -601,6 +613,11 @@ void session::save_resume_data(const lt::torrent_handle &th, lt::entry &entry)
 
     std::string hash = lt::to_hex(th.info_hash().to_string());
     std::string torrent_dat = pal::combine_paths(config_->torrents_directory, (hash + ".dat"));
+
+    if (!pal::directory_exists(config_->torrents_directory))
+    {
+        pal::create_directories(config_->torrents_directory);
+    }
     
     std::ofstream tos(torrent_dat, std::ios::binary);
     tos.write(&buffer[0], buffer.size());
@@ -608,8 +625,6 @@ void session::save_resume_data(const lt::torrent_handle &th, lt::entry &entry)
 
 void session::save_state()
 {
-    // Save session state to "Session.dat" in the
-    // current directory.
     lt::entry e;
     sess_->save_state(e);
 
@@ -632,6 +647,11 @@ void session::save_torrent(const lt::torrent_info &ti)
 
     std::string hash = lt::to_hex(ti.info_hash().to_string());
     std::string torrent_file = pal::combine_paths(config_->torrents_directory, (hash + ".torrent"));
+
+    if (!pal::directory_exists(config_->torrents_directory))
+    {
+        pal::create_directories(config_->torrents_directory);
+    }
 
     std::ofstream tos(torrent_file, std::ios::binary);
     tos.write(&buf[0], buf.size());

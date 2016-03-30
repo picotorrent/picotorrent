@@ -1,17 +1,17 @@
-#include <picotorrent/core/environment.hpp>
+#include <picotorrent/client/environment.hpp>
 
 #include <picotorrent/core/filesystem/path.hpp>
 #include <shlobj.h>
 #include <shlwapi.h>
 
 namespace fs = picotorrent::core::filesystem;
-using picotorrent::core::environment;
+using picotorrent::client::environment;
 
 fs::path environment::get_data_path()
 {
     if (is_installed())
     {
-        return get_special_folder(core::local_app_data).combine(L"PicoTorrent");
+        return get_special_folder(client::local_app_data).combine(L"PicoTorrent");
     }
 
     TCHAR buf[MAX_PATH];
@@ -21,17 +21,17 @@ fs::path environment::get_data_path()
     return buf;
 }
 
-fs::path environment::get_special_folder(picotorrent::core::special_folder folder)
+fs::path environment::get_special_folder(picotorrent::client::special_folder folder)
 {
     PWSTR buf;
     GUID g;
 
     switch (folder)
     {
-    case picotorrent::core::user_downloads:
+    case picotorrent::client::user_downloads:
         g = FOLDERID_Downloads;
         break;
-    case picotorrent::core::local_app_data:
+    case picotorrent::client::local_app_data:
         g = FOLDERID_LocalAppData;
         break;
     }

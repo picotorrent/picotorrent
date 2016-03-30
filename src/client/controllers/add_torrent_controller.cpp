@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <picotorrent/core/add_request.hpp>
-#include <picotorrent/core/configuration.hpp>
 #include <picotorrent/core/logging/log.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/string_operations.hpp>
@@ -11,6 +10,7 @@
 #include <picotorrent/core/filesystem/file.hpp>
 #include <picotorrent/core/filesystem/path.hpp>
 #include <picotorrent/client/command_line.hpp>
+#include <picotorrent/client/configuration.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/dialogs/add_torrent_dialog.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
@@ -31,7 +31,7 @@ namespace ui = picotorrent::client::ui;
 using picotorrent::client::command_line;
 using picotorrent::client::controllers::add_torrent_controller;
 using picotorrent::client::ui::dialogs::add_torrent_dialog;
-using picotorrent::core::configuration;
+using picotorrent::client::configuration;
 using picotorrent::core::to_wstring;
 
 add_torrent_controller::add_torrent_controller(

@@ -1,7 +1,7 @@
-#include <picotorrent/core/configuration.hpp>
+#include <picotorrent/client/configuration.hpp>
 
 #include <picojson.hpp>
-#include <picotorrent/core/environment.hpp>
+#include <picotorrent/client/environment.hpp>
 #include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/filesystem/directory.hpp>
 #include <picotorrent/core/filesystem/file.hpp>
@@ -11,8 +11,9 @@
 
 namespace fs = picotorrent::core::filesystem;
 namespace pj = picojson;
+using picotorrent::client::configuration;
+using picotorrent::core::to_string;
 using picotorrent::core::to_wstring;
-using picotorrent::core::configuration;
 
 configuration::configuration()
 {

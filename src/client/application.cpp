@@ -12,7 +12,7 @@
 #include <picotorrent/client/controllers/torrent_details_controller.hpp>
 #include <picotorrent/client/controllers/unhandled_exception_controller.hpp>
 #include <picotorrent/client/controllers/view_preferences_controller.hpp>
-#include <picotorrent/core/configuration.hpp>
+#include <picotorrent/client/configuration.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/session_configuration.hpp>
 #include <picotorrent/core/filesystem/path.hpp>
@@ -31,7 +31,7 @@ namespace fs = picotorrent::core::filesystem;
 namespace ui = picotorrent::client::ui;
 using picotorrent::client::application;
 using picotorrent::client::command_line;
-using picotorrent::core::configuration;
+using picotorrent::client::configuration;
 using picotorrent::core::logging::log;
 
 application::application()

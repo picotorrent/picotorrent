@@ -4,7 +4,7 @@
 #include <picotorrent/core/logging/log.hpp>
 #include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/version_info.hpp>
-#include <picotorrent/core/configuration.hpp>
+#include <picotorrent/client/configuration.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/net/http_client.hpp>
 #include <picotorrent/client/net/http_response.hpp>
@@ -18,7 +18,7 @@
 
 using picotorrent::core::to_wstring;
 using picotorrent::core::version_info;
-using picotorrent::core::configuration;
+using picotorrent::client::configuration;
 using picotorrent::client::controllers::application_update_controller;
 using picotorrent::client::net::http_client;
 using picotorrent::client::net::http_response;

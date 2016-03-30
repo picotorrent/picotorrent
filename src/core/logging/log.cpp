@@ -1,6 +1,5 @@
 #include <picotorrent/core/logging/log.hpp>
 
-#include <picotorrent/core/environment.hpp>
 #include <picotorrent/core/filesystem/directory.hpp>
 #include <picotorrent/core/filesystem/file.hpp>
 #include <picotorrent/core/filesystem/path.hpp>
@@ -14,7 +13,6 @@
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace fs = picotorrent::core::filesystem;
-using picotorrent::core::environment;
 using picotorrent::core::logging::log;
 
 log::log()
@@ -51,10 +49,13 @@ void log::init()
         out_ = std::make_unique<std::ostringstream>();
         return;
     }
-
+    out_ = std::make_unique<std::ostringstream>();
+    /*
+    TODO
     DWORD pid = GetCurrentProcessId();
 
-    fs::path data = environment::get_data_path();
+    std::string data_path = pal::
+    fs::path data = pal::
     fs::directory logs = data.combine(L"Logs");
 
     if (!logs.path().exists())
@@ -67,6 +68,7 @@ void log::init()
 
     SetUnhandledExceptionFilter(
         &log::on_unhandled_exception);
+    */
 }
 
 picotorrent::core::logging::log_record log::open_record(picotorrent::core::logging::log_level level, const char* functionName)

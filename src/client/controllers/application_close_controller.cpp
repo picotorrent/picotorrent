@@ -1,6 +1,6 @@
 #include <picotorrent/client/controllers/application_close_controller.hpp>
 
-#include <picotorrent/core/configuration.hpp>
+#include <picotorrent/client/configuration.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
@@ -11,7 +11,7 @@
 using picotorrent::client::controllers::application_close_controller;
 using picotorrent::client::ui::main_window;
 using picotorrent::client::ui::task_dialog;
-using picotorrent::core::configuration;
+using picotorrent::client::configuration;
 
 application_close_controller::application_close_controller(const std::shared_ptr<main_window> &wnd)
     : wnd_(wnd)

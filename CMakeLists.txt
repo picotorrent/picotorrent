@@ -37,7 +37,6 @@ set(PICOTORRENTCORE_SOURCES
     src/core/filesystem/path
 
     # Misc
-    src/core/environment
     src/core/string_operations
     src/core/version_info
 
@@ -47,7 +46,6 @@ set(PICOTORRENTCORE_SOURCES
 
     # BitTorrent components
     src/core/add_request
-    src/core/configuration
     src/core/is_valid_torrent_file
     src/core/hash
     src/core/peer
@@ -68,6 +66,8 @@ endif()
 set(PICOTORRENT_SOURCES
     src/client/application
     src/client/command_line
+    src/client/configuration
+    src/client/environment
     src/client/message_loop
     src/client/controllers/add_magnet_link_controller
     src/client/controllers/add_torrent_controller
