@@ -611,8 +611,9 @@ void session::post_updates()
     sess_->post_torrent_updates();
 }
 
-void session::reload_settings()
+void session::reload_settings(const std::shared_ptr<session_configuration> &config)
 {
+    config_ = config;
     sess_->apply_settings(*get_session_settings());
 }
 

@@ -13,6 +13,10 @@ namespace picojson
 
 namespace picotorrent
 {
+namespace core
+{
+    struct session_configuration;
+}
 namespace client
 {
     class configuration
@@ -81,8 +85,8 @@ namespace client
         std::string ignored_update();
         void set_ignored_update(const std::string &version);
 
-        std::vector<std::string> listen_interfaces();
-        void set_listen_interfaces(const std::vector<std::string> &interfaces);
+        std::vector<std::pair<std::string, int>> listen_interfaces();
+        void set_listen_interfaces(const std::vector<std::pair<std::string, int>> &interfaces);
 
         bool prompt_for_remove_data();
         void set_prompt_for_remove_data(bool value);
@@ -116,6 +120,8 @@ namespace client
 
         bool prompt_for_save_path();
         void set_prompt_for_save_path(bool value);
+
+        std::shared_ptr<core::session_configuration> session_configuration();
 
         start_position_t start_position();
         void set_start_position(start_position_t pos);

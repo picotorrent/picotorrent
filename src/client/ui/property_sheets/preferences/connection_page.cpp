@@ -28,24 +28,40 @@ void connection_page::add_proxy_type(const std::string &name, int type)
     ComboBox_SetItemData(ctl, index, type);
 }
 
-std::vector<std::string> connection_page::get_listen_interfaces()
+std::vector<std::pair<std::string, int>> connection_page::get_listen_interfaces()
 {
-    std::vector<std::string> result;
+    std::vector<std::pair<std::string, int>> result;
     std::string::size_type pos = 0;
     std::string::size_type prev = 0;
-
-    TCHAR links[4096];
-    GetDlgItemText(handle(), ID_LISTEN_INTERFACES, links, ARRAYSIZE(links));
-    std::string l = to_string(links);
+    std::string l = get_dlg_item_text(ID_LISTEN_INTERFACES);
 
     while ((pos = l.find('\n', prev)) != std::string::npos)
     {
-        result.push_back(trim(l.substr(prev, pos - prev)));
+        std::string net_addr = trim(l.substr(prev, pos - prev));
+        size_t idx = net_addr.find(":");
+
+        if (idx == std::string::npos)
+        {
+            continue;
+        }
+
+        std::string addr = net_addr.substr(0, idx);
+        int port = std::stoi(net_addr.substr(idx + 1));
+
+        result.push_back({ addr,port });
         prev = pos + 1;
     }
 
     // To get the last substring (or only, if delimiter is not found)
-    result.push_back(trim(l.substr(prev)));
+    std::string last_net_addr = trim(l.substr(prev, pos - prev));
+    size_t lidx = last_net_addr.find(":");
+
+    if (lidx != std::string::npos)
+    {
+        std::string addr = last_net_addr.substr(0, lidx);
+        int port = std::stoi(last_net_addr.substr(lidx + 1));
+        result.push_back({ addr,port });
+    }
 
     return result;
 }
@@ -60,24 +76,24 @@ int connection_page::get_proxy_type()
 
 std::string connection_page::get_proxy_host()
 {
-    return get_window_text(ID_PROXY_HOST);
+    return get_dlg_item_text(ID_PROXY_HOST);
 }
 
 int connection_page::get_proxy_port()
 {
-    std::string text = get_window_text(ID_PROXY_PORT);
+    std::string text = get_dlg_item_text(ID_PROXY_PORT);
     if (text.empty()) { return -1; }
     return std::stoi(text);
 }
 
 std::string connection_page::get_proxy_username()
 {
-    return get_window_text(ID_PROXY_USERNAME);
+    return get_dlg_item_text(ID_PROXY_USERNAME);
 }
 
 std::string connection_page::get_proxy_password()
 {
-    return get_window_text(ID_PROXY_PASSWORD);
+    return get_dlg_item_text(ID_PROXY_PASSWORD);
 }
 
 bool connection_page::get_proxy_force_checked()
@@ -100,10 +116,16 @@ bool connection_page::get_proxy_trackers_checked()
     return is_checked(ID_PROXY_TRACKERS);
 }
 
-void connection_page::set_listen_interfaces(const std::vector<std::string> &interfaces)
+void connection_page::set_listen_interfaces(const std::vector<std::pair<std::string, int>> &interfaces)
 {
-    std::wstring t = to_wstring(join(interfaces, "\r\n"));
-    SetDlgItemText(handle(), ID_LISTEN_INTERFACES, t.c_str());
+    std::stringstream ss;
+
+    for (auto &p : interfaces)
+    {
+        ss << p.first << ":" << p.second << "\r\n";
+    }
+
+    set_dlg_item_text(ID_LISTEN_INTERFACES, ss.str());
 }
 
 void connection_page::set_proxy_force_enabled(bool enabled)
@@ -128,22 +150,22 @@ void connection_page::set_proxy_trackers_enabled(bool enabled)
 
 void connection_page::set_proxy_host(const std::string &value)
 {
-    SetDlgItemText(handle(), ID_PROXY_HOST, to_wstring(value).c_str());
+    set_dlg_item_text(ID_PROXY_HOST, value);
 }
 
 void connection_page::set_proxy_port(const std::string &value)
 {
-    SetDlgItemText(handle(), ID_PROXY_PORT, to_wstring(value).c_str());
+    set_dlg_item_text(ID_PROXY_PORT, value);
 }
 
 void connection_page::set_proxy_username(const std::string &value)
 {
-    SetDlgItemText(handle(), ID_PROXY_USERNAME, to_wstring(value).c_str());
+    set_dlg_item_text(ID_PROXY_USERNAME, value);
 }
 
 void connection_page::set_proxy_password(const std::string &value)
 {
-    SetDlgItemText(handle(), ID_PROXY_PASSWORD, to_wstring(value).c_str());
+    set_dlg_item_text(ID_PROXY_PASSWORD, value);
 }
 
 void connection_page::set_proxy_force_checked(bool checked)
@@ -298,11 +320,4 @@ void connection_page::check_changed(HWND hDlg, UINT uCtrlId, UINT uCommand)
 bool connection_page::is_checked(int id)
 {
     return IsDlgButtonChecked(handle(), id) == BST_CHECKED;
-}
-
-std::string connection_page::get_window_text(int id)
-{
-    TCHAR p[1024];
-    GetDlgItemText(handle(), id, p, ARRAYSIZE(p));
-    return to_string(p);
 }

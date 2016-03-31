@@ -84,7 +84,7 @@ void view_preferences_controller::execute()
 
     if (PropertySheet(&header) >= 1)
     {
-        sess_->reload_settings();
+        sess_->reload_settings(configuration::instance().session_configuration());
     }
 }
 
@@ -172,7 +172,7 @@ void view_preferences_controller::on_connection_init()
 
 bool view_preferences_controller::on_connection_validate()
 {
-    std::vector<std::string> ifaces = conn_page_->get_listen_interfaces();
+    std::vector<std::pair<std::string, int>> ifaces = conn_page_->get_listen_interfaces();
 
     if (ifaces.empty())
     {

@@ -78,17 +78,7 @@ bool application::init()
         return false;
     }
 
-    auto cfg = std::make_shared<core::session_configuration>();
-    cfg->default_save_path = "C:\\Downloads";
-    cfg->enable_dht = true;
-    cfg->listen_interfaces = {
-        { "0.0.0.0", 6881 }
-    };
-    cfg->session_state_file = "Session.dat";
-    cfg->temporary_directory = "C:\\tmp";
-    cfg->torrents_directory = "Torrents";
-
-    sess_ = std::make_shared<core::session>(cfg);
+    sess_ = std::make_shared<core::session>(configuration::instance().session_configuration());
     main_window_ = std::make_shared<ui::main_window>(sess_);
 
     main_window_->on_command(ID_FILE_ADD_TORRENT, std::bind(&application::on_file_add_torrent, this));

@@ -2,7 +2,9 @@
 
 #include <picojson.hpp>
 #include <picotorrent/client/environment.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/core/pal.hpp>
+#include <picotorrent/core/session_configuration.hpp>
 
 #include <fstream>
 #include <sstream>
@@ -12,6 +14,7 @@
 namespace pj = picojson;
 using picotorrent::client::configuration;
 using picotorrent::core::pal;
+using picotorrent::core::session_configuration;
 
 configuration::configuration()
 {
@@ -90,11 +93,11 @@ void configuration::set_ignored_update(const std::string &version)
     set("ignored_update", version);
 }
 
-std::vector<std::string> configuration::listen_interfaces()
+std::vector<std::pair<std::string, int>> configuration::listen_interfaces()
 {
-    std::vector<std::string> defaultInterfaces = {
-        "0.0.0.0:6881",
-        "[::]:6881"
+    std::vector<std::pair<std::string, int>> defaultInterfaces = {
+        { "0.0.0.0", 6881 },
+        { "[::]", 6881 }
     };
 
     if (value_->find("listen_interfaces") == value_->end())
@@ -103,23 +106,35 @@ std::vector<std::string> configuration::listen_interfaces()
     }
 
     pj::array ifaces = value_->at("listen_interfaces").get<pj::array>();
-    std::vector<std::string> result;
+    std::vector<std::pair<std::string, int>> result;
 
     for (const pj::value &v : ifaces)
     {
-        result.push_back(v.get<std::string>());
+        std::string net_addr = v.get<std::string>();
+        size_t idx = net_addr.find(":");
+
+        if (idx == 0)
+        {
+            continue;
+        }
+
+        std::string addr = net_addr.substr(0, idx);
+        int port = std::stoi(net_addr.substr(idx + 1));
+        result.push_back({ addr, port });
     }
 
     return result;
 }
 
-void configuration::set_listen_interfaces(const std::vector<std::string> &interfaces)
+void configuration::set_listen_interfaces(const std::vector<std::pair<std::string, int>> &interfaces)
 {
     pj::array ifaces;
 
-    for (const std::string &v : interfaces)
+    for (const std::pair<std::string, int> &v : interfaces)
     {
-        ifaces.push_back(pj::value(v));
+        std::stringstream ss;
+        ss << v.first << ":" << v.second;
+        ifaces.push_back(pj::value(ss.str()));
     }
 
     (*value_)["listen_interfaces"] = pj::value(ifaces);
@@ -233,6 +248,32 @@ bool configuration::proxy_trackers()
 void configuration::set_proxy_trackers(bool value)
 {
     set("proxy_trackers", value);
+}
+
+std::shared_ptr<session_configuration> configuration::session_configuration()
+{
+    auto cfg = std::make_shared<core::session_configuration>();
+    cfg->default_save_path = default_save_path();
+    cfg->download_rate_limit = download_rate_limit();
+    cfg->enable_dht = true;
+    cfg->listen_interfaces = listen_interfaces();
+    cfg->session_state_file = pal::combine_paths(environment::get_data_path(), "Session.dat");
+    cfg->stop_tracker_timeout = stop_tracker_timeout();
+    cfg->temporary_directory = environment::get_temporary_directory();
+    cfg->torrents_directory = pal::combine_paths(environment::get_data_path(), "Torrents");
+    cfg->upload_rate_limit = upload_rate_limit();
+    cfg->use_picotorrent_peer_id = use_picotorrent_peer_id();
+
+    // Proxy
+    cfg->proxy_force = proxy_force();
+    cfg->proxy_host = proxy_host();
+    cfg->proxy_hostnames = proxy_hostnames();
+    cfg->proxy_peers = proxy_peers();
+    cfg->proxy_port = proxy_port();
+    cfg->proxy_trackers = proxy_trackers();
+    cfg->proxy_type = static_cast<session_configuration::proxy_type_t>(proxy_type());
+
+    return cfg;
 }
 
 configuration::start_position_t configuration::start_position()

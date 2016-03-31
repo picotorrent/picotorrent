@@ -51,7 +51,7 @@ namespace core
         DLL_EXPORT void notify();
         DLL_EXPORT void post_updates();
 
-        DLL_EXPORT void reload_settings();
+        DLL_EXPORT void reload_settings(const std::shared_ptr<session_configuration> &config);
         DLL_EXPORT void remove_torrent(const std::shared_ptr<torrent> &torrent, bool remove_data = false);
 
         DLL_EXPORT core::signals::signal_connector<void, const std::shared_ptr<torrent_info>&>& on_metadata_received();

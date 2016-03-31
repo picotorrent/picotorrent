@@ -24,7 +24,7 @@ namespace preferences
 
         void add_proxy_type(const std::string &name, int type);
 
-        std::vector<std::string> get_listen_interfaces();
+        std::vector<std::pair<std::string, int>> get_listen_interfaces();
         int get_proxy_type();
         std::string get_proxy_host();
         int get_proxy_port();
@@ -35,7 +35,7 @@ namespace preferences
         bool get_proxy_peers_checked();
         bool get_proxy_trackers_checked();
 
-        void set_listen_interfaces(const std::vector<std::string> &interfaces);
+        void set_listen_interfaces(const std::vector<std::pair<std::string, int>> &interfaces);
         void set_proxy_force_checked(bool enabled);
         void set_proxy_force_enabled(bool enabled);
         void set_proxy_hostnames_checked(bool enabled);
@@ -63,7 +63,6 @@ namespace preferences
         void enable_window(int id, bool enabled);
         void check_changed(HWND hDlg, UINT uCtrlId, UINT uCommand);
         bool is_checked(int id);
-        std::string get_window_text(int id);
 
         std::function<void(int)> proxy_type_changed_cb_;
     };
