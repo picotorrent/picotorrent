@@ -1,6 +1,7 @@
 #include <picotorrent/client/ui/notify_icon.hpp>
 
 #include <picotorrent/core/logging/log.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 
 #include <windows.h>
@@ -57,7 +58,7 @@ void notify_icon::remove()
     Shell_NotifyIcon(NIM_DELETE, &nid);
 }
 
-void notify_icon::show_balloon(const std::wstring &title, const std::wstring &text)
+void notify_icon::show_balloon(const std::string &title, const std::string &text)
 {
     NOTIFYICONDATA nid = { sizeof(NOTIFYICONDATA) };
     nid.hWnd = parent_;
@@ -66,8 +67,8 @@ void notify_icon::show_balloon(const std::wstring &title, const std::wstring &te
     nid.dwInfoFlags = NIIF_USER;
     nid.hBalloonIcon = icon_;
 
-    StringCchCopy(nid.szInfoTitle, ARRAYSIZE(nid.szInfoTitle), title.c_str());
-    StringCchCopy(nid.szInfo, ARRAYSIZE(nid.szInfo), text.c_str());
+    StringCchCopy(nid.szInfoTitle, ARRAYSIZE(nid.szInfoTitle), to_wstring(title).c_str());
+    StringCchCopy(nid.szInfo, ARRAYSIZE(nid.szInfo), to_wstring(text).c_str());
 
     Shell_NotifyIcon(NIM_MODIFY, &nid);
 }

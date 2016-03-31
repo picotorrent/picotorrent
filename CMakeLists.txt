@@ -31,13 +31,7 @@ endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 configure_file("${CMAKE_SOURCE_DIR}/src/core/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/core/version_info.cpp" @ONLY)
 
 set(PICOTORRENTCORE_SOURCES
-    # File system components
-    src/core/filesystem/directory
-    src/core/filesystem/file
-    src/core/filesystem/path
-
     # Misc
-    src/core/string_operations
     src/core/version_info
 
     # Logging components
@@ -69,6 +63,7 @@ set(PICOTORRENT_SOURCES
     src/client/configuration
     src/client/environment
     src/client/message_loop
+    src/client/string_operations
     src/client/controllers/add_magnet_link_controller
     src/client/controllers/add_torrent_controller
     src/client/controllers/application_close_controller

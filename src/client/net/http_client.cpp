@@ -1,5 +1,6 @@
 #include <picotorrent/client/net/http_client.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/net/http_response.hpp>
 #include <picotorrent/client/net/uri.hpp>
 #include <sstream>
@@ -155,14 +156,14 @@ void http_client::get_async(const uri &uri, const std::function<void(const http_
 
     state->connect_handle = WinHttpConnect(
         session_,
-        uri.host_name().c_str(),
+        to_wstring(uri.host_name()).c_str(),
         uri.port(),
         NULL);
 
     state->request_handle = WinHttpOpenRequest(
         state->connect_handle,
         L"GET",
-        uri.url_path().c_str(),
+        to_wstring(uri.url_path()).c_str(),
         NULL,
         WINHTTP_NO_REFERER,
         WINHTTP_DEFAULT_ACCEPT_TYPES,

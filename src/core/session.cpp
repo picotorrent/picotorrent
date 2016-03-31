@@ -1,7 +1,6 @@
 #include <picotorrent/core/session.hpp>
 
 #include <picotorrent/core/add_request.hpp>
-#include <picotorrent/core/logging/log.hpp>
 #include <picotorrent/core/pal.hpp>
 #include <picotorrent/core/session_configuration.hpp>
 #include <picotorrent/core/session_metrics.hpp>
@@ -27,6 +26,9 @@
 #include <queue>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
+#define LOG(level) \
+    session_log_item(config_->session_log_stream).stream()
+
 namespace lt = libtorrent;
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
@@ -49,6 +51,27 @@ struct load_item
     std::string resume_data;
     std::string magnet_uri;
     std::string save_path;
+};
+
+struct session_log_item
+{
+    session_log_item(std::ostream &stream)
+        : stream_(stream)
+    {
+    }
+
+    ~session_log_item()
+    {
+        stream_ << std::endl;
+    }
+
+    std::ostream& stream()
+    {
+        return stream_;
+    }
+
+private:
+    std::ostream& stream_;
 };
 
 session::session(const std::shared_ptr<session_configuration> &config)

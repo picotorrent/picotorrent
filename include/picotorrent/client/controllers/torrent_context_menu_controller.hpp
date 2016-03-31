@@ -31,7 +31,7 @@ namespace controllers
 
     private:
         void copy_to_clipboard(const std::string &text);
-        void open_and_select_item(const std::wstring &path, const std::wstring &item);
+        void open_and_select_item(const std::string &path, const std::string &item);
 
         std::shared_ptr<core::session> sess_;
         std::vector<std::shared_ptr<core::torrent>> torrents_;

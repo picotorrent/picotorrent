@@ -39,7 +39,7 @@ namespace details
         void on_init_dialog();
 
     private:
-        std::wstring on_list_display(const std::pair<int, int> &p);
+        std::string on_list_display(const std::pair<int, int> &p);
 
         struct peer_state;
         std::unique_ptr<controls::list_view> list_;

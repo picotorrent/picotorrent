@@ -1,7 +1,7 @@
 #include <picotorrent/client/ui/property_sheets/details/peers_page.hpp>
 
-#include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/peer.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/resources.hpp>
@@ -17,7 +17,6 @@
 #define LIST_COLUMN_DOWNLOAD 4
 #define LIST_COLUMN_UPLOAD 5
 
-using picotorrent::core::to_wstring;
 using picotorrent::core::peer;
 using picotorrent::client::ui::controls::list_view;
 using picotorrent::client::ui::property_sheets::details::peers_page;
@@ -100,7 +99,7 @@ void peers_page::on_init_dialog()
     list_->on_display().connect(std::bind(&peers_page::on_list_display, this, std::placeholders::_1));
 }
 
-std::wstring peers_page::on_list_display(const std::pair<int, int> &p)
+std::string peers_page::on_list_display(const std::pair<int, int> &p)
 {
     peer_state &ps = peers_[p.second];
 
@@ -109,11 +108,11 @@ std::wstring peers_page::on_list_display(const std::pair<int, int> &p)
     case LIST_COLUMN_IP:
         TCHAR res[100];
         StringCchPrintf(res, ARRAYSIZE(res), L"%s:%d", to_wstring(ps.peer.ip()).c_str(), ps.peer.port());
-        return res;
+        return to_string(res);
     case LIST_COLUMN_CLIENT:
-        return to_wstring(ps.peer.client());
+        return ps.peer.client();
     case LIST_COLUMN_FLAGS:
-        return to_wstring(ps.peer.flags_str());
+        return ps.peer.flags_str();
     case LIST_COLUMN_DOWNLOAD:
     case LIST_COLUMN_UPLOAD:
     {
@@ -121,15 +120,15 @@ std::wstring peers_page::on_list_display(const std::pair<int, int> &p)
 
         if (rate < 1024)
         {
-            return L"-";
+            return "-";
         }
 
         TCHAR result[100];
         StrFormatByteSize64(rate, result, ARRAYSIZE(result));
         StringCchPrintf(result, ARRAYSIZE(result), L"%s/s", result);
-        return result;
+        return to_string(result);
     }
     default:
-        return L"<unknown column>";
+        return "<unknown column>";
     }
 }

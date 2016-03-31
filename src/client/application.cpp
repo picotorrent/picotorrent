@@ -15,7 +15,6 @@
 #include <picotorrent/client/configuration.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/session_configuration.hpp>
-#include <picotorrent/core/filesystem/path.hpp>
 #include <picotorrent/core/logging/log.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
@@ -27,7 +26,6 @@
 
 namespace controllers = picotorrent::client::controllers;
 namespace core = picotorrent::core;
-namespace fs = picotorrent::core::filesystem;
 namespace ui = picotorrent::client::ui;
 using picotorrent::client::application;
 using picotorrent::client::command_line;
@@ -328,7 +326,7 @@ void application::on_torrent_context_menu(const POINT &p, const std::vector<std:
     menu_controller.execute(p);
 }
 
-void application::on_torrents_dropped(const std::vector<fs::path> &files)
+void application::on_torrents_dropped(const std::vector<std::string> &files)
 {
     controllers::add_torrent_controller add_controller(sess_, main_window_);
     add_controller.execute(files);

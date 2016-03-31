@@ -1,5 +1,8 @@
 #pragma once
 
+#include <memory>
+#include <ostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -23,7 +26,8 @@ namespace core
         session_configuration()
             : alert_queue_size(500),
             enable_dht(true),
-            stop_tracker_timeout(1)
+            stop_tracker_timeout(1),
+            session_log_stream(std::make_unique<std::ostringstream>())
         {
         }
 
@@ -32,6 +36,7 @@ namespace core
         int download_rate_limit;
         bool enable_dht;
         std::vector<std::pair<std::string, int>> listen_interfaces;
+        std::unique_ptr<std::ostream> session_log_stream;
         std::string session_state_file;
         int stop_tracker_timeout;
         std::string temporary_directory;

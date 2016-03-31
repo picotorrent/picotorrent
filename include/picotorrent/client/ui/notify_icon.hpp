@@ -19,7 +19,7 @@ namespace ui
 
         void add();
         void remove();
-        void show_balloon(const std::wstring &title, const std::wstring &text);
+        void show_balloon(const std::string &title, const std::string &text);
 
     private:
         HWND parent_;

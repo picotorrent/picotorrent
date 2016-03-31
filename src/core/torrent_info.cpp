@@ -1,18 +1,18 @@
 #include <picotorrent/core/torrent_info.hpp>
 
-#include <picotorrent/core/filesystem/file.hpp>
-#include <picotorrent/core/filesystem/path.hpp>
 #include <picotorrent/core/logging/log.hpp>
+#include <picotorrent/core/pal.hpp>
+#include <fstream>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace lt = libtorrent;
-namespace fs = picotorrent::core::filesystem;
+using picotorrent::core::pal;
 using picotorrent::core::torrent_info;
 
-torrent_info::torrent_info(const std::vector<char> &buf)
+torrent_info::torrent_info(const std::string &buf)
     : info_(std::make_unique<lt::torrent_info>(&buf[0], (int)buf.size()))
 {
 }
@@ -26,27 +26,20 @@ torrent_info::~torrent_info()
 {
 }
 
-std::shared_ptr<torrent_info> torrent_info::try_load(const fs::path &path)
+std::shared_ptr<torrent_info> torrent_info::try_load(const std::string &path)
 {
-    if (!path.exists())
+    if (!pal::file_exists(path))
     {
         return nullptr;
     }
 
-    fs::file f(path);
-    std::vector<char> buf;
+    std::ifstream file_stream(path, std::ios::binary);
+    if (!file_stream) { return nullptr; }
 
-    try
-    {
-        f.read_all(buf);
-    }
-    catch (const std::exception &e)
-    {
-        LOG(error) << "Error when reading file: " << e.what();
-        return nullptr;
-    }
+    std::stringstream ss;
+    ss << file_stream.rdbuf();
 
-    return std::make_shared<torrent_info>(buf);
+    return std::make_shared<torrent_info>(ss.str());
 }
 
 std::string torrent_info::file_path(int index) const

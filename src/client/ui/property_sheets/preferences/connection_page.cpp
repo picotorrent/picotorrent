@@ -1,8 +1,8 @@
 #include <picotorrent/client/ui/property_sheets/preferences/connection_page.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
-#include <picotorrent/core/string_operations.hpp>
 
 #include <windowsx.h>
 #include <commctrl.h>
@@ -11,8 +11,6 @@
 #include <strsafe.h>
 
 using picotorrent::client::ui::property_sheets::preferences::connection_page;
-using picotorrent::core::join;
-using picotorrent::core::trim;
 
 connection_page::connection_page()
 {
@@ -22,25 +20,25 @@ connection_page::connection_page()
     set_title(TR("connection"));
 }
 
-void connection_page::add_proxy_type(const std::wstring &name, int type)
+void connection_page::add_proxy_type(const std::string &name, int type)
 {
     HWND ctl = GetDlgItem(handle(), ID_PROXY_TYPE);
 
-    int index = ComboBox_AddString(ctl, name.c_str());
+    int index = ComboBox_AddString(ctl, to_wstring(name).c_str());
     ComboBox_SetItemData(ctl, index, type);
 }
 
-std::vector<std::wstring> connection_page::get_listen_interfaces()
+std::vector<std::string> connection_page::get_listen_interfaces()
 {
-    std::vector<std::wstring> result;
-    std::wstring::size_type pos = 0;
-    std::wstring::size_type prev = 0;
+    std::vector<std::string> result;
+    std::string::size_type pos = 0;
+    std::string::size_type prev = 0;
 
     TCHAR links[4096];
     GetDlgItemText(handle(), ID_LISTEN_INTERFACES, links, ARRAYSIZE(links));
-    std::wstring l = links;
+    std::string l = to_string(links);
 
-    while ((pos = l.find(L'\n', prev)) != std::wstring::npos)
+    while ((pos = l.find('\n', prev)) != std::string::npos)
     {
         result.push_back(trim(l.substr(prev, pos - prev)));
         prev = pos + 1;
@@ -60,24 +58,24 @@ int connection_page::get_proxy_type()
     return (int)ComboBox_GetItemData(ctl, idx);
 }
 
-std::wstring connection_page::get_proxy_host()
+std::string connection_page::get_proxy_host()
 {
     return get_window_text(ID_PROXY_HOST);
 }
 
 int connection_page::get_proxy_port()
 {
-    std::wstring text = get_window_text(ID_PROXY_PORT);
+    std::string text = get_window_text(ID_PROXY_PORT);
     if (text.empty()) { return -1; }
     return std::stoi(text);
 }
 
-std::wstring connection_page::get_proxy_username()
+std::string connection_page::get_proxy_username()
 {
     return get_window_text(ID_PROXY_USERNAME);
 }
 
-std::wstring connection_page::get_proxy_password()
+std::string connection_page::get_proxy_password()
 {
     return get_window_text(ID_PROXY_PASSWORD);
 }
@@ -102,9 +100,10 @@ bool connection_page::get_proxy_trackers_checked()
     return is_checked(ID_PROXY_TRACKERS);
 }
 
-void connection_page::set_listen_interfaces(const std::vector<std::wstring> &interfaces)
+void connection_page::set_listen_interfaces(const std::vector<std::string> &interfaces)
 {
-    SetDlgItemText(handle(), ID_LISTEN_INTERFACES, join(interfaces, L"\r\n").c_str());
+    std::wstring t = to_wstring(join(interfaces, "\r\n"));
+    SetDlgItemText(handle(), ID_LISTEN_INTERFACES, t.c_str());
 }
 
 void connection_page::set_proxy_force_enabled(bool enabled)
@@ -127,24 +126,24 @@ void connection_page::set_proxy_trackers_enabled(bool enabled)
     enable_window(ID_PROXY_TRACKERS, enabled);
 }
 
-void connection_page::set_proxy_host(const std::wstring &value)
+void connection_page::set_proxy_host(const std::string &value)
 {
-    SetDlgItemText(handle(), ID_PROXY_HOST, value.c_str());
+    SetDlgItemText(handle(), ID_PROXY_HOST, to_wstring(value).c_str());
 }
 
-void connection_page::set_proxy_port(const std::wstring &value)
+void connection_page::set_proxy_port(const std::string &value)
 {
-    SetDlgItemText(handle(), ID_PROXY_PORT, value.c_str());
+    SetDlgItemText(handle(), ID_PROXY_PORT, to_wstring(value).c_str());
 }
 
-void connection_page::set_proxy_username(const std::wstring &value)
+void connection_page::set_proxy_username(const std::string &value)
 {
-    SetDlgItemText(handle(), ID_PROXY_USERNAME, value.c_str());
+    SetDlgItemText(handle(), ID_PROXY_USERNAME, to_wstring(value).c_str());
 }
 
-void connection_page::set_proxy_password(const std::wstring &value)
+void connection_page::set_proxy_password(const std::string &value)
 {
-    SetDlgItemText(handle(), ID_PROXY_PASSWORD, value.c_str());
+    SetDlgItemText(handle(), ID_PROXY_PASSWORD, to_wstring(value).c_str());
 }
 
 void connection_page::set_proxy_force_checked(bool checked)
@@ -208,20 +207,6 @@ void connection_page::set_proxy_type_changed_callback(const std::function<void(i
     proxy_type_changed_cb_ = callback;
 }
 
-std::vector<BYTE> connection_page::get_address_bytes(const std::wstring &address)
-{
-    std::vector<BYTE> res;
-    std::wistringstream f(address);
-    std::wstring s;
-
-    while (std::getline(f, s, L'.'))
-    {
-        res.push_back((BYTE)std::stoi(s));
-    }
-
-    return res;
-}
-
 BOOL connection_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam)
 {
     if (!is_initializing())
@@ -259,17 +244,17 @@ BOOL connection_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM 
 
 void connection_page::on_init_dialog()
 {
-    SetDlgItemText(handle(), ID_LISTEN_INTERFACE_GROUP, TR("listen_interface"));
-    SetDlgItemText(handle(), ID_PROXY_GROUP, TR("proxy"));
-    SetDlgItemText(handle(), ID_TYPE_TEXT, TR("type"));
-    SetDlgItemText(handle(), ID_HOST_TEXT, TR("host"));
-    SetDlgItemText(handle(), ID_PROXY_PORT_TEXT, TR("port"));
-    SetDlgItemText(handle(), ID_PROXY_USERNAME_TEXT, TR("username"));
-    SetDlgItemText(handle(), ID_PROXY_PASSWORD_TEXT, TR("password"));
-    SetDlgItemText(handle(), ID_PROXY_FORCE, TR("force_proxy"));
-    SetDlgItemText(handle(), ID_PROXY_HOSTNAMES, TR("proxy_hostnames"));
-    SetDlgItemText(handle(), ID_PROXY_PEERS, TR("proxy_peer_connections"));
-    SetDlgItemText(handle(), ID_PROXY_TRACKERS, TR("proxy_tracker_connections"));
+    set_dlg_item_text(ID_LISTEN_INTERFACE_GROUP, TR("listen_interface"));
+    set_dlg_item_text(ID_PROXY_GROUP, TR("proxy"));
+    set_dlg_item_text(ID_TYPE_TEXT, TR("type"));
+    set_dlg_item_text(ID_HOST_TEXT, TR("host"));
+    set_dlg_item_text(ID_PROXY_PORT_TEXT, TR("port"));
+    set_dlg_item_text(ID_PROXY_USERNAME_TEXT, TR("username"));
+    set_dlg_item_text(ID_PROXY_PASSWORD_TEXT, TR("password"));
+    set_dlg_item_text(ID_PROXY_FORCE, TR("force_proxy"));
+    set_dlg_item_text(ID_PROXY_HOSTNAMES, TR("proxy_hostnames"));
+    set_dlg_item_text(ID_PROXY_PEERS, TR("proxy_peer_connections"));
+    set_dlg_item_text(ID_PROXY_TRACKERS, TR("proxy_tracker_connections"));
 
 }
 
@@ -315,9 +300,9 @@ bool connection_page::is_checked(int id)
     return IsDlgButtonChecked(handle(), id) == BST_CHECKED;
 }
 
-std::wstring connection_page::get_window_text(int id)
+std::string connection_page::get_window_text(int id)
 {
     TCHAR p[1024];
     GetDlgItemText(handle(), id, p, ARRAYSIZE(p));
-    return p;
+    return to_string(p);
 }

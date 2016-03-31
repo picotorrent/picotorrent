@@ -1,5 +1,7 @@
 #include <picotorrent/client/ui/task_dialog.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
+
 #include <windows.h>
 #include <commctrl.h>
 #include <strsafe.h>
@@ -20,10 +22,10 @@ task_dialog::~task_dialog()
     }
 }
 
-void task_dialog::add_button(int id, const std::wstring &text, const std::function<bool()> &callback)
+void task_dialog::add_button(int id, const std::string &text, const std::function<bool()> &callback)
 {
     wchar_t *t = new wchar_t[100];
-    StringCchCopy(t, 100, text.c_str());
+    StringCchCopy(t, 100, to_wstring(text).c_str());
 
     TASKDIALOG_BUTTON btn;
     btn.nButtonID = id;
@@ -43,9 +45,9 @@ void task_dialog::set_common_buttons(DWORD buttons)
     common_buttons_ = buttons;
 }
 
-void task_dialog::set_content(const std::wstring &text)
+void task_dialog::set_content(const std::string &text)
 {
-    content_ = text;
+    content_ = to_wstring(text);
 }
 
 void task_dialog::set_main_icon(PCWSTR icon)
@@ -53,9 +55,9 @@ void task_dialog::set_main_icon(PCWSTR icon)
     icon_ = icon;
 }
 
-void task_dialog::set_main_instruction(const std::wstring &text)
+void task_dialog::set_main_instruction(const std::string &text)
 {
-    instruction_ = text;
+    instruction_ = to_wstring(text);
 }
 
 void task_dialog::set_parent(HWND parent)
@@ -63,14 +65,14 @@ void task_dialog::set_parent(HWND parent)
     parent_ = parent;
 }
 
-void task_dialog::set_title(const std::wstring &title)
+void task_dialog::set_title(const std::string &title)
 {
-    title_ = title;
+    title_ = to_wstring(title);
 }
 
-void task_dialog::set_verification_text(const std::wstring &text)
+void task_dialog::set_verification_text(const std::string &text)
 {
-    verification_ = text;
+    verification_ = to_wstring(text);
 }
 
 int task_dialog::show()

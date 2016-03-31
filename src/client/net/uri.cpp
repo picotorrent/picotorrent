@@ -1,11 +1,13 @@
 #include <picotorrent/client/net/uri.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
+
 #include <windows.h>
 #include <winhttp.h>
 
 using picotorrent::client::net::uri;
 
-uri::uri(const std::wstring &url)
+uri::uri(const std::string &url)
     : raw_(url)
 {
     URL_COMPONENTS components = { 0 };
@@ -15,18 +17,20 @@ uri::uri(const std::wstring &url)
     components.dwUrlPathLength = (DWORD)-1;
     components.dwExtraInfoLength = (DWORD)-1;
 
+    std::wstring u = to_wstring(url);
+
     WinHttpCrackUrl(
-        url.c_str(),
-        (DWORD)url.size(),
+        u.c_str(),
+        (DWORD)u.size(),
         0,
         &components);
 
-    hostName_ = std::wstring(components.lpszHostName, components.dwHostNameLength);
+    hostName_ = to_string(std::wstring(components.lpszHostName, components.dwHostNameLength));
     port_ = components.nPort;
-    urlPath_ = components.lpszUrlPath;
+    urlPath_ = to_string(components.lpszUrlPath);
 }
 
-std::wstring uri::host_name() const
+std::string uri::host_name() const
 {
     return hostName_;
 }
@@ -36,12 +40,12 @@ int uri::port() const
     return port_;
 }
 
-std::wstring uri::raw() const
+std::string uri::raw() const
 {
     return raw_;
 }
 
-std::wstring uri::url_path() const
+std::string uri::url_path() const
 {
     return urlPath_;
 }

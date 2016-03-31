@@ -38,7 +38,7 @@ namespace details
         void on_init_dialog();
 
     private:
-        std::wstring on_list_display(const std::pair<int, int> &p);
+        std::string on_list_display(const std::pair<int, int> &p);
         void on_trackers_context_menu(const std::vector<int> &items);
 
         struct tracker_state;

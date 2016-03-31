@@ -1,5 +1,6 @@
 #include <picotorrent/client/ui/property_sheets/property_sheet_page.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
 
 using picotorrent::core::signals::signal;
@@ -96,16 +97,16 @@ bool property_sheet_page::is_initializing()
     return is_initializing_;
 }
 
-std::wstring property_sheet_page::get_dlg_item_text(int id)
+std::string property_sheet_page::get_dlg_item_text(int id)
 {
     TCHAR text[1024];
     GetDlgItemText(handle(), id, text, ARRAYSIZE(text));
-    return text;
+    return to_string(text);
 }
 
-void property_sheet_page::set_dlg_item_text(int id, const std::wstring &text)
+void property_sheet_page::set_dlg_item_text(int id, const std::string &text)
 {
-    SetDlgItemText(handle(), id, text.c_str());
+    SetDlgItemText(handle(), id, to_wstring(text).c_str());
 }
 
 void property_sheet_page::set_flags(DWORD flags)
@@ -123,20 +124,20 @@ void property_sheet_page::set_template_id(int id)
     page_->pszTemplate = MAKEINTRESOURCE(id);
 }
 
-void property_sheet_page::set_title(const std::wstring &title)
+void property_sheet_page::set_title(const std::string &title)
 {
-    title_ = title;
+    title_ = to_wstring(title);
     page_->pszTitle = title_.c_str();
 }
 
-void property_sheet_page::show_error_message(const std::wstring &text)
+void property_sheet_page::show_error_message(const std::string &text)
 {
     task_dialog dlg;
     dlg.set_common_buttons(TDCBF_OK_BUTTON);
     dlg.set_content(text);
     dlg.set_main_icon(TD_ERROR_ICON);
     dlg.set_parent(handle());
-    dlg.set_title(L"PicoTorrent");
+    dlg.set_title("PicoTorrent");
     dlg.show();
 }
 

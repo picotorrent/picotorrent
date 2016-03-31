@@ -1,12 +1,13 @@
 #include <picotorrent/client/controllers/torrent_context_menu_controller.hpp>
 
 #include <algorithm>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/controllers/move_torrent_controller.hpp>
 #include <picotorrent/client/controllers/remove_torrent_controller.hpp>
 #include <picotorrent/client/controllers/torrent_details_controller.hpp>
 #include <picotorrent/core/hash.hpp>
+#include <picotorrent/core/pal.hpp>
 #include <picotorrent/core/session.hpp>
-#include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
@@ -15,9 +16,9 @@
 #include <shlwapi.h>
 #include <sstream>
 
+using picotorrent::core::pal;
 using picotorrent::core::session;
 using picotorrent::core::torrent;
-using picotorrent::core::to_wstring;
 using picotorrent::client::ui::main_window;
 using picotorrent::client::ui::torrent_context_menu;
 
@@ -153,12 +154,9 @@ void torrent_context_menu_controller::execute(const POINT &p)
     }
     case TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER:
     {
-        std::string sp = torrents_[0]->save_path();
-        std::string n = torrents_[0]->name();
-
         open_and_select_item(
-            to_wstring(sp),
-            to_wstring(n));
+            torrents_[0]->save_path(),
+            torrents_[0]->name());
         break;
     }
 
@@ -183,12 +181,10 @@ void torrent_context_menu_controller::copy_to_clipboard(const std::string &text)
     CloseClipboard();
 }
 
-void torrent_context_menu_controller::open_and_select_item(const std::wstring &path, const std::wstring &item)
+void torrent_context_menu_controller::open_and_select_item(const std::string &path, const std::string &item)
 {
-    TCHAR p[MAX_PATH];
-    PathCombine(p, path.c_str(), item.c_str());
-
-    LPITEMIDLIST il = ILCreateFromPath(p);
+    std::string full_path = pal::combine_paths(path, item);
+    LPITEMIDLIST il = ILCreateFromPath(to_wstring(full_path).c_str());
 
     SHOpenFolderAndSelectItems(
         il,

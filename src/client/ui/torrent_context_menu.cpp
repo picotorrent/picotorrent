@@ -1,5 +1,6 @@
 #include <picotorrent/client/ui/torrent_context_menu.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 
@@ -8,30 +9,30 @@ using picotorrent::client::ui::torrent_context_menu;
 torrent_context_menu::torrent_context_menu()
 {
     menu_ = CreatePopupMenu();
-    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_PAUSE, TR("pause"));
-    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_RESUME, TR("resume"));
-    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_RESUME_FORCE, TR("resume_force"));
+    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_PAUSE, to_wstring(TR("pause")).c_str());
+    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_RESUME, to_wstring(TR("resume")).c_str());
+    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_RESUME_FORCE, to_wstring(TR("resume_force")).c_str());
     AppendMenu(menu_, MF_SEPARATOR, 0, NULL);
-    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_DETAILS, TR("details"));
+    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_DETAILS, to_wstring(TR("details")).c_str());
     AppendMenu(menu_, MF_SEPARATOR, 0, NULL);
-    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_MOVE, TR("move"));
+    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_MOVE, to_wstring(TR("move")).c_str());
 
     HMENU queue = CreateMenu();
-    AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_UP, TR("up"));
-    AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_DOWN, TR("down"));
+    AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_UP, to_wstring(TR("up")).c_str());
+    AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_DOWN, to_wstring(TR("down")).c_str());
     AppendMenu(queue, MF_SEPARATOR, 0, NULL);
-    AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_TOP, TR("top"));
-    AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_BOTTOM, TR("bottom"));
+    AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_TOP, to_wstring(TR("top")).c_str());
+    AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_BOTTOM, to_wstring(TR("bottom")).c_str());
 
     HMENU remove = CreateMenu();
-    AppendMenu(remove, MF_STRING, TORRENT_CONTEXT_MENU_REMOVE, TR("remove_torrent"));
-    AppendMenu(remove, MF_STRING, TORRENT_CONTEXT_MENU_REMOVE_DATA, TR("remove_torrent_and_files"));
+    AppendMenu(remove, MF_STRING, TORRENT_CONTEXT_MENU_REMOVE, to_wstring(TR("remove_torrent")).c_str());
+    AppendMenu(remove, MF_STRING, TORRENT_CONTEXT_MENU_REMOVE_DATA, to_wstring(TR("remove_torrent_and_files")).c_str());
 
-    AppendMenu(menu_, MF_POPUP, (UINT_PTR)queue, TR("queuing"));
-    AppendMenu(menu_, MF_POPUP, (UINT_PTR)remove, TR("remove"));
+    AppendMenu(menu_, MF_POPUP, (UINT_PTR)queue, to_wstring(TR("queuing")).c_str());
+    AppendMenu(menu_, MF_POPUP, (UINT_PTR)remove, to_wstring(TR("remove")).c_str());
     AppendMenu(menu_, MF_SEPARATOR, 0, NULL);
-    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_COPY_SHA, TR("copy_info_hash"));
-    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER, TR("open_in_explorer"));
+    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_COPY_SHA, to_wstring(TR("copy_info_hash")).c_str());
+    AppendMenu(menu_, MF_STRING, TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER, to_wstring(TR("open_in_explorer")).c_str());
 }
 
 torrent_context_menu::~torrent_context_menu()

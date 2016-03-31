@@ -1,10 +1,9 @@
 #include <picotorrent/client/ui/open_file_dialog.hpp>
 
-#include <picotorrent/core/filesystem/path.hpp>
 #include <picotorrent/core/logging/log.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/ui/file_dialog_callback.hpp>
 
-namespace fs = picotorrent::core::filesystem;
 using picotorrent::client::ui::file_dialog_callback;
 using picotorrent::client::ui::open_file_dialog;
 
@@ -23,20 +22,20 @@ open_file_dialog::~open_file_dialog()
     dlg_->Release();
 }
 
-std::vector<fs::path> open_file_dialog::get_paths()
+std::vector<std::string> open_file_dialog::get_paths()
 {
     IShellItemArray *items = NULL;
     dlg_->GetResults(&items);
 
     if (items == NULL)
     {
-        return std::vector<fs::path>();
+        return std::vector<std::string>();
     }
 
     DWORD count;
     items->GetCount(&count);
 
-    std::vector<fs::path> paths;
+    std::vector<std::string> paths;
 
     for (DWORD i = 0; i < count; i++)
     {
@@ -52,8 +51,7 @@ std::vector<fs::path> open_file_dialog::get_paths()
             continue;
         }
 
-        fs::path p(path);
-        paths.push_back(p);
+        paths.push_back(to_string(path));
 
         CoTaskMemFree(path);
         item->Release();
@@ -64,7 +62,7 @@ std::vector<fs::path> open_file_dialog::get_paths()
     return paths;
 }
 
-void open_file_dialog::notify_error(const std::wstring &mainInstruction, const std::wstring &text)
+void open_file_dialog::notify_error(const std::string &mainInstruction, const std::string &text)
 {
     IOleWindow *pWindow = NULL;
     HRESULT hr = dlg_->QueryInterface(IID_PPV_ARGS(&pWindow));
@@ -77,7 +75,7 @@ void open_file_dialog::notify_error(const std::wstring &mainInstruction, const s
         NULL,
         L"Error",
         L"An error occured",
-        text.c_str(),
+        to_wstring(text).c_str(),
         TDCBF_OK_BUTTON,
         TD_ERROR_ICON,
         NULL);
@@ -90,10 +88,10 @@ DWORD open_file_dialog::options()
     return flags;
 }
 
-void open_file_dialog::set_folder(const fs::path &path)
+void open_file_dialog::set_folder(const std::string &path)
 {
     IShellItem *folder;
-    HRESULT res = SHCreateItemFromParsingName(path.to_string().c_str(), NULL, IID_PPV_ARGS(&folder));
+    HRESULT res = SHCreateItemFromParsingName(to_wstring(path).c_str(), NULL, IID_PPV_ARGS(&folder));
 
     if (SUCCEEDED(res))
     {
@@ -107,9 +105,9 @@ void open_file_dialog::set_guid(const GUID &guid)
     dlg_->SetClientGuid(guid);
 }
 
-void open_file_dialog::set_ok_button_label(LPCTSTR label)
+void open_file_dialog::set_ok_button_label(const std::string &label)
 {
-    dlg_->SetOkButtonLabel(label);
+    dlg_->SetOkButtonLabel(to_wstring(label).c_str());
 }
 
 void open_file_dialog::set_options(DWORD options)
@@ -117,9 +115,9 @@ void open_file_dialog::set_options(DWORD options)
     dlg_->SetOptions(options);
 }
 
-void open_file_dialog::set_title(LPCTSTR title)
+void open_file_dialog::set_title(const std::string &title)
 {
-    dlg_->SetTitle(title);
+    dlg_->SetTitle(to_wstring(title).c_str());
 }
 
 void open_file_dialog::show(HWND hParent)

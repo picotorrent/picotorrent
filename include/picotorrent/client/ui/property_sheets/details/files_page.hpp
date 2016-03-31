@@ -31,14 +31,14 @@ namespace details
         files_page();
         ~files_page();
 
-        void add_file(const std::wstring &name, uint64_t size, float progress, int priority);
+        void add_file(const std::string &name, uint64_t size, float progress, int priority);
         core::signals::signal_connector<void, const std::pair<int, int>&>& on_set_file_priority();
         void refresh();
         void update_file_progress(int index, float progress);
 
     protected:
         void on_init_dialog();
-        std::wstring on_list_display(const std::pair<int, int> &p);
+        std::string on_list_display(const std::pair<int, int> &p);
         void on_list_item_context_menu(const std::vector<int> &indices);
         int on_list_item_image(const std::pair<int, int> &p);
         float on_list_progress(const std::pair<int, int> &p);
@@ -49,7 +49,7 @@ namespace details
         HIMAGELIST images_;
 
         std::unique_ptr<controls::list_view> files_;
-        std::map<std::wstring, int> icon_map_;
+        std::map<std::string, int> icon_map_;
         std::vector<file_item> items_;
         core::signals::signal<void, const std::pair<int, int>&> on_set_file_prio_;
     };

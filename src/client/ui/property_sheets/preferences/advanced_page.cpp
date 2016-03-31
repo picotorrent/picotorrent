@@ -46,6 +46,6 @@ BOOL advanced_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lP
 
 void advanced_page::on_init_dialog()
 {
-    SetDlgItemText(handle(), ID_EXPERIMENTAL_GROUP, TR("experimental"));
-    SetDlgItemText(handle(), ID_USE_PICO_ID, TR("use_picotorrent_peer_id"));
+    set_dlg_item_text(ID_EXPERIMENTAL_GROUP, TR("experimental"));
+    set_dlg_item_text(ID_USE_PICO_ID, TR("use_picotorrent_peer_id"));
 }

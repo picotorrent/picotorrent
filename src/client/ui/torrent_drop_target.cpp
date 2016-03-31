@@ -1,7 +1,7 @@
 #include <picotorrent/client/ui/torrent_drop_target.hpp>
 
 #include <picotorrent/core/is_valid_torrent_file.hpp>
-#include <picotorrent/core/filesystem/path.hpp>
+#include <picotorrent/client/string_operations.hpp>
 
 #include <shellapi.h>
 #include <shlwapi.h>
@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <vector>
 
-namespace fs = picotorrent::core::filesystem;
 using picotorrent::client::ui::torrent_drop_target;
 using picotorrent::core::is_valid_torrent_file;
 using picotorrent::core::signals::signal;
@@ -19,7 +18,7 @@ using picotorrent::core::signals::signal_connector;
 class PicoDropTarget : public IDropTarget
 {
 public:
-    PicoDropTarget(signal<void, const std::vector<fs::path>&> &dropped)
+    PicoDropTarget(signal<void, const std::vector<std::string>&> &dropped)
         : on_dropped_(dropped)
     {
     }
@@ -86,7 +85,7 @@ public:
     }
 
 private:
-    static std::vector<fs::path> GetPaths(IDataObject *pDataObject)
+    static std::vector<std::string> GetPaths(IDataObject *pDataObject)
     {
         FORMATETC fmtetc = { CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
         STGMEDIUM stg;
@@ -94,27 +93,27 @@ private:
 
         HDROP drop = static_cast<HDROP>(stg.hGlobal);
         int files = DragQueryFile(drop, -1, 0, 0);
-        std::vector<fs::path> paths;
+        std::vector<std::string> paths;
 
         for (int i = 0; i < files; i++)
         {
             TCHAR path[MAX_PATH];
             DragQueryFile(drop, i, path, ARRAYSIZE(path));
-            paths.push_back(path);
+            paths.push_back(picotorrent::client::to_string(path));
         }
 
         return paths;
     }
 
-    static bool IsValidTorrents(const std::vector<fs::path> &paths)
+    static bool IsValidTorrents(const std::vector<std::string> &paths)
     {
-        return std::all_of(paths.begin(), paths.end(), [](const fs::path &p) { return is_valid_torrent_file(p); });
+        return std::all_of(paths.begin(), paths.end(), [](const std::string &p) { return is_valid_torrent_file(p); });
     }
 
     DWORD effect = DROPEFFECT_NONE;
-    std::vector<fs::path> paths_;
+    std::vector<std::string> paths_;
     long ref_;
-    signal<void, const std::vector<fs::path>&>& on_dropped_;
+    signal<void, const std::vector<std::string>&>& on_dropped_;
 };
 
 torrent_drop_target::torrent_drop_target(HWND hParent)
@@ -129,7 +128,7 @@ torrent_drop_target::~torrent_drop_target()
     RevokeDragDrop(parent_);
 }
 
-signal_connector<void, const std::vector<fs::path>&>& torrent_drop_target::on_torrents_dropped()
+signal_connector<void, const std::vector<std::string>&>& torrent_drop_target::on_torrents_dropped()
 {
     return on_torrents_dropped_;
 }

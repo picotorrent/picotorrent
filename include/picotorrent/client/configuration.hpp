@@ -72,17 +72,17 @@ namespace client
         int current_language_id();
         void set_current_language_id(int langId);
         
-        std::wstring default_save_path();
-        void set_default_save_path(const std::wstring &path);
+        std::string default_save_path();
+        void set_default_save_path(const std::string &path);
 
         int download_rate_limit();
         void set_download_rate_limit(int dl_rate);
 
-        std::wstring ignored_update();
-        void set_ignored_update(const std::wstring &version);
+        std::string ignored_update();
+        void set_ignored_update(const std::string &version);
 
-        std::vector<std::wstring> listen_interfaces();
-        void set_listen_interfaces(const std::vector<std::wstring> &interfaces);
+        std::vector<std::string> listen_interfaces();
+        void set_listen_interfaces(const std::vector<std::string> &interfaces);
 
         bool prompt_for_remove_data();
         void set_prompt_for_remove_data(bool value);
@@ -90,17 +90,17 @@ namespace client
         proxy_type_t proxy_type();
         void set_proxy_type(proxy_type_t type);
 
-        std::wstring proxy_host();
-        void set_proxy_host(const std::wstring &host);
+        std::string proxy_host();
+        void set_proxy_host(const std::string &host);
 
         int proxy_port();
         void set_proxy_port(int port);
 
-        std::wstring proxy_username();
-        void set_proxy_username(const std::wstring &user);
+        std::string proxy_username();
+        void set_proxy_username(const std::string &user);
 
-        std::wstring proxy_password();
-        void set_proxy_password(const std::wstring &pass);
+        std::string proxy_password();
+        void set_proxy_password(const std::string &pass);
 
         bool proxy_force();
         void set_proxy_force(bool value);
@@ -121,7 +121,7 @@ namespace client
         void set_start_position(start_position_t pos);
 
         int stop_tracker_timeout();
-        std::wstring update_url();
+        std::string update_url();
 
         int upload_rate_limit();
         void set_upload_rate_limit(int ul_rate);
@@ -143,13 +143,7 @@ namespace client
         int get_or_default(const char *name, int defaultValue);
 
         template<>
-        std::wstring get_or_default(const char *name, std::wstring defaultValue);
-
-        template<>
         void set(const char *name, int value);
-
-        template<>
-        void set(const char *name, std::wstring value);
 
         void load();
         void save();

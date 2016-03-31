@@ -1,7 +1,7 @@
 #include <picotorrent/client/controllers/unhandled_exception_controller.hpp>
 
 #include <picojson.hpp>
-#include <picotorrent/core/string_operations.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/net/http_client.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
@@ -9,8 +9,6 @@
 #include <shellapi.h>
 
 namespace ui = picotorrent::client::ui;
-using picotorrent::core::to_string;
-using picotorrent::core::to_wstring;
 using picotorrent::client::controllers::unhandled_exception_controller;
 
 unhandled_exception_controller::unhandled_exception_controller(
@@ -29,7 +27,7 @@ void unhandled_exception_controller::execute()
     ui::task_dialog dlg;
     dlg.add_button(
         1234,
-        L"Create GitHub issue\nRequires a GitHub account",
+        "Create GitHub issue\nRequires a GitHub account",
         [this]()
     {
         picojson::object file_paste = {JSON_VAL("content", stacktrace_)};
@@ -69,10 +67,10 @@ void unhandled_exception_controller::execute()
         return false;
     });
 
-    dlg.set_content(to_wstring(stacktrace_).c_str());
+    dlg.set_content(stacktrace_);
     dlg.set_main_icon(TD_ERROR_ICON);
-    dlg.set_main_instruction(L"Unhandled exception occured");
+    dlg.set_main_instruction("Unhandled exception occured");
     dlg.set_parent(wnd_->handle());
-    dlg.set_title(L"PicoTorrent");
+    dlg.set_title("PicoTorrent");
     dlg.show();
 }

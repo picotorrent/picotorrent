@@ -2,11 +2,10 @@
 
 #include <algorithm>
 #include <commctrl.h>
-#include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/session_metrics.hpp>
 #include <picotorrent/core/torrent.hpp>
-#include <picotorrent/core/filesystem/path.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/dialogs/about_dialog.hpp>
@@ -39,10 +38,8 @@
 #define COLUMN_PEERS 10
 
 namespace core = picotorrent::core;
-namespace fs = picotorrent::core::filesystem;
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
-using picotorrent::core::to_wstring;
 using picotorrent::client::ui::controls::list_view;
 using picotorrent::client::ui::dialogs::about_dialog;
 using picotorrent::client::ui::main_window;
@@ -99,23 +96,23 @@ main_window::main_window(const std::shared_ptr<core::session> &sess)
 
     // Create main menu
     HMENU file = CreateMenu();
-    AppendMenu(file, MF_STRING, ID_FILE_ADD_TORRENT, TR("amp_add_torrent"));
-    AppendMenu(file, MF_STRING, ID_FILE_ADD_MAGNET_LINK, TR("amp_add_magnet_link_s"));
+    AppendMenu(file, MF_STRING, ID_FILE_ADD_TORRENT, to_wstring(TR("amp_add_torrent")).c_str());
+    AppendMenu(file, MF_STRING, ID_FILE_ADD_MAGNET_LINK, to_wstring(TR("amp_add_magnet_link_s")).c_str());
     AppendMenu(file, MF_SEPARATOR, 0, NULL);
-    AppendMenu(file, MF_STRING, ID_FILE_EXIT, TR("amp_exit"));
+    AppendMenu(file, MF_STRING, ID_FILE_EXIT, to_wstring(TR("amp_exit")).c_str());
 
     HMENU view = CreateMenu();
-    AppendMenu(view, MF_STRING, ID_VIEW_PREFERENCES, TR("amp_preferences"));
+    AppendMenu(view, MF_STRING, ID_VIEW_PREFERENCES, to_wstring(TR("amp_preferences")).c_str());
 
     HMENU help = CreateMenu();
-    AppendMenu(help, MF_STRING, ID_HELP_CHECK_FOR_UPDATE, TR("amp_check_for_update"));
+    AppendMenu(help, MF_STRING, ID_HELP_CHECK_FOR_UPDATE, to_wstring(TR("amp_check_for_update")).c_str());
     AppendMenu(help, MF_SEPARATOR, 0, NULL);
-    AppendMenu(help, MF_STRING, ID_HELP_ABOUT, TR("amp_about"));
+    AppendMenu(help, MF_STRING, ID_HELP_ABOUT, to_wstring(TR("amp_about")).c_str());
 
     HMENU menuBar = CreateMenu();
-    AppendMenu(menuBar, MF_POPUP, (UINT_PTR)file, TR("amp_file"));
-    AppendMenu(menuBar, MF_POPUP, (UINT_PTR)view, TR("amp_view"));
-    AppendMenu(menuBar, MF_POPUP, (UINT_PTR)help, TR("amp_help"));
+    AppendMenu(menuBar, MF_POPUP, (UINT_PTR)file, to_wstring(TR("amp_file")).c_str());
+    AppendMenu(menuBar, MF_POPUP, (UINT_PTR)view, to_wstring(TR("amp_view")).c_str());
+    AppendMenu(menuBar, MF_POPUP, (UINT_PTR)help, to_wstring(TR("amp_help")).c_str());
 
     SetMenu(hWnd_, menuBar);
 }
@@ -139,8 +136,8 @@ void main_window::torrent_added(const std::shared_ptr<core::torrent> &t)
 
 void main_window::torrent_finished(const std::shared_ptr<core::torrent> &t)
 {
-    last_finished_save_path_ = to_wstring(t->save_path());
-    noticon_->show_balloon(TR("torrent_finished"), to_wstring(t->name()));
+    last_finished_save_path_ = t->save_path();
+    noticon_->show_balloon(TR("torrent_finished"), t->name());
 }
 
 void main_window::torrent_removed(const std::shared_ptr<core::torrent> &t)
@@ -219,7 +216,7 @@ void main_window::on_torrent_context_menu(const std::function<void(const POINT &
     torrent_context_cb_ = callback;
 }
 
-signal_connector<void, const std::vector<core::filesystem::path>&>& main_window::on_torrents_dropped()
+signal_connector<void, const std::vector<std::string>&>& main_window::on_torrents_dropped()
 {
     return drop_target_->on_torrents_dropped();
 }
@@ -288,7 +285,13 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
         case NIN_BALLOONUSERCLICK:
         {
-            ShellExecute(handle(), TEXT("open"), last_finished_save_path_.c_str(), NULL, NULL, SW_SHOWNORMAL);
+            ShellExecute(
+                handle(),
+                TEXT("open"),
+                to_wstring(last_finished_save_path_).c_str(),
+                NULL,
+                NULL,
+                SW_SHOWNORMAL);
             break;
         }
         }
@@ -557,25 +560,25 @@ LRESULT main_window::wnd_proc_proxy(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
     return pWnd->wnd_proc(hWnd, uMsg, wParam, lParam);
 }
 
-std::wstring main_window::on_list_display(const std::pair<int, int> &p)
+std::string main_window::on_list_display(const std::pair<int, int> &p)
 {
     const core::torrent_ptr &t = torrents_[p.second];
 
     switch (p.first)
     {
     case COLUMN_NAME:
-        return to_wstring(t->name());
+        return t->name();
     case COLUMN_QUEUE_POSITION:
         if (t->queue_position() < 0)
         {
-            return L"-";
+            return "-";
         }
 
-        return std::to_wstring(t->queue_position() + 1);
+        return std::to_string(t->queue_position() + 1);
     case COLUMN_SIZE:
         TCHAR size[128];
         StrFormatByteSize64(t->size(), size, ARRAYSIZE(size));
-        return size;
+        return to_string(size);
     case COLUMN_STATUS:
     {
         switch (t->state())
@@ -601,9 +604,9 @@ std::wstring main_window::on_list_display(const std::pair<int, int> &p)
             StringCchPrintf(
                 err,
                 ARRAYSIZE(err),
-                TR("state_error"),
+                to_wstring(TR("state_error")).c_str(),
                 to_wstring(t->error_message()).c_str());
-            return err;
+            return to_string(err);
         case core::torrent_state::state_t::unknown:
             return TR("state_unknown");
         case core::torrent_state::state_t::uploading:
@@ -620,7 +623,7 @@ std::wstring main_window::on_list_display(const std::pair<int, int> &p)
             return TR("state_uploading_stalled");
         }
 
-        return L"<unknown state>";
+        return "<unknown state>";
     }
     case COLUMN_ETA:
     {
@@ -628,7 +631,7 @@ std::wstring main_window::on_list_display(const std::pair<int, int> &p)
 
         if (next.count() < 0)
         {
-            return L"-";
+            return "-";
         }
 
         std::chrono::hours hours_left = std::chrono::duration_cast<std::chrono::hours>(next);
@@ -643,7 +646,7 @@ std::wstring main_window::on_list_display(const std::pair<int, int> &p)
             hours_left.count(),
             min_left.count(),
             sec_left.count());
-        return t;
+        return to_string(t);
     }
     case COLUMN_DL:
     case COLUMN_UL:
@@ -652,29 +655,29 @@ std::wstring main_window::on_list_display(const std::pair<int, int> &p)
 
         if (rate < 1024)
         {
-            return L"-";
+            return "-";
         }
 
         TCHAR speed[128];
         StrFormatByteSize64(rate, speed, ARRAYSIZE(speed));
         StringCchPrintf(speed, ARRAYSIZE(speed), L"%s/s", speed);
-        return speed;
+        return to_string(speed);
     }
     case COLUMN_SEEDS:
     {
         TCHAR seeds[1024];
         StringCchPrintf(seeds, ARRAYSIZE(seeds), L"%d (%d)", t->connected_seeds(), t->total_seeds());
-        return seeds;
+        return to_string(seeds);
     }
     case COLUMN_PEERS:
     {
         TCHAR peers[1024];
         StringCchPrintf(peers, ARRAYSIZE(peers), L"%d (%d)", t->connected_nonseeds(), t->total_nonseeds());
-        return peers;
+        return to_string(peers);
     }
     }
 
-    return L"<unknown>";
+    return "<unknown>";
 }
 
 float main_window::on_list_progress(const std::pair<int, int> &p)

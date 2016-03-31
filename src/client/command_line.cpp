@@ -1,8 +1,11 @@
 #include <picotorrent/client/command_line.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
+
 #include <windows.h>
 #include <shellapi.h>
 
+using picotorrent::client::to_string;
 using picotorrent::client::command_line;
 
 command_line command_line::parse(const std::wstring &cmd)
@@ -24,11 +27,11 @@ command_line command_line::parse(const std::wstring &cmd)
 
         if (arg.substr(0, 10) == L"magnet:?xt")
         {
-            cl.magnets_.push_back(arg);
+            cl.magnets_.push_back(to_string(arg));
         }
         else
         {
-            cl.files_.push_back(arg);
+            cl.files_.push_back(to_string(arg));
         }
 
         if (arg == L"--restart")
@@ -41,12 +44,12 @@ command_line command_line::parse(const std::wstring &cmd)
     return cl;
 }
 
-std::vector<picotorrent::core::filesystem::path> command_line::files() const
+std::vector<std::string> command_line::files() const
 {
     return files_;
 }
 
-std::vector<std::wstring> command_line::magnet_links() const
+std::vector<std::string> command_line::magnet_links() const
 {
     return magnets_;
 }

@@ -3,7 +3,6 @@
 #include <functional>
 #include <memory>
 #include <ostream>
-#include <picotorrent/common.hpp>
 #include <picotorrent/core/logging/log_record.hpp>
 #include <string>
 #include <windows.h>
@@ -30,16 +29,17 @@ namespace logging
     class log
     {
     public:
-        DLL_EXPORT log();
-        DLL_EXPORT ~log();
+        log();
+        ~log();
 
-        DLL_EXPORT static log& instance();
+        static log& instance();
 
-        DLL_EXPORT void init();
-        DLL_EXPORT log_record open_record(log_level level, const char* functionName);
-        DLL_EXPORT void set_unhandled_exception_callback(const std::function<void(const std::string&)> &callback);
+        log_record open_record(log_level level, const char* functionName);
+        void set_unhandled_exception_callback(const std::function<void(const std::string&)> &callback);
 
     private:
+        void init();
+
         static LONG WINAPI on_unhandled_exception(PEXCEPTION_POINTERS exceptionInfo);
 
         std::function<void(const std::string&)> unhandled_exception_callback_;

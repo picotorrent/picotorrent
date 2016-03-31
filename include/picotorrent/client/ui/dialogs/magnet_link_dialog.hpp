@@ -18,9 +18,8 @@ namespace dialogs
     public:
         magnet_link_dialog();
 
-        void close();
         void disable_actions();
-        std::vector<std::wstring> get_links();
+        std::vector<std::string> get_links();
         core::signals::signal_connector<void, void>& on_add_links();
         void start_progress();
         void update_status_text(int current, int total);

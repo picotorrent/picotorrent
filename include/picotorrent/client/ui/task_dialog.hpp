@@ -19,15 +19,15 @@ namespace ui
         task_dialog();
         ~task_dialog();
 
-        void add_button(int id, const std::wstring &text, const std::function<bool()> &callback);
+        void add_button(int id, const std::string &text, const std::function<bool()> &callback);
         bool is_verification_checked();
         void set_common_buttons(DWORD buttons);
-        void set_content(const std::wstring &text);
+        void set_content(const std::string &text);
         void set_main_icon(PCWSTR icon);
-        void set_main_instruction(const std::wstring& text);
+        void set_main_instruction(const std::string& text);
         void set_parent(HWND parent);
-        void set_title(const std::wstring &title);
-        void set_verification_text(const std::wstring &text);
+        void set_title(const std::string &title);
+        void set_verification_text(const std::string &text);
         int show();
 
     private:

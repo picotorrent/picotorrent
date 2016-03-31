@@ -54,7 +54,7 @@ bool application_close_controller::prompt_for_exit()
     dlg.set_main_icon(TD_INFORMATION_ICON);
     dlg.set_main_instruction(TR("confirm_close"));
     dlg.set_parent(wnd_->handle());
-    dlg.set_title(L"PicoTorrent");
+    dlg.set_title("PicoTorrent");
     dlg.set_verification_text(TR("remember_choice"));
 
     configuration &cfg = configuration::instance();

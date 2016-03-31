@@ -1,9 +1,9 @@
 #include <picotorrent/client/ui/property_sheets/details/trackers_page.hpp>
 
-#include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/tracker.hpp>
 #include <picotorrent/core/tracker_status.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/resources.hpp>
@@ -23,7 +23,6 @@
 #define LIST_COLUMN_PEERS  4
 #define LIST_COLUMN_SCRAPE 5
 
-using picotorrent::core::to_wstring;
 using picotorrent::core::torrent;
 using picotorrent::core::tracker;
 using picotorrent::core::tracker_status;
@@ -108,26 +107,26 @@ void trackers_page::on_init_dialog()
     list_->on_item_context_menu().connect(std::bind(&trackers_page::on_trackers_context_menu, this, std::placeholders::_1));
 }
 
-std::wstring trackers_page::on_list_display(const std::pair<int, int> &p)
+std::string trackers_page::on_list_display(const std::pair<int, int> &p)
 {
     const tracker_state &t = trackers_[p.second];
 
     switch (p.first)
     {
     case LIST_COLUMN_URL:
-        return to_wstring(t.tracker.url());
+        return t.tracker.url();
     case LIST_COLUMN_STATUS:
         switch (t.tracker.status())
         {
         case tracker::not_working:
-            return L"Not working";
+            return "Not working";
         case tracker::updating:
-            return L"Updating";
+            return "Updating";
         case tracker::working:
-            return L"Working";
+            return "Working";
         case tracker::unknown:
         default:
-            return L"Unknown";
+            return "Unknown";
         }
         break;
     case LIST_COLUMN_UPDATE:
@@ -136,7 +135,7 @@ std::wstring trackers_page::on_list_display(const std::pair<int, int> &p)
 
         if (next.count() < 0)
         {
-            return L"-";
+            return "-";
         }
 
         std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(next);
@@ -145,7 +144,7 @@ std::wstring trackers_page::on_list_display(const std::pair<int, int> &p)
         // Return unknown if more than 60 minutes
         if (min_left.count() >= 60)
         {
-            return L"-";
+            return "-";
         }
 
         TCHAR t[100];
@@ -155,15 +154,15 @@ std::wstring trackers_page::on_list_display(const std::pair<int, int> &p)
             L"%dm %ds",
             min_left.count(),
             sec_left.count());
-        return t;
+        return to_string(t);
     }
     case LIST_COLUMN_PEERS:
         if (t.status.num_peers < 0)
         {
-            return L"-";
+            return "-";
         }
 
-        return std::to_wstring(t.status.num_peers);
+        return std::to_string(t.status.num_peers);
     case LIST_COLUMN_SCRAPE:
     {
         int complete = t.status.scrape_complete;
@@ -176,10 +175,10 @@ std::wstring trackers_page::on_list_display(const std::pair<int, int> &p)
             L"%s/%s",
             complete < 0 ? L"-" : std::to_wstring(complete).c_str(),
             incomplete < 0 ? L"-" : std::to_wstring(incomplete).c_str());
-        return t;
+        return to_string(t);
     }
     default:
-        return L"<unknown column>";
+        return "<unknown column>";
     }
 }
 
@@ -190,12 +189,12 @@ void trackers_page::on_trackers_context_menu(const std::vector<int> &items)
     if (items.size() > 0)
     {
         // Remove
-        AppendMenu(menu, MF_STRING, CTX_REMOVE, TR("remove_tracker_s"));
+        AppendMenu(menu, MF_STRING, CTX_REMOVE, to_wstring(TR("remove_tracker_s")).c_str());
     }
     else
     {
         // Add
-        AppendMenu(menu, MF_STRING, CTX_ADD, TR("add_tracker"));
+        AppendMenu(menu, MF_STRING, CTX_ADD, to_wstring(TR("add_tracker")).c_str());
     }
 
     POINT pt;

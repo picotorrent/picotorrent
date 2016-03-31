@@ -2,6 +2,7 @@
 
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/client/configuration.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/client/ui/property_sheets/property_sheet_page.hpp>
@@ -73,7 +74,7 @@ void view_preferences_controller::execute()
     header.hwndParent = wnd_->handle();
     header.hInstance = GetModuleHandle(NULL);
 
-    std::wstring caption = TR("preferences");
+    std::wstring caption = to_wstring(TR("preferences"));
     header.pszCaption = caption.c_str();
 
     header.nPages = ARRAYSIZE(p);
@@ -158,7 +159,7 @@ void view_preferences_controller::on_connection_init()
 
     conn_page_->set_proxy_type(cfg.proxy_type());
     conn_page_->set_proxy_host(cfg.proxy_host());
-    if (cfg.proxy_port() > 0) { conn_page_->set_proxy_port(std::to_wstring(cfg.proxy_port())); }
+    if (cfg.proxy_port() > 0) { conn_page_->set_proxy_port(std::to_string(cfg.proxy_port())); }
     conn_page_->set_proxy_username(cfg.proxy_username());
     conn_page_->set_proxy_password(cfg.proxy_password());
     conn_page_->set_proxy_force_checked(cfg.proxy_force());
@@ -171,7 +172,7 @@ void view_preferences_controller::on_connection_init()
 
 bool view_preferences_controller::on_connection_validate()
 {
-    std::vector<std::wstring> ifaces = conn_page_->get_listen_interfaces();
+    std::vector<std::string> ifaces = conn_page_->get_listen_interfaces();
 
     if (ifaces.empty())
     {
@@ -415,7 +416,7 @@ bool view_preferences_controller::should_restart()
     dlg.set_main_icon(TD_INFORMATION_ICON);
     dlg.set_main_instruction(TR("prompt_restart_title"));
     dlg.set_parent(gen_page_->handle());
-    dlg.set_title(L"PicoTorrent");
+    dlg.set_title("PicoTorrent");
 
     return dlg.show() == IDOK;
 }

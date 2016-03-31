@@ -2,7 +2,6 @@
 
 #include <picotorrent/core/logging/log.hpp>
 #include <picotorrent/core/session.hpp>
-#include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/client/controllers/add_torrent_controller.hpp>
 #include <picotorrent/client/ui/dialogs/magnet_link_dialog.hpp>
@@ -12,7 +11,6 @@
 
 using picotorrent::client::controllers::add_magnet_link_controller;
 using picotorrent::core::session;
-using picotorrent::core::to_string;
 using picotorrent::core::torrent_info;
 using picotorrent::client::ui::dialogs::magnet_link_dialog;
 using picotorrent::client::ui::main_window;
@@ -47,17 +45,17 @@ void add_magnet_link_controller::on_add_links()
     sess_->on_metadata_received().connect(
         std::bind(&add_magnet_link_controller::on_metadata, this, std::placeholders::_1));
 
-    std::vector<std::wstring> links = magnet_dlg_->get_links();
-    std::wstring magnet_prefix = L"magnet:?xt=urn:btih:";
+    std::vector<std::string> links = magnet_dlg_->get_links();
+    std::string magnet_prefix = "magnet:?xt=urn:btih:";
 
-    for (std::wstring link : links)
+    for (std::string link : links)
     {
-        link.erase(link.find_last_not_of(L"\r") + 1);
+        link.erase(link.find_last_not_of("\r") + 1);
         if (link.empty()) { continue; }
 
         // If only info hash, append magnet link template
-        if ((link.size() == 40 && !std::regex_match(link, std::wregex(L"[^0-9A-Fa-f]")))
-            || (link.size() == 32 && !std::regex_match(link, std::wregex(L""))))
+        if ((link.size() == 40 && !std::regex_match(link, std::regex("[^0-9A-Fa-f]")))
+            || (link.size() == 32 && !std::regex_match(link, std::regex(""))))
         {
             link = magnet_prefix + link;
         }
@@ -68,7 +66,7 @@ void add_magnet_link_controller::on_add_links()
             continue;
         }
 
-        sess_->get_metadata(to_string(link));
+        sess_->get_metadata(link);
         waiting_for_ += 1;
     }
 

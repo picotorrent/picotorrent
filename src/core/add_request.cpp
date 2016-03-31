@@ -1,6 +1,5 @@
 #include <picotorrent/core/add_request.hpp>
 
-#include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/torrent_info.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
@@ -12,7 +11,6 @@
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace lt = libtorrent;
-using picotorrent::core::to_wstring;
 using picotorrent::core::add_request;
 using picotorrent::core::torrent_info;
 
@@ -38,14 +36,14 @@ int add_request::file_priority(int file_index)
     return params_->file_priorities[file_index];
 }
 
-std::wstring add_request::name()
+std::string add_request::name()
 {
-    return to_wstring(params_->name);
+    return params_->name;
 }
 
-std::wstring add_request::save_path()
+std::string add_request::save_path()
 {
-    return to_wstring(params_->save_path);
+    return params_->save_path;
 }
 
 std::shared_ptr<picotorrent::core::torrent_info> add_request::torrent_info()
@@ -58,9 +56,9 @@ std::shared_ptr<picotorrent::core::torrent_info> add_request::torrent_info()
     return std::make_shared<picotorrent::core::torrent_info>(*params_->ti);
 }
 
-std::wstring add_request::url()
+std::string add_request::url()
 {
-    return to_wstring(params_->url);
+    return params_->url;
 }
 
 void add_request::set_file_priority(int file_index, int priority)
@@ -73,9 +71,9 @@ void add_request::set_file_priority(int file_index, int priority)
     params_->file_priorities[file_index] = priority;
 }
 
-void add_request::set_save_path(const std::wstring &path)
+void add_request::set_save_path(const std::string &path)
 {
-    params_->save_path = to_string(path);
+    params_->save_path = path;
 }
 
 void add_request::set_torrent_info(const std::shared_ptr<picotorrent::core::torrent_info> &file)
@@ -83,18 +81,15 @@ void add_request::set_torrent_info(const std::shared_ptr<picotorrent::core::torr
     params_->ti = boost::make_shared<lt::torrent_info>(*file->info_);
 }
 
-void add_request::set_url(const std::wstring &url)
+void add_request::set_url(const std::string &url)
 {
-    if (url.substr(0, 10) == L"magnet:?xt")
+    if (url.substr(0, 10) == "magnet:?xt")
     {
         lt::error_code ec;
-        lt::parse_magnet_uri(
-            to_string(url),
-            *params_,
-            ec);
+        lt::parse_magnet_uri(url, *params_, ec);
     }
     else
     {
-        params_->url = to_string(url);
+        params_->url = url;
     }
 }

@@ -2,18 +2,16 @@
 
 #include <picojson.hpp>
 #include <picotorrent/client/environment.hpp>
-#include <picotorrent/core/string_operations.hpp>
-#include <picotorrent/core/filesystem/directory.hpp>
-#include <picotorrent/core/filesystem/file.hpp>
-#include <picotorrent/core/filesystem/path.hpp>
+#include <picotorrent/core/pal.hpp>
+
+#include <fstream>
+#include <sstream>
 
 #include <windows.h>
 
-namespace fs = picotorrent::core::filesystem;
 namespace pj = picojson;
 using picotorrent::client::configuration;
-using picotorrent::core::to_string;
-using picotorrent::core::to_wstring;
+using picotorrent::core::pal;
 
 configuration::configuration()
 {
@@ -61,13 +59,13 @@ void configuration::set_current_language_id(int langId)
     set("language_id", langId);
 }
 
-std::wstring configuration::default_save_path()
+std::string configuration::default_save_path()
 {
-    fs::path defaultPath = environment::get_special_folder(special_folder::user_downloads);
-    return get_or_default<std::wstring>("default_save_path", defaultPath.to_string());
+    std::string default_path = environment::get_special_folder(special_folder::user_downloads);
+    return get_or_default("default_save_path", default_path);
 }
 
-void configuration::set_default_save_path(const std::wstring &path)
+void configuration::set_default_save_path(const std::string &path)
 {
     set("default_save_path", path);
 }
@@ -82,21 +80,21 @@ void configuration::set_download_rate_limit(int dl_rate)
     set("global_dl_rate_limit", dl_rate);
 }
 
-std::wstring configuration::ignored_update()
+std::string configuration::ignored_update()
 {
-    return get_or_default<std::wstring>("ignored_update", L"");
+    return get_or_default<std::string>("ignored_update", "");
 }
 
-void configuration::set_ignored_update(const std::wstring &version)
+void configuration::set_ignored_update(const std::string &version)
 {
     set("ignored_update", version);
 }
 
-std::vector<std::wstring> configuration::listen_interfaces()
+std::vector<std::string> configuration::listen_interfaces()
 {
-    std::vector<std::wstring> defaultInterfaces = {
-        L"0.0.0.0:6881",
-        L"[::]:6881"
+    std::vector<std::string> defaultInterfaces = {
+        "0.0.0.0:6881",
+        "[::]:6881"
     };
 
     if (value_->find("listen_interfaces") == value_->end())
@@ -105,24 +103,23 @@ std::vector<std::wstring> configuration::listen_interfaces()
     }
 
     pj::array ifaces = value_->at("listen_interfaces").get<pj::array>();
-    std::vector<std::wstring> result;
+    std::vector<std::string> result;
 
     for (const pj::value &v : ifaces)
     {
-        std::wstring iv = to_wstring(v.get<std::string>());
-        result.push_back(iv);
+        result.push_back(v.get<std::string>());
     }
 
     return result;
 }
 
-void configuration::set_listen_interfaces(const std::vector<std::wstring> &interfaces)
+void configuration::set_listen_interfaces(const std::vector<std::string> &interfaces)
 {
     pj::array ifaces;
 
-    for (const std::wstring &v : interfaces)
+    for (const std::string &v : interfaces)
     {
-        ifaces.push_back(pj::value(to_string(v)));
+        ifaces.push_back(pj::value(v));
     }
 
     (*value_)["listen_interfaces"] = pj::value(ifaces);
@@ -158,12 +155,12 @@ void configuration::set_proxy_type(configuration::proxy_type_t type)
     set("proxy_type", (int)type);
 }
 
-std::wstring configuration::proxy_host()
+std::string configuration::proxy_host()
 {
-    return get_or_default<std::wstring>("proxy_host", L"");
+    return get_or_default<std::string>("proxy_host", "");
 }
 
-void configuration::set_proxy_host(const std::wstring &host)
+void configuration::set_proxy_host(const std::string &host)
 {
     set("proxy_host", host);
 }
@@ -178,22 +175,22 @@ void configuration::set_proxy_port(int port)
     set("proxy_port", port);
 }
 
-std::wstring configuration::proxy_username()
+std::string configuration::proxy_username()
 {
-    return get_or_default<std::wstring>("proxy_username", L"");
+    return get_or_default<std::string>("proxy_username", "");
 }
 
-void configuration::set_proxy_username(const std::wstring &username)
+void configuration::set_proxy_username(const std::string &username)
 {
     set("proxy_username", username);
 }
 
-std::wstring configuration::proxy_password()
+std::string configuration::proxy_password()
 {
-    return get_or_default<std::wstring>("proxy_password", L"");
+    return get_or_default<std::string>("proxy_password", "");
 }
 
-void configuration::set_proxy_password(const std::wstring &password)
+void configuration::set_proxy_password(const std::string &password)
 {
     set("proxy_password", password);
 }
@@ -253,9 +250,9 @@ int configuration::stop_tracker_timeout()
     return get_or_default("stop_tracker_timeout", 1);
 }
 
-std::wstring configuration::update_url()
+std::string configuration::update_url()
 {
-    return get_or_default<std::wstring>("update_url", L"https://api.github.com/repos/picotorrent/picotorrent/releases/latest");
+    return get_or_default<std::string>("update_url", "https://api.github.com/repos/picotorrent/picotorrent/releases/latest");
 }
 
 int configuration::upload_rate_limit()
@@ -311,49 +308,26 @@ int configuration::get_or_default<int>(const char *name, int defaultValue)
 }
 
 template<>
-std::wstring configuration::get_or_default<std::wstring>(const char *name, std::wstring defaultValue)
-{
-    auto &item = value_->find(name);
-
-    if (item == value_->end())
-    {
-        return defaultValue;
-    }
-
-    return to_wstring(item->second.get<std::string>());
-}
-
-template<>
 void configuration::set<int>(const char *name, int value)
 {
     (*value_)[name] = pj::value((int64_t)value);
 }
 
-template<>
-void configuration::set<std::wstring>(const char *name, std::wstring value)
-{
-    std::string s = to_string(value);
-    if (!s.empty() && s[s.size() - 1] == '\0') { s = s.substr(0, s.size() - 1); }
-
-    (*value_)[name] = pj::value(s);
-}
-
 void configuration::load()
 {
-    fs::path data = environment::get_data_path();
-    fs::file cfg = data.combine(L"PicoTorrent.json");
+    std::string data_path = environment::get_data_path();
+    std::string config_file = pal::combine_paths(data_path, "PicoTorrent.json");
 
-    if (!cfg.path().exists())
+    if (!pal::file_exists(config_file))
     {
         value_ = std::make_unique<pj::object>();
         return;
     }
 
-    std::vector<char> buf;
-    cfg.read_all(buf);
+    std::ifstream input(config_file, std::ios::binary);
 
     pj::value v;
-    pj::parse(v, buf.begin(), buf.end(), nullptr);
+    pj::parse(v, input);
 
     value_ = std::make_unique<pj::object>(v.get<pj::object>());
 }
@@ -362,17 +336,18 @@ void configuration::save()
 {
     pj::value v(*value_);
     std::string json = v.serialize(true);
-    std::vector<char> buf(json.begin(), json.end());
 
-    fs::directory data = environment::get_data_path();
+    std::string data_path = environment::get_data_path();
 
-    if (!data.path().exists())
+    if (!pal::directory_exists(data_path))
     {
-        data.create();
+        pal::create_directories(data_path);
     }
 
-    fs::file cfg = data.path().combine(L"PicoTorrent.json");
-    cfg.write_all(buf);
+    std::string config_file = pal::combine_paths(data_path, "PicoTorrent.json");
+
+    std::ofstream output(config_file, std::ios::binary);
+    output.write(json.c_str(), json.size());
 }
 
 std::shared_ptr<configuration::placement> configuration::window_placement(const std::string &name)

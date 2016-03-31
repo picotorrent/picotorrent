@@ -7,13 +7,6 @@
 
 namespace picotorrent
 {
-namespace core
-{
-namespace filesystem
-{
-    class path;
-}
-}
 namespace client
 {
 namespace ui
@@ -26,19 +19,19 @@ namespace ui
         open_file_dialog();
         ~open_file_dialog();
 
-        std::vector<core::filesystem::path> get_paths();
+        std::vector<std::string> get_paths();
         void show(HWND hParent);
         DWORD options();
 
-        void set_folder(const core::filesystem::path &path);
+        void set_folder(const std::string &path);
         void set_guid(const GUID &guid);
-        void set_ok_button_label(LPCTSTR label);
+        void set_ok_button_label(const std::string &label);
         void set_options(DWORD options);
-        void set_title(LPCTSTR title);
+        void set_title(const std::string &title);
 
     protected:
         virtual bool on_file_ok() { return true; }
-        void notify_error(const std::wstring &mainInstruction, const std::wstring &text);
+        void notify_error(const std::string &mainInstruction, const std::string &text);
 
     private:
         IFileOpenDialog *dlg_;

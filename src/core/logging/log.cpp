@@ -1,8 +1,6 @@
 #include <picotorrent/core/logging/log.hpp>
 
-#include <picotorrent/core/filesystem/directory.hpp>
-#include <picotorrent/core/filesystem/file.hpp>
-#include <picotorrent/core/filesystem/path.hpp>
+#include <picotorrent/core/pal.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
 #include <commctrl.h>
@@ -12,7 +10,6 @@
 #include <windows.h>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
-namespace fs = picotorrent::core::filesystem;
 using picotorrent::core::logging::log;
 
 log::log()
@@ -38,9 +35,6 @@ void log::init()
     is_debug = false;
 #endif
 
-    SetUnhandledExceptionFilter(
-        &log::on_unhandled_exception);
-
     // Only do the following if we have a debug build
     // or passed --enable-logging on the command line
     std::wstring cmd = GetCommandLine();
@@ -50,8 +44,7 @@ void log::init()
         return;
     }
     out_ = std::make_unique<std::ostringstream>();
-    /*
-    TODO
+
     DWORD pid = GetCurrentProcessId();
 
     std::string data_path = pal::
@@ -66,8 +59,9 @@ void log::init()
     fs::path logFile = logs.path().combine(L"PicoTorrent." + std::to_wstring(pid) + L".log");
     out_ = std::make_unique<std::ofstream>(logFile.to_string());
 
+    /*
     SetUnhandledExceptionFilter(
-        &log::on_unhandled_exception);
+    &log::on_unhandled_exception);
     */
 }
 

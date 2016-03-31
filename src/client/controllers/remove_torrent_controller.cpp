@@ -46,7 +46,7 @@ void remove_torrent_controller::execute(bool remove_files)
         dlg.set_main_icon(TD_WARNING_ICON);
         dlg.set_main_instruction(TR("confirm_remove"));
         dlg.set_parent(wnd_->handle());
-        dlg.set_title(L"PicoTorrent");
+        dlg.set_title("PicoTorrent");
         dlg.set_verification_text(TR("do_not_ask_again"));
 
         switch (dlg.show())

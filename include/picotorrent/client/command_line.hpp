@@ -1,6 +1,5 @@
 #pragma once
 
-#include <picotorrent/core/filesystem/path.hpp>
 #include <string>
 #include <vector>
 
@@ -13,14 +12,14 @@ namespace client
     public:
         static command_line parse(const std::wstring &cmd);
 
-        std::vector<core::filesystem::path> files() const;
-        std::vector<std::wstring> magnet_links() const;
+        std::vector<std::string> files() const;
+        std::vector<std::string> magnet_links() const;
         bool restart() const;
         int prev_process_id() const;
 
     private:
-        std::vector<std::wstring> magnets_;
-        std::vector<core::filesystem::path> files_;
+        std::vector<std::string> magnets_;
+        std::vector<std::string> files_;
         bool restart_;
         int prev_process_id_;
     };

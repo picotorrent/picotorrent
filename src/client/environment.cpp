@@ -1,27 +1,30 @@
 #include <picotorrent/client/environment.hpp>
 
-#include <picotorrent/core/filesystem/path.hpp>
+#include <picotorrent/client/string_operations.hpp>
+#include <picotorrent/core/pal.hpp>
+
 #include <shlobj.h>
 #include <shlwapi.h>
 
-namespace fs = picotorrent::core::filesystem;
 using picotorrent::client::environment;
+using picotorrent::core::pal;
 
-fs::path environment::get_data_path()
+std::string environment::get_data_path()
 {
     if (is_installed())
     {
-        return get_special_folder(client::local_app_data).combine(L"PicoTorrent");
+        std::string app_data = get_special_folder(client::local_app_data);
+        return pal::combine_paths(app_data, "PicoTorrent");
     }
 
     TCHAR buf[MAX_PATH];
     GetModuleFileName(NULL, buf, ARRAYSIZE(buf));
     PathRemoveFileSpec(buf);
 
-    return buf;
+    return to_string(buf);
 }
 
-fs::path environment::get_special_folder(picotorrent::client::special_folder folder)
+std::string environment::get_special_folder(picotorrent::client::special_folder folder)
 {
     PWSTR buf;
     GUID g;
@@ -42,17 +45,17 @@ fs::path environment::get_special_folder(picotorrent::client::special_folder fol
         NULL,
         &buf);
 
-    fs::path p(buf);
+    std::string p = to_string(buf);
     CoTaskMemFree(buf);
 
     return p;
 }
 
-fs::path environment::get_temporary_directory()
+std::string environment::get_temporary_directory()
 {
     TCHAR p[MAX_PATH];
     GetTempPath(ARRAYSIZE(p), p);
-    return p;
+    return to_string(p);
 }
 
 bool environment::is_installed()
