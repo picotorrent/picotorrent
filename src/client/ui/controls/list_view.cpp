@@ -387,7 +387,7 @@ LRESULT list_view::subclass_proc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 
                 TCHAR progress_str[100];
                 StringCchPrintf(progress_str, ARRAYSIZE(progress_str), TEXT("%.2f%%"), val * 100);
-                DrawText(hDc, progress_str, -1, &text, DT_CENTER | DT_VCENTER);
+                DrawText(hDc, progress_str, -1, &text, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 
                 return CDRF_SKIPDEFAULT;
             }
