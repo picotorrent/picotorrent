@@ -1,6 +1,5 @@
 #include <picotorrent/core/torrent_info.hpp>
 
-#include <picotorrent/core/logging/log.hpp>
 #include <picotorrent/core/pal.hpp>
 #include <fstream>
 

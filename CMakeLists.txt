@@ -34,10 +34,6 @@ set(PICOTORRENTCORE_SOURCES
     # Misc
     src/core/version_info
 
-    # Logging components
-    src/core/logging/log
-    src/core/logging/log_record
-
     # BitTorrent components
     src/core/add_request
     src/core/is_valid_torrent_file
@@ -76,6 +72,8 @@ set(PICOTORRENT_SOURCES
     src/client/controllers/unhandled_exception_controller
     src/client/controllers/view_preferences_controller
     src/client/i18n/translator
+    src/client/logging/log
+    src/client/logging/log_record
     src/client/net/http_client
     src/client/net/http_response
     src/client/net/uri

@@ -1,5 +1,6 @@
-#include <picotorrent/core/logging/log.hpp>
+#include <picotorrent/client/logging/log.hpp>
 
+#include <picotorrent/client/environment.hpp>
 #include <picotorrent/core/pal.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
@@ -10,7 +11,9 @@
 #include <windows.h>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
-using picotorrent::core::logging::log;
+using picotorrent::client::environment;
+using picotorrent::client::logging::log;
+using picotorrent::core::pal;
 
 log::log()
 {
@@ -21,7 +24,7 @@ log::~log()
 {
 }
 
-picotorrent::core::logging::log& log::instance()
+picotorrent::client::logging::log& log::instance()
 {
     static log inst;
     return inst;
@@ -47,25 +50,23 @@ void log::init()
 
     DWORD pid = GetCurrentProcessId();
 
-    std::string data_path = pal::
-    fs::path data = pal::
-    fs::directory logs = data.combine(L"Logs");
+    std::string data_path = environment::get_data_path();
+    std::string log_path = pal::combine_paths(data_path, "Logs");
 
-    if (!logs.path().exists())
+    if (!pal::directory_exists(log_path))
     {
-        logs.create();
+        pal::create_directories(log_path);
     }
 
-    fs::path logFile = logs.path().combine(L"PicoTorrent." + std::to_wstring(pid) + L".log");
-    out_ = std::make_unique<std::ofstream>(logFile.to_string());
+    std::stringstream ss;
+    ss << "PicoTorrent." << pid << ".log";
+    std::string log_file = pal::combine_paths(log_path, ss.str());
+    out_ = std::make_unique<std::ofstream>(log_file);
 
-    /*
-    SetUnhandledExceptionFilter(
-    &log::on_unhandled_exception);
-    */
+    SetUnhandledExceptionFilter(&log::on_unhandled_exception);
 }
 
-picotorrent::core::logging::log_record log::open_record(picotorrent::core::logging::log_level level, const char* functionName)
+picotorrent::client::logging::log_record log::open_record(picotorrent::client::logging::log_level level, const char* functionName)
 {
     SYSTEMTIME st;
     GetLocalTime(&st);
@@ -81,7 +82,7 @@ picotorrent::core::logging::log_record log::open_record(picotorrent::core::loggi
         << functionName
         << " - "
         ;
-    return picotorrent::core::logging::log_record(*out_);
+    return picotorrent::client::logging::log_record(*out_);
 }
 
 void log::set_unhandled_exception_callback(const std::function<void(const std::string&)> &callback)
@@ -89,7 +90,7 @@ void log::set_unhandled_exception_callback(const std::function<void(const std::s
     unhandled_exception_callback_ = callback;
 }
 
-std::ostream& picotorrent::core::logging::operator<<(std::ostream &stream, const picotorrent::core::logging::log_level level)
+std::ostream& picotorrent::client::logging::operator<<(std::ostream &stream, const picotorrent::client::logging::log_level level)
 {
     const char* levels[] =
     {

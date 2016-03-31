@@ -4,6 +4,7 @@
 #include <picotorrent/client/configuration.hpp>
 #include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
+#include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/client/ui/property_sheets/property_sheet_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/advanced_page.hpp>
@@ -13,7 +14,6 @@
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
-#include <picotorrent/core/logging/log.hpp>
 #include <vector>
 
 #include <iphlpapi.h>

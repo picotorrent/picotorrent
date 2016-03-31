@@ -13,11 +13,13 @@
 #include <picotorrent/client/controllers/unhandled_exception_controller.hpp>
 #include <picotorrent/client/controllers/view_preferences_controller.hpp>
 #include <picotorrent/client/configuration.hpp>
-#include <picotorrent/core/session.hpp>
-#include <picotorrent/core/session_configuration.hpp>
-#include <picotorrent/core/logging/log.hpp>
+#include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+
+#include <picotorrent/core/session.hpp>
+#include <picotorrent/core/session_configuration.hpp>
+
 #include <windows.h>
 #include <commctrl.h>
 #include <strsafe.h>
@@ -30,7 +32,7 @@ namespace ui = picotorrent::client::ui;
 using picotorrent::client::application;
 using picotorrent::client::command_line;
 using picotorrent::client::configuration;
-using picotorrent::core::logging::log;
+using picotorrent::client::logging::log;
 
 application::application()
     : mtx_(NULL),

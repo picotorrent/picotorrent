@@ -1,7 +1,7 @@
 #include <picotorrent/client/ui/open_file_dialog.hpp>
 
-#include <picotorrent/core/logging/log.hpp>
 #include <picotorrent/client/string_operations.hpp>
+#include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/file_dialog_callback.hpp>
 
 using picotorrent::client::ui::file_dialog_callback;

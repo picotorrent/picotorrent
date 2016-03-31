@@ -3,16 +3,16 @@
 #include <functional>
 #include <memory>
 #include <ostream>
-#include <picotorrent/core/logging/log_record.hpp>
+#include <picotorrent/client/logging/log_record.hpp>
 #include <string>
 #include <windows.h>
 
 #define LOG(level) \
-    ::picotorrent::core::logging::log::instance().open_record(picotorrent::core::logging::log_level::level, __FUNCTION__).stream()
+    ::picotorrent::client::logging::log::instance().open_record(picotorrent::client::logging::log_level::level, __FUNCTION__).stream()
 
 namespace picotorrent
 {
-namespace core
+namespace client
 {
 namespace logging
 {

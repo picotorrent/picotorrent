@@ -1,9 +1,9 @@
 #include <picotorrent/client/controllers/add_magnet_link_controller.hpp>
 
-#include <picotorrent/core/logging/log.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/client/controllers/add_torrent_controller.hpp>
+#include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/dialogs/magnet_link_dialog.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 

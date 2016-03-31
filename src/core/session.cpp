@@ -27,7 +27,7 @@
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 #define LOG(level) \
-    session_log_item(config_->session_log_stream).stream()
+    session_log_item(*config_->session_log_stream).stream()
 
 namespace lt = libtorrent;
 using picotorrent::core::signals::signal;

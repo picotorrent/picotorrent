@@ -1,7 +1,7 @@
 #include <picotorrent/client/ui/notify_icon.hpp>
 
-#include <picotorrent/core/logging/log.hpp>
 #include <picotorrent/client/string_operations.hpp>
+#include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 
 #include <windows.h>
