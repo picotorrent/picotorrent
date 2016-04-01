@@ -38,7 +38,7 @@ std::vector<std::pair<std::string, int>> connection_page::get_listen_interfaces(
     while ((pos = l.find('\n', prev)) != std::string::npos)
     {
         std::string net_addr = trim(l.substr(prev, pos - prev));
-        size_t idx = net_addr.find(":");
+        size_t idx = net_addr.find_last_of(":");
 
         if (idx == std::string::npos)
         {
@@ -54,7 +54,7 @@ std::vector<std::pair<std::string, int>> connection_page::get_listen_interfaces(
 
     // To get the last substring (or only, if delimiter is not found)
     std::string last_net_addr = trim(l.substr(prev, pos - prev));
-    size_t lidx = last_net_addr.find(":");
+    size_t lidx = last_net_addr.find_last_of(":");
 
     if (lidx != std::string::npos)
     {

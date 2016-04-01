@@ -221,7 +221,7 @@ void session::on_load_torrent(const lt::sha1_hash &hash, std::vector<char> &buf,
     std::streampos size = input.tellg();
     input.seekg(0, std::ios::beg);
 
-    buf.reserve(size);
+    buf.reserve((size_t)size);
     buf.insert(
         buf.begin(),
         std::istream_iterator<char>(input),
