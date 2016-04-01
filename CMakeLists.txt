@@ -59,6 +59,13 @@ set(PICOTORRENTCORE_SOURCES
     src/core/tracker
 )
 
+set(PICOTORRENTSERVER_SOURCES
+    src/server/application
+    src/server/net/websocket_server
+    src/server/net/messages/torrent_updated_message
+    src/server/main
+)
+
 set(PICOTORRENT_SOURCES
     src/client/application
     src/client/command_line
@@ -125,6 +132,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT
 
 include_directories(
     include/
+    libs/websocketpp
     tools/PicoTorrent.Libs/include
 )
 
@@ -133,6 +141,7 @@ link_directories(
 )
 
 add_definitions(
+    -D_SCL_SECURE_NO_WARNINGS
     -D_UNICODE
     -D_WIN32
     -D_WIN32_WINNT=0x0600
@@ -160,6 +169,11 @@ add_executable(
     # The resources belong to the application itself
     # to avoid linker issues.
     src/client/pico.rc
+)
+
+add_executable(
+    PicoTorrentServer
+    ${PICOTORRENTSERVER_SOURCES}
 )
 
 target_link_libraries(
@@ -190,4 +204,10 @@ target_link_libraries(
     comctl32
     UxTheme
     winhttp
+)
+
+target_link_libraries(
+    PicoTorrentServer
+
+    PicoTorrentCore
 )
