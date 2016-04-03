@@ -17,8 +17,8 @@ using picotorrent::core::torrent_info;
 #define FILE_PRIO_NORMAL 4
 
 add_request::add_request()
-    : params_(std::make_unique<lt::add_torrent_params>())
-{   
+    : params_(new lt::add_torrent_params())
+{
     params_->file_priorities = std::vector<uint8_t>();
 }
 
@@ -46,7 +46,7 @@ std::string add_request::save_path()
     return params_->save_path;
 }
 
-std::shared_ptr<picotorrent::core::torrent_info> add_request::torrent_info()
+std::shared_ptr<picotorrent::core::torrent_info> add_request::ti()
 {
     if (!params_->ti)
     {

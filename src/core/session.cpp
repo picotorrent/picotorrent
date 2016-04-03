@@ -29,6 +29,10 @@
 #define LOG(level) \
     session_log_item(*config_->session_log_stream).stream()
 
+#ifndef ARRAYSIZE
+#define ARRAYSIZE(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+#endif
+
 namespace lt = libtorrent;
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
@@ -131,7 +135,7 @@ void session::load()
     LOG(info) << "Loading session";
 
     std::shared_ptr<lt::settings_pack> settings = get_session_settings();
-    sess_ = std::make_unique<lt::session>(*settings);
+    sess_ = std::unique_ptr<lt::session>(new lt::session(*settings));
 
     sess_->add_dht_router({ "router.bittorrent.com", 6881 });
     sess_->add_dht_router({ "router.utorrent.com", 6881 });
@@ -545,7 +549,7 @@ void session::notify()
                 }
 
                 const torrent_ptr &t = torrents_.find(st.info_hash)->second;
-                t->update(std::make_unique<lt::torrent_status>(st));
+                t->update(std::unique_ptr<lt::torrent_status>(new lt::torrent_status(st)));
                 on_torrent_updated_.emit(t);
             }
             break;
@@ -561,7 +565,7 @@ void session::notify()
             lt::torrent_finished_alert *al = lt::alert_cast<lt::torrent_finished_alert>(alert);
             if (al->handle.need_save_resume_data()) { al->handle.save_resume_data(); }
 
-            torrent_map_t::iterator &find = torrents_.find(al->handle.info_hash());
+            auto find = torrents_.find(al->handle.info_hash());
 
             // Check `total_download` to see if we have a real finished torrent or one that
             // was finished when we added it and just completed the hash check.
@@ -591,7 +595,7 @@ void session::notify()
         case lt::tracker_reply_alert::alert_type:
         {
             lt::tracker_reply_alert *al = lt::alert_cast<lt::tracker_reply_alert>(alert);
-            torrent_map_t::iterator &find = torrents_.find(al->handle.info_hash());
+            auto find = torrents_.find(al->handle.info_hash());
             if (find != torrents_.end()) { find->second->handle(*al); }
             break;
         }

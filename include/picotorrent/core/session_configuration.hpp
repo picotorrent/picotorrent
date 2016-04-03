@@ -27,7 +27,7 @@ namespace core
             : alert_queue_size(500),
             enable_dht(true),
             stop_tracker_timeout(1),
-            session_log_stream(std::make_unique<std::ostringstream>())
+            session_log_stream(new std::ostringstream())
         {
         }
 

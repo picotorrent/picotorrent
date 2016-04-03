@@ -1,6 +1,8 @@
 #pragma once
 
 #include <picotorrent/common.hpp>
+#include <stddef.h>
+#include <stdint.h>
 #include <vector>
 
 namespace libtorrent

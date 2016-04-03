@@ -12,12 +12,12 @@ using picotorrent::core::pal;
 using picotorrent::core::torrent_info;
 
 torrent_info::torrent_info(const std::string &buf)
-    : info_(std::make_unique<lt::torrent_info>(&buf[0], (int)buf.size()))
+    : info_(new lt::torrent_info(&buf[0], (int)buf.size()))
 {
 }
 
 torrent_info::torrent_info(const lt::torrent_info &info)
-    : info_(std::make_unique<lt::torrent_info>(info))
+    : info_(new lt::torrent_info(info))
 {
 }
 

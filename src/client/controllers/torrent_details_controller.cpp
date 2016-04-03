@@ -84,7 +84,7 @@ void torrent_details_controller::execute()
 
 void torrent_details_controller::on_files_init()
 {
-    std::shared_ptr<const torrent_info> ti = torrent_->torrent_info();
+    std::shared_ptr<const torrent_info> ti = torrent_->ti();
 
     if (!ti)
     {
@@ -196,7 +196,7 @@ void torrent_details_controller::set_active_page(torrent_details_controller::act
 
 void torrent_details_controller::update_files()
 {
-    std::shared_ptr<const torrent_info> ti = torrent_->torrent_info();
+    std::shared_ptr<const torrent_info> ti = torrent_->ti();
     if (!ti) { return; }
 
     std::vector<int64_t> progress;

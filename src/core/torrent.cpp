@@ -298,7 +298,7 @@ torrent_state torrent::state()
     return state_;
 }
 
-std::shared_ptr<const torrent_info> torrent::torrent_info() const
+std::shared_ptr<const torrent_info> torrent::ti() const
 {
     if (!status_->handle.torrent_file())
     {

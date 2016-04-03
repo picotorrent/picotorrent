@@ -1,0 +1,28 @@
+language: cpp
+
+compiler: gcc
+sudo: required
+dist: trusty
+
+addons:
+  apt:
+    packages:
+    - libboost-chrono-dev
+    - libboost-random-dev
+    - libboost-system-dev
+
+cache:
+  directories:
+  - $HOME/libtorrent
+
+before_install:
+- bash linux/install-libtorrent.sh
+
+script: linux/build.sh
+
+notifications:
+  email:
+    recipients:
+    - viktor+travisci@viktorelofsson.se
+    on_success: change
+    on_failure: always

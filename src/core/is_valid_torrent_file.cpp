@@ -16,7 +16,7 @@ bool picotorrent::core::is_valid_torrent_file(const std::string &path)
 
     std::stringstream ss;
     ss << torrent_file.rdbuf();
-    std::string &buf = ss.str();
+    std::string buf = ss.str();
 
     lt::error_code ec;
     lt::bdecode_node node;

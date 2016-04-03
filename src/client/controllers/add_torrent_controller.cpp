@@ -162,9 +162,9 @@ void add_torrent_controller::on_dialog_init()
     {
         std::string name = TR("unknown_name");
 
-        if (req->torrent_info())
+        if (req->ti())
         {
-            name = req->torrent_info()->name();
+            name = req->ti()->name();
         }
         else if(!req->name().empty())
         {
@@ -277,7 +277,7 @@ void add_torrent_controller::on_torrent_files_context_menu(const std::vector<int
 void add_torrent_controller::show_torrent(int index)
 {
     std::shared_ptr<core::add_request> &req = requests_[index];
-    core::torrent_info_ptr ti = req->torrent_info();
+    core::torrent_info_ptr ti = req->ti();
 
     if (ti)
     {

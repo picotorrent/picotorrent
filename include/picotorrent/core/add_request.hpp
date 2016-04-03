@@ -27,7 +27,7 @@ namespace core
         DLL_EXPORT int file_priority(int file_index);
         DLL_EXPORT std::string name();
         DLL_EXPORT std::string save_path();
-        DLL_EXPORT std::shared_ptr<torrent_info> torrent_info();
+        DLL_EXPORT std::shared_ptr<torrent_info> ti();
         DLL_EXPORT std::string url();
         DLL_EXPORT void set_file_priority(int file_index, int priority);
         DLL_EXPORT void set_save_path(const std::string &path);

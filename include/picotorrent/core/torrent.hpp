@@ -97,7 +97,7 @@ namespace core
         DLL_EXPORT bool sequential_download() const;
         DLL_EXPORT int64_t size();
         DLL_EXPORT torrent_state state();
-        DLL_EXPORT std::shared_ptr<const torrent_info> torrent_info() const;
+        DLL_EXPORT std::shared_ptr<const torrent_info> ti() const;
         DLL_EXPORT int total_nonseeds() const;
         DLL_EXPORT int total_seeds() const;
         DLL_EXPORT uint64_t total_wanted();

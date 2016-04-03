@@ -109,18 +109,22 @@ set(PICOTORRENT_SOURCES
     src/client/ui/torrent_drop_target
 )
 
-# Shared flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
+if(WIN32)
+    # Shared flags
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
 
-# Debug flags
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /Zi")
+    # Debug flags
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /Zi")
 
-# Release flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /Zi")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
-set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+    # Release flags
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /Zi")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
 
 include_directories(
     include/
@@ -132,17 +136,23 @@ link_directories(
 )
 
 add_definitions(
-    -D_UNICODE
-    -D_WIN32
-    -D_WIN32_WINNT=0x0600
     -DBOOST_ALL_NO_LIB
-    -DNOMINMAX
     -DPICOJSON_USE_INT64
     -DTORRENT_NO_DEPRECATE
-    -DUNICODE
-    -DWIN32
-    -DWIN32_LEAN_AND_MEAN
 )
+
+# WIN32 definitions
+if(WIN32)
+    add_definitions(
+        -D_UNICODE
+        -D_WIN32
+        -D_WIN32_WINNT=0x0600
+        -DNOMINMAX
+        -DUNICODE
+        -DWIN32
+        -DWIN32_LEAN_AND_MEAN
+    )
+endif()
 
 add_library(
     PicoTorrentCore
@@ -150,16 +160,18 @@ add_library(
     ${PICOTORRENTCORE_SOURCES}
 )
 
-add_executable(
-    PicoTorrent
-    WIN32
-    ${PICOTORRENT_SOURCES}
-    src/main
+if(WIN32)
+    add_executable(
+        PicoTorrent
+        WIN32
+        ${PICOTORRENT_SOURCES}
+        src/main
 
-    # The resources belong to the application itself
-    # to avoid linker issues.
-    src/client/pico.rc
-)
+        # The resources belong to the application itself
+        # to avoid linker issues.
+        src/client/pico.rc
+    )
+endif()
 
 target_link_libraries(
     PicoTorrentCore
@@ -181,12 +193,15 @@ target_link_libraries(
     optimized libtorrent-vc140-mt-s
 )
 
-target_link_libraries(
-    PicoTorrent
+if(WIN32)
+    target_link_libraries(
+        PicoTorrent
 
-    PicoTorrentCore
+        PicoTorrentCore
 
-    comctl32
-    UxTheme
-    winhttp
-)
+        comctl32
+        UxTheme
+        winhttp
+    )
+endif()
+

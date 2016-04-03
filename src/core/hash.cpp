@@ -8,7 +8,7 @@ namespace lt = libtorrent;
 using picotorrent::core::hash;
 
 hash::hash(const lt::sha1_hash &h)
-    : hash_(std::make_unique<lt::sha1_hash>(h))
+    : hash_(new lt::sha1_hash(h))
 {
 }
 
