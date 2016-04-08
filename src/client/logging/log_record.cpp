@@ -1,6 +1,6 @@
-#include <picotorrent/core/logging/log_record.hpp>
+#include <picotorrent/client/logging/log_record.hpp>
 
-using picotorrent::core::logging::log_record;
+using picotorrent::client::logging::log_record;
 
 log_record::log_record(std::ostream &stream)
     : stream_(stream)

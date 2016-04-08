@@ -12,12 +12,14 @@
 #include <picotorrent/client/controllers/torrent_details_controller.hpp>
 #include <picotorrent/client/controllers/unhandled_exception_controller.hpp>
 #include <picotorrent/client/controllers/view_preferences_controller.hpp>
-#include <picotorrent/core/configuration.hpp>
-#include <picotorrent/core/session.hpp>
-#include <picotorrent/core/filesystem/path.hpp>
-#include <picotorrent/core/logging/log.hpp>
+#include <picotorrent/client/configuration.hpp>
+#include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+
+#include <picotorrent/core/session.hpp>
+#include <picotorrent/core/session_configuration.hpp>
+
 #include <windows.h>
 #include <commctrl.h>
 #include <strsafe.h>
@@ -26,12 +28,11 @@
 
 namespace controllers = picotorrent::client::controllers;
 namespace core = picotorrent::core;
-namespace fs = picotorrent::core::filesystem;
 namespace ui = picotorrent::client::ui;
 using picotorrent::client::application;
 using picotorrent::client::command_line;
-using picotorrent::core::configuration;
-using picotorrent::core::logging::log;
+using picotorrent::client::configuration;
+using picotorrent::client::logging::log;
 
 application::application()
     : mtx_(NULL),
@@ -77,7 +78,7 @@ bool application::init()
         return false;
     }
 
-    sess_ = std::make_shared<core::session>();
+    sess_ = std::make_shared<core::session>(configuration::instance().session_configuration());
     main_window_ = std::make_shared<ui::main_window>(sess_);
 
     main_window_->on_command(ID_FILE_ADD_TORRENT, std::bind(&application::on_file_add_torrent, this));
@@ -317,7 +318,7 @@ void application::on_torrent_context_menu(const POINT &p, const std::vector<std:
     menu_controller.execute(p);
 }
 
-void application::on_torrents_dropped(const std::vector<fs::path> &files)
+void application::on_torrents_dropped(const std::vector<std::string> &files)
 {
     controllers::add_torrent_controller add_controller(sess_, main_window_);
     add_controller.execute(files);

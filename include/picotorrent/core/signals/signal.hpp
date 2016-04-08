@@ -12,9 +12,23 @@ namespace core
 namespace signals
 {
     template<typename TRet, typename TArg>
+    struct function_wrapper
+    {
+        using function_type = std::function<TRet(TArg)>;
+    };
+
+    template<typename TRet>
+    struct function_wrapper<TRet, void>
+    {
+        using function_type = std::function<TRet()>;
+    };
+
+    template<typename TRet, typename TArg>
     class signal_connector
     {
     public:
+        using function_type = typename function_wrapper<TRet, TArg>::function_type;
+
         DLL_EXPORT signal_connector()
             : callbacks_()
         {
@@ -25,13 +39,13 @@ namespace signals
         {
         }
 
-        DLL_EXPORT void connect(const std::function<TRet(TArg)> &callback)
+        DLL_EXPORT void connect(const function_type &callback)
         {
             callback_item item{ callback };
             callbacks_.push_back(item);
         }
 
-        DLL_EXPORT void disconnect(const std::function<TRet(TArg)> &callback)
+        DLL_EXPORT void disconnect(const function_type &callback)
         {
             auto it = std::find_if(callbacks_.begin(), callbacks_.end(),
                 [callback](callback_item &item)
@@ -49,9 +63,12 @@ namespace signals
         class callback_item
         {
         public:
-            std::function<TRet(TArg)> callback;
+            function_type callback;
         };
 
+        inline std::vector<callback_item>& items() { return callbacks_; }
+
+    private:
         std::vector<callback_item> callbacks_;
     };
 
@@ -62,7 +79,7 @@ namespace signals
         DLL_EXPORT std::vector<TRet> emit(TArg args)
         {
             std::vector<TRet> result;
-            for (callback_item &item : callbacks_)
+            for (auto &item : signal_connector<TRet, TArg>::items())
             {
                 result.push_back(item.callback(args));
             }
@@ -76,7 +93,7 @@ namespace signals
     public:
         DLL_EXPORT void emit(TArg args)
         {
-            for (callback_item &item : callbacks_)
+            for (auto &item : signal_connector<void, TArg>::items())
             {
                 item.callback(args);
             }
@@ -90,7 +107,7 @@ namespace signals
         DLL_EXPORT std::vector<TRet> emit()
         {
             std::vector<TRet> result;
-            for (callback_item &item : callbacks_)
+            for (auto &item : signal_connector<TRet, void>::items())
             {
                 result.push_back(item.callback());
             }
@@ -104,7 +121,7 @@ namespace signals
     public:
         DLL_EXPORT void emit()
         {
-            for (callback_item &item : callbacks_)
+            for (auto &item : signal_connector<void, void>::items())
             {
                 item.callback();
             }

@@ -1,11 +1,15 @@
 #include <picotorrent/client/ui/dialogs/magnet_link_dialog.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+#include <sstream>
 
 #include <commctrl.h>
 #include <strsafe.h>
 
+using picotorrent::client::to_string;
+using picotorrent::client::to_wstring;
 using picotorrent::client::ui::dialogs::magnet_link_dialog;
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
@@ -20,28 +24,20 @@ signal_connector<void, void>& magnet_link_dialog::on_add_links()
     return on_add_links_;
 }
 
-void magnet_link_dialog::close()
-{
-    PostMessage(handle(), WM_CLOSE, 0, 0);
-}
-
 void magnet_link_dialog::disable_actions()
 {
     EnableWindow(GetDlgItem(handle(), ID_MAGNET_LINKS_TEXT), FALSE);
     EnableWindow(GetDlgItem(handle(), ID_MAGNET_ADD_LINKS), FALSE);
 }
 
-std::vector<std::wstring> magnet_link_dialog::get_links()
+std::vector<std::string> magnet_link_dialog::get_links()
 {
-    std::vector<std::wstring> result;
-    std::wstring::size_type pos = 0;
-    std::wstring::size_type prev = 0;
+    std::vector<std::string> result;
+    std::string::size_type pos = 0;
+    std::string::size_type prev = 0;
+    std::string l = get_dlg_item_text(ID_MAGNET_LINKS_TEXT);
 
-    TCHAR links[4096];
-    GetDlgItemText(handle(), ID_MAGNET_LINKS_TEXT, links, ARRAYSIZE(links));
-    std::wstring l = links;
-
-    while ((pos = l.find(L'\n', prev)) != std::wstring::npos)
+    while ((pos = l.find('\n', prev)) != std::string::npos)
     {
         result.push_back(l.substr(prev, pos - prev));
         prev = pos + 1;
@@ -61,9 +57,9 @@ void magnet_link_dialog::start_progress()
 
 void magnet_link_dialog::update_status_text(int current, int total)
 {
-    TCHAR status[1024];
-    StringCchPrintf(status, ARRAYSIZE(status), L"(%d/%d)", current, total);
-    SetDlgItemText(handle(), ID_MAGNET_CURRENT_STATUS, status);
+    std::stringstream status_text;
+    status_text << "(" << current << "/" << total << ")";
+    set_dlg_item_text(ID_MAGNET_CURRENT_STATUS, status_text.str());
 }
 
 BOOL magnet_link_dialog::on_command(int controlId, WPARAM wParam, LPARAM lParam)
@@ -84,9 +80,9 @@ BOOL magnet_link_dialog::on_command(int controlId, WPARAM wParam, LPARAM lParam)
 
 BOOL magnet_link_dialog::on_init_dialog()
 {
-    SetWindowText(handle(), TR("add_magnet_link_s"));
-    SetDlgItemText(handle(), ID_MAGNET_LINKS_GROUP, TR("magnet_link_s"));
-    SetDlgItemText(handle(), ID_MAGNET_ADD_LINKS, TR("add_link_s"));
+    set_window_text(TR("add_magnet_link_s"));
+    set_dlg_item_text(ID_MAGNET_LINKS_GROUP, TR("magnet_link_s"));
+    set_dlg_item_text(ID_MAGNET_ADD_LINKS, TR("add_link_s"));
 
     return TRUE;
 }

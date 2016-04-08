@@ -1,22 +1,26 @@
 #include <picotorrent/client/ui/dialogs/add_torrent_dialog.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <commctrl.h>
 #include <windowsx.h>
+#include <shlwapi.h>
 
 #define LIST_COLUMN_NAME 1
 #define LIST_COLUMN_SIZE 2
 #define LIST_COLUMN_PRIO 3
 
+using picotorrent::client::to_string;
+using picotorrent::client::to_wstring;
 using picotorrent::client::ui::dialogs::add_torrent_dialog;
 
 struct add_torrent_dialog::file_item
 {
-    std::wstring name;
-    std::wstring size;
-    std::wstring priority;
+    std::string name;
+    std::string size;
+    std::string priority;
 };
 
 add_torrent_dialog::add_torrent_dialog()
@@ -32,14 +36,17 @@ add_torrent_dialog::~add_torrent_dialog()
 {
 }
 
-void add_torrent_dialog::add_torrent(const std::wstring &name)
+void add_torrent_dialog::add_torrent(const std::string &name)
 {
-    ComboBox_AddString(combo_, name.c_str());
+    ComboBox_AddString(combo_, to_wstring(name).c_str());
 }
 
-void add_torrent_dialog::add_torrent_file(const std::wstring &name, const std::wstring &friendly_size, const std::wstring &priority)
+void add_torrent_dialog::add_torrent_file(const std::string &name, int64_t size, const std::string &priority)
 {
-    file_item item{ name, friendly_size,priority };
+    TCHAR s[1024];
+    StrFormatByteSize64(size, s, ARRAYSIZE(s));
+
+    file_item item{ name, to_string(s),priority };
     items_.push_back(item);
 
     files_->set_item_count((int)items_.size());
@@ -66,7 +73,7 @@ int add_torrent_dialog::get_selected_torrent()
     return ComboBox_GetCurSel(combo_);
 }
 
-void add_torrent_dialog::set_file_priority(int index, const std::wstring &prio)
+void add_torrent_dialog::set_file_priority(int index, const std::string &prio)
 {
     file_item &item = items_[index];
     item.priority = prio;
@@ -94,9 +101,9 @@ void add_torrent_dialog::set_file_context_menu_callback(const std::function<void
     files_context_cb_ = callback;
 }
 
-void add_torrent_dialog::set_save_path(const std::wstring &path)
+void add_torrent_dialog::set_save_path(const std::string &path)
 {
-    Edit_SetText(save_path_, path.c_str());
+    Edit_SetText(save_path_, to_wstring(path).c_str());
 }
 
 void add_torrent_dialog::set_selected_item(int item)
@@ -104,9 +111,16 @@ void add_torrent_dialog::set_selected_item(int item)
     ComboBox_SetCurSel(combo_, item);
 }
 
-void add_torrent_dialog::set_size(const std::wstring &friendly_size)
+void add_torrent_dialog::set_size(int64_t size)
 {
-    Edit_SetText(size_, friendly_size.c_str());
+    TCHAR s[1024];
+    StrFormatByteSize64(size, s, ARRAYSIZE(s));
+    Edit_SetText(size_, s);
+}
+
+void add_torrent_dialog::set_size(const std::string &friendly_size)
+{
+    Edit_SetText(size_, to_wstring(friendly_size).c_str());
 }
 
 BOOL add_torrent_dialog::on_command(int controlId, WPARAM wParam, LPARAM lParam)
@@ -157,13 +171,13 @@ BOOL add_torrent_dialog::on_init_dialog()
     save_path_ = GetDlgItem(handle(), ID_SAVE_PATH);
 
     // Localize
-    SetWindowText(handle(), TR("add_torrent_s"));
-    SetDlgItemText(handle(), ID_TORRENT_TEXT, TR("torrent"));
-    SetDlgItemText(handle(), ID_SIZE_TEXT, TR("size"));
-    SetDlgItemText(handle(), ID_SAVE_PATH_TEXT, TR("save_path"));
-    SetDlgItemText(handle(), ID_BROWSE, TR("browse"));
-    SetDlgItemText(handle(), ID_STORAGE_GROUP, TR("storage"));
-    SetDlgItemText(handle(), IDOK, TR("add_torrent_s"));
+    set_window_text(TR("add_torrent_s"));
+    set_dlg_item_text(ID_TORRENT_TEXT, TR("torrent"));
+    set_dlg_item_text(ID_SIZE_TEXT, TR("size"));
+    set_dlg_item_text(ID_SAVE_PATH_TEXT, TR("save_path"));
+    set_dlg_item_text(ID_BROWSE, TR("browse"));
+    set_dlg_item_text(ID_STORAGE_GROUP, TR("storage"));
+    set_dlg_item_text(IDOK, TR("add_torrent_s"));
 
     // Set up the files list view
     files_ = std::make_shared<controls::list_view>(GetDlgItem(handle(), ID_FILES));
@@ -207,7 +221,7 @@ BOOL add_torrent_dialog::on_notify(LPARAM lParam)
     return FALSE;
 }
 
-std::wstring add_torrent_dialog::on_list_display(const std::pair<int, int> &p)
+std::string add_torrent_dialog::on_list_display(const std::pair<int, int> &p)
 {
     file_item &item = items_[p.second];
 
@@ -220,7 +234,7 @@ std::wstring add_torrent_dialog::on_list_display(const std::pair<int, int> &p)
     case LIST_COLUMN_PRIO:
         return item.priority;
     default:
-        return L"<unknown>";
+        return "<unknown>";
     }
 }
 

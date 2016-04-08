@@ -1,5 +1,6 @@
 #include <picotorrent/client/ui/sleep_manager.hpp>
-#include <picotorrent/core/logging/log.hpp>
+
+#include <picotorrent/client/logging/log.hpp>
 
 using picotorrent::client::ui::sleep_manager;
 

@@ -1,7 +1,7 @@
 #include <picotorrent/client/ui/property_sheets/details/files_page.hpp>
 
-#include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/torrent.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/controls/menu.hpp>
@@ -19,7 +19,6 @@
 
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
-using picotorrent::core::to_wstring;
 using picotorrent::core::torrent;
 using picotorrent::client::ui::controls::list_view;
 using picotorrent::client::ui::controls::menu;
@@ -28,7 +27,7 @@ using picotorrent::client::ui::scaler;
 
 struct files_page::file_item
 {
-    std::wstring name;
+    std::string name;
     uint64_t size;
     float progress;
     int priority;
@@ -54,7 +53,7 @@ files_page::~files_page()
 {
 }
 
-void files_page::add_file(const std::wstring &name, uint64_t size, float progress, int priority)
+void files_page::add_file(const std::string &name, uint64_t size, float progress, int priority)
 {
     file_item item{ name,size,progress,priority };
     items_.push_back(item);
@@ -63,7 +62,7 @@ void files_page::add_file(const std::wstring &name, uint64_t size, float progres
 
     // Add file extension image to image list
     SHFILEINFO shInfo = { 0 };
-    SHGetFileInfo(name.c_str(),
+    SHGetFileInfo(to_wstring(name).c_str(),
         FILE_ATTRIBUTE_NORMAL,
         &shInfo,
         sizeof(SHFILEINFO),
@@ -107,7 +106,7 @@ void files_page::on_init_dialog()
     files_->set_image_list(images_);
 }
 
-std::wstring files_page::on_list_display(const std::pair<int, int> &p)
+std::string files_page::on_list_display(const std::pair<int, int> &p)
 {
     file_item &item = items_[p.second];
 
@@ -123,7 +122,7 @@ std::wstring files_page::on_list_display(const std::pair<int, int> &p)
             size_str,
             ARRAYSIZE(size_str));
 
-        return size_str;
+        return to_string(size_str);
     }
     case LIST_COLUMN_PRIORITY:
     {
@@ -139,10 +138,10 @@ std::wstring files_page::on_list_display(const std::pair<int, int> &p)
             return TR("maximum");
         }
 
-        return L"<unknown priority>";
+        return "<unknown priority>";
     }
     default:
-        return L"<unknown>";
+        return "<unknown>";
     }
 }
 
@@ -154,14 +153,14 @@ void files_page::on_list_item_context_menu(const std::vector<int> &indices)
     }
 
     HMENU prioMenu = CreateMenu();
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_MAX, TR("maximum"));
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_HIGH, TR("high"));
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_NORMAL, TR("normal"));
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_MAX, to_wstring(TR("maximum")).c_str());
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_HIGH, to_wstring(TR("high")).c_str());
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_NORMAL, to_wstring(TR("normal")).c_str());
     AppendMenu(prioMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_SKIP, TR("do_not_download"));
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_SKIP, to_wstring(TR("do_not_download")).c_str());
 
     HMENU menu = CreatePopupMenu();
-    AppendMenu(menu, MF_POPUP, (UINT_PTR)prioMenu, TR("priority"));
+    AppendMenu(menu, MF_POPUP, (UINT_PTR)prioMenu, to_wstring(TR("priority")).c_str());
 
     // If only one file is selected, check that files priority
     if (indices.size() == 1)

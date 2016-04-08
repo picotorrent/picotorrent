@@ -1,11 +1,12 @@
 #include <picotorrent/client/i18n/translator.hpp>
 
 #include <picojson.hpp>
-#include <picotorrent/core/string_operations.hpp>
-#include <picotorrent/core/configuration.hpp>
-#include <picotorrent/core/filesystem/file.hpp>
-#include <picotorrent/core/filesystem/directory.hpp>
-#include <picotorrent/core/filesystem/path.hpp>
+#include <picotorrent/client/configuration.hpp>
+#include <picotorrent/client/string_operations.hpp>
+#include <picotorrent/core/pal.hpp>
+
+#include <fstream>
+#include <sstream>
 
 #include <windows.h>
 #include <shlwapi.h>
@@ -13,34 +14,28 @@
 
 #define TEXTFILE 256
 
-namespace fs = picotorrent::core::filesystem;
 namespace pj = picojson;
-using picotorrent::core::to_wstring;
-using picotorrent::core::configuration;
+using picotorrent::client::to_wstring;
+using picotorrent::client::configuration;
 using picotorrent::client::i18n::translation;
 using picotorrent::client::i18n::translator;
+using picotorrent::core::pal;
 
 translator::translator()
     : instance_(GetModuleHandle(NULL))
 {
     configuration &cfg = configuration::instance();
 
-    TCHAR file[1024];
-    StringCchPrintf(file, ARRAYSIZE(file), L"%d.json", cfg.current_language_id());
-    PathCombine(file, get_lang_path().c_str(), file);
+    std::stringstream ss;
+    ss << cfg.current_language_id() << ".json";
+    std::string lang_file = pal::combine_paths(get_lang_path(), ss.str());
 
-    DWORD dwAttrib = GetFileAttributes(file);
-
-    if (dwAttrib != INVALID_FILE_ATTRIBUTES &&
-        !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
+    if (pal::file_exists(lang_file))
     {
-        // Load JSON from file
-        fs::file f(file);
-        std::vector<char> buf;
-        f.read_all(buf);
+        std::ifstream input(lang_file, std::ios::binary);
 
         pj::value v;
-        pj::parse(v, std::string(buf.begin(), buf.end()));
+        pj::parse(v, input);
 
         strings_ = v.get<pj::object>()["strings"].get<pj::object>();
     }
@@ -49,7 +44,6 @@ translator::translator()
         // Load JSON from our resource
         HRSRC rc = FindResource(instance_, MAKEINTRESOURCE(1337), MAKEINTRESOURCE(TEXTFILE));
         HGLOBAL data = LoadResource(instance_, rc);
-        //DWORD size = SizeofResource(instance_, rc);
         std::string json = static_cast<const char*>(LockResource(data));
 
         pj::value v;
@@ -71,28 +65,24 @@ translator& translator::instance()
 
 std::vector<translation> translator::get_available_translations()
 {
-    fs::path p = get_lang_path();
-    fs::directory d(p);
+    std::string lang_path = get_lang_path();
 
-    translation def;
-    def.language_id = 1033;
-    def.name = L"English (United States)";
+    translation def{ "English (United States)", 1033 };
 
     std::vector<translation> langs;
     langs.push_back(def);
 
-    if (!d.path().exists())
+    if (!pal::directory_exists(lang_path))
     {
         return langs;
     }
 
-    for (fs::path &path : d.get_files(d.path().combine(L"*.json")))
+    for (std::string &path : pal::get_directory_entries(lang_path, "*.json"))
     {
-        std::vector<char> buf;
-        fs::file(path).read_all(buf);
+        std::ifstream input(path, std::ios::binary);
 
         pj::value v;
-        std::string err = pj::parse(v, std::string(buf.begin(), buf.end()));
+        std::string err = pj::parse(v, input);
 
         if (!err.empty())
         {
@@ -118,7 +108,7 @@ std::vector<translation> translator::get_available_translations()
 
         translation t;
         t.language_id = (int)obj.at("lang_id").get<int64_t>();
-        t.name = to_wstring(name);
+        t.name = name;
 
         if (t.language_id == def.language_id)
         {
@@ -137,7 +127,7 @@ int translator::get_current_lang_id()
     return cfg.current_language_id();
 }
 
-std::wstring translator::translate(const std::string &key)
+std::string translator::translate(const std::string &key)
 {
     std::string result = key;
 
@@ -146,7 +136,7 @@ std::wstring translator::translate(const std::string &key)
         result = strings_[key].get<std::string>();
     }
 
-    return to_wstring(result);
+    return result;
 }
 
 void translator::set_current_language(int langId)
@@ -155,7 +145,7 @@ void translator::set_current_language(int langId)
     cfg.set_current_language_id(langId);
 }
 
-std::wstring translator::get_lang_path()
+std::string translator::get_lang_path()
 {
     TCHAR path[MAX_PATH];
 
@@ -164,5 +154,5 @@ std::wstring translator::get_lang_path()
     PathRemoveFileSpec(path);
     PathCombine(path, path, L"lang");
 
-    return path;
+    return to_string(path);
 }

@@ -1,5 +1,6 @@
 #include <picotorrent/client/ui/property_sheets/preferences/general_page.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 
@@ -26,16 +27,16 @@ void general_page::add_languages(const std::vector<i18n::translation> &translati
 
     for (const i18n::translation &translation : translations)
     {
-        int index = ComboBox_AddString(hCombo, translation.name.c_str());
+        int index = ComboBox_AddString(hCombo, to_wstring(translation.name).c_str());
         ComboBox_SetItemData(hCombo, index, translation.language_id);
     }
 }
 
-void general_page::add_start_position(int id, const std::wstring &name)
+void general_page::add_start_position(int id, const std::string &name)
 {
     HWND hCombo = GetDlgItem(handle(), ID_START_POSITION);
 
-    int index = ComboBox_AddString(hCombo, name.c_str());
+    int index = ComboBox_AddString(hCombo, to_wstring(name).c_str());
     ComboBox_SetItemData(hCombo, index, id);
 }
 
@@ -123,9 +124,9 @@ BOOL general_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lPa
 
 void general_page::on_init_dialog()
 {
-    SetDlgItemText(handle(), ID_UI_GROUP, TR("user_interface"));
-    SetDlgItemText(handle(), ID_LANGUAGE_TEXT, TR("language"));
-    SetDlgItemText(handle(), ID_MISC_GROUP, TR("miscellaneous"));
-    SetDlgItemText(handle(), ID_AUTOSTART_PICO, TR("start_with_windows"));
-    SetDlgItemText(handle(), ID_START_POSITION_TEXT, TR("start_position"));
+    set_dlg_item_text(ID_UI_GROUP, TR("user_interface"));
+    set_dlg_item_text(ID_LANGUAGE_TEXT, TR("language"));
+    set_dlg_item_text(ID_MISC_GROUP, TR("miscellaneous"));
+    set_dlg_item_text(ID_AUTOSTART_PICO, TR("start_with_windows"));
+    set_dlg_item_text(ID_START_POSITION_TEXT, TR("start_position"));
 }

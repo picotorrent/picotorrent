@@ -12,43 +12,43 @@ torrent_state::operator int() const
     return state_;
 }
 
-std::wstring torrent_state::to_string() const
+std::string torrent_state::to_string() const
 {
     switch (state_)
     {
     case state_t::checking_resume_data:
-        return L"checking_resume_data";
+        return "checking_resume_data";
     case state_t::downloading:
-        return L"downloading";
+        return "downloading";
     case state_t::downloading_checking:
-        return L"downloading_checking";
+        return "downloading_checking";
     case state_t::downloading_forced:
-        return L"downloading_forced";
+        return "downloading_forced";
     case state_t::downloading_metadata:
-        return L"downloading_metadata";
+        return "downloading_metadata";
     case state_t::downloading_paused:
-        return L"downloading_paused";
+        return "downloading_paused";
     case state_t::downloading_queued:
-        return L"downloading_queued";
+        return "downloading_queued";
     case state_t::downloading_stalled:
-        return L"downloading_stalled";
+        return "downloading_stalled";
     case state_t::error:
-        return L"error";
+        return "error";
     case state_t::unknown:
-        return L"unknown";
+        return "unknown";
     case state_t::uploading:
-        return L"uploading";
+        return "uploading";
     case state_t::uploading_checking:
-        return L"uploading_checking";
+        return "uploading_checking";
     case state_t::uploading_forced:
-        return L"uploading_forced";
+        return "uploading_forced";
     case state_t::uploading_paused:
-        return L"uploading_paused";
+        return "uploading_paused";
     case state_t::uploading_queued:
-        return L"uploading_queued";
+        return "uploading_queued";
     case state_t::uploading_stalled:
-        return L"uploading_stalled";
+        return "uploading_stalled";
     }
 
-    return L"<error: unknown state>";
+    return "<error: unknown state>";
 }

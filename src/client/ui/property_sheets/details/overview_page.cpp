@@ -34,64 +34,64 @@ BOOL overview_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lP
 
 void overview_page::on_init_dialog()
 {
-    SetDlgItemText(handle(), ID_LIMITS_GROUP, TR("limits"));
-    SetDlgItemText(handle(), ID_DL_LIMIT_TEXT, TR("dl_limit"));
-    SetDlgItemText(handle(), ID_DL_LIMIT_HELP, TR("dl_limit_help"));
-    SetDlgItemText(handle(), ID_UL_LIMIT_TEXT, TR("ul_limit"));
-    SetDlgItemText(handle(), ID_UL_LIMIT_HELP, TR("ul_limit_help"));
-    SetDlgItemText(handle(), ID_MAX_CONNECTIONS_TEXT, TR("max_connections"));
-    SetDlgItemText(handle(), ID_MAX_CONNECTIONS_HELP, TR("max_connections_help"));
-    SetDlgItemText(handle(), ID_MAX_UPLOADS_TEXT, TR("max_uploads"));
-    SetDlgItemText(handle(), ID_MAX_UPLOADS_HELP, TR("max_uploads_help"));
-    SetDlgItemText(handle(), ID_SEQUENTIAL_DOWNLOAD, TR("sequential_download"));
+    set_dlg_item_text(ID_LIMITS_GROUP, TR("limits"));
+    set_dlg_item_text(ID_DL_LIMIT_TEXT, TR("dl_limit"));
+    set_dlg_item_text(ID_DL_LIMIT_HELP, TR("dl_limit_help"));
+    set_dlg_item_text(ID_UL_LIMIT_TEXT, TR("ul_limit"));
+    set_dlg_item_text(ID_UL_LIMIT_HELP, TR("ul_limit_help"));
+    set_dlg_item_text(ID_MAX_CONNECTIONS_TEXT, TR("max_connections"));
+    set_dlg_item_text(ID_MAX_CONNECTIONS_HELP, TR("max_connections_help"));
+    set_dlg_item_text(ID_MAX_UPLOADS_TEXT, TR("max_uploads"));
+    set_dlg_item_text(ID_MAX_UPLOADS_HELP, TR("max_uploads_help"));
+    set_dlg_item_text(ID_SEQUENTIAL_DOWNLOAD, TR("sequential_download"));
 }
 
 int overview_page::dl_limit()
 {
-    std::wstring text = get_dlg_item_text(ID_DL_LIMIT);
+    std::string text = get_dlg_item_text(ID_DL_LIMIT);
     if (text.empty()) { return -1; }
     return std::stoi(text);
 }
 
 void overview_page::dl_limit(int limit)
 {
-    set_dlg_item_text(ID_DL_LIMIT, std::to_wstring(limit));
+    set_dlg_item_text(ID_DL_LIMIT, std::to_string(limit));
 }
 
 int overview_page::ul_limit()
 {
-    std::wstring text = get_dlg_item_text(ID_UL_LIMIT);
+    std::string text = get_dlg_item_text(ID_UL_LIMIT);
     if (text.empty()) { return -1; }
     return std::stoi(text);
 }
 
 void overview_page::ul_limit(int limit)
 {
-    set_dlg_item_text(ID_UL_LIMIT, std::to_wstring(limit));
+    set_dlg_item_text(ID_UL_LIMIT, std::to_string(limit));
 }
 
 int overview_page::max_connections()
 {
-    std::wstring text = get_dlg_item_text(ID_MAX_CONNECTIONS);
+    std::string text = get_dlg_item_text(ID_MAX_CONNECTIONS);
     if (text.empty()) { return -1; }
     return std::stoi(text);
 }
 
 void overview_page::max_connections(int max)
 {
-    set_dlg_item_text(ID_MAX_CONNECTIONS, std::to_wstring(max));
+    set_dlg_item_text(ID_MAX_CONNECTIONS, std::to_string(max));
 }
 
 int overview_page::max_uploads()
 {
-    std::wstring text = get_dlg_item_text(ID_MAX_UPLOADS);
+    std::string text = get_dlg_item_text(ID_MAX_UPLOADS);
     if (text.empty()) { return -1; }
     return std::stoi(text);
 }
 
 void overview_page::max_uploads(int max)
 {
-    set_dlg_item_text(ID_MAX_UPLOADS, std::to_wstring(max));
+    set_dlg_item_text(ID_MAX_UPLOADS, std::to_string(max));
 }
 
 bool overview_page::sequential_download()

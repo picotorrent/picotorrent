@@ -1,11 +1,14 @@
 #include <picotorrent/client/ui/controls/list_view.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
 #include <strsafe.h>
 #include <vector>
 
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
+using picotorrent::client::to_string;
+using picotorrent::client::to_wstring;
 using picotorrent::client::ui::scaler;
 using picotorrent::client::ui::controls::list_view;
 
@@ -59,11 +62,11 @@ list_view::~list_view()
     CloseThemeData(progress_theme_);
 }
 
-void list_view::add_column(int id, const std::wstring &text, int width, list_view::col_type_t type)
+void list_view::add_column(int id, const std::string &text, int width, list_view::col_type_t type)
 {
     list_view_column col;
     col.id = id;
-    col.text = text;
+    col.text = to_wstring(text);
     col.width = width;
     col.type = type;
 
@@ -132,7 +135,7 @@ list_view::sort_order_t list_view::get_sort_order(int columnId)
     return sort_order_t::unknown;
 }
 
-signal_connector<std::wstring, const std::pair<int, int>&>& list_view::on_display()
+signal_connector<std::string, const std::pair<int, int>&>& list_view::on_display()
 {
     return on_display_;
 }
@@ -303,8 +306,8 @@ LRESULT list_view::subclass_proc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 
             if (inf->item.mask & LVIF_TEXT)
             {
-                std::wstring text = lv->on_display_.emit(p)[0];
-                StringCchCopy(inf->item.pszText, inf->item.cchTextMax, text.c_str());
+                std::string text = lv->on_display_.emit(p)[0];
+                StringCchCopy(inf->item.pszText, inf->item.cchTextMax, to_wstring(text).c_str());
             }
 
             if (inf->item.mask & LVIF_IMAGE)

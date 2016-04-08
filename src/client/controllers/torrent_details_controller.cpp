@@ -1,12 +1,12 @@
 #include <picotorrent/client/controllers/torrent_details_controller.hpp>
 
 #include <picotorrent/core/peer.hpp>
-#include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/torrent_info.hpp>
 #include <picotorrent/core/tracker.hpp>
 #include <picotorrent/client/ui/dialogs/add_tracker_dialog.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/ui/property_sheets/details/files_page.hpp>
 #include <picotorrent/client/ui/property_sheets/details/overview_page.hpp>
 #include <picotorrent/client/ui/property_sheets/details/peers_page.hpp>
@@ -23,8 +23,6 @@ using picotorrent::core::peer;
 using picotorrent::core::torrent;
 using picotorrent::core::torrent_info;
 using picotorrent::core::tracker;
-using picotorrent::core::to_string;
-using picotorrent::core::to_wstring;
 
 torrent_details_controller::torrent_details_controller(
     const std::shared_ptr<main_window> &wnd,
@@ -86,7 +84,7 @@ void torrent_details_controller::execute()
 
 void torrent_details_controller::on_files_init()
 {
-    std::shared_ptr<const torrent_info> ti = torrent_->torrent_info();
+    std::shared_ptr<const torrent_info> ti = torrent_->ti();
 
     if (!ti)
     {
@@ -104,7 +102,7 @@ void torrent_details_controller::on_files_init()
         float p = (float)progress[i] / ti->file_size(i);
 
         files_->add_file(
-            to_wstring(ti->file_path(i)),
+            ti->file_path(i),
             ti->file_size(i),
             p,
             priorities[i]);
@@ -198,7 +196,7 @@ void torrent_details_controller::set_active_page(torrent_details_controller::act
 
 void torrent_details_controller::update_files()
 {
-    std::shared_ptr<const torrent_info> ti = torrent_->torrent_info();
+    std::shared_ptr<const torrent_info> ti = torrent_->ti();
     if (!ti) { return; }
 
     std::vector<int64_t> progress;

@@ -21,7 +21,7 @@ namespace i18n
 {
     struct translation
     {
-        std::wstring name;
+        std::string name;
         int language_id;
     };
 
@@ -32,14 +32,14 @@ namespace i18n
 
         std::vector<translation> get_available_translations();
         int get_current_lang_id();
-        std::wstring translate(const std::string &key);
+        std::string translate(const std::string &key);
         void set_current_language(int langId);
 
     private:
         translator();
         ~translator();
 
-        std::wstring get_lang_path();
+        std::string get_lang_path();
 
         HINSTANCE instance_;
         picojson::object strings_;

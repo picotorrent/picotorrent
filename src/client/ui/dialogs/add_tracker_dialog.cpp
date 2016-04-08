@@ -45,7 +45,7 @@ BOOL add_tracker_dialog::on_command(int controlId, WPARAM wParam, LPARAM lParam)
 
 BOOL add_tracker_dialog::on_init_dialog()
 {
-    SetWindowText(handle(), TR("add_tracker"));
-    SetDlgItemText(handle(), IDOK, TR("add_tracker"));
+    set_window_text(TR("add_tracker"));
+    set_dlg_item_text(IDOK, TR("add_tracker"));
     return TRUE;
 }

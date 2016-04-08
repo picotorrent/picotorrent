@@ -1,11 +1,11 @@
 #include <picotorrent/client/controllers/application_update_controller.hpp>
 
 #include <picojson.hpp>
-#include <picotorrent/core/logging/log.hpp>
-#include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/version_info.hpp>
-#include <picotorrent/core/configuration.hpp>
+#include <picotorrent/client/configuration.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
+#include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/net/http_client.hpp>
 #include <picotorrent/client/net/http_response.hpp>
 #include <picotorrent/client/net/uri.hpp>
@@ -16,9 +16,8 @@
 #include <shellapi.h>
 #include <strsafe.h>
 
-using picotorrent::core::to_wstring;
 using picotorrent::core::version_info;
-using picotorrent::core::configuration;
+using picotorrent::client::configuration;
 using picotorrent::client::controllers::application_update_controller;
 using picotorrent::client::net::http_client;
 using picotorrent::client::net::http_response;
@@ -66,11 +65,9 @@ void application_update_controller::on_response(const http_response &response, b
     if (version[0] == 'v') { version = version.substr(1); }
 
     semver::version parsedVersion(version);
-    std::wstring wideVersion = to_wstring(version);
-
     configuration &cfg = configuration::instance();
 
-    if (cfg.ignored_update() == wideVersion
+    if (cfg.ignored_update() == version
         && !forced)
     {
         // Just return if we have ignored this update.
@@ -79,12 +76,15 @@ void application_update_controller::on_response(const http_response &response, b
 
     if (parsedVersion > semver::version(version_info::current_version()))
     {
-        TCHAR title[100];
-        StringCchPrintf(title, ARRAYSIZE(title), TR("picotorrent_v_available"), to_wstring(version).c_str());
+        WCHAR title[100];
+        StringCchPrintf(
+            title,
+            ARRAYSIZE(title),
+            to_wstring(TR("picotorrent_v_available")).c_str(),
+            to_wstring(version).c_str());
 
-        uri uri(to_wstring(obj["html_url"].get<std::string>()));
-
-        notify(title, uri, wideVersion);
+        uri uri(obj["html_url"].get<std::string>());
+        notify(to_string(title), uri, version);
     }
     else if (forced)
     {
@@ -93,12 +93,12 @@ void application_update_controller::on_response(const http_response &response, b
         dlg.set_main_icon(TD_INFORMATION_ICON);
         dlg.set_parent(wnd_->handle());
         dlg.set_main_instruction(TR("no_update_available"));
-        dlg.set_title(L"PicoTorrent");
+        dlg.set_title("PicoTorrent");
         dlg.show();
     }
 }
 
-void application_update_controller::notify(const std::wstring &title, const uri& uri, const std::wstring &version)
+void application_update_controller::notify(const std::string &title, const uri& uri, const std::string &version)
 {
     ui::task_dialog dlg;
     dlg.add_button(1000, TR("show_on_github"),
@@ -107,7 +107,7 @@ void application_update_controller::notify(const std::wstring &title, const uri&
         ShellExecute(
             wnd_->handle(),
             L"open",
-            uri.raw().c_str(),
+            to_wstring(uri.raw()).c_str(),
             NULL,
             NULL,
             SW_SHOWNORMAL);
@@ -120,7 +120,7 @@ void application_update_controller::notify(const std::wstring &title, const uri&
     dlg.set_main_icon(TD_INFORMATION_ICON);
     dlg.set_main_instruction(title);
     dlg.set_parent(wnd_->handle());
-    dlg.set_title(L"PicoTorrent");
+    dlg.set_title("PicoTorrent");
     dlg.set_verification_text(TR("ignore_update"));
     dlg.show();
 

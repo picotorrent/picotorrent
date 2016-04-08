@@ -11,19 +11,19 @@ namespace net
     class uri
     {
     public:
-        uri(const std::wstring &url);
+        uri(const std::string &url);
 
-        std::wstring host_name() const;
+        std::string host_name() const;
         int port() const;
-        std::wstring raw() const;
-        std::wstring url_path() const;
+        std::string raw() const;
+        std::string url_path() const;
 
     private:
-        std::wstring scheme_;
-        std::wstring hostName_;
-        std::wstring urlPath_;
+        std::string scheme_;
+        std::string hostName_;
+        std::string urlPath_;
         int port_;
-        std::wstring raw_;
+        std::string raw_;
     };
 }
 }

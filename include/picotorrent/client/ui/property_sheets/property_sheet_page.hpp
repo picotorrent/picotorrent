@@ -32,7 +32,7 @@ namespace property_sheets
         core::signals::signal_connector<bool, void>& on_validate();
 
         HWND handle();
-        void show_error_message(const std::wstring &text);
+        void show_error_message(const std::string &text);
 
     protected:
         INT_PTR dlg_proc(HWND, UINT, WPARAM, LPARAM);
@@ -41,13 +41,13 @@ namespace property_sheets
         virtual void on_init_dialog() { }
         virtual bool on_notify(HWND hDlg, LPNMHDR nmhdr, LRESULT &result) { return false; }
 
-        std::wstring get_dlg_item_text(int id);
-        void set_dlg_item_text(int id, const std::wstring &text);
+        std::string get_dlg_item_text(int id);
+        void set_dlg_item_text(int id, const std::string &text);
 
         void set_flags(DWORD flags);
         void set_instance(HINSTANCE instance);
         void set_template_id(int id);
-        void set_title(const std::wstring &title);
+        void set_title(const std::string &title);
 
         static INT_PTR CALLBACK dlg_proc_proxy(
             _In_ HWND   hwndDlg,

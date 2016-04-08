@@ -1,14 +1,14 @@
 #include <picotorrent/client/controllers/remove_torrent_controller.hpp>
 
 #include <algorithm>
-#include <picotorrent/core/configuration.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent.hpp>
+#include <picotorrent/client/configuration.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
 
-using picotorrent::core::configuration;
+using picotorrent::client::configuration;
 using picotorrent::core::session;
 using picotorrent::core::torrent;
 using picotorrent::client::controllers::remove_torrent_controller;
@@ -46,7 +46,7 @@ void remove_torrent_controller::execute(bool remove_files)
         dlg.set_main_icon(TD_WARNING_ICON);
         dlg.set_main_instruction(TR("confirm_remove"));
         dlg.set_parent(wnd_->handle());
-        dlg.set_title(L"PicoTorrent");
+        dlg.set_title("PicoTorrent");
         dlg.set_verification_text(TR("do_not_ask_again"));
 
         switch (dlg.show())

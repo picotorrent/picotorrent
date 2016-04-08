@@ -1,5 +1,6 @@
 #include <picotorrent/client/ui/status_bar.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
 
@@ -42,7 +43,7 @@ HWND status_bar::handle()
 void status_bar::set_torrent_count(int count)
 {
     TCHAR text[128];
-    StringCchPrintf(text, ARRAYSIZE(text), TR("_torrent_s"), count);
+    StringCchPrintf(text, ARRAYSIZE(text), to_wstring(TR("_torrent_s")).c_str(), count);
     SendMessage(handle(), SB_SETTEXT, 0, (LPARAM)text);
 }
 
@@ -53,13 +54,12 @@ void status_bar::set_transfer_rates(int dl, int ul)
         rates,
         ARRAYSIZE(rates),
         L"%s: %s, %s: %s",
-        TR("dl"),
+        to_wstring(TR("dl")).c_str(),
         rate_to_string(dl).c_str(),
-        TR("ul"),
+        to_wstring(TR("ul")).c_str(),
         rate_to_string(ul).c_str());
 
     SendMessage(handle(), SB_SETTEXT, 1, (LPARAM)rates);
-
 }
 
 std::wstring status_bar::rate_to_string(int rate)

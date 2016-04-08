@@ -1,7 +1,7 @@
 #include <picotorrent/client/ui/dialogs/about_dialog.hpp>
 
-#include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/version_info.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
@@ -10,7 +10,6 @@
 #include <shellapi.h>
 #include <strsafe.h>
 
-using picotorrent::core::to_wstring;
 using picotorrent::core::version_info;
 using picotorrent::client::ui::dialogs::about_dialog;
 using picotorrent::client::ui::scaler;
@@ -63,23 +62,23 @@ BOOL about_dialog::on_init_dialog()
     StringCchPrintf(
         picoVersion,
         ARRAYSIZE(picoVersion),
-        TR("picotorrent_v_format"),
+        to_wstring(TR("picotorrent_v_format")).c_str(),
         to_wstring(version_info::current_version()).c_str());
 
     TCHAR picoBuild[1024];
     StringCchPrintf(
         picoBuild,
         ARRAYSIZE(picoBuild),
-        TR("build_info_format"),
+        to_wstring(TR("build_info_format")).c_str(),
         to_wstring(version_info::git_branch()).c_str(),
         to_wstring(version_info::git_commit_hash()).c_str());
 
     // Localize
-    SetWindowText(handle(), TR("about_picotorrent"));
-    SetDlgItemText(handle(), ID_PICOTORRENT_V_FORMAT, picoVersion);
-    SetDlgItemText(handle(), ID_BUILD_INFO_FORMAT, picoBuild);
-    SetDlgItemText(handle(), ID_PICOTORRENT_DESCRIPTION, TR("picotorrent_description"));
-    SetDlgItemText(handle(), ID_GITHUB_LINK, TR("github_link"));
+    set_window_text(TR("about_picotorrent"));
+    set_dlg_item_text(ID_PICOTORRENT_V_FORMAT, to_string(picoVersion));
+    set_dlg_item_text(ID_BUILD_INFO_FORMAT, to_string(picoBuild));
+    set_dlg_item_text(ID_PICOTORRENT_DESCRIPTION, TR("picotorrent_description"));
+    set_dlg_item_text(ID_GITHUB_LINK, TR("github_link"));
 
     return TRUE;
 }

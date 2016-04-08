@@ -1,20 +1,22 @@
 #include <picotorrent/core/is_valid_torrent_file.hpp>
 
-#include <picotorrent/core/filesystem/file.hpp>
-#include <picotorrent/core/filesystem/path.hpp>
-
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
 #include <libtorrent/bdecode.hpp>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
-namespace fs = picotorrent::core::filesystem;
+#include <fstream>
+#include <sstream>
+
 namespace lt = libtorrent;
 
-bool picotorrent::core::is_valid_torrent_file(const fs::path &path)
+bool picotorrent::core::is_valid_torrent_file(const std::string &path)
 {
-    fs::file f(path);
-    std::vector<char> buf;
-    f.read_all(buf);
+    std::ifstream torrent_file(path, std::ios::binary);
+    if (!torrent_file) { return false; }
+
+    std::stringstream ss;
+    ss << torrent_file.rdbuf();
+    std::string buf = ss.str();
 
     lt::error_code ec;
     lt::bdecode_node node;

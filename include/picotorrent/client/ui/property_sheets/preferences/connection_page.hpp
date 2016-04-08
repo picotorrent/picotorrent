@@ -22,20 +22,20 @@ namespace preferences
     public:
         connection_page();
 
-        void add_proxy_type(const std::wstring &name, int type);
+        void add_proxy_type(const std::string &name, int type);
 
-        std::vector<std::wstring> get_listen_interfaces();
+        std::vector<std::pair<std::string, int>> get_listen_interfaces();
         int get_proxy_type();
-        std::wstring get_proxy_host();
+        std::string get_proxy_host();
         int get_proxy_port();
-        std::wstring get_proxy_username();
-        std::wstring get_proxy_password();
+        std::string get_proxy_username();
+        std::string get_proxy_password();
         bool get_proxy_force_checked();
         bool get_proxy_hostnames_checked();
         bool get_proxy_peers_checked();
         bool get_proxy_trackers_checked();
 
-        void set_listen_interfaces(const std::vector<std::wstring> &interfaces);
+        void set_listen_interfaces(const std::vector<std::pair<std::string, int>> &interfaces);
         void set_proxy_force_checked(bool enabled);
         void set_proxy_force_enabled(bool enabled);
         void set_proxy_hostnames_checked(bool enabled);
@@ -44,19 +44,18 @@ namespace preferences
         void set_proxy_peers_enabled(bool enabled);
         void set_proxy_trackers_checked(bool enabled);
         void set_proxy_trackers_enabled(bool enabled);
-        void set_proxy_host(const std::wstring &value);
+        void set_proxy_host(const std::string &value);
         void set_proxy_host_enabled(bool enabled);
-        void set_proxy_port(const std::wstring &value);
+        void set_proxy_port(const std::string &value);
         void set_proxy_port_enabled(bool enabled);
-        void set_proxy_username(const std::wstring &value);
+        void set_proxy_username(const std::string &value);
         void set_proxy_username_enabled(bool enabled);
-        void set_proxy_password(const std::wstring &value);
+        void set_proxy_password(const std::string &value);
         void set_proxy_password_enabled(bool enabled);
         void set_proxy_type(int type);
         void set_proxy_type_changed_callback(const std::function<void(int)> &callback);
 
     protected:
-        std::vector<BYTE> get_address_bytes(const std::wstring &address);
         BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam);
         void on_init_dialog();
         
@@ -64,7 +63,6 @@ namespace preferences
         void enable_window(int id, bool enabled);
         void check_changed(HWND hDlg, UINT uCtrlId, UINT uCommand);
         bool is_checked(int id);
-        std::wstring get_window_text(int id);
 
         std::function<void(int)> proxy_type_changed_cb_;
     };

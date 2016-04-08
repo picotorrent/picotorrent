@@ -31,23 +31,11 @@ endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 configure_file("${CMAKE_SOURCE_DIR}/src/core/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/core/version_info.cpp" @ONLY)
 
 set(PICOTORRENTCORE_SOURCES
-    # File system components
-    src/core/filesystem/directory
-    src/core/filesystem/file
-    src/core/filesystem/path
-
     # Misc
-    src/core/environment
-    src/core/string_operations
     src/core/version_info
-
-    # Logging components
-    src/core/logging/log
-    src/core/logging/log_record
 
     # BitTorrent components
     src/core/add_request
-    src/core/configuration
     src/core/is_valid_torrent_file
     src/core/hash
     src/core/peer
@@ -59,10 +47,19 @@ set(PICOTORRENTCORE_SOURCES
     src/core/tracker
 )
 
+# Append the correct PAL file to the core sources
+if(WIN32)
+    list(APPEND PICOTORRENTCORE_SOURCES src/core/pal_win32)
+else()
+endif()
+
 set(PICOTORRENT_SOURCES
     src/client/application
     src/client/command_line
+    src/client/configuration
+    src/client/environment
     src/client/message_loop
+    src/client/string_operations
     src/client/controllers/add_magnet_link_controller
     src/client/controllers/add_torrent_controller
     src/client/controllers/application_close_controller
@@ -75,6 +72,8 @@ set(PICOTORRENT_SOURCES
     src/client/controllers/unhandled_exception_controller
     src/client/controllers/view_preferences_controller
     src/client/i18n/translator
+    src/client/logging/log
+    src/client/logging/log_record
     src/client/net/http_client
     src/client/net/http_response
     src/client/net/uri
@@ -110,18 +109,22 @@ set(PICOTORRENT_SOURCES
     src/client/ui/torrent_drop_target
 )
 
-# Shared flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
+if(WIN32)
+    # Shared flags
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
 
-# Debug flags
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /Zi")
+    # Debug flags
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /Zi")
 
-# Release flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /Zi")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
-set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+    # Release flags
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /Zi")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
 
 include_directories(
     include/
@@ -133,17 +136,23 @@ link_directories(
 )
 
 add_definitions(
-    -D_UNICODE
-    -D_WIN32
-    -D_WIN32_WINNT=0x0600
     -DBOOST_ALL_NO_LIB
-    -DNOMINMAX
     -DPICOJSON_USE_INT64
     -DTORRENT_NO_DEPRECATE
-    -DUNICODE
-    -DWIN32
-    -DWIN32_LEAN_AND_MEAN
 )
+
+# WIN32 definitions
+if(WIN32)
+    add_definitions(
+        -D_UNICODE
+        -D_WIN32
+        -D_WIN32_WINNT=0x0600
+        -DNOMINMAX
+        -DUNICODE
+        -DWIN32
+        -DWIN32_LEAN_AND_MEAN
+    )
+endif()
 
 add_library(
     PicoTorrentCore
@@ -151,16 +160,18 @@ add_library(
     ${PICOTORRENTCORE_SOURCES}
 )
 
-add_executable(
-    PicoTorrent
-    WIN32
-    ${PICOTORRENT_SOURCES}
-    src/main
+if(WIN32)
+    add_executable(
+        PicoTorrent
+        WIN32
+        ${PICOTORRENT_SOURCES}
+        src/main
 
-    # The resources belong to the application itself
-    # to avoid linker issues.
-    src/client/pico.rc
-)
+        # The resources belong to the application itself
+        # to avoid linker issues.
+        src/client/pico.rc
+    )
+endif()
 
 target_link_libraries(
     PicoTorrentCore
@@ -182,12 +193,15 @@ target_link_libraries(
     optimized libtorrent-vc140-mt-s
 )
 
-target_link_libraries(
-    PicoTorrent
+if(WIN32)
+    target_link_libraries(
+        PicoTorrent
 
-    PicoTorrentCore
+        PicoTorrentCore
 
-    comctl32
-    UxTheme
-    winhttp
-)
+        comctl32
+        UxTheme
+        winhttp
+    )
+endif()
+

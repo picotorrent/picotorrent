@@ -2,16 +2,15 @@
 
 #include <algorithm>
 #include <picotorrent/core/add_request.hpp>
-#include <picotorrent/core/configuration.hpp>
-#include <picotorrent/core/logging/log.hpp>
+#include <picotorrent/core/pal.hpp>
 #include <picotorrent/core/session.hpp>
-#include <picotorrent/core/string_operations.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/torrent_info.hpp>
-#include <picotorrent/core/filesystem/file.hpp>
-#include <picotorrent/core/filesystem/path.hpp>
 #include <picotorrent/client/command_line.hpp>
+#include <picotorrent/client/configuration.hpp>
+#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
+#include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/dialogs/add_torrent_dialog.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/open_file_dialog.hpp>
@@ -26,13 +25,13 @@ const GUID DLG_OPEN = { 0x7D5FE367, 0xE148, 0x4A96,{ 0xB3, 0x26, 0x42, 0xEF, 0x2
 const GUID DLG_SAVE = { 0x7D5FE367, 0xE148, 0x4A96,{ 0xB3, 0x26, 0x42, 0xEF, 0x23, 0x7A, 0x36, 0x61 } };
 
 namespace core = picotorrent::core;
-namespace fs = picotorrent::core::filesystem;
 namespace ui = picotorrent::client::ui;
 using picotorrent::client::command_line;
+using picotorrent::client::to_wstring;
 using picotorrent::client::controllers::add_torrent_controller;
 using picotorrent::client::ui::dialogs::add_torrent_dialog;
-using picotorrent::core::configuration;
-using picotorrent::core::to_wstring;
+using picotorrent::client::configuration;
+using picotorrent::core::pal;
 
 add_torrent_controller::add_torrent_controller(
     const std::shared_ptr<core::session> &sess,
@@ -68,9 +67,9 @@ void add_torrent_controller::execute(const command_line &cmd)
     add_files(cmd.files());
 
     configuration &cfg = configuration::instance();
-    std::wstring default_save_path = cfg.default_save_path();
+    std::string default_save_path = cfg.default_save_path();
 
-    for (const std::wstring &magnet : cmd.magnet_links())
+    for (const std::string &magnet : cmd.magnet_links())
     {
         auto req = std::make_shared<core::add_request>();
         req->set_save_path(default_save_path);
@@ -82,7 +81,7 @@ void add_torrent_controller::execute(const command_line &cmd)
     show_add_dialog();
 }
 
-void add_torrent_controller::execute(const std::vector<fs::path> &files)
+void add_torrent_controller::execute(const std::vector<std::string> &files)
 {
     if (files.empty())
     {
@@ -101,7 +100,7 @@ void add_torrent_controller::execute(const std::vector<std::shared_ptr<core::tor
     }
 
     configuration &cfg = configuration::instance();
-    std::wstring default_save_path = cfg.default_save_path();
+    std::string default_save_path = cfg.default_save_path();
 
     for (const std::shared_ptr<core::torrent_info> &ti : torrents)
     {
@@ -115,12 +114,12 @@ void add_torrent_controller::execute(const std::vector<std::shared_ptr<core::tor
     show_add_dialog();
 }
 
-void add_torrent_controller::add_files(const std::vector<fs::path> &paths)
+void add_torrent_controller::add_files(const std::vector<std::string> &paths)
 {
     configuration &cfg = configuration::instance();
-    std::wstring save_path = cfg.default_save_path();
+    std::string save_path = cfg.default_save_path();
 
-    for (const fs::path &p : paths)
+    for (const std::string &p : paths)
     {
         auto ti = core::torrent_info::try_load(p);
         if (!ti) { continue; }
@@ -161,11 +160,11 @@ void add_torrent_controller::on_dialog_init()
 {
     for (auto &req : requests_)
     {
-        std::wstring name = TR("unknown_name");
+        std::string name = TR("unknown_name");
 
-        if (req->torrent_info())
+        if (req->ti())
         {
-            name = to_wstring(req->torrent_info()->name());
+            name = req->ti()->name();
         }
         else if(!req->name().empty())
         {
@@ -181,7 +180,7 @@ void add_torrent_controller::on_dialog_init()
 
 void add_torrent_controller::on_edit_save_path()
 {
-    std::wstring sp = get_save_path();
+    std::string sp = get_save_path();
 
     if (sp.empty())
     {
@@ -206,14 +205,14 @@ void add_torrent_controller::on_torrent_files_context_menu(const std::vector<int
     }
 
     HMENU prioMenu = CreateMenu();
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_MAX, TR("maximum"));
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_HIGH, TR("high"));
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_NORMAL, TR("normal"));
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_MAX, to_wstring(TR("maximum")).c_str());
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_HIGH, to_wstring(TR("high")).c_str());
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_NORMAL, to_wstring(TR("normal")).c_str());
     AppendMenu(prioMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_SKIP, TR("do_not_download"));
+    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_SKIP, to_wstring(TR("do_not_download")).c_str());
 
     HMENU menu = CreatePopupMenu();
-    AppendMenu(menu, MF_POPUP, (UINT_PTR)prioMenu, TR("priority"));
+    AppendMenu(menu, MF_POPUP, (UINT_PTR)prioMenu, to_wstring(TR("priority")).c_str());
 
     auto &req = requests_[dlg_->get_selected_torrent()];
 
@@ -278,25 +277,19 @@ void add_torrent_controller::on_torrent_files_context_menu(const std::vector<int
 void add_torrent_controller::show_torrent(int index)
 {
     std::shared_ptr<core::add_request> &req = requests_[index];
-    core::torrent_info_ptr ti = req->torrent_info();
+    core::torrent_info_ptr ti = req->ti();
 
     if (ti)
     {
-        std::wstring friendly_size(L"\0", 64);
-        StrFormatByteSize64(ti->total_size(), &friendly_size[0], (UINT)friendly_size.size());
-        dlg_->set_size(friendly_size);
-
+        dlg_->set_size(ti->total_size());
         dlg_->clear_torrent_files();
         dlg_->enable_files();
 
         for (int i = 0; i < ti->num_files(); i++)
         {
-            std::wstring file_size(L"\0", 64);
-            StrFormatByteSize64(ti->file_size(i), &file_size[0], (UINT)file_size.size());
-
             dlg_->add_torrent_file(
-                to_wstring(ti->file_path(i)),
-                file_size,
+                ti->file_path(i),
+                ti->file_size(i),
                 get_prio_str(req->file_priority(i)));
         }
     }
@@ -310,7 +303,7 @@ void add_torrent_controller::show_torrent(int index)
     dlg_->set_save_path(req->save_path());
 }
 
-std::wstring add_torrent_controller::get_save_path()
+std::string add_torrent_controller::get_save_path()
 {
     configuration &cfg = configuration::instance();
 
@@ -327,17 +320,17 @@ std::wstring add_torrent_controller::get_save_path()
 
     dlg.show(wnd_->handle());
 
-    std::vector<fs::path> paths = dlg.get_paths();
+    std::vector<std::string> paths = dlg.get_paths();
 
     if (paths.size() > 0)
     {
-        return paths[0].to_string();
+        return paths[0];
     }
 
-    return L"";
+    return "";
 }
 
-std::wstring add_torrent_controller::get_prio_str(int prio)
+std::string add_torrent_controller::get_prio_str(int prio)
 {
     switch (prio)
     {

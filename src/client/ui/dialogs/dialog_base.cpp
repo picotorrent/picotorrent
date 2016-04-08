@@ -1,5 +1,9 @@
 #include <picotorrent/client/ui/dialogs/dialog_base.hpp>
 
+#include <picotorrent/client/string_operations.hpp>
+
+using picotorrent::client::to_string;
+using picotorrent::client::to_wstring;
 using picotorrent::client::ui::dialogs::dialog_base;
 
 dialog_base::dialog_base(int id)
@@ -12,19 +16,24 @@ dialog_base::~dialog_base()
 {
 }
 
+void dialog_base::close()
+{
+    PostMessage(handle(), WM_CLOSE, 0, 0);
+}
+
 HWND dialog_base::handle()
 {
     return handle_;
 }
 
-std::wstring dialog_base::get_dlg_item_text(int controlId)
+std::string dialog_base::get_dlg_item_text(int controlId)
 {
     HWND hItem = GetDlgItem(handle(), controlId);
 
     TCHAR t[1024];
     GetWindowText(hItem, t, ARRAYSIZE(t));
 
-    return t;
+    return to_string(t);
 }
 
 bool dialog_base::is_dlg_button_checked(int controlId)
@@ -37,10 +46,15 @@ void dialog_base::set_dlg_button_checked(int controlId, bool checked)
     CheckDlgButton(handle(), controlId, checked ? BST_CHECKED : BST_UNCHECKED);
 }
 
-void dialog_base::set_dlg_item_text(int controlId, const std::wstring &text)
+void dialog_base::set_dlg_item_text(int controlId, const std::string &text)
 {
     HWND hItem = GetDlgItem(handle(), controlId);
-    SetWindowText(hItem, text.c_str());
+    SetWindowText(hItem, to_wstring(text).c_str());
+}
+
+void dialog_base::set_window_text(const std::string &text)
+{
+    SetWindowText(handle(), to_wstring(text).c_str());
 }
 
 BOOL dialog_base::on_command(int, WPARAM, LPARAM)

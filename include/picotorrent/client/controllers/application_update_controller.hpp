@@ -6,7 +6,6 @@
 
 namespace picotorrent
 {
-
 namespace client
 {
 namespace net
@@ -30,7 +29,7 @@ namespace controllers
         void execute(bool forced = false);
 
     protected:
-        void notify(const std::wstring &title, const net::uri &uri, const std::wstring &version);
+        void notify(const std::string &title, const net::uri &uri, const std::string &version);
         void on_response(const net::http_response &response, bool forced);
 
     private:

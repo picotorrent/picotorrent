@@ -12,10 +12,6 @@ namespace picotorrent
 {
 namespace core
 {
-namespace filesystem
-{
-    class path;
-}
     class session;
     class torrent;
 }
@@ -60,7 +56,7 @@ namespace controls
         core::signals::signal_connector<void, void>& on_session_alert_notify();
         void on_torrent_activated(const std::function<void(const std::shared_ptr<core::torrent>&)> &callback);
         void on_torrent_context_menu(const std::function<void(const POINT &p, const std::vector<std::shared_ptr<core::torrent>>&)> &callback);
-        core::signals::signal_connector<void, const std::vector<core::filesystem::path>&>& on_torrents_dropped();
+        core::signals::signal_connector<void, const std::vector<std::string>&>& on_torrents_dropped();
         void post_message(UINT uMsg, WPARAM wParam, LPARAM lParam);
         void send_message(UINT uMsg, WPARAM wParam, LPARAM lParam);
         void select_all_torrents();
@@ -68,7 +64,7 @@ namespace controls
     private:
         struct wnd_class_initializer;
 
-        std::wstring on_list_display(const std::pair<int, int> &p);
+        std::string on_list_display(const std::pair<int, int> &p);
         float on_list_progress(const std::pair<int, int> &p);
         void on_list_sort(const std::pair<int, int> &p);
 
@@ -91,7 +87,7 @@ namespace controls
         std::shared_ptr<core::session> sess_;
         std::unique_ptr<status_bar> status_;
         std::shared_ptr<taskbar_list> taskbar_;
-        std::wstring last_finished_save_path_;
+        std::string last_finished_save_path_;
         std::unique_ptr<sleep_manager> sleep_manager_;
         std::unique_ptr<torrent_drop_target> drop_target_;
 

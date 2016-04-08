@@ -36,12 +36,12 @@ namespace controls
         list_view(HWND handle);
         ~list_view();
 
-        void add_column(int id, const std::wstring &text, int width, col_type_t type = col_type_t::text);
+        void add_column(int id, const std::string &text, int width, col_type_t type = col_type_t::text);
         int get_column_count();
         std::vector<int> get_selection();
         sort_order_t get_sort_order(int columnId);
         
-        core::signals::signal_connector<std::wstring, const std::pair<int, int>&>& on_display();
+        core::signals::signal_connector<std::string, const std::pair<int, int>&>& on_display();
         core::signals::signal_connector<void, const std::vector<int>&>& on_item_context_menu();
         core::signals::signal_connector<int, const std::pair<int, int>&>& on_item_image();
         core::signals::signal_connector<float, const std::pair<int, int>&>& on_progress();
@@ -72,7 +72,7 @@ namespace controls
         HWND progress_;
 
         std::map<int, list_view_column> columns_;
-        core::signals::signal<std::wstring, const std::pair<int, int>&> on_display_;
+        core::signals::signal<std::string, const std::pair<int, int>&> on_display_;
         core::signals::signal<void, const std::vector<int>&> on_item_context_;
         core::signals::signal<int, const std::pair<int, int>&> on_item_image_;
         core::signals::signal<float, const std::pair<int, int>&> on_progress_;
