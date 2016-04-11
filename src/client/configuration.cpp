@@ -262,7 +262,6 @@ std::shared_ptr<session_configuration> configuration::session_configuration()
     cfg->temporary_directory = environment::get_temporary_directory();
     cfg->torrents_directory = pal::combine_paths(environment::get_data_path(), "Torrents");
     cfg->upload_rate_limit = upload_rate_limit();
-    cfg->use_picotorrent_peer_id = use_picotorrent_peer_id();
 
     // Proxy
     cfg->proxy_force = proxy_force();
@@ -304,16 +303,6 @@ int configuration::upload_rate_limit()
 void configuration::set_upload_rate_limit(int ul_rate)
 {
     set("global_ul_rate_limit", ul_rate);
-}
-
-bool configuration::use_picotorrent_peer_id()
-{
-    return get_or_default("use_picotorrent_peer_id", false);
-}
-
-void configuration::set_use_picotorrent_peer_id(bool value)
-{
-    set("use_picotorrent_peer_id", value);
 }
 
 template<typename T>

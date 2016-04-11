@@ -42,7 +42,6 @@ namespace core
         std::string temporary_directory;
         std::string torrents_directory;
         int upload_rate_limit;
-        bool use_picotorrent_peer_id;
 
         // Proxy settings
         proxy_type_t proxy_type;

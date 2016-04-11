@@ -132,9 +132,6 @@ namespace client
         int upload_rate_limit();
         void set_upload_rate_limit(int ul_rate);
 
-        bool use_picotorrent_peer_id();
-        void set_use_picotorrent_peer_id(bool value);
-
         std::shared_ptr<placement> window_placement(const std::string &name);
         void set_window_placement(const std::string &name, const placement &wnd);
 

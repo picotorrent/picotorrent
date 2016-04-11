@@ -64,8 +64,8 @@ void view_preferences_controller::execute()
     {
         *gen_page_,
         *dl_page_,
-        *conn_page_,
-        *adv_page_
+        *conn_page_
+        //*adv_page_
     };
 
     PROPSHEETHEADER header = { 0 };
@@ -91,13 +91,11 @@ void view_preferences_controller::execute()
 void view_preferences_controller::on_advanced_apply()
 {
     configuration &cfg = configuration::instance();
-    cfg.set_use_picotorrent_peer_id(adv_page_->use_picotorrent_id());
 }
 
 void view_preferences_controller::on_advanced_init()
 {
     configuration &cfg = configuration::instance();
-    adv_page_->set_use_picotorrent_id(cfg.use_picotorrent_peer_id());
 }
 
 void view_preferences_controller::on_downloads_apply()

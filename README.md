@@ -8,15 +8,25 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 
 ![](https://cdn.rawgit.com/picotorrent/picotorrent.github.io/master/img/screenshots/picotorrent1.png)
 
+
+## Quick facts
+
+- (Azureus-style) peer ID: `-PI-`. Example: `-PI0091-` (major: 0, minor: 09, patch: 1).
+- User agent: `PicoTorrent/x.y.z`.
+- The x86 executable is less than 1MB if compressed with UPX.
+- Native look-and-feel across Windows versions.
+- Support for magnet link pre-loading.
+
+
 ## Building PicoTorrent
 
 PicoTorrent depends only on what Rasterbar-libtorrent needs (Boost.System,
-Boost.Random, and OpenSSL) and all dependencies are conveniently pre-packaged
-in a NuGet package which will be downloaded as a part of the build process.
+and Boost.Random) and all dependencies are conveniently pre-packaged in a
+NuGet package which will be downloaded as a part of the build process.
 
 To successfully build PicoTorrent, you need the following tools installed,
 
-- CMake (>= v2.8) (installed & added to PATH)
+- CMake (>= v2.8) (installed and added to `PATH`)
 - Visual Studio 2015 (Community edition) (with C++ toolset installed)
 - Chocolatey (>= v0.9.9.11)
 
@@ -25,6 +35,7 @@ Build PicoTorrent by running the following in a PowerShell prompt,
 ```
 PS> .\build.ps1
 ```
+
 
 ## License
 
