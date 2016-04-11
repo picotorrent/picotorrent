@@ -250,26 +250,17 @@ std::shared_ptr<lt::settings_pack> session::get_session_settings()
     settings->set_int(lt::settings_pack::download_rate_limit, config_->download_rate_limit);
     settings->set_int(lt::settings_pack::upload_rate_limit, config_->upload_rate_limit);
 
-    // Set PicoTorrent peer id and user agent
-    if (config_->use_picotorrent_peer_id)
-    {
-        // Calculate user agent
-        std::stringstream user_agent;
-        user_agent << "PicoTorrent/" << version_info::current_version();
+    // Calculate user agent
+    std::stringstream user_agent;
+    user_agent << "PicoTorrent/" << version_info::current_version();
 
-        // Calculate peer id
-        semver::version v(version_info::current_version());
-        std::stringstream peer_id;
-        peer_id << "-PI" << v.getMajor() << std::setfill('0') << std::setw(2) << v.getMinor() << v.getPatch() << "-";
+    // Calculate peer id
+    semver::version v(version_info::current_version());
+    std::stringstream peer_id;
+    peer_id << "-PI" << v.getMajor() << std::setfill('0') << std::setw(2) << v.getMinor() << v.getPatch() << "-";
 
-        settings->set_str(lt::settings_pack::user_agent, user_agent.str());
-        settings->set_str(lt::settings_pack::peer_fingerprint, peer_id.str());
-    }
-    else
-    {
-        settings->set_str(lt::settings_pack::user_agent, "libtorrent/" LIBTORRENT_VERSION);
-        settings->set_str(lt::settings_pack::peer_fingerprint, "-LT1100-");
-    }
+    settings->set_str(lt::settings_pack::user_agent, user_agent.str());
+    settings->set_str(lt::settings_pack::peer_fingerprint, peer_id.str());
 
     // Proxy settings
     settings->set_int(lt::settings_pack::proxy_type, config_->proxy_type);
