@@ -14,6 +14,7 @@ namespace picotorrent
 namespace core
 {
     class add_request;
+    class hash;
     class torrent_info;
 
     typedef std::shared_ptr<torrent_info> torrent_info_ptr;
@@ -31,6 +32,7 @@ namespace core
 
         DLL_EXPORT std::string file_path(int index) const;
         DLL_EXPORT int64_t file_size(int index) const;
+        DLL_EXPORT std::shared_ptr<hash> info_hash() const;
         DLL_EXPORT std::string name();
         DLL_EXPORT int num_files() const;
         DLL_EXPORT int64_t total_size();

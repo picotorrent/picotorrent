@@ -1,13 +1,16 @@
 #include <picotorrent/core/torrent_info.hpp>
 
+#include <picotorrent/core/hash.hpp>
 #include <picotorrent/core/pal.hpp>
 #include <fstream>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
+#include <libtorrent/sha1_hash.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
 namespace lt = libtorrent;
+using picotorrent::core::hash;
 using picotorrent::core::pal;
 using picotorrent::core::torrent_info;
 
@@ -49,6 +52,11 @@ std::string torrent_info::file_path(int index) const
 int64_t torrent_info::file_size(int index) const
 {
     return info_->files().file_size(index);
+}
+
+std::shared_ptr<hash> torrent_info::info_hash() const
+{
+    return std::make_shared<hash>(info_->info_hash());
 }
 
 std::string torrent_info::name()

@@ -1,6 +1,7 @@
 #include <picotorrent/core/session.hpp>
 
 #include <picotorrent/core/add_request.hpp>
+#include <picotorrent/core/hash.hpp>
 #include <picotorrent/core/pal.hpp>
 #include <picotorrent/core/session_configuration.hpp>
 #include <picotorrent/core/session_metrics.hpp>
@@ -37,6 +38,7 @@ namespace lt = libtorrent;
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
 using picotorrent::core::add_request;
+using picotorrent::core::hash;
 using picotorrent::core::pal;
 using picotorrent::core::session;
 using picotorrent::core::session_configuration;
@@ -123,6 +125,11 @@ void session::get_metadata(const std::string &magnet)
     // Add the info hash to our list of currently requested metadata files.
     loading_metadata_.insert({ p.info_hash, nullptr });
     sess_->async_add_torrent(p);
+}
+
+bool session::has_torrent(const std::shared_ptr<hash> &hash)
+{
+    return (torrents_.find(*hash) != torrents_.end());
 }
 
 std::shared_ptr<session_metrics> session::metrics()

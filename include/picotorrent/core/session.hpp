@@ -30,6 +30,7 @@ namespace picotorrent
 namespace core
 {
     class add_request;
+    class hash;
     struct session_configuration;
     class session_metrics;
     class torrent;
@@ -43,6 +44,7 @@ namespace core
 
         DLL_EXPORT void add_torrent(const std::shared_ptr<add_request> &add);
         DLL_EXPORT void get_metadata(const std::string &magnet_link);
+        DLL_EXPORT bool has_torrent(const std::shared_ptr<hash> &hash);
         DLL_EXPORT std::shared_ptr<session_metrics> metrics();
 
         DLL_EXPORT void load();

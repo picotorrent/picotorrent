@@ -16,6 +16,9 @@
 #include <picotorrent/client/ui/open_file_dialog.hpp>
 #include <picotorrent/client/ui/open_torrent_dialog.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+#include <picotorrent/client/ui/task_dialog.hpp>
+
+#include <sstream>
 
 #include <windows.h>
 #include <shobjidl.h>
@@ -149,10 +152,36 @@ void add_torrent_controller::show_add_dialog()
 
 	if (res == IDOK)
 	{
+        std::vector<std::shared_ptr<core::torrent_info>> existing;
+
 		for (auto &req : requests_)
 		{
+            if (req->ti() && sess_->has_torrent(req->ti()->info_hash()))
+            {
+                existing.push_back(req->ti());
+                continue;
+            }
+
 			sess_->add_torrent(req);
 		}
+
+        if (existing.size() > 0)
+        {
+            std::stringstream ss;
+
+            for (auto &ti : existing)
+            {
+                ss << ti->name() << std::endl;
+            }
+
+            ui::task_dialog dlg;
+            dlg.set_common_buttons(TDCBF_OK_BUTTON);
+            dlg.set_content(ss.str());
+            dlg.set_main_icon(TD_WARNING_ICON);
+            dlg.set_main_instruction(TR("torrent_s_already_in_session"));
+            dlg.set_title("PicoTorrent");
+            dlg.show();
+        }
 	}
 }
 
