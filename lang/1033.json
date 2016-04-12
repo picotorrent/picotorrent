@@ -153,6 +153,7 @@
         "bottom": "Bottom",
         "remove_tracker_s": "Remove tracker(s)",
         "add_tracker": "Add tracker",
-        "seeds": "Seeds"
+        "seeds": "Seeds",
+        "torrent_s_already_in_session": "Torrent(s) already in session"
     }
 }
