@@ -39,7 +39,30 @@ INT_PTR property_sheet_page::dlg_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
     }
 
     case WM_INITDIALOG:
+    {
         handle_ = hwndDlg;
+
+        // Center dialog on parent
+        HWND hParent = GetParent(hwndDlg);
+        HWND hBase = GetParent(hParent);
+        RECT rcOwner;
+        RECT rcDlg;
+        RECT rc;
+
+        GetWindowRect(hBase, &rcOwner);
+        GetWindowRect(hParent, &rcDlg);
+        CopyRect(&rc, &rcOwner);
+
+        OffsetRect(&rcDlg, -rcDlg.left, -rcDlg.top);
+        OffsetRect(&rc, -rc.left, -rc.top);
+        OffsetRect(&rc, -rcDlg.right, -rcDlg.bottom);
+
+        SetWindowPos(hParent,
+            HWND_TOP,
+            rcOwner.left + (rc.right / 2),
+            rcOwner.top + 20,
+            0, 0,
+            SWP_NOSIZE);
 
         is_initializing_ = true;
         on_init_dialog();
@@ -47,6 +70,7 @@ INT_PTR property_sheet_page::dlg_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
         is_initializing_ = false;
 
         return TRUE;
+    }
 
     case WM_NOTIFY:
         LPNMHDR pnmh = (LPNMHDR)lParam;
