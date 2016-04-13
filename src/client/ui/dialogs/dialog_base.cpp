@@ -96,6 +96,34 @@ INT_PTR dialog_base::dlg_proc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
     case WM_INITDIALOG:
     {
         handle_ = hwndDlg;
+
+        // Center dialog on parent
+        HWND hParent = NULL;
+
+        if ((hParent = GetParent(hwndDlg)) == NULL)
+        {
+            hParent = GetDesktopWindow();
+        }
+
+        RECT rcOwner;
+        RECT rcDlg;
+        RECT rc;
+
+        GetWindowRect(hParent, &rcOwner);
+        GetWindowRect(hwndDlg, &rcDlg);
+        CopyRect(&rc, &rcOwner);
+
+        OffsetRect(&rcDlg, -rcDlg.left, -rcDlg.top);
+        OffsetRect(&rc, -rc.left, -rc.top);
+        OffsetRect(&rc, -rcDlg.right, -rcDlg.bottom);
+
+        SetWindowPos(hwndDlg,
+            HWND_TOP,
+            rcOwner.left + (rc.right / 2),
+            rcOwner.top + 20,
+            0, 0,
+            SWP_NOSIZE);
+
         return on_init_dialog();
     }
 
