@@ -33,6 +33,7 @@ To successfully build PicoTorrent, you need the following tools installed,
 Build PicoTorrent by running the following in a PowerShell prompt,
 
 ```
+PS> git submodule update --init
 PS> .\build.ps1
 ```
 
