@@ -107,6 +107,9 @@ set(PICOTORRENT_SOURCES
     src/client/ui/taskbar_list
     src/client/ui/torrent_context_menu
     src/client/ui/torrent_drop_target
+
+    # WebSocket server
+    src/client/ws/websocket_server
 )
 
 if(WIN32)
@@ -128,6 +131,7 @@ endif()
 
 include_directories(
     include/
+    libs/websocketpp
     tools/PicoTorrent.Libs/include
 )
 
@@ -145,6 +149,7 @@ add_definitions(
 # WIN32 definitions
 if(WIN32)
     add_definitions(
+        -D_SCL_SECURE_NO_WARNINGS
         -D_UNICODE
         -D_WIN32
         -D_WIN32_WINNT=0x0600

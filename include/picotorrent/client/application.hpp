@@ -25,6 +25,11 @@ namespace client
         class main_window;
     }
 
+    namespace ws
+    {
+        class websocket_server;
+    }
+
     class application
     {
     public:
@@ -59,6 +64,7 @@ namespace client
         HACCEL accelerators_;
         std::shared_ptr<ui::main_window> main_window_;
         std::shared_ptr<core::session> sess_;
+        std::shared_ptr<ws::websocket_server> ws_server_;
 
         std::shared_ptr<controllers::application_update_controller> updater_;
     };
