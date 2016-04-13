@@ -13,7 +13,7 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 
 - (Azureus-style) peer ID: `-PI-`. Example: `-PI0091-` (major: 0, minor: 09, patch: 1).
 - User agent: `PicoTorrent/x.y.z`.
-- The x86 executable is less than 1MB if compressed with UPX.
+- The x86 executable is less than 1.5MB if compressed with UPX.
 - Native look-and-feel across Windows versions.
 - Support for magnet link pre-loading.
 

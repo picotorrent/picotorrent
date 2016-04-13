@@ -139,6 +139,7 @@ add_definitions(
     -DBOOST_ALL_NO_LIB
     -DPICOJSON_USE_INT64
     -DTORRENT_NO_DEPRECATE
+    -DTORRENT_USE_OPENSSL
 )
 
 # WIN32 definitions
@@ -191,6 +192,10 @@ target_link_libraries(
     # Rasterbar-libtorrent
     debug     libtorrent-vc140-mt-sgd
     optimized libtorrent-vc140-mt-s
+
+    # OpenSSL
+    libeay32
+    ssleay32
 )
 
 if(WIN32)
