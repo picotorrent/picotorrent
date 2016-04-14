@@ -108,6 +108,10 @@ set(PICOTORRENT_SOURCES
     src/client/ui/torrent_context_menu
     src/client/ui/torrent_drop_target
 
+    # Security
+    src/client/security/certificate_manager
+    src/client/security/dh_params
+
     # WebSocket server
     src/client/ws/websocket_server
 )

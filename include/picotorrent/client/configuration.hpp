@@ -132,6 +132,11 @@ namespace client
         int upload_rate_limit();
         void set_upload_rate_limit(int ul_rate);
 
+        std::string websocket_certificate_file();
+        std::string websocket_certificate_password();
+        std::string websocket_cipher_list();
+        int websocket_listen_port();
+
         std::shared_ptr<placement> window_placement(const std::string &name);
         void set_window_placement(const std::string &name, const placement &wnd);
 

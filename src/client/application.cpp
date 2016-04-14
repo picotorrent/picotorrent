@@ -175,6 +175,7 @@ int application::run(const std::wstring &args)
         ShowWindow(main_window_->handle(), pos);
     }
 
+    ws_server_->start();
     sess_->load();
 
     if (!args.empty())
@@ -192,6 +193,8 @@ int application::run(const std::wstring &args)
     int result = message_loop::run(main_window_->handle(), accelerators_);
 
     sess_->unload();
+    ws_server_->stop();
+
     return result;
 }
 
