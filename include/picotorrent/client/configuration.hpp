@@ -132,6 +132,9 @@ namespace client
         int upload_rate_limit();
         void set_upload_rate_limit(int ul_rate);
 
+        std::string websocket_access_token();
+        void set_websocket_access_token(const std::string &token);
+
         std::string websocket_certificate_file();
         std::string websocket_certificate_password();
         std::string websocket_cipher_list();

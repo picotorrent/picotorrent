@@ -111,6 +111,7 @@ set(PICOTORRENT_SOURCES
     # Security
     src/client/security/certificate_manager
     src/client/security/dh_params
+    src/client/security/random_string_generator
 
     # WebSocket server
     src/client/ws/websocket_server

@@ -5,14 +5,18 @@
 #include <picotorrent/client/configuration.hpp>
 #include <picotorrent/client/security/certificate_manager.hpp>
 #include <picotorrent/client/security/dh_params.hpp>
+#include <picotorrent/client/security/random_string_generator.hpp>
 #include <picotorrent/core/pal.hpp>
 
 #pragma warning(disable : 4503)
+
+#define DEFAULT_TOKEN_SIZE 20
 
 namespace ssl = boost::asio::ssl;
 using picotorrent::client::configuration;
 using picotorrent::client::security::certificate_manager;
 using picotorrent::client::security::dh_params;
+using picotorrent::client::security::random_string_generator;
 using picotorrent::client::ws::websocket_server;
 using picotorrent::core::pal;
 
@@ -20,8 +24,21 @@ websocket_server::websocket_server()
     : srv_(std::make_shared<websocketpp_server>())
 {
     srv_->init_asio();
+    srv_->set_close_handler(std::bind(&websocket_server::on_close, this, std::placeholders::_1));
     srv_->set_message_handler(std::bind(&websocket_server::on_message, this, std::placeholders::_1));
+    srv_->set_open_handler(std::bind(&websocket_server::on_open, this, std::placeholders::_1));
     srv_->set_tls_init_handler(std::bind(&websocket_server::on_tls_init, this, std::placeholders::_1));
+    srv_->set_validate_handler(std::bind(&websocket_server::on_validate, this, std::placeholders::_1));
+
+    configuration &cfg = configuration::instance();
+    configured_token_ = cfg.websocket_access_token();
+
+    if (configured_token_.empty())
+    {
+        random_string_generator rsg;
+        configured_token_ = rsg.generate(DEFAULT_TOKEN_SIZE);
+        cfg.set_websocket_access_token(configured_token_);
+    }
 }
 
 websocket_server::~websocket_server()
@@ -44,8 +61,31 @@ std::string websocket_server::get_certificate_password()
     return configuration::instance().websocket_certificate_password();
 }
 
+void websocket_server::on_close(websocketpp::connection_hdl hdl)
+{
+    connections_.erase(hdl);
+}
+
 void websocket_server::on_message(websocketpp::connection_hdl hdl)
 {
+}
+
+void websocket_server::on_open(websocketpp::connection_hdl hdl)
+{
+    connections_.insert(hdl);
+}
+
+bool websocket_server::on_validate(websocketpp::connection_hdl hdl)
+{
+    auto connection = srv_->get_con_from_hdl(hdl);
+    std::string token = connection->get_request_header("X-PicoTorrent-Token");
+
+    if (token.empty())
+    {
+        return false;
+    }
+
+    return (configured_token_.compare(token) == 0);
 }
 
 context_ptr websocket_server::on_tls_init(websocketpp::connection_hdl hdl)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <set>
 #include <string>
 #include <thread>
 
@@ -32,14 +33,18 @@ namespace ws
         std::string get_certificate_file();
         std::string get_certificate_password();
 
+        void on_close(websocketpp::connection_hdl hdl);
         void on_message(websocketpp::connection_hdl hdl);
+        void on_open(websocketpp::connection_hdl hdl);
+        bool on_validate(websocketpp::connection_hdl hdl);
         context_ptr on_tls_init(websocketpp::connection_hdl hdl);
 
         void run();
 
+        std::string configured_token_;
         std::shared_ptr<websocketpp_server> srv_;
         std::thread bg_;
-        
+        std::set<websocketpp::connection_hdl, std::owner_less<websocketpp::connection_hdl>> connections_;
     };
 }
 }

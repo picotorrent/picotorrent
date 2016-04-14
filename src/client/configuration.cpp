@@ -305,6 +305,16 @@ void configuration::set_upload_rate_limit(int ul_rate)
     set("global_ul_rate_limit", ul_rate);
 }
 
+std::string configuration::websocket_access_token()
+{
+    return get_or_default<std::string>("websocket_access_token", "");
+}
+
+void configuration::set_websocket_access_token(const std::string &token)
+{
+    set("websocket_access_token", token);
+}
+
 std::string configuration::websocket_certificate_file()
 {
     std::string data_path = environment::get_data_path();
