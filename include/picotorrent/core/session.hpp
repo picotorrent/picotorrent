@@ -61,7 +61,7 @@ namespace core
         DLL_EXPORT core::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_added();
         DLL_EXPORT core::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_finished();
         DLL_EXPORT core::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_removed();
-        DLL_EXPORT core::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_updated();
+        DLL_EXPORT core::signals::signal_connector<void, const std::vector<std::shared_ptr<torrent>>&>& on_torrent_updated();
 
     protected:
         void on_load_torrent(const libtorrent::sha1_hash &hash, std::vector<char> &buf, libtorrent::error_code &ec);
@@ -94,7 +94,7 @@ namespace core
         core::signals::signal<void, const torrent_ptr&> on_torrent_added_;
         core::signals::signal<void, const torrent_ptr&> on_torrent_finished_;
         core::signals::signal<void, const torrent_ptr&> on_torrent_removed_;
-        core::signals::signal<void, const torrent_ptr&> on_torrent_updated_;
+        core::signals::signal<void, const std::vector<torrent_ptr>&> on_torrent_updated_;
     };
 }
 }

@@ -42,7 +42,7 @@ namespace controls
         void torrent_added(const std::shared_ptr<core::torrent>&);
         void torrent_finished(const std::shared_ptr<core::torrent>&);
         void torrent_removed(const std::shared_ptr<core::torrent>&);
-        void torrent_updated(const std::shared_ptr<core::torrent>&);
+        void torrent_updated(const std::vector<std::shared_ptr<core::torrent>>&);
 
         void exit();
         std::vector<std::shared_ptr<core::torrent>> get_selected_torrents();

@@ -7,6 +7,8 @@
 #include <picotorrent/client/security/dh_params.hpp>
 #include <picotorrent/client/security/random_string_generator.hpp>
 #include <picotorrent/core/pal.hpp>
+#include <picotorrent/core/session.hpp>
+#include <picotorrent/core/torrent.hpp>
 
 #pragma warning(disable : 4503)
 
@@ -19,11 +21,18 @@ using picotorrent::client::security::dh_params;
 using picotorrent::client::security::random_string_generator;
 using picotorrent::client::ws::websocket_server;
 using picotorrent::core::pal;
+using picotorrent::core::session;
+using picotorrent::core::torrent;
 
-websocket_server::websocket_server()
-    : srv_(std::make_shared<websocketpp_server>())
+websocket_server::websocket_server(const std::shared_ptr<session> &session)
+    : srv_(std::make_shared<websocketpp_server>()),
+    session_(session)
 {
-    srv_->init_asio();
+    session_->on_torrent_added().connect(std::bind(&websocket_server::on_torrent_added, this, std::placeholders::_1));
+    session_->on_torrent_removed().connect(std::bind(&websocket_server::on_torrent_removed, this, std::placeholders::_1));
+    session_->on_torrent_updated().connect(std::bind(&websocket_server::on_torrent_updated, this, std::placeholders::_1));
+
+    srv_->init_asio(&io_);
     srv_->set_close_handler(std::bind(&websocket_server::on_close, this, std::placeholders::_1));
     srv_->set_message_handler(std::bind(&websocket_server::on_message, this, std::placeholders::_1));
     srv_->set_open_handler(std::bind(&websocket_server::on_open, this, std::placeholders::_1));
@@ -118,6 +127,34 @@ context_ptr websocket_server::on_tls_init(websocketpp::connection_hdl hdl)
     SSL_CTX_set_cipher_list(ctx->native_handle(), cfg.websocket_cipher_list().c_str());
 
     return ctx;
+}
+
+void websocket_server::on_torrent_added(const std::shared_ptr<torrent> &torrent)
+{
+    io_.post([this, torrent]()
+    {
+        torrents_.push_back(torrent);
+        // TODO: emit torrent_added event.
+    });
+}
+
+void websocket_server::on_torrent_removed(const std::shared_ptr<torrent> &torrent)
+{
+    io_.post([this, torrent]()
+    {
+        auto &f = std::find(torrents_.begin(), torrents_.end(), torrent);
+        if (f == torrents_.end()) { return; }
+        torrents_.erase(f);
+        // TODO: emit torrent_removed event.
+    });
+}
+
+void websocket_server::on_torrent_updated(const std::vector<std::shared_ptr<torrent>> &torrents)
+{
+    io_.post([this, torrents]()
+    {
+        // TODO: emit torrent_updated event.
+    });
 }
 
 void websocket_server::run()

@@ -4,6 +4,7 @@
 #include <set>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
 #include <websocketpp/config/asio.hpp>
@@ -16,6 +17,11 @@ typedef std::shared_ptr<websocketpp::lib::asio::ssl::context> context_ptr;
 
 namespace picotorrent
 {
+namespace core
+{
+    class session;
+    class torrent;
+}
 namespace client
 {
 namespace ws
@@ -23,7 +29,7 @@ namespace ws
     class websocket_server
     {
     public:
-        websocket_server();
+        websocket_server(const std::shared_ptr<core::session> &session);
         ~websocket_server();
 
         void start();
@@ -39,12 +45,22 @@ namespace ws
         bool on_validate(websocketpp::connection_hdl hdl);
         context_ptr on_tls_init(websocketpp::connection_hdl hdl);
 
+        void on_torrent_added(const std::shared_ptr<core::torrent> &torrent);
+        void on_torrent_removed(const std::shared_ptr<core::torrent> &torrent);
+        void on_torrent_updated(const std::vector<std::shared_ptr<core::torrent>> &torrents);
+
         void run();
 
+        boost::asio::io_service io_;
         std::string configured_token_;
         std::shared_ptr<websocketpp_server> srv_;
         std::thread bg_;
         std::set<websocketpp::connection_hdl, std::owner_less<websocketpp::connection_hdl>> connections_;
+
+        // We should probably not store the torrents and session directly
+        // on top of the WebSocket server, but lets do it for now.
+        std::shared_ptr<core::session> session_;
+        std::vector<std::shared_ptr<core::torrent>> torrents_;
     };
 }
 }

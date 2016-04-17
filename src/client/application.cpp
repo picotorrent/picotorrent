@@ -82,7 +82,7 @@ bool application::init()
 
     sess_ = std::make_shared<core::session>(configuration::instance().session_configuration());
     main_window_ = std::make_shared<ui::main_window>(sess_);
-    ws_server_ = std::make_shared<websocket_server>();
+    ws_server_ = std::make_shared<websocket_server>(sess_);
 
     main_window_->on_command(ID_FILE_ADD_TORRENT, std::bind(&application::on_file_add_torrent, this));
     main_window_->on_command(ID_FILE_ADD_MAGNET_LINK, std::bind(&application::on_file_add_magnet_link, this));
