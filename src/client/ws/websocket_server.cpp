@@ -8,6 +8,8 @@
 #include <picotorrent/client/security/random_string_generator.hpp>
 #include <picotorrent/client/ws/messages/pico_state_message.hpp>
 #include <picotorrent/client/ws/messages/torrent_added_message.hpp>
+#include <picotorrent/client/ws/messages/torrent_removed_message.hpp>
+#include <picotorrent/core/hash.hpp>
 #include <picotorrent/core/pal.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent.hpp>
@@ -164,7 +166,16 @@ void websocket_server::on_torrent_removed(const std::shared_ptr<torrent> &torren
         auto &f = std::find(torrents_.begin(), torrents_.end(), torrent);
         if (f == torrents_.end()) { return; }
         torrents_.erase(f);
-        // TODO: emit torrent_removed event.
+
+        std::string hash = torrent->info_hash()->to_string();
+        msg::torrent_removed_message rem(hash);
+        
+        for (auto hdl : connections_)
+        {
+            srv_
+                ->get_con_from_hdl(hdl)
+                ->send(rem.serialize());
+        }
     });
 }
 

@@ -117,6 +117,7 @@ set(PICOTORRENT_SOURCES
     src/client/ws/websocket_server
     src/client/ws/messages/pico_state_message
     src/client/ws/messages/torrent_added_message
+    src/client/ws/messages/torrent_removed_message
     src/client/ws/serialization/torrent_serializer
 )
 
