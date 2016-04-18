@@ -6,6 +6,8 @@
 #include <picotorrent/client/security/certificate_manager.hpp>
 #include <picotorrent/client/security/dh_params.hpp>
 #include <picotorrent/client/security/random_string_generator.hpp>
+#include <picotorrent/client/ws/messages/pico_state_message.hpp>
+#include <picotorrent/client/ws/messages/torrent_added_message.hpp>
 #include <picotorrent/core/pal.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent.hpp>
@@ -15,6 +17,8 @@
 #define DEFAULT_TOKEN_SIZE 20
 
 namespace ssl = boost::asio::ssl;
+
+namespace msg = picotorrent::client::ws::messages;
 using picotorrent::client::configuration;
 using picotorrent::client::security::certificate_manager;
 using picotorrent::client::security::dh_params;
@@ -82,6 +86,13 @@ void websocket_server::on_message(websocketpp::connection_hdl hdl)
 void websocket_server::on_open(websocketpp::connection_hdl hdl)
 {
     connections_.insert(hdl);
+
+    msg::pico_state_message psm(torrents_);
+    std::string ser = psm.serialize();
+
+    // Send our pico_state message.
+    srv_->get_con_from_hdl(hdl)
+        ->send(ser);
 }
 
 bool websocket_server::on_validate(websocketpp::connection_hdl hdl)
@@ -134,7 +145,15 @@ void websocket_server::on_torrent_added(const std::shared_ptr<torrent> &torrent)
     io_.post([this, torrent]()
     {
         torrents_.push_back(torrent);
-        // TODO: emit torrent_added event.
+        
+        msg::torrent_added_message add(torrent);
+        
+        for (auto hdl : connections_)
+        {
+            srv_
+                ->get_con_from_hdl(hdl)
+                ->send(add.serialize());
+        }
     });
 }
 

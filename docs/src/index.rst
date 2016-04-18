@@ -1,5 +1,5 @@
-Documentation
-=============
+PicoTorrent
+===========
 
 Overview
 --------
@@ -11,19 +11,7 @@ Rasterbar-libtorrent and the raw Win32 API.
           `pull requests <https://github.com/picotorrent/picotorrent>`_!
 
 
-For developers
---------------
-
-
-The WebSocket API
-~~~~~~~~~~~~~~~~~
-
-PicoTorrent has an embedded WebSocket API to allow remote clients to connect
-and consume a live stream of updates. The WebSocket endpoint is (by default)
-available at :file:`http://localhost:7676/`.
-
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   Authentication <websocket-api/authentication>
-   Messages <websocket-api/messages>
+   websocket-api/index
