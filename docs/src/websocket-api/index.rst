@@ -38,3 +38,6 @@ state for PicoTorrent.
    :maxdepth: 1
 
    pico_state <messages/pico_state_message>
+   torrent_added <messages/torrent_added_message>
+   torrent_removed <messages/torrent_removed_message>
+   torrent_updated <messages/torrent_updated_message>

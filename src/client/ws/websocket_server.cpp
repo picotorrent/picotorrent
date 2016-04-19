@@ -9,6 +9,7 @@
 #include <picotorrent/client/ws/messages/pico_state_message.hpp>
 #include <picotorrent/client/ws/messages/torrent_added_message.hpp>
 #include <picotorrent/client/ws/messages/torrent_removed_message.hpp>
+#include <picotorrent/client/ws/messages/torrent_updated_message.hpp>
 #include <picotorrent/core/hash.hpp>
 #include <picotorrent/core/pal.hpp>
 #include <picotorrent/core/session.hpp>
@@ -149,12 +150,13 @@ void websocket_server::on_torrent_added(const std::shared_ptr<torrent> &torrent)
         torrents_.push_back(torrent);
         
         msg::torrent_added_message add(torrent);
-        
+        std::string payload = add.serialize();
+
         for (auto hdl : connections_)
         {
             srv_
                 ->get_con_from_hdl(hdl)
-                ->send(add.serialize());
+                ->send(payload);
         }
     });
 }
@@ -168,13 +170,15 @@ void websocket_server::on_torrent_removed(const std::shared_ptr<torrent> &torren
         torrents_.erase(f);
 
         std::string hash = torrent->info_hash()->to_string();
+
         msg::torrent_removed_message rem(hash);
-        
+        std::string payload = rem.serialize();
+
         for (auto hdl : connections_)
         {
             srv_
                 ->get_con_from_hdl(hdl)
-                ->send(rem.serialize());
+                ->send(payload);
         }
     });
 }
@@ -183,7 +187,15 @@ void websocket_server::on_torrent_updated(const std::vector<std::shared_ptr<torr
 {
     io_.post([this, torrents]()
     {
-        // TODO: emit torrent_updated event.
+        msg::torrent_updated_message upd(torrents);
+        std::string payload = upd.serialize();
+
+        for (auto hdl : connections_)
+        {
+            srv_
+                ->get_con_from_hdl(hdl)
+                ->send(payload);
+        }
     });
 }
 
