@@ -8,6 +8,16 @@ since you do not need to poll for changes.
 
 .. note:: All examples shown here assumes a default configuration.
 
+
+Configuring the WebSocket
+-------------------------
+
+To enable the WebSocket API, go to
+:menuselection:`View --> Preferences --> Remote`. From here you can also
+change the listen port as well as view certificate information and
+authentication token.
+
+
 Connecting
 ----------
 
@@ -41,3 +51,14 @@ state for PicoTorrent.
    torrent_added <messages/torrent_added_message>
    torrent_removed <messages/torrent_removed_message>
    torrent_updated <messages/torrent_updated_message>
+
+
+Objects
+-------
+
+Each message may contain one or more well-documented objects.
+
+.. toctree::
+   :maxdepth: 1
+
+   torrent <objects/torrent>
