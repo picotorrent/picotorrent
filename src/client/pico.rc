@@ -129,6 +129,17 @@ FONT 9, "MS Shell Dlg"
     CHECKBOX "", ID_PROXY_TRACKERS, 125, 171, 100, 10
 }
 
+// Preferences - Remote
+IDD_PREFERENCES_REMOTE DIALOGEX 0, 0, 0, 0
+FONT 9, "MS Shell Dlg"
+{
+    // -- WebSocket options
+    GROUPBOX "", ID_REMOTE_OPTIONS_GROUP, 5, 10, 240, 45
+    CHECKBOX "", ID_REMOTE_ENABLE, 10, 23, 100, 10
+    LTEXT "", ID_REMOTE_PORT_TEXT, 10, 38, 80, 10
+    EDITTEXT ID_REMOTE_PORT, 75, 38, 30, 11, ES_NUMBER
+}
+
 // Preferences - Advanced
 IDD_PREFERENCES_ADVANCED DIALOGEX 0, 0, 0, 0
 FONT 9, "MS Shell Dlg"

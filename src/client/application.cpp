@@ -175,7 +175,11 @@ int application::run(const std::wstring &args)
         ShowWindow(main_window_->handle(), pos);
     }
 
-    ws_server_->start();
+    if (cfg.websocket_enabled())
+    {
+        ws_server_->start();
+    }
+
     sess_->load();
 
     if (!args.empty())
@@ -185,7 +189,7 @@ int application::run(const std::wstring &args)
 
     updater_ = std::make_shared<controllers::application_update_controller>(main_window_);
 
-    if (configuration::instance().check_for_updates())
+    if (cfg.check_for_updates())
     {
         updater_->execute();
     }
@@ -332,7 +336,7 @@ void application::on_torrents_dropped(const std::vector<std::string> &files)
 
 void application::on_view_preferences()
 {
-    controllers::view_preferences_controller view_prefs(sess_, main_window_);
+    controllers::view_preferences_controller view_prefs(sess_, main_window_, ws_server_);
     view_prefs.execute();
 }
 

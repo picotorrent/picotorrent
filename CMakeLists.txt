@@ -94,6 +94,7 @@ set(PICOTORRENT_SOURCES
     src/client/ui/property_sheets/preferences/connection_page
     src/client/ui/property_sheets/preferences/downloads_page
     src/client/ui/property_sheets/preferences/general_page
+    src/client/ui/property_sheets/preferences/remote_page
     src/client/ui/file_dialog_callback
     src/client/ui/main_window
     src/client/ui/notify_icon

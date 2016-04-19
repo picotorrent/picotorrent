@@ -138,7 +138,10 @@ namespace client
         std::string websocket_certificate_file();
         std::string websocket_certificate_password();
         std::string websocket_cipher_list();
+        bool websocket_enabled();
+        void set_websocket_enabled(bool value);
         int websocket_listen_port();
+        void set_websocket_listen_port(int port);
 
         std::shared_ptr<placement> window_placement(const std::string &name);
         void set_window_placement(const std::string &name, const placement &wnd);

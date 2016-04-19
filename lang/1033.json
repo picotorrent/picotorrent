@@ -154,6 +154,9 @@
         "remove_tracker_s": "Remove tracker(s)",
         "add_tracker": "Add tracker",
         "seeds": "Seeds",
-        "torrent_s_already_in_session": "Torrent(s) already in session"
+        "torrent_s_already_in_session": "Torrent(s) already in session",
+        "remote": "Remote",
+        "options": "Options",
+        "enable_websocket_api": "Enable the WebSocket API"
     }
 }

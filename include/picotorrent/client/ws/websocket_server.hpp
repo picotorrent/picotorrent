@@ -32,10 +32,12 @@ namespace ws
         websocket_server(const std::shared_ptr<core::session> &session);
         ~websocket_server();
 
+        bool is_listening();
         void start();
         void stop();
 
     private:
+        bool is_running_;
         std::string get_certificate_file();
         std::string get_certificate_password();
 

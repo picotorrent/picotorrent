@@ -61,14 +61,29 @@ websocket_server::~websocket_server()
 {
 }
 
+bool websocket_server::is_listening()
+{
+    return srv_->is_listening();
+}
+
 void websocket_server::start()
 {
+    if (is_listening())
+    {
+        return;
+    }
+
     bg_ = std::thread(std::bind(&websocket_server::run, this));
 }
 
 void websocket_server::stop()
 {
-    srv_->get_io_service().stop();
+    if (!is_listening())
+    {
+        return;
+    }
+
+    srv_->stop_listening();
     bg_.join();
 }
 
