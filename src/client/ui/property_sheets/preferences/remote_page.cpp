@@ -11,6 +11,13 @@ remote_page::remote_page()
     set_instance(GetModuleHandle(NULL));
     set_template_id(IDD_PREFERENCES_REMOTE);
     set_title(TR("remote"));
+
+    edit_font_ = CreateFont(14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, TEXT("Consolas"));
+}
+
+remote_page::~remote_page()
+{
+    DeleteObject(edit_font_);
 }
 
 bool remote_page::enable_websocket_api()
@@ -18,10 +25,20 @@ bool remote_page::enable_websocket_api()
     return IsDlgButtonChecked(handle(), ID_REMOTE_ENABLE) == BST_CHECKED;
 }
 
+void remote_page::set_certificate_public_key(const std::string &pubkey)
+{
+    set_dlg_item_text(ID_REMOTE_CERT_PUBKEY, pubkey);
+}
+
 void remote_page::set_enable_websocket_api(bool value)
 {
     UINT check = value ? BST_CHECKED : BST_UNCHECKED;
     CheckDlgButton(handle(), ID_REMOTE_ENABLE, check);
+}
+
+void remote_page::set_websocket_access_token(const std::string &token)
+{
+    set_dlg_item_text(ID_REMOTE_TOKEN, token);
 }
 
 void remote_page::set_websocket_port(int port)
@@ -61,6 +78,21 @@ void remote_page::on_init_dialog()
     set_dlg_item_text(ID_REMOTE_OPTIONS_GROUP, TR("options"));
     set_dlg_item_text(ID_REMOTE_ENABLE, TR("enable_websocket_api"));
     set_dlg_item_text(ID_REMOTE_PORT_TEXT, TR("port"));
+    set_dlg_item_text(ID_REMOTE_SECURITY_GROUP, TR("security"));
+    set_dlg_item_text(ID_REMOTE_TOKEN_TEXT, TR("access_token"));
+    set_dlg_item_text(ID_REMOTE_CERT_TEXT, TR("certificate_public_key"));
+
+    SendMessage(
+        GetDlgItem(handle(), ID_REMOTE_TOKEN),
+        WM_SETFONT,
+        (WPARAM)edit_font_,
+        0);
+
+    SendMessage(
+        GetDlgItem(handle(), ID_REMOTE_CERT_PUBKEY),
+        WM_SETFONT,
+        (WPARAM)edit_font_,
+        0);
 }
 
 void remote_page::check_changed(HWND hDlg, UINT uCtrlId, UINT uCommand)

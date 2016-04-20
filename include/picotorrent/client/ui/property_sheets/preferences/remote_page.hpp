@@ -17,9 +17,12 @@ namespace preferences
     {
     public:
         remote_page();
+        ~remote_page();
 
         bool enable_websocket_api();
+        void set_certificate_public_key(const std::string &pubkey);
         void set_enable_websocket_api(bool value);
+        void set_websocket_access_token(const std::string &token);
         void set_websocket_port(int port);
         int websocket_port();
 
@@ -29,6 +32,8 @@ namespace preferences
 
     private:
         void check_changed(HWND hDlg, UINT uCtrlId, UINT uCommand);
+
+        HFONT edit_font_;
     };
 }
 }

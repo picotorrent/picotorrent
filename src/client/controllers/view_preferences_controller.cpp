@@ -5,6 +5,7 @@
 #include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/logging/log.hpp>
+#include <picotorrent/client/security/certificate_manager.hpp>
 #include <picotorrent/client/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/client/ui/property_sheets/property_sheet_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/advanced_page.hpp>
@@ -321,7 +322,13 @@ void view_preferences_controller::on_remote_init()
     configuration &cfg = configuration::instance();
 
     remote_page_->set_enable_websocket_api(cfg.websocket_enabled());
+    remote_page_->set_websocket_access_token(cfg.websocket_access_token());
     remote_page_->set_websocket_port(cfg.websocket_listen_port());
+
+    std::string cert_file = cfg.websocket_certificate_file();
+    std::string pub_key = security::certificate_manager::extract_public_key(cert_file);
+
+    remote_page_->set_certificate_public_key(pub_key);
 }
 
 void view_preferences_controller::create_run_key()

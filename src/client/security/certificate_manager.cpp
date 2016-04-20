@@ -1,5 +1,8 @@
 #include <picotorrent/client/security/certificate_manager.hpp>
 
+#include <iomanip>
+#include <sstream>
+
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 
@@ -42,6 +45,31 @@ X509* generate_x509(EVP_PKEY *pkey)
     X509_sign(x509, pkey, EVP_sha1());
 
     return x509;
+}
+
+std::string certificate_manager::extract_public_key(const std::string &certificate_file)
+{
+    BIO *certbio = BIO_new(BIO_s_file());
+    BIO *outbio = BIO_new(BIO_s_mem());
+
+    BIO_read_filename(certbio, certificate_file.c_str());
+
+    X509 *cert = PEM_read_bio_X509(certbio, NULL, 0, NULL);
+    ASN1_BIT_STRING *pubKey = X509_get0_pubkey_bitstr(cert);
+
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+
+    for (int i = 0; i < pubKey->length; i++)
+    {
+        ss << std::setw(2) << std::hex << static_cast<unsigned>(pubKey->data[i]);
+    }
+
+    X509_free(cert);
+    BIO_free_all(certbio);
+    BIO_free_all(outbio);
+
+    return ss.str();
 }
 
 std::vector<char> certificate_manager::generate()
