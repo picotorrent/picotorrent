@@ -5,15 +5,18 @@
 #include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/logging/log.hpp>
+#include <picotorrent/client/security/certificate_manager.hpp>
 #include <picotorrent/client/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/client/ui/property_sheets/property_sheet_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/advanced_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/connection_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/downloads_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/general_page.hpp>
+#include <picotorrent/client/ui/property_sheets/preferences/remote_page.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
+#include <picotorrent/client/ws/websocket_server.hpp>
 #include <vector>
 
 #include <iphlpapi.h>
@@ -28,15 +31,19 @@ using picotorrent::client::controllers::view_preferences_controller;
 using picotorrent::client::ui::dialogs::preferences_dialog;
 using picotorrent::client::ui::property_sheets::property_sheet_page;
 using picotorrent::client::ui::task_dialog;
+using picotorrent::client::ws::websocket_server;
 
 view_preferences_controller::view_preferences_controller(const std::shared_ptr<session> &sess,
-    const std::shared_ptr<ui::main_window> &wnd)
+    const std::shared_ptr<ui::main_window> &wnd,
+    const std::shared_ptr<websocket_server> &ws)
     : sess_(sess),
     wnd_(wnd),
+    ws_(ws),
     adv_page_(std::make_unique<prefs::advanced_page>()),
     conn_page_(std::make_unique<prefs::connection_page>()),
     dl_page_(std::make_unique<prefs::downloads_page>()),
-    gen_page_(std::make_unique<prefs::general_page>())
+    gen_page_(std::make_unique<prefs::general_page>()),
+    remote_page_(std::make_unique<prefs::remote_page>())
 {
     adv_page_->on_apply().connect(std::bind(&view_preferences_controller::on_advanced_apply, this));
     adv_page_->on_init().connect(std::bind(&view_preferences_controller::on_advanced_init, this));
@@ -52,6 +59,9 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
 
     gen_page_->on_apply().connect(std::bind(&view_preferences_controller::on_general_apply, this));
     gen_page_->on_init().connect(std::bind(&view_preferences_controller::on_general_init, this));
+
+    remote_page_->on_apply().connect(std::bind(&view_preferences_controller::on_remote_apply, this));
+    remote_page_->on_init().connect(std::bind(&view_preferences_controller::on_remote_init, this));
 }
 
 view_preferences_controller::~view_preferences_controller()
@@ -64,7 +74,8 @@ void view_preferences_controller::execute()
     {
         *gen_page_,
         *dl_page_,
-        *conn_page_
+        *conn_page_,
+        *remote_page_
         //*adv_page_
     };
 
@@ -284,6 +295,40 @@ void view_preferences_controller::on_general_init()
     gen_page_->select_language(i18n::translator::instance().get_current_lang_id());
     gen_page_->select_start_position((int)configuration::instance().start_position());
     gen_page_->set_autostart_checked(has_run_key());
+}
+
+void view_preferences_controller::on_remote_apply()
+{
+    configuration &cfg = configuration::instance();
+
+    cfg.set_websocket_enabled(remote_page_->enable_websocket_api());
+    if (remote_page_->websocket_port() > 0)
+    {
+        cfg.set_websocket_listen_port(remote_page_->websocket_port());
+    }
+
+    if (cfg.websocket_enabled())
+    {
+        ws_->start();
+    }
+    else if (!cfg.websocket_enabled())
+    {
+        ws_->stop();
+    }
+}
+
+void view_preferences_controller::on_remote_init()
+{
+    configuration &cfg = configuration::instance();
+
+    remote_page_->set_enable_websocket_api(cfg.websocket_enabled());
+    remote_page_->set_websocket_access_token(cfg.websocket_access_token());
+    remote_page_->set_websocket_port(cfg.websocket_listen_port());
+
+    std::string cert_file = cfg.websocket_certificate_file();
+    std::string pub_key = security::certificate_manager::extract_public_key(cert_file);
+
+    remote_page_->set_certificate_public_key(pub_key);
 }
 
 void view_preferences_controller::create_run_key()

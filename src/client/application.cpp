@@ -16,6 +16,7 @@
 #include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+#include <picotorrent/client/ws/websocket_server.hpp>
 
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/session_configuration.hpp>
@@ -33,6 +34,7 @@ using picotorrent::client::application;
 using picotorrent::client::command_line;
 using picotorrent::client::configuration;
 using picotorrent::client::logging::log;
+using picotorrent::client::ws::websocket_server;
 
 application::application()
     : mtx_(NULL),
@@ -80,6 +82,7 @@ bool application::init()
 
     sess_ = std::make_shared<core::session>(configuration::instance().session_configuration());
     main_window_ = std::make_shared<ui::main_window>(sess_);
+    ws_server_ = std::make_shared<websocket_server>(sess_);
 
     main_window_->on_command(ID_FILE_ADD_TORRENT, std::bind(&application::on_file_add_torrent, this));
     main_window_->on_command(ID_FILE_ADD_MAGNET_LINK, std::bind(&application::on_file_add_magnet_link, this));
@@ -172,6 +175,11 @@ int application::run(const std::wstring &args)
         ShowWindow(main_window_->handle(), pos);
     }
 
+    if (cfg.websocket_enabled())
+    {
+        ws_server_->start();
+    }
+
     sess_->load();
 
     if (!args.empty())
@@ -181,7 +189,7 @@ int application::run(const std::wstring &args)
 
     updater_ = std::make_shared<controllers::application_update_controller>(main_window_);
 
-    if (configuration::instance().check_for_updates())
+    if (cfg.check_for_updates())
     {
         updater_->execute();
     }
@@ -189,6 +197,8 @@ int application::run(const std::wstring &args)
     int result = message_loop::run(main_window_->handle(), accelerators_);
 
     sess_->unload();
+    ws_server_->stop();
+
     return result;
 }
 
@@ -326,7 +336,7 @@ void application::on_torrents_dropped(const std::vector<std::string> &files)
 
 void application::on_view_preferences()
 {
-    controllers::view_preferences_controller view_prefs(sess_, main_window_);
+    controllers::view_preferences_controller view_prefs(sess_, main_window_, ws_server_);
     view_prefs.execute();
 }
 

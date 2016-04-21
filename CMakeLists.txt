@@ -94,6 +94,7 @@ set(PICOTORRENT_SOURCES
     src/client/ui/property_sheets/preferences/connection_page
     src/client/ui/property_sheets/preferences/downloads_page
     src/client/ui/property_sheets/preferences/general_page
+    src/client/ui/property_sheets/preferences/remote_page
     src/client/ui/file_dialog_callback
     src/client/ui/main_window
     src/client/ui/notify_icon
@@ -107,6 +108,20 @@ set(PICOTORRENT_SOURCES
     src/client/ui/taskbar_list
     src/client/ui/torrent_context_menu
     src/client/ui/torrent_drop_target
+
+    # Security
+    src/client/security/certificate_manager
+    src/client/security/dh_params
+    src/client/security/random_string_generator
+
+    # WebSocket server
+    src/client/ws/websocket_server
+    src/client/ws/messages/pico_state_message
+    src/client/ws/messages/torrent_added_message
+    src/client/ws/messages/torrent_finished_message
+    src/client/ws/messages/torrent_removed_message
+    src/client/ws/messages/torrent_updated_message
+    src/client/ws/serialization/torrent_serializer
 )
 
 if(WIN32)
@@ -128,6 +143,7 @@ endif()
 
 include_directories(
     include/
+    libs/websocketpp
     tools/PicoTorrent.Libs/include
 )
 
@@ -145,6 +161,7 @@ add_definitions(
 # WIN32 definitions
 if(WIN32)
     add_definitions(
+        -D_SCL_SECURE_NO_WARNINGS
         -D_UNICODE
         -D_WIN32
         -D_WIN32_WINNT=0x0600

@@ -204,7 +204,7 @@ signal_connector<void, const session::torrent_ptr&>& session::on_torrent_removed
     return on_torrent_removed_;
 }
 
-signal_connector<void, const session::torrent_ptr&>& session::on_torrent_updated()
+signal_connector<void, const std::vector<session::torrent_ptr>&>& session::on_torrent_updated()
 {
     return on_torrent_updated_;
 }
@@ -538,6 +538,7 @@ void session::notify()
         case lt::state_update_alert::alert_type:
         {
             lt::state_update_alert *al = lt::alert_cast<lt::state_update_alert>(alert);
+            std::vector<std::shared_ptr<torrent>> updated;
 
             for (lt::torrent_status &st : al->status)
             {
@@ -548,8 +549,10 @@ void session::notify()
 
                 const torrent_ptr &t = torrents_.find(st.info_hash)->second;
                 t->update(std::unique_ptr<lt::torrent_status>(new lt::torrent_status(st)));
-                on_torrent_updated_.emit(t);
+                updated.push_back(t);
             }
+
+            on_torrent_updated_.emit(updated);
             break;
         }
         case lt::torrent_added_alert::alert_type:

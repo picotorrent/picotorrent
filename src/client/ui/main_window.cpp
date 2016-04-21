@@ -152,7 +152,7 @@ void main_window::torrent_removed(const std::shared_ptr<core::torrent> &t)
     }
 }
 
-void main_window::torrent_updated(const std::shared_ptr<core::torrent> &t)
+void main_window::torrent_updated(const std::vector<std::shared_ptr<core::torrent>> &t)
 {
     if (sort_items_) { sort_items_(); }
     list_view_->refresh();

@@ -9,6 +9,9 @@ environment:
    - platform: x86
    - platform: x64
 
+install:
+  - git submodule update --init
+
 # Build script
 build_script:
 - powershell -NoProfile -ExecutionPolicy unrestricted -Command .\build.ps1 -Platform %platform%

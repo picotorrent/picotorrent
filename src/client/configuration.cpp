@@ -111,7 +111,7 @@ std::vector<std::pair<std::string, int>> configuration::listen_interfaces()
     for (const pj::value &v : ifaces)
     {
         std::string net_addr = v.get<std::string>();
-        size_t idx = net_addr.find(":");
+        size_t idx = net_addr.find_last_of(":");
 
         if (idx == 0)
         {
@@ -303,6 +303,54 @@ int configuration::upload_rate_limit()
 void configuration::set_upload_rate_limit(int ul_rate)
 {
     set("global_ul_rate_limit", ul_rate);
+}
+
+std::string configuration::websocket_access_token()
+{
+    return get_or_default<std::string>("websocket_access_token", "");
+}
+
+void configuration::set_websocket_access_token(const std::string &token)
+{
+    set("websocket_access_token", token);
+}
+
+std::string configuration::websocket_certificate_file()
+{
+    std::string data_path = environment::get_data_path();
+    std::string default_file = pal::combine_paths(data_path, "PicoTorrent_generated.pem");
+
+    return get_or_default<std::string>("websocket_certificate_file", default_file);
+}
+
+std::string configuration::websocket_certificate_password()
+{
+    return get_or_default<std::string>("websocket_certificate_password", "");
+}
+
+std::string configuration::websocket_cipher_list()
+{
+    return get_or_default<std::string>("websocket_cipher_list", "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK");
+}
+
+bool configuration::websocket_enabled()
+{
+    return get_or_default("websocket_enabled", false);
+}
+
+void configuration::set_websocket_enabled(bool value)
+{
+    set("websocket_enabled", value);
+}
+
+int configuration::websocket_listen_port()
+{
+    return get_or_default("websocket_listen_port", 7676);
+}
+
+void configuration::set_websocket_listen_port(int port)
+{
+    set("websocket_listen_port", port);
 }
 
 template<typename T>
