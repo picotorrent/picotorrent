@@ -1,5 +1,7 @@
 #include <picotorrent/client/ui/property_sheets/preferences/remote_page.hpp>
 
+#include <windowsx.h>
+
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 
@@ -66,6 +68,20 @@ BOOL remote_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lPar
     {
         bool checked = IsDlgButtonChecked(hDlg, ID_REMOTE_ENABLE) == BST_CHECKED;
         CheckDlgButton(hDlg, ID_REMOTE_ENABLE, checked ? BST_UNCHECKED : BST_CHECKED);
+        break;
+    }
+    }
+
+    switch (HIWORD(wParam))
+    {
+    case EN_SETFOCUS:
+    {
+        if (uCtrlId == ID_REMOTE_TOKEN
+            || uCtrlId == ID_REMOTE_CERT_PUBKEY)
+        {
+            HWND hCtrl = GetDlgItem(handle(), uCtrlId);
+            Edit_SetSel(hCtrl, 0, -1);
+        }
         break;
     }
     }

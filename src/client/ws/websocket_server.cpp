@@ -8,6 +8,7 @@
 #include <picotorrent/client/security/random_string_generator.hpp>
 #include <picotorrent/client/ws/messages/pico_state_message.hpp>
 #include <picotorrent/client/ws/messages/torrent_added_message.hpp>
+#include <picotorrent/client/ws/messages/torrent_finished_message.hpp>
 #include <picotorrent/client/ws/messages/torrent_removed_message.hpp>
 #include <picotorrent/client/ws/messages/torrent_updated_message.hpp>
 #include <picotorrent/core/hash.hpp>
@@ -36,6 +37,7 @@ websocket_server::websocket_server(const std::shared_ptr<session> &session)
     session_(session)
 {
     session_->on_torrent_added().connect(std::bind(&websocket_server::on_torrent_added, this, std::placeholders::_1));
+    session_->on_torrent_finished().connect(std::bind(&websocket_server::on_torrent_finished, this, std::placeholders::_1));
     session_->on_torrent_removed().connect(std::bind(&websocket_server::on_torrent_removed, this, std::placeholders::_1));
     session_->on_torrent_updated().connect(std::bind(&websocket_server::on_torrent_updated, this, std::placeholders::_1));
 
@@ -47,6 +49,7 @@ websocket_server::websocket_server(const std::shared_ptr<session> &session)
     srv_->set_validate_handler(std::bind(&websocket_server::on_validate, this, std::placeholders::_1));
 
     configuration &cfg = configuration::instance();
+    certificate_file_ = cfg.websocket_certificate_file();
     configured_token_ = cfg.websocket_access_token();
 
     if (configured_token_.empty())
@@ -54,6 +57,14 @@ websocket_server::websocket_server(const std::shared_ptr<session> &session)
         random_string_generator rsg;
         configured_token_ = rsg.generate(DEFAULT_TOKEN_SIZE);
         cfg.set_websocket_access_token(configured_token_);
+    }
+
+    if (!pal::file_exists(certificate_file_))
+    {
+        // Create an automatically generated SSL certificate.
+        auto v = certificate_manager::generate();
+        std::ofstream co(certificate_file_, std::ios::binary);
+        co.write(&v[0], v.size());
     }
 }
 
@@ -137,19 +148,10 @@ context_ptr websocket_server::on_tls_init(websocketpp::connection_hdl hdl)
         ssl::context::single_dh_use);
 
     configuration &cfg = configuration::instance();
-    std::string certificate_file = cfg.websocket_certificate_file();
-
-    if (!pal::file_exists(certificate_file))
-    {
-        // Create an automatically generated SSL certificate.
-        auto v = certificate_manager::generate();
-        std::ofstream co(certificate_file, std::ios::binary);
-        co.write(&v[0], v.size());
-    }
 
     ctx->set_password_callback(std::bind(&websocket_server::get_certificate_password, this));
-    ctx->use_certificate_chain_file(certificate_file);
-    ctx->use_private_key_file(certificate_file, ssl::context::pem);
+    ctx->use_certificate_chain_file(certificate_file_);
+    ctx->use_private_key_file(certificate_file_, ssl::context::pem);
 
     auto dh = dh_params::get();
     SSL_CTX_set_tmp_dh(ctx->native_handle(), dh.get());
@@ -165,14 +167,16 @@ void websocket_server::on_torrent_added(const std::shared_ptr<torrent> &torrent)
         torrents_.push_back(torrent);
         
         msg::torrent_added_message add(torrent);
-        std::string payload = add.serialize();
+        broadcast(add.serialize());
+    });
+}
 
-        for (auto hdl : connections_)
-        {
-            srv_
-                ->get_con_from_hdl(hdl)
-                ->send(payload);
-        }
+void websocket_server::on_torrent_finished(const std::shared_ptr<torrent> &torrent)
+{
+    io_.post([this, torrent]()
+    {
+        msg::torrent_finished_message fin(torrent);
+        broadcast(fin.serialize());
     });
 }
 
@@ -187,31 +191,32 @@ void websocket_server::on_torrent_removed(const std::shared_ptr<torrent> &torren
         std::string hash = torrent->info_hash()->to_string();
 
         msg::torrent_removed_message rem(hash);
-        std::string payload = rem.serialize();
-
-        for (auto hdl : connections_)
-        {
-            srv_
-                ->get_con_from_hdl(hdl)
-                ->send(payload);
-        }
+        broadcast(rem.serialize());
     });
 }
 
 void websocket_server::on_torrent_updated(const std::vector<std::shared_ptr<torrent>> &torrents)
 {
+    if (torrents.empty())
+    {
+        return;
+    }
+
     io_.post([this, torrents]()
     {
         msg::torrent_updated_message upd(torrents);
-        std::string payload = upd.serialize();
-
-        for (auto hdl : connections_)
-        {
-            srv_
-                ->get_con_from_hdl(hdl)
-                ->send(payload);
-        }
+        broadcast(upd.serialize());
     });
+}
+
+void websocket_server::broadcast(const std::string &payload)
+{
+    for (auto hdl : connections_)
+    {
+        srv_
+            ->get_con_from_hdl(hdl)
+            ->send(payload);
+    }
 }
 
 void websocket_server::run()

@@ -49,6 +49,7 @@ state for PicoTorrent.
 
    pico_state <messages/pico_state_message>
    torrent_added <messages/torrent_added_message>
+   torrent_finished <messages/torrent_finished_message>
    torrent_removed <messages/torrent_removed_message>
    torrent_updated <messages/torrent_updated_message>
 

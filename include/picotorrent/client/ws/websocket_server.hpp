@@ -48,12 +48,15 @@ namespace ws
         context_ptr on_tls_init(websocketpp::connection_hdl hdl);
 
         void on_torrent_added(const std::shared_ptr<core::torrent> &torrent);
+        void on_torrent_finished(const std::shared_ptr<core::torrent> &torrent);
         void on_torrent_removed(const std::shared_ptr<core::torrent> &torrent);
         void on_torrent_updated(const std::vector<std::shared_ptr<core::torrent>> &torrents);
 
+        void broadcast(const std::string &data);
         void run();
 
         boost::asio::io_service io_;
+        std::string certificate_file_;
         std::string configured_token_;
         std::shared_ptr<websocketpp_server> srv_;
         std::thread bg_;
