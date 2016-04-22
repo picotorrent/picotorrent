@@ -160,6 +160,11 @@
         "enable_websocket_api": "Enable the WebSocket API",
         "security": "Security",
         "access_token": "Access token",
-        "certificate_public_key": "Certificate (public key)"
+        "certificate_public_key": "Certificate (public key)",
+        "statistics": "Statistics",
+        "ratio": "Ratio",
+        "pieces": "Pieces",
+        "downloaded": "Downloaded",
+        "uploaded": "Uploaded"
     }
 }

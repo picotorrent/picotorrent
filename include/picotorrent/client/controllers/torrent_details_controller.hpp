@@ -22,6 +22,7 @@ namespace property_sheets
 namespace details
 {
     class files_page;
+    class options_page;
     class overview_page;
     class peers_page;
     class trackers_page;
@@ -44,6 +45,7 @@ namespace controllers
         {
             none,
             overview,
+            options,
             files,
             peers,
             trackers
@@ -52,7 +54,10 @@ namespace controllers
         void on_files_destroy();
         void on_files_init();
         void on_files_set_prio(const std::pair<int, int>&);
-        void on_overview_apply();
+
+        void on_options_init();
+        void on_options_apply();
+
         void on_overview_init();
 
         void on_torrent_updated();
@@ -61,6 +66,7 @@ namespace controllers
 
         void set_active_page(active_page_t page);
         void update_files();
+        void update_overview();
         void update_peers();
         void update_trackers();
 
@@ -70,6 +76,7 @@ namespace controllers
 
         active_page_t active_page_;
         std::unique_ptr<ui::property_sheets::details::files_page> files_;
+        std::unique_ptr<ui::property_sheets::details::options_page> options_;
         std::unique_ptr<ui::property_sheets::details::overview_page> overview_;
         std::unique_ptr<ui::property_sheets::details::peers_page> peers_;
         std::unique_ptr<ui::property_sheets::details::trackers_page> trackers_;

@@ -194,6 +194,31 @@ void torrent::pause()
     status_->handle.pause();
 }
 
+int torrent::piece_length() const
+{
+    if (status_->handle.torrent_file())
+    {
+        return status_->handle.torrent_file()->piece_length();
+    }
+
+    return -1;
+}
+
+int torrent::pieces_count() const
+{
+    if (status_->handle.torrent_file())
+    {
+        return status_->handle.torrent_file()->num_pieces();
+    }
+    
+    return -1;
+}
+
+int torrent::pieces_have() const
+{
+    return status_->num_pieces;
+}
+
 float torrent::progress() const
 {
     return status_->progress;
@@ -222,6 +247,19 @@ void torrent::queue_top()
 void torrent::queue_bottom()
 {
     status_->handle.queue_position_bottom();
+}
+
+float torrent::ratio() const
+{
+    int64_t ul = status_->all_time_upload;
+    int64_t dl = status_->all_time_download;
+
+    if (dl <= 0)
+    {
+        return 0;
+    }
+
+    return (float)ul / (float)dl;
 }
 
 void torrent::remove_trackers(const std::vector<std::string> &trackers)
@@ -306,6 +344,16 @@ std::shared_ptr<const torrent_info> torrent::ti() const
     }
 
     return std::make_shared<core::torrent_info>(*status_->handle.torrent_file());
+}
+
+int64_t torrent::total_downloaded_bytes() const
+{
+    return status_->all_time_download;
+}
+
+int64_t torrent::total_uploaded_bytes() const
+{
+    return status_->all_time_upload;
 }
 
 int torrent::total_nonseeds() const

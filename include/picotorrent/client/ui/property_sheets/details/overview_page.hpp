@@ -18,23 +18,17 @@ namespace details
     public:
         overview_page();
 
-        int dl_limit();
-        void dl_limit(int limit);
-        int ul_limit();
-        void ul_limit(int limit);
-        int max_connections();
-        void max_connections(int max);
-        int max_uploads();
-        void max_uploads(int max);
-        bool sequential_download();
-        void sequential_download(bool val);
+        void set_piece_info(int count, int have, int length);
+        void set_ratio(float ratio);
+        void set_total_download(int64_t dl);
+        void set_total_upload(int64_t ul);
 
     protected:
         BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam);
         void on_init_dialog();
 
     private:
-        void check_changed(HWND hDlg, UINT uCtrlId, UINT uCommand);
+        std::string bytes_to_string(int64_t b);
     };
 }
 }
