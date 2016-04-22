@@ -87,6 +87,7 @@ set(PICOTORRENT_SOURCES
     src/client/ui/dialogs/magnet_link_dialog
     src/client/ui/property_sheets/property_sheet_page
     src/client/ui/property_sheets/details/files_page
+    src/client/ui/property_sheets/details/options_page
     src/client/ui/property_sheets/details/overview_page
     src/client/ui/property_sheets/details/peers_page
     src/client/ui/property_sheets/details/trackers_page

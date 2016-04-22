@@ -8,6 +8,7 @@
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/ui/property_sheets/details/files_page.hpp>
+#include <picotorrent/client/ui/property_sheets/details/options_page.hpp>
 #include <picotorrent/client/ui/property_sheets/details/overview_page.hpp>
 #include <picotorrent/client/ui/property_sheets/details/peers_page.hpp>
 #include <picotorrent/client/ui/property_sheets/details/trackers_page.hpp>
@@ -30,6 +31,7 @@ torrent_details_controller::torrent_details_controller(
     : torrent_(torrent),
     wnd_(wnd),
     files_(std::make_unique<details::files_page>()),
+    options_(std::make_unique<details::options_page>()),
     overview_(std::make_unique<details::overview_page>()),
     peers_(std::make_unique<details::peers_page>()),
     trackers_(std::make_unique<details::trackers_page>())
@@ -37,9 +39,13 @@ torrent_details_controller::torrent_details_controller(
     files_->on_activate().connect([this]() { set_active_page(torrent_details_controller::files); });
     files_->on_init().connect(std::bind(&torrent_details_controller::on_files_init, this));
     files_->on_set_file_priority().connect(std::bind(&torrent_details_controller::on_files_set_prio, this, std::placeholders::_1));
+
     overview_->on_activate().connect([this]() { set_active_page(torrent_details_controller::overview); });
-    overview_->on_apply().connect(std::bind(&torrent_details_controller::on_overview_apply, this));
     overview_->on_init().connect(std::bind(&torrent_details_controller::on_overview_init, this));
+
+    options_->on_activate().connect([this]() { set_active_page(torrent_details_controller::options); });
+    options_->on_apply().connect(std::bind(&torrent_details_controller::on_options_apply, this));
+    options_->on_init().connect(std::bind(&torrent_details_controller::on_options_init, this));
 
     peers_->on_activate().connect([this]() { set_active_page(torrent_details_controller::peers); });
     
@@ -60,6 +66,7 @@ void torrent_details_controller::execute()
     PROPSHEETPAGE p[] =
     {
         *overview_,
+        *options_,
         *files_,
         *peers_,
         *trackers_
@@ -114,22 +121,22 @@ void torrent_details_controller::on_files_set_prio(const std::pair<int, int> &p)
     torrent_->file_priority(p.first, p.second);
 }
 
-void torrent_details_controller::on_overview_apply()
+void torrent_details_controller::on_options_apply()
 {
-    int dl_limit = overview_->dl_limit();
+    int dl_limit = options_->dl_limit();
     if (dl_limit > 0) { dl_limit *= 1024; }
 
-    int ul_limit = overview_->ul_limit();
+    int ul_limit = options_->ul_limit();
     if (ul_limit > 0) { ul_limit *= 1024; }
 
     torrent_->set_download_limit(dl_limit);
     torrent_->set_upload_limit(ul_limit);
-    torrent_->set_max_connections(overview_->max_connections());
-    torrent_->set_max_uploads(overview_->max_uploads());
-    torrent_->set_sequential_download(overview_->sequential_download());
+    torrent_->set_max_connections(options_->max_connections());
+    torrent_->set_max_uploads(options_->max_uploads());
+    torrent_->set_sequential_download(options_->sequential_download());
 }
 
-void torrent_details_controller::on_overview_init()
+void torrent_details_controller::on_options_init()
 {
     int dl_limit = torrent_->download_limit();
     int ul_limit = torrent_->upload_limit();
@@ -144,11 +151,16 @@ void torrent_details_controller::on_overview_init()
     if (max_connections >= 16777215) { max_connections = -1; }
     if (max_uploads >= 16777215) { max_uploads = -1; }
 
-    overview_->dl_limit(dl_limit);
-    overview_->ul_limit(ul_limit);
-    overview_->max_connections(max_connections);
-    overview_->max_uploads(max_uploads);
-    overview_->sequential_download(torrent_->sequential_download());
+    options_->dl_limit(dl_limit);
+    options_->ul_limit(ul_limit);
+    options_->max_connections(max_connections);
+    options_->max_uploads(max_uploads);
+    options_->sequential_download(torrent_->sequential_download());
+}
+
+void torrent_details_controller::on_overview_init()
+{
+    update_overview();
 }
 
 void torrent_details_controller::on_torrent_updated()
@@ -157,6 +169,9 @@ void torrent_details_controller::on_torrent_updated()
     {
     case torrent_details_controller::files:
         update_files();
+        break;
+    case torrent_details_controller::overview:
+        update_overview();
         break;
     case torrent_details_controller::peers:
         update_peers();
@@ -209,6 +224,18 @@ void torrent_details_controller::update_files()
     }
 
     files_->refresh();
+}
+
+void torrent_details_controller::update_overview()
+{
+    overview_->set_piece_info(
+        torrent_->pieces_count(),
+        torrent_->pieces_have(),
+        torrent_->piece_length());
+
+    overview_->set_ratio(torrent_->ratio());
+    overview_->set_total_download(torrent_->total_downloaded_bytes());
+    overview_->set_total_upload(torrent_->total_uploaded_bytes());
 }
 
 void torrent_details_controller::update_peers()

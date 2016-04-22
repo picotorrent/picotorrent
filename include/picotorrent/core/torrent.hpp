@@ -80,12 +80,16 @@ namespace core
         DLL_EXPORT int connected_nonseeds() const;
         DLL_EXPORT int connected_seeds() const;
         DLL_EXPORT void pause();
+        DLL_EXPORT int piece_length() const;
+        DLL_EXPORT int pieces_count() const;
+        DLL_EXPORT int pieces_have() const;
         DLL_EXPORT float progress() const;
         DLL_EXPORT int queue_position();
         DLL_EXPORT void queue_up();
         DLL_EXPORT void queue_down();
         DLL_EXPORT void queue_top();
         DLL_EXPORT void queue_bottom();
+        DLL_EXPORT float ratio() const;
         DLL_EXPORT void remove_trackers(const std::vector<std::string> &trackers);
         DLL_EXPORT void resume(bool force);
         DLL_EXPORT std::string save_path() const;
@@ -98,6 +102,8 @@ namespace core
         DLL_EXPORT int64_t size();
         DLL_EXPORT torrent_state state();
         DLL_EXPORT std::shared_ptr<const torrent_info> ti() const;
+        DLL_EXPORT int64_t total_downloaded_bytes() const;
+        DLL_EXPORT int64_t total_uploaded_bytes() const;
         DLL_EXPORT int total_nonseeds() const;
         DLL_EXPORT int total_seeds() const;
         DLL_EXPORT uint64_t total_wanted();
