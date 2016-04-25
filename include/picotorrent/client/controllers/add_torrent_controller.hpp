@@ -39,6 +39,7 @@ namespace controllers
     protected:
         void on_dialog_init();
         void on_edit_save_path();
+        void on_update_storage_mode();
         void on_torrent_change(int index);
         void on_torrent_files_context_menu(const std::vector<int> &files);
         void show_torrent(int index);

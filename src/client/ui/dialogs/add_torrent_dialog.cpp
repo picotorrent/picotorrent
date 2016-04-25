@@ -15,6 +15,8 @@
 using picotorrent::client::to_string;
 using picotorrent::client::to_wstring;
 using picotorrent::client::ui::dialogs::add_torrent_dialog;
+using picotorrent::core::signals::signal;
+using picotorrent::core::signals::signal_connector;
 
 struct add_torrent_dialog::file_item
 {
@@ -73,6 +75,11 @@ int add_torrent_dialog::get_selected_torrent()
     return ComboBox_GetCurSel(combo_);
 }
 
+signal_connector<void, void>& add_torrent_dialog::on_update_storage_mode()
+{
+    return on_update_storage_mode_;
+}
+
 void add_torrent_dialog::set_file_priority(int index, const std::string &prio)
 {
     file_item &item = items_[index];
@@ -123,6 +130,11 @@ void add_torrent_dialog::set_size(const std::string &friendly_size)
     Edit_SetText(size_, to_wstring(friendly_size).c_str());
 }
 
+bool add_torrent_dialog::use_full_allocation()
+{
+    return is_dlg_button_checked(ID_ADD_STORAGE_MODE_FULL);
+}
+
 BOOL add_torrent_dialog::on_command(int controlId, WPARAM wParam, LPARAM lParam)
 {
     switch (controlId)
@@ -159,6 +171,22 @@ BOOL add_torrent_dialog::on_command(int controlId, WPARAM wParam, LPARAM lParam)
         }
         break;
     }
+
+    case ID_ADD_STORAGE_MODE_SPARSE:
+    {
+        set_dlg_button_checked(ID_ADD_STORAGE_MODE_SPARSE, true);
+        set_dlg_button_checked(ID_ADD_STORAGE_MODE_FULL, false);
+        on_update_storage_mode_.emit();
+        break;
+    }
+
+    case ID_ADD_STORAGE_MODE_FULL:
+    {
+        set_dlg_button_checked(ID_ADD_STORAGE_MODE_SPARSE, false);
+        set_dlg_button_checked(ID_ADD_STORAGE_MODE_FULL, true);
+        on_update_storage_mode_.emit();
+        break;
+    }
     }
 
     return FALSE;
@@ -178,6 +206,12 @@ BOOL add_torrent_dialog::on_init_dialog()
     set_dlg_item_text(ID_BROWSE, TR("browse"));
     set_dlg_item_text(ID_STORAGE_GROUP, TR("storage"));
     set_dlg_item_text(IDOK, TR("add_torrent_s"));
+    set_dlg_item_text(ID_ADD_STORAGE_MODE_TEXT, TR("storage_mode"));
+    set_dlg_item_text(ID_ADD_STORAGE_MODE_SPARSE, TR("sparse"));
+    set_dlg_item_text(ID_ADD_STORAGE_MODE_FULL, TR("full"));
+
+    // Check the sparse mode radio button
+    CheckDlgButton(handle(), ID_ADD_STORAGE_MODE_SPARSE, BST_CHECKED);
 
     // Set up the files list view
     files_ = std::make_shared<controls::list_view>(GetDlgItem(handle(), ID_FILES));

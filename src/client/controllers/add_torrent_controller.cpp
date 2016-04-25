@@ -43,6 +43,7 @@ add_torrent_controller::add_torrent_controller(
     dlg_(std::make_shared<add_torrent_dialog>()),
     wnd_(wnd_ptr)
 {
+    dlg_->on_update_storage_mode().connect(std::bind(&add_torrent_controller::on_update_storage_mode, this));
     dlg_->set_init_callback(std::bind(&add_torrent_controller::on_dialog_init, this));
     dlg_->set_change_callback(std::bind(&add_torrent_controller::on_torrent_change, this, std::placeholders::_1));
     dlg_->set_edit_save_path_callback(std::bind(&add_torrent_controller::on_edit_save_path, this));
@@ -219,6 +220,21 @@ void add_torrent_controller::on_edit_save_path()
     auto &req = requests_[dlg_->get_selected_torrent()];
     dlg_->set_save_path(sp);
     req->set_save_path(sp);
+}
+
+void add_torrent_controller::on_update_storage_mode()
+{
+    bool use_full_allocation = dlg_->use_full_allocation();
+    auto &req = requests_[dlg_->get_selected_torrent()];
+
+    if (use_full_allocation)
+    {
+        req->set_allocation_mode(core::add_request::allocation_mode_t::full);
+    }
+    else
+    {
+        req->set_allocation_mode(core::add_request::allocation_mode_t::sparse);
+    }
 }
 
 void add_torrent_controller::on_torrent_change(int index)

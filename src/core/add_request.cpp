@@ -61,6 +61,18 @@ std::string add_request::url()
     return params_->url;
 }
 
+void add_request::set_allocation_mode(add_request::allocation_mode_t mode)
+{
+    if (mode == add_request::allocation_mode_t::sparse)
+    {
+        params_->storage_mode = lt::storage_mode_t::storage_mode_sparse;
+    }
+    else
+    {
+        params_->storage_mode = lt::storage_mode_t::storage_mode_allocate;
+    }
+}
+
 void add_request::set_file_priority(int file_index, int priority)
 {
     if (params_->file_priorities.size() < (size_t)(file_index + 1))
