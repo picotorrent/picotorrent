@@ -165,6 +165,9 @@
         "ratio": "Ratio",
         "pieces": "Pieces",
         "downloaded": "Downloaded",
-        "uploaded": "Uploaded"
+        "uploaded": "Uploaded",
+        "storage_mode": "Storage mode",
+        "sparse": "Sparse",
+        "full": "Full"
     }
 }

@@ -21,6 +21,12 @@ namespace core
         friend class session;
 
     public:
+        enum allocation_mode_t
+        {
+            sparse,
+            full
+        };
+
         DLL_EXPORT explicit add_request();
         DLL_EXPORT ~add_request();
 
@@ -29,6 +35,7 @@ namespace core
         DLL_EXPORT std::string save_path();
         DLL_EXPORT std::shared_ptr<torrent_info> ti();
         DLL_EXPORT std::string url();
+        DLL_EXPORT void set_allocation_mode(allocation_mode_t mode);
         DLL_EXPORT void set_file_priority(int file_index, int priority);
         DLL_EXPORT void set_save_path(const std::string &path);
         DLL_EXPORT void set_torrent_info(const std::shared_ptr<core::torrent_info> &file);

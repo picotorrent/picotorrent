@@ -48,6 +48,9 @@
 #define ID_SAVE_PATH 107
 #define ID_BROWSE 108
 #define ID_FILES 109
+#define ID_ADD_STORAGE_MODE_TEXT 110
+#define ID_ADD_STORAGE_MODE_SPARSE 111
+#define ID_ADD_STORAGE_MODE_FULL 112
 
 // Add magnet link dialog
 #define ID_MAGNET_LINKS_GROUP 101
