@@ -1,6 +1,10 @@
 #include <picotorrent/client/ui/main_window.hpp>
 
 #include <algorithm>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
+
 #include <commctrl.h>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/session_metrics.hpp>
@@ -18,7 +22,6 @@
 #include <picotorrent/client/ui/task_dialog.hpp>
 #include <picotorrent/client/ui/taskbar_list.hpp>
 #include <picotorrent/client/ui/torrent_drop_target.hpp>
-#include <chrono>
 #include <shellapi.h>
 #include <shlwapi.h>
 #include <shobjidl.h>
@@ -36,6 +39,7 @@
 #define COLUMN_UL 8
 #define COLUMN_SEEDS 9
 #define COLUMN_PEERS 10
+#define COLUMN_RATIO 11
 
 namespace core = picotorrent::core;
 using picotorrent::core::signals::signal;
@@ -382,6 +386,7 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         list_view_->add_column(COLUMN_ETA,            TR("eta"),            scaler::x(80),  list_view::number);
         list_view_->add_column(COLUMN_DL,             TR("dl"),             scaler::x(80),  list_view::number);
         list_view_->add_column(COLUMN_UL,             TR("ul"),             scaler::x(80),  list_view::number);
+        list_view_->add_column(COLUMN_RATIO,          TR("ratio"),          scaler::x(80),  list_view::number);
         list_view_->add_column(COLUMN_SEEDS,          TR("seeds"),          scaler::x(80),  list_view::number);
         list_view_->add_column(COLUMN_PEERS,          TR("peers"),          scaler::x(80),  list_view::number);
 
@@ -674,6 +679,12 @@ std::string main_window::on_list_display(const std::pair<int, int> &p)
         TCHAR peers[1024];
         StringCchPrintf(peers, ARRAYSIZE(peers), L"%d (%d)", t->connected_nonseeds(), t->total_nonseeds());
         return to_string(peers);
+    }
+    case COLUMN_RATIO:
+    {
+        std::stringstream ss;
+        ss << std::fixed << std::setprecision(3) << t->ratio();
+        return ss.str();
     }
     }
 
