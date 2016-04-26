@@ -154,7 +154,6 @@ link_directories(
 
 add_definitions(
     -DBOOST_ALL_NO_LIB
-    -DPICOCORE_DLL
     -DPICOJSON_USE_INT64
     -DTORRENT_NO_DEPRECATE
     -DTORRENT_USE_OPENSSL
@@ -168,6 +167,7 @@ if(WIN32)
         -D_WIN32
         -D_WIN32_WINNT=0x0600
         -DNOMINMAX
+        -DPICOCORE_DLL
         -DUNICODE
         -DWIN32
         -DWIN32_LEAN_AND_MEAN
