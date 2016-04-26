@@ -132,10 +132,10 @@ if(WIN32)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
 
     # Debug flags
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /Zi")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
 
     # Release flags
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /Zi")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
     set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 else()
@@ -149,11 +149,12 @@ include_directories(
 )
 
 link_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/bin/${PICO_ARCH}
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/bin/${PICO_ARCH}/$(Configuration)
 )
 
 add_definitions(
     -DBOOST_ALL_NO_LIB
+    -DPICOCORE_DLL
     -DPICOJSON_USE_INT64
     -DTORRENT_NO_DEPRECATE
     -DTORRENT_USE_OPENSSL
@@ -175,7 +176,7 @@ endif()
 
 add_library(
     PicoTorrentCore
-    STATIC
+    SHARED
     ${PICOTORRENTCORE_SOURCES}
 )
 
@@ -200,16 +201,15 @@ target_link_libraries(
     shlwapi
 
     # Boost.Random
-    debug     libboost_random-vc140-mt-sgd-1_60
-    optimized libboost_random-vc140-mt-s-1_60
+    debug     boost_random-vc140-mt-gd-1_60
+    optimized boost_random-vc140-mt-1_60
 
     # Boost.System
-    debug     libboost_system-vc140-mt-sgd-1_60
-    optimized libboost_system-vc140-mt-s-1_60
+    debug     boost_system-vc140-mt-gd-1_60
+    optimized boost_system-vc140-mt-1_60
 
     # Rasterbar-libtorrent
-    debug     libtorrent-vc140-mt-sgd
-    optimized libtorrent-vc140-mt-s
+    torrent
 
     # OpenSSL
     libeay32

@@ -13,6 +13,13 @@ var OutputDirectory    = Directory("./build-" + platform);
 var BuildDirectory     = OutputDirectory + Directory(configuration);
 var PublishDirectory   = BuildDirectory + Directory("publish");
 var ResourceDirectory  = Directory("./res");
+
+var LibraryDirectory   = Directory("./tools")
+                       + Directory("PicoTorrent.Libs")
+                       + Directory("bin")
+                       + Directory(platform)
+                       + Directory(configuration);
+
 var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
 var Version            = System.IO.File.ReadAllText("VERSION").Trim();
@@ -20,6 +27,12 @@ var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version, platf
 var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version, platform);
 var PortablePackage    = string.Format("PicoTorrent-{0}-{1}.zip", Version, platform);
 var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Version, platform);
+
+bool IsDebug() { return configuration.Equals("Debug"); }
+
+// Boost naming ickiness
+var BoostRandom = IsDebug() ? "boost_random-vc140-mt-gd-1_60.dll" : "boost_random-vc140-mt-1_60.dll";
+var BoostSystem = IsDebug() ? "boost_system-vc140-mt-gd-1_60.dll" : "boost_system-vc140-mt-1_60.dll";
 
 public void SignTool(FilePath file)
 {
@@ -93,13 +106,38 @@ Task("Build")
     MSBuild(OutputDirectory + File("PicoTorrent.sln"), settings);
 });
 
-Task("Setup-Publish-Directory")
-    .IsDependentOn("Build")
+Task("Setup-Library-Files")
     .Does(() =>
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.exe")
+        // 3rd party libraries
+        LibraryDirectory + File(BoostRandom),
+        LibraryDirectory + File(BoostSystem),
+        LibraryDirectory + File("libeay32.dll"),
+        LibraryDirectory + File("ssleay32.dll"),
+        LibraryDirectory + File("torrent.dll")
+    };
+
+    CopyFiles(files, BuildDirectory);
+});
+
+Task("Setup-Publish-Directory")
+    .IsDependentOn("Build")
+    .IsDependentOn("Setup-Library-Files")
+    .Does(() =>
+{
+    var files = new FilePath[]
+    {
+        BuildDirectory + File("PicoTorrent.exe"),
+        BuildDirectory + File("PicoTorrentCore.dll"),
+
+        // 3rd party libraries
+        LibraryDirectory + File(BoostRandom),
+        LibraryDirectory + File(BoostSystem),
+        LibraryDirectory + File("libeay32.dll"),
+        LibraryDirectory + File("ssleay32.dll"),
+        LibraryDirectory + File("torrent.dll")
     };
 
     CreateDirectory(PublishDirectory);
@@ -125,6 +163,7 @@ Task("Build-Installer")
         Architecture = arch,
         Defines = new Dictionary<string, string>
         {
+            { "Configuration", configuration },
             { "PublishDirectory", PublishDirectory },
             { "Platform", platform },
             { "ResourceDirectory", ResourceDirectory },
@@ -184,7 +223,8 @@ Task("Build-Symbols-Package")
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.pdb")
+        BuildDirectory + File("PicoTorrent.pdb"),
+        BuildDirectory + File("PicoTorrentCore.pdb")
     };
 
     Zip(BuildDirectory, BuildDirectory + File(SymbolsPackage), files);
