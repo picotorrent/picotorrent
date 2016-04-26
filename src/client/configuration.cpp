@@ -394,6 +394,12 @@ void configuration::set<int>(const char *name, int value)
 void configuration::load()
 {
     std::string data_path = environment::get_data_path();
+
+    if (!pal::directory_exists(data_path))
+    {
+        pal::create_directories(data_path);
+    }
+
     std::string config_file = pal::combine_paths(data_path, "PicoTorrent.json");
 
     if (!pal::file_exists(config_file))
@@ -443,7 +449,7 @@ std::shared_ptr<configuration::placement> configuration::window_placement(const 
     }
 
     pj::array a = v.get<pj::array>();
-    
+
     auto wp = std::make_shared<placement>();
     wp->flags = (uint32_t)a[0].get<int64_t>();
     wp->max_x = (long)a[1].get<int64_t>();
