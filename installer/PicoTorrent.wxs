@@ -8,6 +8,14 @@
     <?define UpgradeCode = "2611493f-f5d7-4c5d-934a-623c9a7c7b36" ?>
 <?endif ?>
 
+<?if $(var.Configuration) = "Debug" ?>
+    <?define BoostRandomFile = "boost_random-vc140-mt-gd-1_60.dll" ?>
+    <?define BoostSystemFile = "boost_system-vc140-mt-gd-1_60.dll" ?>
+<?else ?>
+    <?define BoostRandomFile = "boost_random-vc140-mt-1_60.dll" ?>
+    <?define BoostSystemFile = "boost_system-vc140-mt-1_60.dll" ?>
+<?endif ?>
+
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Product Id="*"
         UpgradeCode="$(var.UpgradeCode)"
@@ -174,6 +182,32 @@
             <Directory Id="ProgramMenuFolder" />
         </Directory>
 
+        <ComponentGroup Id="CG_Libraries" Directory="INSTALLDIR">
+          <Component Id="C_PicoTorrentCore">
+            <File Name="PicoTorrentCore.dll" Source="$(var.PublishDirectory)\PicoTorrentCore.dll" />
+          </Component>
+
+          <Component Id="C_BoostRandom">
+            <File Name="$(var.BoostRandomFile)" Source="$(var.PublishDirectory)\$(var.BoostRandomFile)" />
+          </Component>
+
+          <Component Id="C_BoostSystem">
+            <File Name="$(var.BoostSystemFile)" Source="$(var.PublishDirectory)\$(var.BoostSystemFile)" />
+          </Component>
+
+          <Component Id="C_libeay32">
+            <File Name="libeay32.dll" Source="$(var.PublishDirectory)\libeay32.dll" />
+          </Component>
+
+          <Component Id="C_ssleay32">
+            <File Name="ssleay32.dll" Source="$(var.PublishDirectory)\ssleay32.dll" />
+          </Component>
+
+          <Component Id="C_torrent">
+            <File Name="torrent.dll" Source="$(var.PublishDirectory)\torrent.dll" />
+          </Component>
+        </ComponentGroup>
+
         <ComponentGroup Id="CG_Languages" Directory="LANGDIR">
           <Component Id="C_Lang_1027">
             <File Name="1027.json" Source="$(var.PublishDirectory)\lang\1027.json" />
@@ -224,6 +258,7 @@
                  Level="1">
 
             <ComponentRef Id="C_PicoTorrent" />
+            <ComponentGroupRef Id="CG_Libraries" />
 
             <Feature Id="F_Lang"
                      Title="Language files"
