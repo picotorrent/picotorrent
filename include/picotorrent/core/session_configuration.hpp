@@ -31,6 +31,16 @@ namespace core
         {
         }
 
+        // Limits
+        int active_checking;
+        int active_dht_limit;
+        int active_downloads;
+        int active_limit;
+        int active_loaded_limit;
+        int active_lsd_limit;
+        int active_seeds;
+        int active_tracker_limit;
+
         int alert_queue_size;
         std::string default_save_path;
         int download_rate_limit;

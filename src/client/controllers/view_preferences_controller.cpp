@@ -120,8 +120,8 @@ void view_preferences_controller::on_downloads_apply()
     int ul_rate = dl_page_->upload_rate();
     if (ul_rate > 0) { ul_rate *= 1024; }
 
-    cfg.set_download_rate_limit(dl_rate);
-    cfg.set_upload_rate_limit(ul_rate);
+    cfg.session()->download_rate_limit(dl_rate);
+    cfg.session()->upload_rate_limit(ul_rate);
 }
 
 bool view_preferences_controller::on_downloads_validate()
@@ -198,8 +198,8 @@ void view_preferences_controller::on_downloads_init()
     dl_page_->set_downloads_path(cfg.default_save_path());
     dl_page_->set_prompt_for_save_path(cfg.prompt_for_save_path());
 
-    int dl_rate = cfg.download_rate_limit();
-    int ul_rate = cfg.upload_rate_limit();
+    int dl_rate = cfg.session()->download_rate_limit();
+    int ul_rate = cfg.session()->upload_rate_limit();
 
     if (dl_rate < 0) { dl_rate = 0; }
     if (dl_rate > 0) { dl_rate /= 1024; }
@@ -301,17 +301,17 @@ void view_preferences_controller::on_remote_apply()
 {
     configuration &cfg = configuration::instance();
 
-    cfg.set_websocket_enabled(remote_page_->enable_websocket_api());
+    cfg.websocket()->enabled(remote_page_->enable_websocket_api());
     if (remote_page_->websocket_port() > 0)
     {
-        cfg.set_websocket_listen_port(remote_page_->websocket_port());
+        cfg.websocket()->listen_port(remote_page_->websocket_port());
     }
 
-    if (cfg.websocket_enabled())
+    if (cfg.websocket()->enabled())
     {
         ws_->start();
     }
-    else if (!cfg.websocket_enabled())
+    else if (!cfg.websocket()->enabled())
     {
         ws_->stop();
     }
@@ -321,11 +321,11 @@ void view_preferences_controller::on_remote_init()
 {
     configuration &cfg = configuration::instance();
 
-    remote_page_->set_enable_websocket_api(cfg.websocket_enabled());
-    remote_page_->set_websocket_access_token(cfg.websocket_access_token());
-    remote_page_->set_websocket_port(cfg.websocket_listen_port());
+    remote_page_->set_enable_websocket_api(cfg.websocket()->enabled());
+    remote_page_->set_websocket_access_token(cfg.websocket()->access_token());
+    remote_page_->set_websocket_port(cfg.websocket()->listen_port());
 
-    std::string cert_file = cfg.websocket_certificate_file();
+    std::string cert_file = cfg.websocket()->certificate_file();
     std::string pub_key = security::certificate_manager::extract_public_key(cert_file);
 
     remote_page_->set_certificate_public_key(pub_key);

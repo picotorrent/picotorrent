@@ -61,12 +61,78 @@ namespace client
             uint32_t show;
         };
 
+        class part
+        {
+            friend class configuration;
+
+        protected:
+            part(const std::shared_ptr<picojson::object> &cfg);
+
+            bool get_part_key_or_default(const char *part, const char* key, bool default_value);
+            int get_part_key_or_default(const char *part, const char* key, int default_value);
+            std::string get_part_key_or_default(const char *part, const char* key, const std::string &default_value);
+
+            void set_part_key(const char *part, const char* key, bool value);
+            void set_part_key(const char *part, const char* key, int value);
+            void set_part_key(const char *part, const char* key, const std::string &value);
+
+        private:
+            std::shared_ptr<picojson::object> cfg_;
+        };
+
+        struct session_part : public part
+        {
+            friend class configuration;
+
+            int active_checking();
+            int active_dht_limit();
+            int active_downloads();
+            int active_limit();
+            int active_loaded_limit();
+            int active_lsd_limit();
+            int active_seeds();
+            int active_tracker_limit();
+
+            int download_rate_limit();
+            void download_rate_limit(int limit);
+
+            int stop_tracker_timeout();
+
+            int upload_rate_limit();
+            void upload_rate_limit(int limit);
+
+        protected:
+            using part::part;
+        };
+
+        struct websocket_part : public part
+        {
+            friend class configuration;
+
+            std::string access_token();
+            void access_token(const std::string &token);
+
+            std::string certificate_file();
+            std::string certificate_password();
+            std::string cipher_list();
+
+            bool enabled();
+            void enabled(bool enable);
+
+            int listen_port();
+            void listen_port(int port);
+
+        protected:
+            using part::part;
+        };
+
         configuration();
         ~configuration();
 
         static configuration &instance();
 
-        int alert_queue_size();
+        std::shared_ptr<session_part> session();
+        std::shared_ptr<websocket_part> websocket();
 
         close_action_t close_action();
         void set_close_action(close_action_t action);
@@ -78,9 +144,6 @@ namespace client
         
         std::string default_save_path();
         void set_default_save_path(const std::string &path);
-
-        int download_rate_limit();
-        void set_download_rate_limit(int dl_rate);
 
         std::string ignored_update();
         void set_ignored_update(const std::string &version);
@@ -126,22 +189,7 @@ namespace client
         start_position_t start_position();
         void set_start_position(start_position_t pos);
 
-        int stop_tracker_timeout();
         std::string update_url();
-
-        int upload_rate_limit();
-        void set_upload_rate_limit(int ul_rate);
-
-        std::string websocket_access_token();
-        void set_websocket_access_token(const std::string &token);
-
-        std::string websocket_certificate_file();
-        std::string websocket_certificate_password();
-        std::string websocket_cipher_list();
-        bool websocket_enabled();
-        void set_websocket_enabled(bool value);
-        int websocket_listen_port();
-        void set_websocket_listen_port(int port);
 
         std::shared_ptr<placement> window_placement(const std::string &name);
         void set_window_placement(const std::string &name, const placement &wnd);
@@ -162,7 +210,7 @@ namespace client
         void load();
         void save();
 
-        std::unique_ptr<picojson::object> value_;
+        std::shared_ptr<picojson::object> value_;
     };
 }
 }

@@ -14,4 +14,5 @@ Rasterbar-libtorrent and the raw Win32 API.
 .. toctree::
    :maxdepth: 2
 
+   configuration
    websocket-api/index

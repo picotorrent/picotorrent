@@ -183,7 +183,7 @@ int application::run(const std::wstring &args)
         ShowWindow(main_window_->handle(), pos);
     }
 
-    if (cfg.websocket_enabled())
+    if (cfg.websocket()->enabled())
     {
         ws_server_->start();
     }

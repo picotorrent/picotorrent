@@ -57,7 +57,13 @@ set(PICOTORRENT_SOURCES
     src/client/application
     src/client/application_initializer
     src/client/command_line
+
+    # Configuration w/ parts
     src/client/configuration
+    src/client/configuration_part
+    src/client/configuration_session_part
+    src/client/configuration_websocket_part
+
     src/client/environment
     src/client/message_loop
     src/client/string_operations
