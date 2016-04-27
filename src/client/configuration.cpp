@@ -394,12 +394,6 @@ void configuration::set<int>(const char *name, int value)
 void configuration::load()
 {
     std::string data_path = environment::get_data_path();
-
-    if (!pal::directory_exists(data_path))
-    {
-        pal::create_directories(data_path);
-    }
-
     std::string config_file = pal::combine_paths(data_path, "PicoTorrent.json");
 
     if (!pal::file_exists(config_file))
@@ -422,12 +416,6 @@ void configuration::save()
     std::string json = v.serialize(true);
 
     std::string data_path = environment::get_data_path();
-
-    if (!pal::directory_exists(data_path))
-    {
-        pal::create_directories(data_path);
-    }
-
     std::string config_file = pal::combine_paths(data_path, "PicoTorrent.json");
 
     std::ofstream output(config_file, std::ios::binary);

@@ -55,6 +55,7 @@ endif()
 
 set(PICOTORRENT_SOURCES
     src/client/application
+    src/client/application_initializer
     src/client/command_line
     src/client/configuration
     src/client/environment

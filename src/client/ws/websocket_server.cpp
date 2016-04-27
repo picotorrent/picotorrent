@@ -3,9 +3,7 @@
 #include <fstream>
 
 #include <picotorrent/client/configuration.hpp>
-#include <picotorrent/client/security/certificate_manager.hpp>
 #include <picotorrent/client/security/dh_params.hpp>
-#include <picotorrent/client/security/random_string_generator.hpp>
 #include <picotorrent/client/ws/messages/pico_state_message.hpp>
 #include <picotorrent/client/ws/messages/torrent_added_message.hpp>
 #include <picotorrent/client/ws/messages/torrent_finished_message.hpp>
@@ -18,15 +16,11 @@
 
 #pragma warning(disable : 4503)
 
-#define DEFAULT_TOKEN_SIZE 20
-
 namespace ssl = boost::asio::ssl;
 
 namespace msg = picotorrent::client::ws::messages;
 using picotorrent::client::configuration;
-using picotorrent::client::security::certificate_manager;
 using picotorrent::client::security::dh_params;
-using picotorrent::client::security::random_string_generator;
 using picotorrent::client::ws::websocket_server;
 using picotorrent::core::pal;
 using picotorrent::core::session;
@@ -51,21 +45,6 @@ websocket_server::websocket_server(const std::shared_ptr<session> &session)
     configuration &cfg = configuration::instance();
     certificate_file_ = cfg.websocket_certificate_file();
     configured_token_ = cfg.websocket_access_token();
-
-    if (configured_token_.empty())
-    {
-        random_string_generator rsg;
-        configured_token_ = rsg.generate(DEFAULT_TOKEN_SIZE);
-        cfg.set_websocket_access_token(configured_token_);
-    }
-
-    if (!pal::file_exists(certificate_file_))
-    {
-        // Create an automatically generated SSL certificate.
-        auto v = certificate_manager::generate();
-        std::ofstream co(certificate_file_, std::ios::binary);
-        co.write(&v[0], v.size());
-    }
 }
 
 websocket_server::~websocket_server()
