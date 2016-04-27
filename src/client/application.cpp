@@ -1,5 +1,6 @@
 #include <picotorrent/client/application.hpp>
 
+#include <picotorrent/client/application_initializer.hpp>
 #include <picotorrent/client/command_line.hpp>
 #include <picotorrent/client/message_loop.hpp>
 #include <picotorrent/client/controllers/add_magnet_link_controller.hpp>
@@ -31,6 +32,7 @@ namespace controllers = picotorrent::client::controllers;
 namespace core = picotorrent::core;
 namespace ui = picotorrent::client::ui;
 using picotorrent::client::application;
+using picotorrent::client::application_initializer;
 using picotorrent::client::command_line;
 using picotorrent::client::configuration;
 using picotorrent::client::logging::log;
@@ -79,6 +81,12 @@ bool application::init()
     {
         return false;
     }
+
+    // Generate required configuration
+    application_initializer app_init;
+    app_init.create_application_paths();
+    app_init.generate_websocket_access_token();
+    app_init.generate_websocket_certificate();
 
     sess_ = std::make_shared<core::session>(configuration::instance().session_configuration());
     main_window_ = std::make_shared<ui::main_window>(sess_);
