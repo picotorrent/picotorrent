@@ -43,8 +43,8 @@ websocket_server::websocket_server(const std::shared_ptr<session> &session)
     srv_->set_validate_handler(std::bind(&websocket_server::on_validate, this, std::placeholders::_1));
 
     configuration &cfg = configuration::instance();
-    certificate_file_ = cfg.websocket_certificate_file();
-    configured_token_ = cfg.websocket_access_token();
+    certificate_file_ = cfg.websocket()->certificate_file();
+    configured_token_ = cfg.websocket()->access_token();
 }
 
 websocket_server::~websocket_server()
@@ -79,7 +79,7 @@ void websocket_server::stop()
 
 std::string websocket_server::get_certificate_password()
 {
-    return configuration::instance().websocket_certificate_password();
+    return configuration::instance().websocket()->certificate_password();
 }
 
 void websocket_server::on_close(websocketpp::connection_hdl hdl)
@@ -134,7 +134,7 @@ context_ptr websocket_server::on_tls_init(websocketpp::connection_hdl hdl)
 
     auto dh = dh_params::get();
     SSL_CTX_set_tmp_dh(ctx->native_handle(), dh.get());
-    SSL_CTX_set_cipher_list(ctx->native_handle(), cfg.websocket_cipher_list().c_str());
+    SSL_CTX_set_cipher_list(ctx->native_handle(), cfg.websocket()->cipher_list().c_str());
 
     return ctx;
 }
@@ -202,7 +202,7 @@ void websocket_server::run()
 {
     configuration &cfg = configuration::instance();
 
-    srv_->listen(cfg.websocket_listen_port());
+    srv_->listen(cfg.websocket()->listen_port());
     srv_->start_accept();
     srv_->run();
 }

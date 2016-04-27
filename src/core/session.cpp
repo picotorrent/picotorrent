@@ -257,6 +257,16 @@ std::shared_ptr<lt::settings_pack> session::get_session_settings()
     settings->set_int(lt::settings_pack::download_rate_limit, config_->download_rate_limit);
     settings->set_int(lt::settings_pack::upload_rate_limit, config_->upload_rate_limit);
 
+    // Limits
+    settings->set_int(lt::settings_pack::active_checking, config_->active_checking);
+    settings->set_int(lt::settings_pack::active_dht_limit, config_->active_dht_limit);
+    settings->set_int(lt::settings_pack::active_downloads, config_->active_downloads);
+    settings->set_int(lt::settings_pack::active_limit, config_->active_limit);
+    settings->set_int(lt::settings_pack::active_loaded_limit, config_->active_loaded_limit);
+    settings->set_int(lt::settings_pack::active_lsd_limit, config_->active_lsd_limit);
+    settings->set_int(lt::settings_pack::active_seeds, config_->active_seeds);
+    settings->set_int(lt::settings_pack::active_tracker_limit, config_->active_tracker_limit);
+
     // Calculate user agent
     std::stringstream user_agent;
     user_agent << "PicoTorrent/" << version_info::current_version();

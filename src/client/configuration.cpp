@@ -32,9 +32,18 @@ configuration& configuration::instance()
     return instance;
 }
 
-int configuration::alert_queue_size()
+std::shared_ptr<configuration::session_part> configuration::session()
 {
-    return get_or_default("alert_queue_size", 500);
+    // Not using make_shared since that function is not a friend of
+    // the protected ctor.
+    return std::shared_ptr<session_part>(new session_part(value_));
+}
+
+std::shared_ptr<configuration::websocket_part> configuration::websocket()
+{
+    // Not using make_shared since that function is not a friend of
+    // the protected ctor.
+    return std::shared_ptr<websocket_part>(new websocket_part(value_));
 }
 
 configuration::close_action_t configuration::close_action()
@@ -71,16 +80,6 @@ std::string configuration::default_save_path()
 void configuration::set_default_save_path(const std::string &path)
 {
     set("default_save_path", path);
-}
-
-int configuration::download_rate_limit()
-{
-    return get_or_default("global_dl_rate_limit", 0);
-}
-
-void configuration::set_download_rate_limit(int dl_rate)
-{
-    set("global_dl_rate_limit", dl_rate);
 }
 
 std::string configuration::ignored_update()
@@ -253,15 +252,26 @@ void configuration::set_proxy_trackers(bool value)
 std::shared_ptr<session_configuration> configuration::session_configuration()
 {
     auto cfg = std::make_shared<core::session_configuration>();
+
+    // Limits
+    cfg->active_checking = session()->active_checking();
+    cfg->active_dht_limit = session()->active_dht_limit();
+    cfg->active_downloads = session()->active_downloads();
+    cfg->active_limit = session()->active_limit();
+    cfg->active_loaded_limit = session()->active_loaded_limit();
+    cfg->active_lsd_limit = session()->active_lsd_limit();
+    cfg->active_seeds = session()->active_seeds();
+    cfg->active_tracker_limit = session()->active_tracker_limit();
+
     cfg->default_save_path = default_save_path();
-    cfg->download_rate_limit = download_rate_limit();
+    cfg->download_rate_limit = session()->download_rate_limit();
     cfg->enable_dht = true;
     cfg->listen_interfaces = listen_interfaces();
     cfg->session_state_file = pal::combine_paths(environment::get_data_path(), "Session.dat");
-    cfg->stop_tracker_timeout = stop_tracker_timeout();
+    cfg->stop_tracker_timeout = session()->stop_tracker_timeout();
     cfg->temporary_directory = environment::get_temporary_directory();
     cfg->torrents_directory = pal::combine_paths(environment::get_data_path(), "Torrents");
-    cfg->upload_rate_limit = upload_rate_limit();
+    cfg->upload_rate_limit = session()->upload_rate_limit();
 
     // Proxy
     cfg->proxy_force = proxy_force();
@@ -285,72 +295,9 @@ void configuration::set_start_position(configuration::start_position_t pos)
     set("start_position", (int64_t)pos);
 }
 
-int configuration::stop_tracker_timeout()
-{
-    return get_or_default("stop_tracker_timeout", 1);
-}
-
 std::string configuration::update_url()
 {
     return get_or_default<std::string>("update_url", "https://api.github.com/repos/picotorrent/picotorrent/releases/latest");
-}
-
-int configuration::upload_rate_limit()
-{
-    return get_or_default("global_ul_rate_limit", 0);
-}
-
-void configuration::set_upload_rate_limit(int ul_rate)
-{
-    set("global_ul_rate_limit", ul_rate);
-}
-
-std::string configuration::websocket_access_token()
-{
-    return get_or_default<std::string>("websocket_access_token", "");
-}
-
-void configuration::set_websocket_access_token(const std::string &token)
-{
-    set("websocket_access_token", token);
-}
-
-std::string configuration::websocket_certificate_file()
-{
-    std::string data_path = environment::get_data_path();
-    std::string default_file = pal::combine_paths(data_path, "PicoTorrent_generated.pem");
-
-    return get_or_default<std::string>("websocket_certificate_file", default_file);
-}
-
-std::string configuration::websocket_certificate_password()
-{
-    return get_or_default<std::string>("websocket_certificate_password", "");
-}
-
-std::string configuration::websocket_cipher_list()
-{
-    return get_or_default<std::string>("websocket_cipher_list", "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK");
-}
-
-bool configuration::websocket_enabled()
-{
-    return get_or_default("websocket_enabled", false);
-}
-
-void configuration::set_websocket_enabled(bool value)
-{
-    set("websocket_enabled", value);
-}
-
-int configuration::websocket_listen_port()
-{
-    return get_or_default("websocket_listen_port", 7676);
-}
-
-void configuration::set_websocket_listen_port(int port)
-{
-    set("websocket_listen_port", port);
 }
 
 template<typename T>
@@ -398,7 +345,7 @@ void configuration::load()
 
     if (!pal::file_exists(config_file))
     {
-        value_ = std::make_unique<pj::object>();
+        value_ = std::make_shared<pj::object>();
         return;
     }
 
@@ -407,7 +354,7 @@ void configuration::load()
     pj::value v;
     pj::parse(v, input);
 
-    value_ = std::make_unique<pj::object>(v.get<pj::object>());
+    value_ = std::make_shared<pj::object>(v.get<pj::object>());
 }
 
 void configuration::save()

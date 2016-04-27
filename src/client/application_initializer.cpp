@@ -36,20 +36,20 @@ void application_initializer::create_application_paths()
 void application_initializer::generate_websocket_access_token()
 {
     configuration &cfg = configuration::instance();
-    std::string access_token = cfg.websocket_access_token();
+    std::string access_token = cfg.websocket()->access_token();
 
     if (access_token.empty())
     {
         random_string_generator rsg;
         std::string random_token = rsg.generate(DEFAULT_ACCESS_TOKEN_SIZE);
-        cfg.set_websocket_access_token(random_token);
+        cfg.websocket()->access_token(random_token);
     }
 }
 
 void application_initializer::generate_websocket_certificate()
 {
     configuration &cfg = configuration::instance();
-    std::string certificate_file = cfg.websocket_certificate_file();
+    std::string certificate_file = cfg.websocket()->certificate_file();
 
     if (!pal::file_exists(certificate_file))
     {
