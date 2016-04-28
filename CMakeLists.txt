@@ -84,6 +84,12 @@ set(PICOTORRENT_SOURCES
     src/client/net/http_client
     src/client/net/http_response
     src/client/net/uri
+
+    # QR components
+    src/client/qr/qr_code
+    src/client/qr/qr_data
+    src/client/qr/qr_util
+
     src/client/ui/controls/control_base
     src/client/ui/controls/list_view
     src/client/ui/controls/menu
