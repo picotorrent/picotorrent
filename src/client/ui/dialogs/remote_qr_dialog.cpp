@@ -6,7 +6,7 @@
 #include <picotorrent/client/qr/bit_buffer.hpp>
 #include <picotorrent/client/qr/qr_code.hpp>
 #include <picotorrent/client/qr/qr_data.hpp>
-#include <picotorrent/client/qr/qr_8bit_byte.hpp>
+#include <picotorrent/client/qr/qr_alpha_num.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
 
@@ -18,7 +18,7 @@
 
 using picotorrent::core::version_info;
 using picotorrent::client::qr::bit_buffer;
-using picotorrent::client::qr::qr_8bit_byte;
+using picotorrent::client::qr::qr_alpha_num;
 using picotorrent::client::qr::qr_code;
 using picotorrent::client::qr::qr_data;
 using picotorrent::client::ui::dialogs::remote_qr_dialog;
@@ -60,10 +60,12 @@ private:
         HBRUSH hBlack = CreateSolidBrush(RGB(0, 0, 0));
         FillRect(hdc, &rect, hWhite);
 
-        rect.bottom -= 10;
-        rect.left += 10;
-        rect.right -= 10;
-        rect.top += 10;
+        int padding = scaler::x(20);
+
+        rect.bottom -= padding;
+        rect.left += padding;
+        rect.right -= padding;
+        rect.top += padding;
 
         int width = rect.right - rect.left;
         int height = rect.bottom - rect.top;
@@ -131,13 +133,6 @@ BOOL remote_qr_dialog::on_command(int id, WPARAM wParam, LPARAM lParam)
 
 BOOL remote_qr_dialog::on_init_dialog()
 {
-    // TODO, this is a test which doesn't work.
-    std::shared_ptr<qr_8bit_byte> data = std::make_shared<qr_8bit_byte>("ab01");
-    std::vector<std::shared_ptr<qr_data>> dlist({ data });
-
-    std::vector<char> act = qr_code::create_data(1, 2, dlist);
-    std::vector<char> exp = { 64,70,22,35,3,16,-20,17,-20,91,-25,80,48,-87,54,40,-83,84,-117,33,87,54,-57,50,-84,49 };
-
     return TRUE;
 }
 

@@ -10,8 +10,8 @@
 #include <picotorrent/client/qr/qr_util.hpp>
 #include <picotorrent/client/qr/rs_block.hpp>
 
-#define PAD0 0
-#define PAD1 1
+#define PAD0 0xEC
+#define PAD1 0x11
 
 using picotorrent::client::qr::bit_buffer;
 using picotorrent::client::qr::qr_alpha_num;

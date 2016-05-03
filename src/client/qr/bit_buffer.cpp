@@ -21,9 +21,12 @@ int bit_buffer::get_length_in_bits()
 
 void bit_buffer::put(int num, int length)
 {
+    unsigned int n = (unsigned int)num;
+    unsigned int l = (unsigned int)length;
+
     for (int i = 0; i < length; i++)
     {
-        put(((num >> (length - i - 1)) & 1) == 1);
+        put(((n >> (l - i - 1)) & 1) == 1);
     }
 }
 
@@ -36,7 +39,7 @@ void bit_buffer::put(bool bit)
 
     if (bit)
     {
-        buffer_[length_ / 8] |= (0x80 >> (length_ % 8));
+        buffer_[length_ / 8] |= ((unsigned int)0x80 >> (unsigned int)(length_ % 8));
     }
 
     length_++;

@@ -19,8 +19,17 @@ polynomial::polynomial(const std::vector<int> &num, int shift)
         offset++;
     }
 
-    num_ = num;
-    num_.reserve(num.size() - offset + shift);
+    //                  src  srcPos  dest     destPos   length
+    // System.arraycopy(num, offset, this.num, 0, num.length - offset);
+
+    num_.resize(num.size() - offset + shift);
+    int idx = 0;
+
+    for (size_t i = offset; i < num.size() - offset; i++)
+    {
+        num_[idx] = num[i];
+        idx += 1;
+    }
 }
 
 int polynomial::get(int index) const
