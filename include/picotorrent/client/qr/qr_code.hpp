@@ -1,9 +1,15 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include <picotorrent/client/qr/qr_data.hpp>
+
+#define MODE_NUMBER (1<<0)
+#define MODE_ALPHA_NUM (1<<1)
+#define MODE_8BIT_BYTE (1<<2)
+#define MODE_KANJI (1<<3)
 
 namespace picotorrent
 {
@@ -31,10 +37,10 @@ namespace qr
         int get_module_count();
         void make();
 
-        static std::vector<char> create_data(int type_number, int error_correct_level, const std::vector<qr_data> &data);
+        static std::vector<char> create_data(int type_number, int error_correct_level, std::vector<std::shared_ptr<qr_data>> &data);
 
     protected:
-        void add_data(const qr_data &data);
+        void add_data(const std::shared_ptr<qr_data> &data);
         int get_data_count();
         qr_data& get_data(int index);
 
@@ -54,13 +60,13 @@ namespace qr
         void setup_type_number(bool test);
         void setup_type_info(bool test, int mask_pattern);
 
-        static std::vector<char> create_bytes(const bit_buffer &buffer, const std::vector<rs_block> &blocks);
+        static std::vector<char> create_bytes(bit_buffer &buffer, std::vector<rs_block> &blocks);
 
         int type_number_;
         std::vector<std::vector<module_val>> modules_;
         int module_count_;
         int error_correct_level_;
-        std::vector<qr_data> qr_data_list_;
+        std::vector<std::shared_ptr<qr_data>> qr_data_list_;
     };
 }
 }

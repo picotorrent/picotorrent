@@ -17,7 +17,7 @@ namespace qr
         virtual int get_length() = 0;
         int get_length_in_bits(int type);
         int get_mode();
-        virtual void write(const bit_buffer &buffer) = 0;
+        virtual void write(bit_buffer &buffer) = 0;
 
     protected:
         qr_data(int mode, const std::string &data);

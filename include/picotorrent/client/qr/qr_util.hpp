@@ -25,6 +25,7 @@ namespace qr
         static int get_mode(const std::string &m);
         static int get_bch_type_info(int data);
         static int get_bch_type_number(int data);
+        static int get_bch_digit(int data);
 
     private:
         qr_util() {}

@@ -86,9 +86,15 @@ set(PICOTORRENT_SOURCES
     src/client/net/uri
 
     # QR components
+    src/client/qr/bit_buffer
+    src/client/qr/polynomial
+    src/client/qr/qr_8bit_byte
+    src/client/qr/qr_alpha_num
     src/client/qr/qr_code
     src/client/qr/qr_data
+    src/client/qr/qr_math
     src/client/qr/qr_util
+    src/client/qr/rs_block
 
     src/client/ui/controls/control_base
     src/client/ui/controls/list_view
@@ -98,6 +104,7 @@ set(PICOTORRENT_SOURCES
     src/client/ui/dialogs/add_torrent_dialog
     src/client/ui/dialogs/add_tracker_dialog
     src/client/ui/dialogs/magnet_link_dialog
+    src/client/ui/dialogs/remote_qr_dialog
     src/client/ui/property_sheets/property_sheet_page
     src/client/ui/property_sheets/details/files_page
     src/client/ui/property_sheets/details/options_page

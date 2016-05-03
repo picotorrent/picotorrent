@@ -1,16 +1,61 @@
 #include <picotorrent/client/qr/qr_code.hpp>
 
+#include <algorithm>
 #include <cmath>
 
+#include <picotorrent/client/qr/bit_buffer.hpp>
+#include <picotorrent/client/qr/qr_alpha_num.hpp>
+#include <picotorrent/client/qr/qr_8bit_byte.hpp>
+#include <picotorrent/client/qr/qr_data.hpp>
 #include <picotorrent/client/qr/qr_util.hpp>
+#include <picotorrent/client/qr/rs_block.hpp>
 
+#define PAD0 0
+#define PAD1 1
+
+using picotorrent::client::qr::bit_buffer;
+using picotorrent::client::qr::qr_alpha_num;
 using picotorrent::client::qr::qr_code;
+using picotorrent::client::qr::qr_data;
 using picotorrent::client::qr::qr_util;
+using picotorrent::client::qr::rs_block;
 
 qr_code::qr_code()
 {
     type_number_ = 1;
 
+}
+
+void qr_code::set_error_correct_level(int error_correct_level)
+{
+    error_correct_level_ = error_correct_level;
+}
+
+void qr_code::set_type_number(int type_number)
+{
+    type_number_ = type_number;
+}
+
+void qr_code::add_data(const std::string &data)
+{
+    add_data(data, qr_util::get_mode(data));
+}
+
+void qr_code::add_data(const std::string &data, int mode)
+{
+    switch (mode)
+    {
+    case MODE_ALPHA_NUM:
+        add_data(std::make_shared<qr_alpha_num>(data));
+        break;
+    default:
+        throw std::exception("invalid mode");
+    }
+}
+
+void qr_code::add_data(const std::shared_ptr<qr_data> &data)
+{
+    qr_data_list_.push_back(data);
 }
 
 int qr_code::get_best_mask_pattern()
@@ -114,15 +159,15 @@ void qr_code::map_data(const std::vector<char> &data, int mask_pattern)
                         bit_index = 7;
                     }
                 }
+            }
 
-                row += inc;
+            row += inc;
 
-                if (row < 0 || module_count_ <= row)
-                {
-                    row -= inc;
-                    inc = -inc;
-                    break;
-                }
+            if (row < 0 || module_count_ <= row)
+            {
+                row -= inc;
+                inc = -inc;
+                break;
             }
         }
     }
@@ -285,4 +330,132 @@ void qr_code::setup_type_number(bool test)
         modules_[i % 3 + module_count_ - 8 - 3][i / 3].has_value = true;
         modules_[i % 3 + module_count_ - 8 - 3][i / 3].value = mod;
     }
+}
+
+std::vector<char> qr_code::create_data(int type_number, int error_correct_level, std::vector<std::shared_ptr<qr_data>> &data)
+{
+    std::vector<rs_block> rs_blocks = rs_block::get_rs_blocks(type_number, error_correct_level);
+    bit_buffer buffer;
+
+    for (size_t i = 0; i < data.size(); i++)
+    {
+        std::shared_ptr<qr_data> &d = data[i];
+        buffer.put(d->get_mode(), 4);
+        buffer.put(d->get_length(), d->get_length_in_bits(type_number));
+        d->write(buffer);
+    }
+
+    int total_data_count = 0;
+    for (size_t i = 0; i < rs_blocks.size(); i++)
+    {
+        total_data_count += rs_blocks[i].get_data_count();
+    }
+
+    if (buffer.get_length_in_bits() > total_data_count * 8)
+    {
+        throw std::exception("code length overflow");
+    }
+
+    if (buffer.get_length_in_bits() + 4 <= total_data_count * 8)
+    {
+        buffer.put(0, 4);
+    }
+
+    while (buffer.get_length_in_bits() % 8 != 0)
+    {
+        buffer.put(false);
+    }
+
+    while (true)
+    {
+        if (buffer.get_length_in_bits() >= total_data_count * 8)
+        {
+            break;
+        }
+
+        buffer.put(PAD0, 8);
+
+        if (buffer.get_length_in_bits() >= total_data_count * 8)
+        {
+            break;
+        }
+
+        buffer.put(PAD1, 8);
+    }
+
+    return create_bytes(buffer, rs_blocks);
+}
+
+std::vector<char> qr_code::create_bytes(bit_buffer &buffer, std::vector<rs_block> &blocks)
+{
+    int offset = 0;
+
+    int max_dc_count = 0;
+    int max_ec_count = 0;
+
+    std::vector<std::vector<int>> dc_data(blocks.size(), std::vector<int>());
+    std::vector<std::vector<int>> ec_data(blocks.size(), std::vector<int>());
+
+    for (size_t r = 0; r < blocks.size(); r++)
+    {
+        int dc_count = blocks[r].get_data_count();
+        int ec_count = blocks[r].get_total_count() - dc_count;
+
+        max_dc_count = std::max(max_dc_count, dc_count);
+        max_ec_count = std::max(max_ec_count, ec_count);
+
+        dc_data[r] = std::vector<int>(dc_count);
+
+        for (size_t i = 0; i < dc_data[r].size(); i++)
+        {
+            dc_data[r][i] = 0xff & buffer.get_buffer()[i + offset];
+        }
+
+        offset += dc_count;
+
+        polynomial rs_poly = qr_util::get_error_correct_polynomial(ec_count);
+        polynomial raw_poly(dc_data[r], rs_poly.get_length() - 1);
+        polynomial mod_poly = raw_poly.mod(rs_poly);
+
+        ec_data[r] = std::vector<int>(rs_poly.get_length() - 1);
+
+        for (size_t i = 0; i < ec_data[r].size(); i++)
+        {
+            int mod_index = (int)(i + mod_poly.get_length() - ec_data[r].size());
+            ec_data[r][i] = (mod_index >= 0) ? mod_poly.get(mod_index) : 0;
+        }
+    }
+
+    int total_code_count = 0;
+    for (size_t i = 0; i < blocks.size(); i++)
+    {
+        total_code_count += blocks[i].get_total_count();
+    }
+
+    std::vector<char> data(total_code_count);
+    int index = 0;
+
+    for (int i = 0; i < max_dc_count; i++)
+    {
+        for (size_t r = 0; r < blocks.size(); r++)
+        {
+            if (i < dc_data[r].size())
+            {
+                data[index++] = (char)dc_data[r][i];
+            }
+        }
+    }
+
+    for (int i = 0; i < max_ec_count; i++)
+    {
+        for (size_t r = 0; r < blocks.size(); r++)
+        {
+            if (i < ec_data[r].size())
+            {
+                data[index++] = (char)ec_data[r][i];
+            }
+        }
+    }
+
+    return data;
 }

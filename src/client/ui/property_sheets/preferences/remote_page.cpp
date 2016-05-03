@@ -1,10 +1,16 @@
 #include <picotorrent/client/ui/property_sheets/preferences/remote_page.hpp>
 
+#include <sstream>
+
 #include <windowsx.h>
 
 #include <picotorrent/client/i18n/translator.hpp>
+#include <picotorrent/client/qr/qr_code.hpp>
+#include <picotorrent/client/ui/dialogs/remote_qr_dialog.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 
+using picotorrent::client::qr::qr_code;
+using picotorrent::client::ui::dialogs::remote_qr_dialog;
 using picotorrent::client::ui::property_sheets::preferences::remote_page;
 
 remote_page::remote_page()
@@ -68,6 +74,10 @@ BOOL remote_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lPar
     {
         bool checked = IsDlgButtonChecked(hDlg, ID_REMOTE_ENABLE) == BST_CHECKED;
         CheckDlgButton(hDlg, ID_REMOTE_ENABLE, checked ? BST_UNCHECKED : BST_CHECKED);
+
+        remote_qr_dialog dlg;
+        dlg.show_modal(handle());
+
         break;
     }
     }
