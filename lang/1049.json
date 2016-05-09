@@ -152,6 +152,12 @@
         "top": "В начало",
         "bottom": "В конец",
         "remove_tracker_s": "Удалить трекер(ы)",
-        "add_tracker": "Добавить трекер"
+        "add_tracker": "Добавить трекер",
+        "remote": "Удаленный доступ",
+        "enable_websocket_api": "Включить Websocket API",
+        "security": "Защита",
+        "access_token": "Токен доступа",
+        "options": "Настройки",
+        "certificate_public_key": "Сертификат (публичный ключ)"
     }
 }
