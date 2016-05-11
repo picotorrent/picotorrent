@@ -34,7 +34,7 @@ void bit_buffer::put(bool bit)
 {
     if (length_ == (int)buffer_.size() * 8)
     {
-        buffer_.reserve(buffer_.size() + inclements_);
+        buffer_.resize(buffer_.size() + inclements_);
     }
 
     if (bit)

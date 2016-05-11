@@ -238,7 +238,7 @@ bool qr_util::get_mask(int mask_pattern, int i, int j)
 
 int qr_util::get_mode(const std::string &m)
 {
-    return 2;
+    return 1 << 2;
 }
 
 std::vector<int> qr_util::get_pattern_position(int type_number)

@@ -3,15 +3,20 @@
 #include <sstream>
 
 #include <windowsx.h>
+#include <commctrl.h>
 
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/qr/qr_code.hpp>
 #include <picotorrent/client/ui/dialogs/remote_qr_dialog.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+#include <picotorrent/client/ui/scaler.hpp>
+#include <picojson.hpp>
 
+namespace pj = picojson;
 using picotorrent::client::qr::qr_code;
 using picotorrent::client::ui::dialogs::remote_qr_dialog;
 using picotorrent::client::ui::property_sheets::preferences::remote_page;
+using picotorrent::client::ui::scaler;
 
 remote_page::remote_page()
 {
@@ -20,7 +25,7 @@ remote_page::remote_page()
     set_template_id(IDD_PREFERENCES_REMOTE);
     set_title(TR("remote"));
 
-    edit_font_ = CreateFont(14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, TEXT("Consolas"));
+    edit_font_ = CreateFont(scaler::x(14), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, TEXT("Consolas"));
 }
 
 remote_page::~remote_page()
@@ -74,10 +79,6 @@ BOOL remote_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lPar
     {
         bool checked = IsDlgButtonChecked(hDlg, ID_REMOTE_ENABLE) == BST_CHECKED;
         CheckDlgButton(hDlg, ID_REMOTE_ENABLE, checked ? BST_UNCHECKED : BST_CHECKED);
-
-        remote_qr_dialog dlg;
-        dlg.show_modal(handle());
-
         break;
     }
     }
@@ -107,6 +108,7 @@ void remote_page::on_init_dialog()
     set_dlg_item_text(ID_REMOTE_SECURITY_GROUP, TR("security"));
     set_dlg_item_text(ID_REMOTE_TOKEN_TEXT, TR("access_token"));
     set_dlg_item_text(ID_REMOTE_CERT_TEXT, TR("certificate_public_key"));
+    set_dlg_item_text(ID_REMOTE_SHOW_QR, TR("show_qr_code"));
 
     SendMessage(
         GetDlgItem(handle(), ID_REMOTE_TOKEN),
@@ -120,6 +122,33 @@ void remote_page::on_init_dialog()
         (WPARAM)edit_font_,
         0);
 }
+
+bool remote_page::on_notify(HWND hDlg, LPNMHDR nmhdr, LRESULT &result)
+{
+    switch (nmhdr->code)
+    {
+    case NM_CLICK:
+    {
+        if (nmhdr->idFrom == ID_REMOTE_SHOW_QR)
+        {
+            pj::object o;
+            o["port"] = pj::value((int64_t)websocket_port());
+            o["access_token"] = pj::value(get_dlg_item_text(ID_REMOTE_TOKEN));
+            // o["public_key"] = pj::value(get_dlg_item_text(ID_REMOTE_CERT_PUBKEY));
+
+            std::string json = pj::value(o).serialize(true);
+
+            remote_qr_dialog dlg;
+            dlg.set_data(json);
+            dlg.show_modal(handle());
+        }
+        break;
+    }
+    }
+
+    return false;
+}
+
 
 void remote_page::check_changed(HWND hDlg, UINT uCtrlId, UINT uCommand)
 {

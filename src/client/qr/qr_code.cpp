@@ -4,7 +4,6 @@
 #include <cmath>
 
 #include <picotorrent/client/qr/bit_buffer.hpp>
-#include <picotorrent/client/qr/qr_alpha_num.hpp>
 #include <picotorrent/client/qr/qr_8bit_byte.hpp>
 #include <picotorrent/client/qr/qr_data.hpp>
 #include <picotorrent/client/qr/qr_util.hpp>
@@ -14,7 +13,7 @@
 #define PAD1 0x11
 
 using picotorrent::client::qr::bit_buffer;
-using picotorrent::client::qr::qr_alpha_num;
+using picotorrent::client::qr::qr_8bit_byte;
 using picotorrent::client::qr::qr_code;
 using picotorrent::client::qr::qr_data;
 using picotorrent::client::qr::qr_util;
@@ -45,8 +44,8 @@ void qr_code::add_data(const std::string &data, int mode)
 {
     switch (mode)
     {
-    case MODE_ALPHA_NUM:
-        add_data(std::make_shared<qr_alpha_num>(data));
+    case MODE_8BIT_BYTE:
+        add_data(std::make_shared<qr_8bit_byte>(data));
         break;
     default:
         throw std::exception("invalid mode");

@@ -115,6 +115,7 @@
 #define ID_REMOTE_TOKEN 107
 #define ID_REMOTE_CERT_TEXT 108
 #define ID_REMOTE_CERT_PUBKEY 109
+#define ID_REMOTE_SHOW_QR 110
 
 // Advanced preferences dialog
 #define ID_EXPERIMENTAL_GROUP 101
@@ -187,6 +188,9 @@
 #define ID_BUILD_INFO_FORMAT 103
 #define ID_PICOTORRENT_DESCRIPTION 104
 #define ID_GITHUB_LINK 105
+
+// Remote QR dialog
+#define ID_QR_CONTROL 101
 
 // Keyboard shortcuts
 #define IDHOT_SELECT_ALL 1001

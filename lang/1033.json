@@ -168,6 +168,7 @@
         "uploaded": "Uploaded",
         "storage_mode": "Storage mode",
         "sparse": "Sparse",
-        "full": "Full"
+        "full": "Full",
+        "show_qr_code": "<a href=\"#\">Show QR code</a>",
     }
 }

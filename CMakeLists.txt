@@ -89,7 +89,6 @@ set(PICOTORRENT_SOURCES
     src/client/qr/bit_buffer
     src/client/qr/polynomial
     src/client/qr/qr_8bit_byte
-    src/client/qr/qr_alpha_num
     src/client/qr/qr_code
     src/client/qr/qr_data
     src/client/qr/qr_math

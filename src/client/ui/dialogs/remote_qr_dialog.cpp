@@ -4,9 +4,9 @@
 #include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/qr/bit_buffer.hpp>
+#include <picotorrent/client/qr/qr_8bit_byte.hpp>
 #include <picotorrent/client/qr/qr_code.hpp>
 #include <picotorrent/client/qr/qr_data.hpp>
-#include <picotorrent/client/qr/qr_alpha_num.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
 
@@ -15,10 +15,13 @@
 #include <commctrl.h>
 #include <shellapi.h>
 #include <strsafe.h>
+#include <windowsx.h>
+
+#define QR_SET WM_USER+1
 
 using picotorrent::core::version_info;
 using picotorrent::client::qr::bit_buffer;
-using picotorrent::client::qr::qr_alpha_num;
+using picotorrent::client::qr::qr_8bit_byte;
 using picotorrent::client::qr::qr_code;
 using picotorrent::client::qr::qr_data;
 using picotorrent::client::ui::dialogs::remote_qr_dialog;
@@ -39,45 +42,44 @@ public:
     }
 
 private:
-    static void PaintQrCode(HWND hWnd)
+    static void PaintQrCode(HWND hWnd, qr_code *qr)
     {
         PAINTSTRUCT ps;
         HDC hdc;
         RECT rect;
-
-        qr_code qr;
-        qr.set_error_correct_level(2);
-        qr.add_data("SOMETHING");
-        qr.make();
 
         GetClientRect(hWnd, &rect);
         hdc = BeginPaint(hWnd, &ps);
         SetTextColor(hdc, RGB(0, 0, 0));
         SetBkMode(hdc, TRANSPARENT);
 
-
         HBRUSH hWhite = CreateSolidBrush(RGB(255, 255, 255));
         HBRUSH hBlack = CreateSolidBrush(RGB(0, 0, 0));
         FillRect(hdc, &rect, hWhite);
 
-        int padding = scaler::x(20);
-
-        rect.bottom -= padding;
-        rect.left += padding;
-        rect.right -= padding;
-        rect.top += padding;
+        int padding = scaler::x(10);
+        rect.top += padding; rect.bottom -= padding;
+        rect.left += padding; rect.right -= padding;
 
         int width = rect.right - rect.left;
         int height = rect.bottom - rect.top;
-        int module_count = qr.get_module_count();
+        int module_count = qr->get_module_count();
         int width_per_square = width / module_count;
         int height_per_square = height / module_count;
+
+        int w = width_per_square * module_count;
+        int woffset = (width - w) / 2;
+        rect.left += woffset; rect.right -= woffset;
+
+        int h = height_per_square * module_count;
+        int hoffset = (height - h) / 2;
+        rect.top += hoffset; rect.bottom -= hoffset;
 
         for (int row = 0; row < module_count; row++)
         {
             for (int col = 0; col < module_count; col++)
             {
-                if (!qr.is_dark(row, col)) { continue; }
+                if (!qr->is_dark(row, col)) { continue; }
 
                 RECT r = { 0 };
                 r.left = rect.left + (col * width_per_square);
@@ -100,8 +102,17 @@ private:
         switch (uMsg)
         {
         case WM_PAINT:
-            PaintQrCode(hWnd);
+        {
+            qr_code *qr = (qr_code*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+            PaintQrCode(hWnd, qr);
             return 0;
+        }
+        case QR_SET:
+        {
+            qr_code *qr = (qr_code*)lParam;
+            SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)qr);
+            break;
+        }
         }
 
         return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -109,13 +120,24 @@ private:
 };
 
 remote_qr_dialog::remote_qr_dialog()
-    : dialog_base(IDD_REMOTE_QR)
+    : dialog_base(IDD_REMOTE_QR),
+    qr_(std::make_shared<qr_code>())
 {
     static qr_control init;
+
+    qr_->set_error_correct_level(1);
+    qr_->set_type_number(7);
 }
 
 remote_qr_dialog::~remote_qr_dialog()
 {
+}
+
+void remote_qr_dialog::set_data(const std::string &data)
+{
+    // qr_->clear_data();
+    qr_->add_data(data);
+    qr_->make();
 }
 
 BOOL remote_qr_dialog::on_command(int id, WPARAM wParam, LPARAM lParam)
@@ -133,6 +155,8 @@ BOOL remote_qr_dialog::on_command(int id, WPARAM wParam, LPARAM lParam)
 
 BOOL remote_qr_dialog::on_init_dialog()
 {
+    HWND qr = GetDlgItem(handle(), ID_QR_CONTROL);
+    SendMessage(qr, QR_SET, NULL, (LPARAM)qr_.get());
     return TRUE;
 }
 

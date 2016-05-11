@@ -24,19 +24,19 @@ int qr_data::get_length_in_bits(int type)
     {
         // 1 - 9
         // TODO
-        return 9;
+        return 8;
     }
     else if (type < 27)
     {
         // 10 - 26
         // TODO
-        return 11;
+        return 16;
     }
     else if (type < 41)
     {
         // 27 - 40
         // TODO
-        return 13;
+        return 16;
     }
 
     throw std::exception("Unsupported");
