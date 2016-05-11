@@ -139,7 +139,7 @@ void qr_code::map_data(const std::vector<char> &data, int mask_pattern)
                 {
                     bool dark = false;
 
-                    if (byte_index < data.size())
+                    if (byte_index < (int)data.size())
                     {
                         dark = ((data[byte_index] >> bit_index) & 1) == 1;
                     }
@@ -438,7 +438,7 @@ std::vector<char> qr_code::create_bytes(bit_buffer &buffer, std::vector<rs_block
     {
         for (size_t r = 0; r < blocks.size(); r++)
         {
-            if (i < dc_data[r].size())
+            if (i < (int)dc_data[r].size())
             {
                 data[index++] = (char)dc_data[r][i];
             }
@@ -449,7 +449,7 @@ std::vector<char> qr_code::create_bytes(bit_buffer &buffer, std::vector<rs_block
     {
         for (size_t r = 0; r < blocks.size(); r++)
         {
-            if (i < ec_data[r].size())
+            if (i < (int)ec_data[r].size())
             {
                 data[index++] = (char)ec_data[r][i];
             }
