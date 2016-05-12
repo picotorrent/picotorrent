@@ -125,8 +125,21 @@ void add_torrent_controller::add_files(const std::vector<std::string> &paths)
 
     for (const std::string &p : paths)
     {
-        auto ti = core::torrent_info::try_load(p);
-        if (!ti) { continue; }
+        std::string err;
+        auto ti = core::torrent_info::try_load(p, err);
+
+        if (!ti)
+        {
+            ui::task_dialog dlg;
+            dlg.set_common_buttons(TDCBF_OK_BUTTON);
+            dlg.set_content(err);
+            dlg.set_main_icon(TD_ERROR_ICON);
+            dlg.set_main_instruction(TR("error_when_loading_torrent"));
+            dlg.set_title("PicoTorrent");
+            dlg.show();
+
+            continue;
+        }
 
         auto r = std::make_shared<core::add_request>();
         r->set_torrent_info(ti);

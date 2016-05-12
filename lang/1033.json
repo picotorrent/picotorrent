@@ -171,6 +171,7 @@
         "full": "Full",
         "show_qr_code": "<a href=\"#\">Show QR code</a>",
         "invalid_download_rate_limit": "Invalid download rate limit.",
-        "invalid_upload_rate_limit": "Invalid upload rate limit."
+        "invalid_upload_rate_limit": "Invalid upload rate limit.",
+        "error_when_loading_torrent": "Error when loading torrent"
     }
 }
