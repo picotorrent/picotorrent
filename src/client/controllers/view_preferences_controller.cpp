@@ -133,6 +133,20 @@ bool view_preferences_controller::on_downloads_validate()
         return false;
     }
 
+    if (dl_page_->download_rate() < 0)
+    {
+        dl_page_->show_error_message(
+            TR("invalid_download_rate_limit"));
+        return false;
+    }
+
+    if (dl_page_->upload_rate() < 0)
+    {
+        dl_page_->show_error_message(
+            TR("invalid_upload_rate_limit"));
+        return false;
+    }
+
     return true;
 }
 

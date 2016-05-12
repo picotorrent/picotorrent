@@ -24,7 +24,8 @@ std::string downloads_page::downloads_path()
 
 int downloads_page::download_rate()
 {
-    return std::stoi(get_dlg_item_text(ID_PREFS_GLOBAL_DL_LIMIT));
+    std::string dl = get_dlg_item_text(ID_PREFS_GLOBAL_DL_LIMIT);
+    return dl.empty() ? -1 : std::stoi(dl);
 }
 
 bool downloads_page::prompt_for_save_path()
@@ -33,7 +34,8 @@ bool downloads_page::prompt_for_save_path()
 }
 int downloads_page::upload_rate()
 {
-    return std::stoi(get_dlg_item_text(ID_PREFS_GLOBAL_UL_LIMIT));
+    std::string ul = get_dlg_item_text(ID_PREFS_GLOBAL_UL_LIMIT);
+    return ul.empty() ? -1 : std::stoi(ul);
 }
 
 void downloads_page::set_downloads_path(const std::string &path)
