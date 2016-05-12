@@ -29,6 +29,7 @@ namespace preferences
     protected:
         BOOL on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam);
         void on_init_dialog();
+        bool on_notify(HWND hDlg, LPNMHDR nmhdr, LRESULT &result);
 
     private:
         void check_changed(HWND hDlg, UINT uCtrlId, UINT uCommand);
