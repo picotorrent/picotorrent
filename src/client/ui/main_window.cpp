@@ -269,7 +269,15 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
         case WM_LBUTTONDBLCLK:
         {
-            ShowWindow(handle(), SW_RESTORE);
+            if (IsIconic(handle()))
+            {
+                ShowWindow(handle(), SW_RESTORE);
+            }
+            else
+            {
+                ShowWindow(handle(), SW_SHOW);
+            }
+
             SetForegroundWindow(handle());
 
             break;
