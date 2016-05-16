@@ -30,10 +30,11 @@ std::string dialog_base::get_dlg_item_text(int controlId)
 {
     HWND hItem = GetDlgItem(handle(), controlId);
 
-    TCHAR t[1024];
-    GetWindowText(hItem, t, ARRAYSIZE(t));
+    int length = GetWindowTextLength(hItem);
+    std::vector<wchar_t> t(length + 1);
+    GetWindowText(hItem, &t[0], (int)t.size());
 
-    return to_string(t);
+    return to_string(&t[0]);
 }
 
 bool dialog_base::is_dlg_button_checked(int controlId)
