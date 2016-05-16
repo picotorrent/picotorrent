@@ -40,7 +40,7 @@ void sleep_manager::refresh(bool hasActiveDownloads)
         {
             // Prevent sleeping
             LOG(info) << "Preventing computer from sleeping";
-            EXECUTION_STATE state = SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
+            EXECUTION_STATE state = SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED);
             if (state == NULL) 
             {
                 LOG(error) << "Could not prevent computer from sleeping.";
