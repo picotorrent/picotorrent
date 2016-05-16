@@ -28,7 +28,7 @@ torrent_info::~torrent_info()
 {
 }
 
-std::shared_ptr<torrent_info> torrent_info::try_load(const std::string &path)
+std::shared_ptr<torrent_info> torrent_info::try_load(const std::string &path, std::string &err)
 {
     if (!pal::file_exists(path))
     {
@@ -40,8 +40,18 @@ std::shared_ptr<torrent_info> torrent_info::try_load(const std::string &path)
 
     std::stringstream ss;
     ss << file_stream.rdbuf();
+    std::string buf = ss.str();
 
-    return std::make_shared<torrent_info>(ss.str());
+    lt::error_code ec;
+    lt::torrent_info ti(&buf[0], (int)buf.size(), ec);
+
+    if (ec)
+    {
+        err = ec.message();
+        return nullptr;
+    }
+
+    return std::make_shared<core::torrent_info>(ti);
 }
 
 std::string torrent_info::file_path(int index) const

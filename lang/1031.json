@@ -153,6 +153,21 @@
         "bottom": "Unten",
         "remove_tracker_s": "Tracker entfernen",
         "add_tracker": "Tracker hinzufügen",
-        "seeds": "Seeds"
+        "seeds": "Seeds",
+        "torrent_s_already_in_session": "Torrent(s) schon in Sitzung",
+        "remote": "Remote",
+        "options": "Optionen",
+        "enable_websocket_api": "WebSocket API aktivieren",
+        "security": "Sicherheit",
+        "access_token": "Access token",
+        "certificate_public_key": "Zertifikat (public key)",
+        "statistics": "Statistiken",
+        "ratio": "Seed Verhältnis",
+        "pieces": "Teile",
+        "downloaded": "Heruntergeladen",
+        "uploaded": "Hochgeladen",
+        "storage_mode": "Storage Modus",
+        "sparse": "Sparse",
+        "full": "Full"
     }
 }

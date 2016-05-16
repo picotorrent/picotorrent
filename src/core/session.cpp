@@ -57,6 +57,7 @@ struct load_item
     std::string resume_data;
     std::string magnet_uri;
     std::string save_path;
+    std::string url;
 };
 
 struct session_log_item
@@ -366,8 +367,9 @@ void session::load_torrents()
             continue;
         }
 
-        item.magnet_uri = node.dict_find_string_value("pT-url");
+        item.magnet_uri = node.dict_find_string_value("pT-magnetUri");
         item.save_path = node.dict_find_string_value("pT-savePath", config_->default_save_path.c_str());
+        item.url = node.dict_find_string_value("pT-url");
 
         int64_t queuePosition = node.dict_find_int_value("pT-queuePosition", maxPosition);
         if (queuePosition < 0) { queuePosition = maxPosition; }
@@ -402,7 +404,6 @@ void session::load_torrents()
             if (ec)
             {
                 LOG(error) << "Failed to read resume data, " << ec.message();
-                continue;
             }
         }
 
@@ -441,7 +442,14 @@ void session::load_torrents()
             params.save_path = item.save_path;
         }
 
-        params.url = item.magnet_uri;
+        if (item.url.empty())
+        {
+            params.url = item.magnet_uri;
+        }
+        else
+        {
+            params.url = item.url;
+        }
 
         sess_->async_add_torrent(params);
     }
@@ -482,9 +490,13 @@ void session::notify()
             {
                 save_torrent(*al->handle.torrent_file());
             }
-            else if (!al->params.url.empty())
+            else if (!al->params.url.empty() || !al->params.info_hash.is_all_zeros())
             {
+                // Save resume data
+                al->handle.save_resume_data();
+
                 lt::entry::dictionary_type e;
+                e.insert({ "pT-magnetUri", "magnet:?xt=urn:btih:" + lt::to_hex(al->params.info_hash.to_string()) });
                 e.insert({ "pT-queuePosition", al->handle.status().queue_position });
                 e.insert({ "pT-url", al->params.url });
 

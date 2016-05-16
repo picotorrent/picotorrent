@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include <commctrl.h>
+#include <picotorrent/core/hash.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/session_metrics.hpp>
 #include <picotorrent/core/torrent.hpp>
@@ -269,7 +270,15 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
         case WM_LBUTTONDBLCLK:
         {
-            ShowWindow(handle(), SW_RESTORE);
+            if (IsIconic(handle()))
+            {
+                ShowWindow(handle(), SW_RESTORE);
+            }
+            else
+            {
+                ShowWindow(handle(), SW_SHOW);
+            }
+
             SetForegroundWindow(handle());
 
             break;
@@ -572,6 +581,11 @@ std::string main_window::on_list_display(const std::pair<int, int> &p)
     switch (p.first)
     {
     case COLUMN_NAME:
+        if (t->name().empty())
+        {
+            return t->info_hash()->to_string();
+        }
+
         return t->name();
     case COLUMN_QUEUE_POSITION:
         if (t->queue_position() < 0)
@@ -581,6 +595,11 @@ std::string main_window::on_list_display(const std::pair<int, int> &p)
 
         return std::to_string(t->queue_position() + 1);
     case COLUMN_SIZE:
+        if (t->state() == core::torrent_state::state_t::downloading_metadata)
+        {
+            return "-";
+        }
+
         TCHAR size[128];
         StrFormatByteSize64(t->size(), size, ARRAYSIZE(size));
         return to_string(size);
