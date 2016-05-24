@@ -1,7 +1,7 @@
 #include <picotorrent/client/ui/torrent_drop_target.hpp>
 
+#include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/is_valid_torrent_file.hpp>
-#include <picotorrent/client/string_operations.hpp>
 
 #include <shellapi.h>
 #include <shlwapi.h>
@@ -11,6 +11,7 @@
 #include <vector>
 
 using picotorrent::client::ui::torrent_drop_target;
+using picotorrent::common::to_string;
 using picotorrent::core::is_valid_torrent_file;
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
@@ -99,7 +100,7 @@ private:
         {
             TCHAR path[MAX_PATH];
             DragQueryFile(drop, i, path, ARRAYSIZE(path));
-            paths.push_back(picotorrent::client::to_string(path));
+            paths.push_back(to_string(path));
         }
 
         return paths;

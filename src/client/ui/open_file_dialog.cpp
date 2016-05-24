@@ -1,11 +1,13 @@
 #include <picotorrent/client/ui/open_file_dialog.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/file_dialog_callback.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 using picotorrent::client::ui::file_dialog_callback;
 using picotorrent::client::ui::open_file_dialog;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
 
 open_file_dialog::open_file_dialog()
     : dlg_(NULL)

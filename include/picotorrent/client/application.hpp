@@ -5,6 +5,8 @@
 #include <vector>
 #include <windows.h>
 
+#include <picotorrent/common/application.hpp>
+
 namespace picotorrent
 {
 namespace core
@@ -12,40 +14,43 @@ namespace core
     class session;
     class torrent;
 }
-
 namespace client
 {
-    namespace controllers
-    {
-        class application_update_controller;
-    }
+namespace controllers
+{
+    class application_update_controller;
+}
+namespace ui
+{
+    class main_window;
+}
 
-    namespace ui
-    {
-        class main_window;
-    }
-
-    namespace ws
-    {
-        class websocket_server;
-    }
-
-    class application
+    class application : public common::application
     {
     public:
         application();
         ~application();
 
         void activate_other_instance(const std::wstring &args);
-        bool init();
         bool is_single_instance();
-        int run(const std::wstring &args);
         static void wait_for_restart(const std::wstring &args);
+
+    protected:
+        bool pre_init();
+        
+        bool on_init();
+        void on_notifications_available();
+        int on_run(const common::command_line &cmd);
+        void on_torrent_added(const std::shared_ptr<core::torrent> &torrent);
+        void on_torrent_finished(const std::shared_ptr<core::torrent> &torrent);
+        void on_torrent_removed(const std::shared_ptr<core::torrent> &torrent);
+        void on_torrent_updated(const std::vector<std::shared_ptr<core::torrent>> &torrents);
 
     private:
         void on_check_for_update();
         bool on_close();
-        void on_command_line_args(const std::wstring &args);
+        void on_command_line_args(const common::command_line &cmd);
+        void on_copydata(const std::wstring &args);
         void on_destroy();
         void on_file_add_magnet_link();
         void on_file_add_torrent();
@@ -62,10 +67,8 @@ namespace client
 
         HANDLE mtx_;
         HACCEL accelerators_;
-        std::shared_ptr<ui::main_window> main_window_;
-        std::shared_ptr<core::session> sess_;
-        std::shared_ptr<ws::websocket_server> ws_server_;
 
+        std::shared_ptr<ui::main_window> main_window_;
         std::shared_ptr<controllers::application_update_controller> updater_;
     };
 }

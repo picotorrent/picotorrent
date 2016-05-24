@@ -1,16 +1,16 @@
 #include <picotorrent/client/ui/dialogs/magnet_link_dialog.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+#include <picotorrent/common/string_operations.hpp>
 #include <sstream>
 
 #include <commctrl.h>
 #include <strsafe.h>
 
-using picotorrent::client::to_string;
-using picotorrent::client::to_wstring;
 using picotorrent::client::ui::dialogs::magnet_link_dialog;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
 

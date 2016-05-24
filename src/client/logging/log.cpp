@@ -1,6 +1,6 @@
 #include <picotorrent/client/logging/log.hpp>
 
-#include <picotorrent/client/environment.hpp>
+#include <picotorrent/common/environment.hpp>
 #include <picotorrent/core/pal.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
@@ -11,8 +11,8 @@
 #include <windows.h>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
-using picotorrent::client::environment;
 using picotorrent::client::logging::log;
+using picotorrent::common::environment;
 using picotorrent::core::pal;
 
 log::log()

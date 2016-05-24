@@ -1,9 +1,9 @@
 #include <picotorrent/client/controllers/application_close_controller.hpp>
 
-#include <picotorrent/client/configuration.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
+#include <picotorrent/common/config/configuration.hpp>
 
 #define ID_DLG_CLOSE    1000
 #define ID_DLG_MINIMIZE 1001
@@ -11,7 +11,7 @@
 using picotorrent::client::controllers::application_close_controller;
 using picotorrent::client::ui::main_window;
 using picotorrent::client::ui::task_dialog;
-using picotorrent::client::configuration;
+using picotorrent::common::config::configuration;
 
 application_close_controller::application_close_controller(const std::shared_ptr<main_window> &wnd)
     : wnd_(wnd)

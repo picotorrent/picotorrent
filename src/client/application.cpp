@@ -1,7 +1,5 @@
 #include <picotorrent/client/application.hpp>
 
-#include <picotorrent/client/application_initializer.hpp>
-#include <picotorrent/client/command_line.hpp>
 #include <picotorrent/client/message_loop.hpp>
 #include <picotorrent/client/controllers/add_magnet_link_controller.hpp>
 #include <picotorrent/client/controllers/add_torrent_controller.hpp>
@@ -13,12 +11,12 @@
 #include <picotorrent/client/controllers/torrent_details_controller.hpp>
 #include <picotorrent/client/controllers/unhandled_exception_controller.hpp>
 #include <picotorrent/client/controllers/view_preferences_controller.hpp>
-#include <picotorrent/client/configuration.hpp>
 #include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
-#include <picotorrent/client/ws/websocket_server.hpp>
 
+#include <picotorrent/common/command_line.hpp>
+#include <picotorrent/common/config/configuration.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/session_configuration.hpp>
 
@@ -32,11 +30,9 @@ namespace controllers = picotorrent::client::controllers;
 namespace core = picotorrent::core;
 namespace ui = picotorrent::client::ui;
 using picotorrent::client::application;
-using picotorrent::client::application_initializer;
-using picotorrent::client::command_line;
-using picotorrent::client::configuration;
 using picotorrent::client::logging::log;
-using picotorrent::client::ws::websocket_server;
+using picotorrent::common::command_line;
+using picotorrent::common::config::configuration;
 
 application::application()
     : mtx_(NULL),
@@ -74,24 +70,19 @@ void application::activate_other_instance(const std::wstring &args)
     SendMessage(otherWindow, WM_COPYDATA, NULL, (LPARAM)&cds);
 }
 
-bool application::init()
+bool application::pre_init()
 {
-    // Set our process to be DPI aware so we look good everywhere.
     if (!SetProcessDPIAware())
     {
         return false;
     }
 
-    // Generate required configuration
-    application_initializer app_init;
-    app_init.create_application_paths();
-    app_init.generate_websocket_access_token();
-    app_init.generate_websocket_certificate();
+    return true;
+}
 
-    sess_ = std::make_shared<core::session>(configuration::instance().session_configuration());
-    main_window_ = std::make_shared<ui::main_window>(sess_);
-    ws_server_ = std::make_shared<websocket_server>(sess_);
-
+bool application::on_init()
+{
+    main_window_ = std::make_shared<ui::main_window>(get_session());
     main_window_->on_command(ID_FILE_ADD_TORRENT, std::bind(&application::on_file_add_torrent, this));
     main_window_->on_command(ID_FILE_ADD_MAGNET_LINK, std::bind(&application::on_file_add_magnet_link, this));
     main_window_->on_command(IDA_REMOVE_TORRENTS, std::bind(&application::on_remove_torrents_accelerator, this, false));
@@ -101,23 +92,13 @@ bool application::init()
     main_window_->on_command(ID_HELP_CHECK_FOR_UPDATE, std::bind(&application::on_check_for_update, this));
 
     main_window_->on_close(std::bind(&application::on_close, this));
-    main_window_->on_copydata(std::bind(&application::on_command_line_args, this, std::placeholders::_1));
+    main_window_->on_copydata(std::bind(&application::on_copydata, this, std::placeholders::_1));
     main_window_->on_destroy().connect(std::bind(&application::on_destroy, this));
     main_window_->on_notifyicon_context_menu(std::bind(&application::on_notifyicon_context_menu, this, std::placeholders::_1));
     main_window_->on_session_alert_notify().connect(std::bind(&application::on_session_alert_notify, this));
     main_window_->on_torrent_activated(std::bind(&application::on_torrent_activated, this, std::placeholders::_1));
     main_window_->on_torrent_context_menu(std::bind(&application::on_torrent_context_menu, this, std::placeholders::_1, std::placeholders::_2));
     main_window_->on_torrents_dropped().connect(std::bind(&application::on_torrents_dropped, this, std::placeholders::_1));
-
-    sess_->on_notifications_available().connect([this]()
-    {
-        PostMessage(main_window_->handle(), WM_USER + 1337, NULL, NULL);
-    });
-
-    sess_->on_torrent_added().connect(std::bind(&ui::main_window::torrent_added, main_window_, std::placeholders::_1));
-    sess_->on_torrent_finished().connect(std::bind(&ui::main_window::torrent_finished, main_window_, std::placeholders::_1));
-    sess_->on_torrent_removed().connect(std::bind(&ui::main_window::torrent_removed, main_window_, std::placeholders::_1));
-    sess_->on_torrent_updated().connect(std::bind(&ui::main_window::torrent_updated, main_window_, std::placeholders::_1));
 
     INITCOMMONCONTROLSEX icex = { 0 };
     icex.dwICC = ICC_LISTVIEW_CLASSES;
@@ -145,7 +126,7 @@ bool application::is_single_instance()
     return true;
 }
 
-int application::run(const std::wstring &args)
+int application::on_run(const command_line &cmd)
 {
     configuration &cfg = configuration::instance();
     UINT pos = SW_SHOWNORMAL;
@@ -183,16 +164,9 @@ int application::run(const std::wstring &args)
         ShowWindow(main_window_->handle(), pos);
     }
 
-    if (cfg.websocket()->enabled())
+    if (!cmd.files().empty() || !cmd.magnet_links().empty())
     {
-        ws_server_->start();
-    }
-
-    sess_->load();
-
-    if (!args.empty())
-    {
-        on_command_line_args(args);
+        on_command_line_args(cmd);
     }
 
     updater_ = std::make_shared<controllers::application_update_controller>(main_window_);
@@ -202,12 +176,27 @@ int application::run(const std::wstring &args)
         updater_->execute();
     }
 
-    int result = message_loop::run(main_window_->handle(), accelerators_);
+    return message_loop::run(main_window_->handle(), accelerators_);
+}
 
-    sess_->unload();
-    ws_server_->stop();
+void application::on_torrent_added(const std::shared_ptr<core::torrent> &torrent)
+{
+    main_window_->torrent_added(torrent);
+}
 
-    return result;
+void application::on_torrent_finished(const std::shared_ptr<core::torrent> &torrent)
+{
+    main_window_->torrent_finished(torrent);
+}
+
+void application::on_torrent_removed(const std::shared_ptr<core::torrent> &torrent)
+{
+    main_window_->torrent_removed(torrent);
+}
+
+void application::on_torrent_updated(const std::vector<std::shared_ptr<core::torrent>> &torrents)
+{
+    main_window_->torrent_updated(torrents);
 }
 
 void application::wait_for_restart(const std::wstring &args)
@@ -257,12 +246,16 @@ bool application::on_close()
     return close_controller.execute();
 }
 
-void application::on_command_line_args(const std::wstring &args)
+void application::on_command_line_args(const command_line &cmd)
+{
+    controllers::add_torrent_controller add_controller(get_session(), main_window_);
+    add_controller.execute(cmd);
+}
+
+void application::on_copydata(const std::wstring &args)
 {
     command_line cmd = command_line::parse(args);
-
-    controllers::add_torrent_controller add_controller(sess_, main_window_);
-    add_controller.execute(cmd);
+    on_command_line_args(cmd);
 }
 
 void application::on_destroy()
@@ -288,19 +281,24 @@ void application::on_destroy()
 
 void application::on_file_add_magnet_link()
 {
-    controllers::add_magnet_link_controller add_controller(sess_, main_window_);
+    controllers::add_magnet_link_controller add_controller(get_session(), main_window_);
     add_controller.execute();
 }
 
 void application::on_file_add_torrent()
 {
-    controllers::add_torrent_controller add_controller(sess_, main_window_);
+    controllers::add_torrent_controller add_controller(get_session(), main_window_);
     add_controller.execute();
+}
+
+void application::on_notifications_available()
+{
+    PostMessage(main_window_->handle(), WM_USER + 1337, NULL, NULL);
 }
 
 void application::on_notifyicon_context_menu(const POINT &p)
 {
-    controllers::notifyicon_context_menu_controller notify_controller(sess_, main_window_);
+    controllers::notifyicon_context_menu_controller notify_controller(get_session(), main_window_);
     notify_controller.execute(p);
 }
 
@@ -311,14 +309,14 @@ void application::on_select_all_accelerator()
 
 void application::on_session_alert_notify()
 {
-    sess_->notify();
+    get_session()->notify();
 }
 
 void application::on_remove_torrents_accelerator(bool remove_data)
 {
     controllers::remove_torrent_controller remove_controller(
         main_window_,
-        sess_,
+        get_session(),
         main_window_->get_selected_torrents());
 
     remove_controller.execute(remove_data);
@@ -332,19 +330,23 @@ void application::on_torrent_activated(const std::shared_ptr<core::torrent> &tor
 
 void application::on_torrent_context_menu(const POINT &p, const std::vector<std::shared_ptr<core::torrent>> &torrents)
 {
-    controllers::torrent_context_menu_controller menu_controller(sess_, torrents, main_window_);
+    controllers::torrent_context_menu_controller menu_controller(get_session(), torrents, main_window_);
     menu_controller.execute(p);
 }
 
 void application::on_torrents_dropped(const std::vector<std::string> &files)
 {
-    controllers::add_torrent_controller add_controller(sess_, main_window_);
+    controllers::add_torrent_controller add_controller(get_session(), main_window_);
     add_controller.execute(files);
 }
 
 void application::on_view_preferences()
 {
-    controllers::view_preferences_controller view_prefs(sess_, main_window_, ws_server_);
+    controllers::view_preferences_controller view_prefs(
+        get_session(),
+        main_window_,
+        get_websocket_server());
+
     view_prefs.execute();
 }
 

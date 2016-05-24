@@ -6,6 +6,10 @@
 
 namespace picotorrent
 {
+namespace common
+{
+    class command_line;
+}
 namespace core
 {
     class add_request;
@@ -22,7 +26,6 @@ namespace dialogs
 }
     class main_window;
 }
-    class command_line;
 
 namespace controllers
 {
@@ -32,7 +35,7 @@ namespace controllers
         add_torrent_controller(const std::shared_ptr<core::session> &sess, const std::shared_ptr<ui::main_window> &wnd_ptr);
 
         void execute();
-        void execute(const command_line &cmd);
+        void execute(const common::command_line &cmd);
         void execute(const std::vector<std::string> &files);
         void execute(const std::vector<std::shared_ptr<core::torrent_info>> &torrents);
 

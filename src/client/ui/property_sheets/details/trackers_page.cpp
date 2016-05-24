@@ -1,13 +1,13 @@
 #include <picotorrent/client/ui/property_sheets/details/trackers_page.hpp>
 
-#include <picotorrent/core/torrent.hpp>
-#include <picotorrent/core/tracker.hpp>
-#include <picotorrent/core/tracker_status.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
+#include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/core/torrent.hpp>
+#include <picotorrent/core/tracker.hpp>
+#include <picotorrent/core/tracker_status.hpp>
 
 #include <cassert>
 #include <chrono>
@@ -23,12 +23,14 @@
 #define LIST_COLUMN_PEERS  4
 #define LIST_COLUMN_SCRAPE 5
 
-using picotorrent::core::torrent;
-using picotorrent::core::tracker;
-using picotorrent::core::tracker_status;
 using picotorrent::client::ui::controls::list_view;
 using picotorrent::client::ui::property_sheets::details::trackers_page;
 using picotorrent::client::ui::scaler;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
+using picotorrent::core::torrent;
+using picotorrent::core::tracker;
+using picotorrent::core::tracker_status;
 
 struct trackers_page::tracker_state
 {

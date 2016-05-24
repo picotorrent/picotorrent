@@ -1,11 +1,8 @@
 #include <picotorrent/client/controllers/view_preferences_controller.hpp>
 
 #include <picotorrent/core/session.hpp>
-#include <picotorrent/client/configuration.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/logging/log.hpp>
-#include <picotorrent/client/security/certificate_manager.hpp>
 #include <picotorrent/client/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/client/ui/property_sheets/property_sheet_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/advanced_page.hpp>
@@ -16,7 +13,12 @@
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
-#include <picotorrent/client/ws/websocket_server.hpp>
+
+#include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/config/configuration.hpp>
+#include <picotorrent/common/security/certificate_manager.hpp>
+#include <picotorrent/common/ws/websocket_server.hpp>
+
 #include <vector>
 
 #include <iphlpapi.h>
@@ -26,12 +28,12 @@
 namespace ui = picotorrent::client::ui;
 namespace prefs = picotorrent::client::ui::property_sheets::preferences;
 using picotorrent::core::session;
-using picotorrent::client::configuration;
 using picotorrent::client::controllers::view_preferences_controller;
 using picotorrent::client::ui::dialogs::preferences_dialog;
 using picotorrent::client::ui::property_sheets::property_sheet_page;
 using picotorrent::client::ui::task_dialog;
-using picotorrent::client::ws::websocket_server;
+using picotorrent::common::config::configuration;
+using picotorrent::common::ws::websocket_server;
 
 view_preferences_controller::view_preferences_controller(const std::shared_ptr<session> &sess,
     const std::shared_ptr<ui::main_window> &wnd,
@@ -85,7 +87,7 @@ void view_preferences_controller::execute()
     header.hwndParent = wnd_->handle();
     header.hInstance = GetModuleHandle(NULL);
 
-    std::wstring caption = to_wstring(TR("preferences"));
+    std::wstring caption = common::to_wstring(TR("preferences"));
     header.pszCaption = caption.c_str();
 
     header.nPages = ARRAYSIZE(p);
@@ -340,7 +342,7 @@ void view_preferences_controller::on_remote_init()
     remote_page_->set_websocket_port(cfg.websocket()->listen_port());
 
     std::string cert_file = cfg.websocket()->certificate_file();
-    std::string pub_key = security::certificate_manager::extract_public_key(cert_file);
+    std::string pub_key = common::security::certificate_manager::extract_public_key(cert_file);
 
     remote_page_->set_certificate_public_key(pub_key);
 }

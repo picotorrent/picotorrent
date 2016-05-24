@@ -5,12 +5,6 @@
 #include <iomanip>
 #include <sstream>
 
-#include <commctrl.h>
-#include <picotorrent/core/hash.hpp>
-#include <picotorrent/core/session.hpp>
-#include <picotorrent/core/session_metrics.hpp>
-#include <picotorrent/core/torrent.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/dialogs/about_dialog.hpp>
@@ -23,6 +17,13 @@
 #include <picotorrent/client/ui/task_dialog.hpp>
 #include <picotorrent/client/ui/taskbar_list.hpp>
 #include <picotorrent/client/ui/torrent_drop_target.hpp>
+#include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/core/hash.hpp>
+#include <picotorrent/core/session.hpp>
+#include <picotorrent/core/session_metrics.hpp>
+#include <picotorrent/core/torrent.hpp>
+
+#include <commctrl.h>
 #include <shellapi.h>
 #include <shlwapi.h>
 #include <shobjidl.h>
@@ -43,8 +44,6 @@
 #define COLUMN_RATIO 11
 
 namespace core = picotorrent::core;
-using picotorrent::core::signals::signal;
-using picotorrent::core::signals::signal_connector;
 using picotorrent::client::ui::controls::list_view;
 using picotorrent::client::ui::dialogs::about_dialog;
 using picotorrent::client::ui::main_window;
@@ -54,6 +53,10 @@ using picotorrent::client::ui::scaler;
 using picotorrent::client::ui::taskbar_list;
 using picotorrent::client::ui::sleep_manager;
 using picotorrent::client::ui::torrent_drop_target;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
+using picotorrent::core::signals::signal;
+using picotorrent::core::signals::signal_connector;
 
 const UINT main_window::TaskbarButtonCreated = RegisterWindowMessage(L"TaskbarButtonCreated");
 

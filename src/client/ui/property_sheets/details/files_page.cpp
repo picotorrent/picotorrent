@@ -1,12 +1,12 @@
 #include <picotorrent/client/ui/property_sheets/details/files_page.hpp>
 
-#include <picotorrent/core/torrent.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/controls/menu.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
+#include <picotorrent/core/torrent.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 #include <shellapi.h>
 #include <shlwapi.h>
@@ -17,13 +17,15 @@
 #define LIST_COLUMN_PROGRESS 3
 #define LIST_COLUMN_PRIORITY 4
 
-using picotorrent::core::signals::signal;
-using picotorrent::core::signals::signal_connector;
-using picotorrent::core::torrent;
 using picotorrent::client::ui::controls::list_view;
 using picotorrent::client::ui::controls::menu;
 using picotorrent::client::ui::property_sheets::details::files_page;
 using picotorrent::client::ui::scaler;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
+using picotorrent::core::signals::signal;
+using picotorrent::core::signals::signal_connector;
+using picotorrent::core::torrent;
 
 struct files_page::file_item
 {

@@ -1,16 +1,16 @@
 #include <picotorrent/client/ui/controls/list_view.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
+#include <picotorrent/common/string_operations.hpp>
 #include <strsafe.h>
 #include <vector>
 
-using picotorrent::core::signals::signal;
-using picotorrent::core::signals::signal_connector;
-using picotorrent::client::to_string;
-using picotorrent::client::to_wstring;
 using picotorrent::client::ui::scaler;
 using picotorrent::client::ui::controls::list_view;
+using picotorrent::core::signals::signal;
+using picotorrent::core::signals::signal_connector;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
 
 LV_COLUMN list_view::list_view_column::get_native_column()
 {

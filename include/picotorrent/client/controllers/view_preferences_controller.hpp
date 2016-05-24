@@ -5,6 +5,13 @@
 
 namespace picotorrent
 {
+namespace common
+{
+namespace ws
+{
+    class websocket_server;
+}
+}
 namespace core
 {
     class session;
@@ -28,10 +35,6 @@ namespace preferences
 }
 }
 }
-namespace ws
-{
-    class websocket_server;
-}
 namespace controllers
 {
     class view_preferences_controller
@@ -40,7 +43,7 @@ namespace controllers
         view_preferences_controller(
             const std::shared_ptr<core::session> &sess,
             const std::shared_ptr<ui::main_window> &wnd,
-            const std::shared_ptr<ws::websocket_server> &ws);
+            const std::shared_ptr<common::ws::websocket_server> &ws);
         ~view_preferences_controller();
         void execute();
 
@@ -72,7 +75,7 @@ namespace controllers
 
         std::shared_ptr<core::session> sess_;
         std::shared_ptr<ui::main_window> wnd_;
-        std::shared_ptr<ws::websocket_server> ws_;
+        std::shared_ptr<common::ws::websocket_server> ws_;
         std::unique_ptr<ui::property_sheets::preferences::advanced_page> adv_page_;
         std::unique_ptr<ui::property_sheets::preferences::connection_page> conn_page_;
         std::unique_ptr<ui::property_sheets::preferences::downloads_page> dl_page_;

@@ -1,14 +1,12 @@
 #include <picotorrent/client/controllers/add_torrent_controller.hpp>
 
 #include <algorithm>
+#include <picotorrent/common/command_line.hpp>
 #include <picotorrent/core/add_request.hpp>
 #include <picotorrent/core/pal.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/torrent_info.hpp>
-#include <picotorrent/client/command_line.hpp>
-#include <picotorrent/client/configuration.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/dialogs/add_torrent_dialog.hpp>
@@ -17,6 +15,9 @@
 #include <picotorrent/client/ui/open_torrent_dialog.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
+
+#include <picotorrent/common/config/configuration.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 #include <sstream>
 
@@ -29,11 +30,11 @@ const GUID DLG_SAVE = { 0x7D5FE367, 0xE148, 0x4A96,{ 0xB3, 0x26, 0x42, 0xEF, 0x2
 
 namespace core = picotorrent::core;
 namespace ui = picotorrent::client::ui;
-using picotorrent::client::command_line;
-using picotorrent::client::to_wstring;
 using picotorrent::client::controllers::add_torrent_controller;
 using picotorrent::client::ui::dialogs::add_torrent_dialog;
-using picotorrent::client::configuration;
+using picotorrent::common::command_line;
+using picotorrent::common::to_wstring;
+using picotorrent::common::config::configuration;
 using picotorrent::core::pal;
 
 add_torrent_controller::add_torrent_controller(

@@ -1,11 +1,11 @@
 #include <picotorrent/client/ui/property_sheets/details/peers_page.hpp>
 
-#include <picotorrent/core/peer.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
+#include <picotorrent/core/peer.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 #include <cassert>
 #include <shlwapi.h>
@@ -17,10 +17,12 @@
 #define LIST_COLUMN_DOWNLOAD 4
 #define LIST_COLUMN_UPLOAD 5
 
-using picotorrent::core::peer;
 using picotorrent::client::ui::controls::list_view;
 using picotorrent::client::ui::property_sheets::details::peers_page;
 using picotorrent::client::ui::scaler;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
+using picotorrent::core::peer;
 
 struct peers_page::peer_state
 {

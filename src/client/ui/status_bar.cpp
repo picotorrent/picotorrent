@@ -1,8 +1,8 @@
 #include <picotorrent/client/ui/status_bar.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 #include <commctrl.h>
 #include <shlwapi.h>
@@ -10,6 +10,7 @@
 
 using picotorrent::client::ui::scaler;
 using picotorrent::client::ui::status_bar;
+using picotorrent::common::to_wstring;
 
 status_bar::status_bar(HWND hParent)
 {

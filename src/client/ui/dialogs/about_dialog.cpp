@@ -1,18 +1,20 @@
 #include <picotorrent/client/ui/dialogs/about_dialog.hpp>
 
-#include <picotorrent/core/version_info.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
+#include <picotorrent/core/version_info.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 #include <commctrl.h>
 #include <shellapi.h>
 #include <strsafe.h>
 
-using picotorrent::core::version_info;
 using picotorrent::client::ui::dialogs::about_dialog;
 using picotorrent::client::ui::scaler;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
+using picotorrent::core::version_info;
 
 about_dialog::about_dialog()
     : dialog_base(IDD_ABOUT),

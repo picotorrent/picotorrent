@@ -1,10 +1,10 @@
 #include <picotorrent/client/ui/dialogs/dialog_base.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
-using picotorrent::client::to_string;
-using picotorrent::client::to_wstring;
 using picotorrent::client::ui::dialogs::dialog_base;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
 
 dialog_base::dialog_base(int id)
     : id_(id),
