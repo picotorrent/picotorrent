@@ -84,6 +84,8 @@ set(PICOTORRENTCOMMON_SOURCES
 set(PICOTORRENTCLIENT_SOURCES
     src/client/application
     src/client/message_loop
+    src/client/normal_executor
+    src/client/other_instance_executor
     
     src/client/controllers/add_magnet_link_controller
     src/client/controllers/add_torrent_controller
@@ -239,33 +241,9 @@ if(WIN32)
 endif()
 
 add_library(
-    PicoTorrentClient
-    SHARED
-    ${PICOTORRENTCLIENT_SOURCES}
-)
-
-add_library(
     PicoTorrentCore
     SHARED
     ${PICOTORRENTCORE_SOURCES}
-)
-
-add_library(
-    PicoTorrentCommon
-    SHARED
-    ${PICOTORRENTCOMMON_SOURCES}
-)
-
-add_library(
-    PicoTorrentServer
-    SHARED
-    ${PICOTORRENTSERVER_SOURCES}
-)
-
-target_link_libraries(
-    PicoTorrentClient
-    PicoTorrentCommon
-    PicoTorrentCore
 )
 
 target_link_libraries(
@@ -273,25 +251,7 @@ target_link_libraries(
     ${PICO_LIBS}
 )
 
-target_link_libraries(
-    PicoTorrentCommon
-    PicoTorrentCore
-)
-
-target_link_libraries(
-    PicoTorrentServer
-    PicoTorrentCommon
-    PicoTorrentCore
-)
-
 if(WIN32)
-    target_link_libraries(
-        PicoTorrentClient
-        comctl32
-        UxTheme
-        winhttp
-    )
-
     target_link_libraries(
         PicoTorrentCore
 
@@ -310,6 +270,24 @@ if(WIN32)
         ${PICOTORRENT_SOURCES}
     )
 
+    add_library(
+        PicoTorrentClient
+        SHARED
+        ${PICOTORRENTCLIENT_SOURCES}
+    )
+
+    add_library(
+        PicoTorrentCommon
+        SHARED
+        ${PICOTORRENTCOMMON_SOURCES}
+    )
+
+    add_library(
+        PicoTorrentServer
+        SHARED
+        ${PICOTORRENTSERVER_SOURCES}
+    )
+
     target_link_libraries(
         PicoTorrent
 
@@ -317,6 +295,26 @@ if(WIN32)
         PicoTorrentCommon
         PicoTorrentCore
         PicoTorrentServer
+    )
+
+    target_link_libraries(
+        PicoTorrentClient
+        PicoTorrentCommon
+        PicoTorrentCore
+        comctl32
+        UxTheme
+        winhttp
+    )
+
+    target_link_libraries(
+        PicoTorrentCommon
+        PicoTorrentCore
+    )
+
+    target_link_libraries(
+        PicoTorrentServer
+        PicoTorrentCommon
+        PicoTorrentCore
     )
 endif()
 

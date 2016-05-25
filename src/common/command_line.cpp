@@ -21,6 +21,7 @@ command_line command_line::parse(const std::wstring &cmd, bool skip_first)
     command_line cl;
     cl.alloc_console_ = false;
     cl.daemon_ = false;
+    cl.raw_ = cmd;
     cl.restart_ = false;
 
     for (int i = 0; i < argv; i++)
@@ -88,6 +89,11 @@ std::vector<std::string> command_line::files() const
 std::vector<std::string> command_line::magnet_links() const
 {
     return magnets_;
+}
+
+std::wstring command_line::raw() const
+{
+    return raw_;
 }
 
 bool command_line::restart() const

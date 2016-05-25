@@ -18,10 +18,12 @@ namespace common
         DLL_EXPORT bool daemon() const;
         DLL_EXPORT std::vector<std::string> files() const;
         DLL_EXPORT std::vector<std::string> magnet_links() const;
+        DLL_EXPORT std::wstring raw() const;
         DLL_EXPORT bool restart() const;
         DLL_EXPORT int prev_process_id() const;
 
     private:
+        std::wstring raw_;
         std::vector<std::string> magnets_;
         std::vector<std::string> files_;
         bool alloc_console_;

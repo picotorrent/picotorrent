@@ -37,15 +37,7 @@ int WINAPI wWinMain(
     else
     {
         picotorrent::client::application::wait_for_restart(cmd);
-
-        auto client_app = std::make_shared<picotorrent::client::application>();
-        if (!client_app->is_single_instance())
-        {
-            client_app->activate_other_instance(lpCmdLine);
-            return -33;
-        }
-
-        app = client_app;
+        app = std::make_shared<picotorrent::client::application>();
     }
 
     if (!app->init())

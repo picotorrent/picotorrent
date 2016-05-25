@@ -1,5 +1,7 @@
 #pragma once
 
+#include <windows.h>
+
 #include <memory>
 #include <vector>
 
@@ -24,12 +26,15 @@ namespace ws
     class application
     {
     public:
+        DLL_EXPORT application();
+        DLL_EXPORT ~application();
         DLL_EXPORT bool init();
         DLL_EXPORT int run(const command_line &cmd);
 
     protected:
         DLL_EXPORT std::shared_ptr<core::session> get_session();
         DLL_EXPORT std::shared_ptr<ws::websocket_server> get_websocket_server();
+        DLL_EXPORT bool is_single_instance();
 
         // Initialization
         DLL_EXPORT virtual bool on_pre_init() { return true; };
@@ -56,6 +61,10 @@ namespace ws
         std::shared_ptr<core::session> session_;
         std::vector<std::shared_ptr<core::torrent>> torrents_;
         std::shared_ptr<ws::websocket_server> ws_server_;
+
+        // Windows-only (perhaps should be if-def'd)
+        bool is_single_instance_;
+        HANDLE mtx_;
     };
 }
 }

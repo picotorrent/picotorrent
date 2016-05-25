@@ -346,11 +346,10 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     {
         COPYDATASTRUCT *cds = reinterpret_cast<COPYDATASTRUCT*>(lParam);
         wchar_t *ptr = reinterpret_cast<wchar_t*>(cds->lpData);
-        std::wstring args(ptr);
 
-        if (copydata_cb_)
+        if (ptr && copydata_cb_)
         {
-            copydata_cb_(args);
+            copydata_cb_(ptr);
         }
 
         break;
