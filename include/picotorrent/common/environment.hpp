@@ -11,7 +11,8 @@ namespace common
     enum special_folder
     {
         user_downloads,
-        local_app_data
+        local_app_data,
+        public_downloads
     };
 
     class environment
@@ -21,6 +22,7 @@ namespace common
         DLL_EXPORT static std::string get_special_folder(special_folder folder);
         DLL_EXPORT static std::string get_temporary_directory();
         DLL_EXPORT static bool is_installed();
+        DLL_EXPORT static bool is_running_as_windows_service();
     };
 }
 }

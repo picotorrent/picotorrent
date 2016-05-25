@@ -8,7 +8,7 @@
 using picotorrent::common::command_line;
 using picotorrent::common::to_string;
 
-command_line command_line::parse(const std::wstring &cmd)
+command_line command_line::parse(const std::wstring &cmd, bool skip_first)
 {
     if (cmd.empty())
     {
@@ -19,10 +19,17 @@ command_line command_line::parse(const std::wstring &cmd)
     LPWSTR *argc = CommandLineToArgvW(cmd.c_str(), &argv);
 
     command_line cl;
+    cl.alloc_console_ = false;
+    cl.daemon_ = false;
     cl.restart_ = false;
 
     for (int i = 0; i < argv; i++)
     {
+        if (skip_first && i == 0)
+        {
+            continue;
+        }
+
         std::string arg = to_string(argc[i]);
 
         if (arg.empty())

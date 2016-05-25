@@ -81,11 +81,7 @@ set(PICOTORRENTCOMMON_SOURCES
     src/common/ws/serialization/torrent_serializer
 )
 
-set(PICOTORRENTSERVER_SOURCES
-    src/server/application
-)
-
-set(PICOTORRENT_SOURCES
+set(PICOTORRENTCLIENT_SOURCES
     src/client/application
     src/client/message_loop
     
@@ -150,6 +146,19 @@ set(PICOTORRENT_SOURCES
     src/client/ui/taskbar_list
     src/client/ui/torrent_context_menu
     src/client/ui/torrent_drop_target
+
+    src/client/pico.rc
+)
+
+set(PICOTORRENTSERVER_SOURCES
+    src/server/application
+    src/server/hosting/console_host
+    src/server/hosting/windows_service_host
+)
+
+set(PICOTORRENT_SOURCES
+    src/main
+    src/client/pico.rc
 )
 
 if(WIN32)
@@ -230,6 +239,12 @@ if(WIN32)
 endif()
 
 add_library(
+    PicoTorrentClient
+    SHARED
+    ${PICOTORRENTCLIENT_SOURCES}
+)
+
+add_library(
     PicoTorrentCore
     SHARED
     ${PICOTORRENTCORE_SOURCES}
@@ -245,6 +260,12 @@ add_library(
     PicoTorrentServer
     SHARED
     ${PICOTORRENTSERVER_SOURCES}
+)
+
+target_link_libraries(
+    PicoTorrentClient
+    PicoTorrentCommon
+    PicoTorrentCore
 )
 
 target_link_libraries(
@@ -265,6 +286,13 @@ target_link_libraries(
 
 if(WIN32)
     target_link_libraries(
+        PicoTorrentClient
+        comctl32
+        UxTheme
+        winhttp
+    )
+
+    target_link_libraries(
         PicoTorrentCore
 
         # Boost Random
@@ -280,23 +308,15 @@ if(WIN32)
         PicoTorrent
         WIN32
         ${PICOTORRENT_SOURCES}
-        src/main
-
-        # The resources belong to the application itself
-        # to avoid linker issues.
-        src/client/pico.rc
     )
 
     target_link_libraries(
         PicoTorrent
 
+        PicoTorrentClient
         PicoTorrentCommon
         PicoTorrentCore
         PicoTorrentServer
-
-        comctl32
-        UxTheme
-        winhttp
     )
 endif()
 

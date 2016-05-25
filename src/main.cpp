@@ -26,16 +26,17 @@ int WINAPI wWinMain(
     if (cmd.daemon())
     {
         auto server_app = std::make_shared<picotorrent::server::application>();
+
         if (cmd.alloc_console())
         {
             server_app->allocate_console();
         }
-        
+
         app = server_app;
     }
     else
     {
-        picotorrent::client::application::wait_for_restart(lpCmdLine);
+        picotorrent::client::application::wait_for_restart(cmd);
 
         auto client_app = std::make_shared<picotorrent::client::application>();
         if (!client_app->is_single_instance())

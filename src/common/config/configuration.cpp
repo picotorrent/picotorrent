@@ -72,7 +72,11 @@ void configuration::set_current_language_id(int langId)
 
 std::string configuration::default_save_path()
 {
-    std::string default_path = environment::get_special_folder(special_folder::user_downloads);
+    special_folder default_folder = environment::is_running_as_windows_service()
+        ? special_folder::public_downloads
+        : special_folder::user_downloads;
+
+    std::string default_path = environment::get_special_folder(default_folder);
     return get_or_default("default_save_path", default_path);
 }
 

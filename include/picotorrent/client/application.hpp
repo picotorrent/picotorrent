@@ -28,12 +28,14 @@ namespace ui
     class application : public common::application
     {
     public:
-        application();
-        ~application();
+        DLL_EXPORT application();
+        DLL_EXPORT ~application();
 
-        void activate_other_instance(const std::wstring &args);
-        bool is_single_instance();
-        static void wait_for_restart(const std::wstring &args);
+        DLL_EXPORT void activate_other_instance(const std::wstring &args);
+        DLL_EXPORT bool is_single_instance();
+        DLL_EXPORT bool is_service_running();
+        DLL_EXPORT int run_degraded();
+        DLL_EXPORT static void wait_for_restart(const common::command_line &cmd);
 
     protected:
         bool pre_init();

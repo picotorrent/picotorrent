@@ -1,11 +1,13 @@
 #include <picotorrent/common/environment.hpp>
 
+#include <picotorrent/common/command_line.hpp>
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/pal.hpp>
 
 #include <shlobj.h>
 #include <shlwapi.h>
 
+using picotorrent::common::command_line;
 using picotorrent::common::environment;
 using picotorrent::core::pal;
 
@@ -31,11 +33,14 @@ std::string environment::get_special_folder(picotorrent::common::special_folder 
 
     switch (folder)
     {
-    case picotorrent::common::user_downloads:
+    case special_folder::user_downloads:
         g = FOLDERID_Downloads;
         break;
-    case picotorrent::common::local_app_data:
+    case special_folder::local_app_data:
         g = FOLDERID_LocalAppData;
+        break;
+    case special_folder::public_downloads:
+        g = FOLDERID_PublicDownloads;
         break;
     }
 
@@ -103,4 +108,10 @@ bool environment::is_installed()
 
     if (hKey != NULL) { RegCloseKey(hKey); }
     return false;
+}
+
+bool environment::is_running_as_windows_service()
+{
+    command_line cmd = command_line::parse(GetCommandLine(), true);
+    return cmd.daemon();
 }

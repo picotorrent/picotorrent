@@ -199,10 +199,69 @@ void application::on_torrent_updated(const std::vector<std::shared_ptr<core::tor
     main_window_->torrent_updated(torrents);
 }
 
-void application::wait_for_restart(const std::wstring &args)
+bool application::is_service_running()
 {
-    command_line cmd = command_line::parse(args);
+    SC_HANDLE hSCManager = OpenSCManager(
+        NULL,
+        SERVICES_ACTIVE_DATABASE,
+        GENERIC_READ);
 
+    if (hSCManager == NULL)
+    {
+        // TODO(log)
+        throw std::exception();
+        return false;
+    }
+
+    DWORD bytesNeeded = 0;
+    DWORD servicesNum = 0;
+
+    BOOL status = EnumServicesStatusEx(
+        hSCManager,
+        SC_ENUM_PROCESS_INFO,
+        SERVICE_WIN32,
+        SERVICE_STATE_ALL,
+        NULL,
+        0,
+        &bytesNeeded,
+        &servicesNum,
+        NULL,
+        NULL);
+
+    std::vector<BYTE> bytes(bytesNeeded);
+
+    status = EnumServicesStatusEx(
+        hSCManager,
+        SC_ENUM_PROCESS_INFO,
+        SERVICE_WIN32,
+        SERVICE_ACTIVE,
+        &bytes[0],
+        bytesNeeded,
+        &bytesNeeded,
+        &servicesNum,
+        NULL,
+        NULL);
+
+    ENUM_SERVICE_STATUS_PROCESS* lpServiceStatus = (ENUM_SERVICE_STATUS_PROCESS*)bytes.data();
+
+    for (DWORD i = 0; i < servicesNum; i++)
+    {
+        if (lpServiceStatus[i].lpServiceName == TEXT("PicoTorrent"))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+int application::run_degraded()
+{
+    return 1;
+}
+
+void application::wait_for_restart(const command_line &cmd)
+{
     if (!cmd.restart())
     {
         return;

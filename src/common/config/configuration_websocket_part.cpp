@@ -43,7 +43,14 @@ std::string configuration::websocket_part::cipher_list()
 
 bool configuration::websocket_part::enabled()
 {
-    return get_part_key_or_default("websocket", "enabled", false);
+    // The WebSocket API is enabled by default when running as a
+    // Windows Service.
+
+    bool default_value = environment::is_running_as_windows_service()
+        ? true
+        : false;
+
+    return get_part_key_or_default("websocket", "enabled", default_value);
 }
 
 void configuration::websocket_part::enabled(bool enable)

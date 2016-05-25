@@ -12,7 +12,7 @@ namespace common
     class command_line
     {
     public:
-        DLL_EXPORT static command_line parse(const std::wstring &cmd);
+        DLL_EXPORT static command_line parse(const std::wstring &cmd, bool skip_first = false);
 
         DLL_EXPORT bool alloc_console() const;
         DLL_EXPORT bool daemon() const;

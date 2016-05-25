@@ -7,9 +7,13 @@
 #include <boost/asio.hpp>
 #include <picotorrent/common/command_line.hpp>
 #include <picotorrent/core/session.hpp>
+#include <picotorrent/server/hosting/console_host.hpp>
+#include <picotorrent/server/hosting/windows_service_host.hpp>
 
 using picotorrent::common::command_line;
 using picotorrent::server::application;
+using picotorrent::server::hosting::console_host;
+using picotorrent::server::hosting::windows_service_host;
 
 void application::allocate_console()
 {
@@ -42,16 +46,14 @@ void application::on_notifications_available()
 
 int application::on_run(const command_line &cmd)
 {
-    boost::asio::signal_set signals(*io_.get(), SIGINT, SIGTERM);
-    signals.async_wait([this](const boost::system::error_code &ec, int signal)
+    if (cmd.alloc_console())
     {
-        if (ec)
-        {
-            // TODO: print error
-        }
-
-        io_->stop();
-    });
-
-    return (int)io_->run();
+        console_host host;
+        return host.run(io_);
+    }
+    else
+    {
+        windows_service_host host;
+        return host.run(io_);
+    }
 }
