@@ -15,7 +15,11 @@ std::string environment::get_data_path()
 {
     if (is_installed())
     {
-        std::string app_data = get_special_folder(common::local_app_data);
+        special_folder f = is_running_as_windows_service()
+            ? special_folder::program_data
+            : special_folder::local_app_data;
+
+        std::string app_data = get_special_folder(f);
         return pal::combine_paths(app_data, "PicoTorrent");
     }
 
@@ -41,6 +45,9 @@ std::string environment::get_special_folder(picotorrent::common::special_folder 
         break;
     case special_folder::public_downloads:
         g = FOLDERID_PublicDownloads;
+        break;
+    case special_folder::program_data:
+        g = FOLDERID_ProgramData;
         break;
     }
 

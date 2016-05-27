@@ -12,7 +12,8 @@ namespace common
     {
         user_downloads,
         local_app_data,
-        public_downloads
+        public_downloads,
+        program_data
     };
 
     class environment
