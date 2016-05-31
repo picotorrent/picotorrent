@@ -1,12 +1,14 @@
 #include <picotorrent/client/ui/property_sheets/property_sheet_page.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
-using picotorrent::core::signals::signal;
-using picotorrent::core::signals::signal_connector;
 using picotorrent::client::ui::property_sheets::property_sheet_page;
 using picotorrent::client::ui::task_dialog;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
+using picotorrent::core::signals::signal;
+using picotorrent::core::signals::signal_connector;
 
 property_sheet_page::property_sheet_page()
     : page_(std::make_unique<PROPSHEETPAGE>())

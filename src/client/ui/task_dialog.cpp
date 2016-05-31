@@ -1,12 +1,13 @@
 #include <picotorrent/client/ui/task_dialog.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 #include <windows.h>
 #include <commctrl.h>
 #include <strsafe.h>
 
 using picotorrent::client::ui::task_dialog;
+using picotorrent::common::to_wstring;
 
 task_dialog::task_dialog()
     : parent_(NULL),

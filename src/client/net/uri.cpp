@@ -1,11 +1,13 @@
 #include <picotorrent/client/net/uri.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 #include <windows.h>
 #include <winhttp.h>
 
 using picotorrent::client::net::uri;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
 
 uri::uri(const std::string &url)
     : raw_(url)

@@ -1,17 +1,17 @@
 #include <picotorrent/client/controllers/torrent_details_controller.hpp>
 
-#include <picotorrent/core/peer.hpp>
-#include <picotorrent/core/torrent.hpp>
-#include <picotorrent/core/torrent_info.hpp>
-#include <picotorrent/core/tracker.hpp>
 #include <picotorrent/client/ui/dialogs/add_tracker_dialog.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/ui/property_sheets/details/files_page.hpp>
 #include <picotorrent/client/ui/property_sheets/details/options_page.hpp>
 #include <picotorrent/client/ui/property_sheets/details/overview_page.hpp>
 #include <picotorrent/client/ui/property_sheets/details/peers_page.hpp>
 #include <picotorrent/client/ui/property_sheets/details/trackers_page.hpp>
+#include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/core/peer.hpp>
+#include <picotorrent/core/torrent.hpp>
+#include <picotorrent/core/torrent_info.hpp>
+#include <picotorrent/core/tracker.hpp>
 
 #include <prsht.h>
 #include <strsafe.h>
@@ -20,6 +20,8 @@ namespace details = picotorrent::client::ui::property_sheets::details;
 using picotorrent::client::controllers::torrent_details_controller;
 using picotorrent::client::ui::dialogs::add_tracker_dialog;
 using picotorrent::client::ui::main_window;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
 using picotorrent::core::peer;
 using picotorrent::core::torrent;
 using picotorrent::core::torrent_info;

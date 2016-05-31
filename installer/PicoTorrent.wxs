@@ -183,8 +183,20 @@
         </Directory>
 
         <ComponentGroup Id="CG_Libraries" Directory="INSTALLDIR">
+          <Component Id="C_PicoTorrentClient">
+            <File Name="PicoTorrentClient.dll" Source="$(var.PublishDirectory)\PicoTorrentClient.dll" />
+          </Component>
+
+          <Component Id="C_PicoTorrentCommon">
+            <File Name="PicoTorrentCommon.dll" Source="$(var.PublishDirectory)\PicoTorrentCommon.dll" />
+          </Component>
+
           <Component Id="C_PicoTorrentCore">
             <File Name="PicoTorrentCore.dll" Source="$(var.PublishDirectory)\PicoTorrentCore.dll" />
+          </Component>
+
+          <Component Id="C_PicoTorrentServer">
+            <File Name="PicoTorrentServer.dll" Source="$(var.PublishDirectory)\PicoTorrentServer.dll" />
           </Component>
 
           <Component Id="C_BoostRandom">

@@ -130,7 +130,10 @@ Task("Setup-Publish-Directory")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.exe"),
+        BuildDirectory + File("PicoTorrentClient.dll"),
+        BuildDirectory + File("PicoTorrentCommon.dll"),
         BuildDirectory + File("PicoTorrentCore.dll"),
+        BuildDirectory + File("PicoTorrentServer.dll"),
 
         // 3rd party libraries
         LibraryDirectory + File(BoostRandom),

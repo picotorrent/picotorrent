@@ -2,8 +2,6 @@
 
 #include <picojson.hpp>
 #include <picotorrent/core/version_info.hpp>
-#include <picotorrent/client/configuration.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/net/http_client.hpp>
@@ -11,18 +9,22 @@
 #include <picotorrent/client/net/uri.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
+#include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/config/configuration.hpp>
 #include <semver.hpp>
 #include <windows.h>
 #include <shellapi.h>
 #include <strsafe.h>
 
-using picotorrent::core::version_info;
-using picotorrent::client::configuration;
 using picotorrent::client::controllers::application_update_controller;
 using picotorrent::client::net::http_client;
 using picotorrent::client::net::http_response;
 using picotorrent::client::net::uri;
 using picotorrent::client::ui::main_window;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
+using picotorrent::common::config::configuration;
+using picotorrent::core::version_info;
 
 application_update_controller::application_update_controller(
     const std::shared_ptr<main_window> &wnd)

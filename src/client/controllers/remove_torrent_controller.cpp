@@ -3,17 +3,17 @@
 #include <algorithm>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent.hpp>
-#include <picotorrent/client/configuration.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
+#include <picotorrent/common/config/configuration.hpp>
 
-using picotorrent::client::configuration;
-using picotorrent::core::session;
-using picotorrent::core::torrent;
 using picotorrent::client::controllers::remove_torrent_controller;
 using picotorrent::client::ui::main_window;
 using picotorrent::client::ui::task_dialog;
+using picotorrent::common::config::configuration;
+using picotorrent::core::session;
+using picotorrent::core::torrent;
 
 remove_torrent_controller::remove_torrent_controller(
     const std::shared_ptr<main_window> &wnd,

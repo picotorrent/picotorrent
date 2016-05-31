@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include <picotorrent/common.hpp>
+#include <picotorrent/export.hpp>
 #include <picotorrent/core/signals/signal.hpp>
 #include <picotorrent/core/torrent_state.hpp>
 #include <picotorrent/core/tracker_status.hpp>

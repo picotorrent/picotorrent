@@ -1,9 +1,9 @@
 #include <picotorrent/client/ui/dialogs/add_torrent_dialog.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
+#include <picotorrent/common/string_operations.hpp>
 #include <commctrl.h>
 #include <windowsx.h>
 #include <shlwapi.h>
@@ -12,9 +12,9 @@
 #define LIST_COLUMN_SIZE 2
 #define LIST_COLUMN_PRIO 3
 
-using picotorrent::client::to_string;
-using picotorrent::client::to_wstring;
 using picotorrent::client::ui::dialogs::add_torrent_dialog;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
 using picotorrent::core::signals::signal;
 using picotorrent::core::signals::signal_connector;
 

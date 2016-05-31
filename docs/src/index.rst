@@ -16,3 +16,4 @@ Rasterbar-libtorrent and the raw Win32 API.
 
    configuration
    websocket-api/index
+   windows-service

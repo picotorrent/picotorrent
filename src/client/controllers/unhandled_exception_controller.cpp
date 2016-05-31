@@ -1,10 +1,10 @@
 #include <picotorrent/client/controllers/unhandled_exception_controller.hpp>
 
 #include <picojson.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/net/http_client.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
+
 #include <windows.h>
 #include <shellapi.h>
 

@@ -1,10 +1,11 @@
 #include <picotorrent/client/ui/notifyicon_context_menu.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 using picotorrent::client::ui::notifyicon_context_menu;
+using picotorrent::common::to_wstring;
 
 notifyicon_context_menu::notifyicon_context_menu()
 {
