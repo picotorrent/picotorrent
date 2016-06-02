@@ -104,6 +104,7 @@ void files_page::on_init_dialog()
     files_->on_item_context_menu().connect(std::bind(&files_page::on_list_item_context_menu, this, std::placeholders::_1));
     files_->on_item_image().connect(std::bind(&files_page::on_list_item_image, this, std::placeholders::_1));
     files_->on_progress().connect(std::bind(&files_page::on_list_progress, this, std::placeholders::_1));
+    files_->on_sort().connect(std::bind(&files_page::on_list_sort, this, std::placeholders::_1));
 
     files_->set_image_list(images_);
 }
@@ -241,4 +242,49 @@ float files_page::on_list_progress(const std::pair<int, int> &p)
     }
 
     return -1;
+}
+
+void files_page::on_list_sort(const std::pair<int, int> &p)
+{
+    list_view::sort_order_t order = (list_view::sort_order_t)p.second;
+    bool asc = order == list_view::sort_order_t::asc;
+
+    std::function<bool(const file_item&, const file_item&)> sort_func;
+
+    switch (p.first)
+    {
+    case LIST_COLUMN_NAME:
+        sort_func = [asc](const file_item &f1, const file_item &f2)
+        {
+            if (asc) { return f1.name < f2.name; }
+            return f1.name > f2.name;
+        };
+        break;
+    case LIST_COLUMN_SIZE:
+        sort_func = [asc](const file_item &f1, const file_item &f2)
+        {
+            if (asc) { return f1.size < f2.size; }
+            return f1.size > f2.size;
+        };
+        break;
+    case LIST_COLUMN_PROGRESS:
+        sort_func = [asc](const file_item &f1, const file_item &f2)
+        {
+            if (asc) { return f1.progress < f2.progress; }
+            return f1.progress > f2.progress;
+        };
+        break;
+    case LIST_COLUMN_PRIORITY:
+        sort_func = [asc](const file_item &f1, const file_item &f2)
+        {
+            if (asc) { return f1.priority < f2.priority; }
+            return f1.priority > f2.priority;
+        };
+        break;
+    }
+
+    if (sort_func)
+    {
+        std::sort(items_.begin(), items_.end(), sort_func);
+    }
 }
