@@ -40,10 +40,12 @@ namespace details
 
     private:
         std::string on_list_display(const std::pair<int, int> &p);
+        void on_list_sort(const std::pair<int, int> &p);
 
         struct peer_state;
         std::unique_ptr<controls::list_view> list_;
         std::vector<peer_state> peers_;
+        std::function<void()> sort_items_;
 
     };
 }

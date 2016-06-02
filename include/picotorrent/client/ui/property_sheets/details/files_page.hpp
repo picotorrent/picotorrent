@@ -42,6 +42,7 @@ namespace details
         void on_list_item_context_menu(const std::vector<int> &indices);
         int on_list_item_image(const std::pair<int, int> &p);
         float on_list_progress(const std::pair<int, int> &p);
+        void on_list_sort(const std::pair<int, int> &p);
 
     private:
         struct file_item;

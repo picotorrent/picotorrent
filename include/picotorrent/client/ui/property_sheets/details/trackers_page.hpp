@@ -39,6 +39,7 @@ namespace details
 
     private:
         std::string on_list_display(const std::pair<int, int> &p);
+        void on_list_sort(const std::pair<int, int> &p);
         void on_trackers_context_menu(const std::vector<int> &items);
 
         struct tracker_state;
@@ -46,6 +47,7 @@ namespace details
         core::signals::signal<void, void> on_add_tracker_;
         core::signals::signal<void, const std::vector<std::string>&> on_remove_trackers_;
         std::unique_ptr<controls::list_view> list_;
+        std::function<void()> sort_items_;
         std::vector<tracker_state> trackers_;
 
     };
