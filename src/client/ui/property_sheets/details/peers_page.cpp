@@ -181,8 +181,8 @@ void peers_page::on_list_sort(const std::pair<int, int> &p)
     case LIST_COLUMN_UPLOAD:
         sort_func = [asc](const peer_state &p1, const peer_state &p2)
         {
-            if (asc) { return p1.peer.ip() < p2.peer.ip(); }
-            return p1.peer.ip() > p2.peer.ip();
+            if (asc) { return p1.peer.upload_rate() < p2.peer.upload_rate(); }
+            return p1.peer.upload_rate() > p2.peer.upload_rate();
         };
         break;
     }
