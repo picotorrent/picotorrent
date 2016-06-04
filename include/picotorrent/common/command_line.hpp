@@ -16,6 +16,7 @@ namespace common
 
         DLL_EXPORT bool alloc_console() const;
         DLL_EXPORT bool daemon() const;
+        DLL_EXPORT bool enable_logging() const;
         DLL_EXPORT std::vector<std::string> files() const;
         DLL_EXPORT std::vector<std::string> magnet_links() const;
         DLL_EXPORT std::wstring raw() const;
@@ -28,6 +29,7 @@ namespace common
         std::vector<std::string> files_;
         bool alloc_console_;
         bool daemon_;
+        bool enable_logging_;
         bool restart_;
         int prev_process_id_;
     };

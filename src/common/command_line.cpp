@@ -21,6 +21,7 @@ command_line command_line::parse(const std::wstring &cmd, bool skip_first)
     command_line cl;
     cl.alloc_console_ = false;
     cl.daemon_ = false;
+    cl.enable_logging_ = false;
     cl.raw_ = cmd;
     cl.restart_ = false;
 
@@ -47,6 +48,12 @@ command_line command_line::parse(const std::wstring &cmd, bool skip_first)
         if (arg == "--daemon")
         {
             cl.daemon_ = true;
+            continue;
+        }
+
+        if (arg == "--enable-logging")
+        {
+            cl.enable_logging_ = true;
             continue;
         }
 
@@ -79,6 +86,11 @@ bool command_line::alloc_console() const
 bool command_line::daemon() const
 {
     return daemon_;
+}
+
+bool command_line::enable_logging() const
+{
+    return enable_logging_;
 }
 
 std::vector<std::string> command_line::files() const
