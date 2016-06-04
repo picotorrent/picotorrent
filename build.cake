@@ -227,7 +227,10 @@ Task("Build-Symbols-Package")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.pdb"),
-        BuildDirectory + File("PicoTorrentCore.pdb")
+        BuildDirectory + File("PicoTorrentClient.pdb"),
+        BuildDirectory + File("PicoTorrentCommon.pdb"),
+        BuildDirectory + File("PicoTorrentCore.pdb"),
+        BuildDirectory + File("PicoTorrentServer.pdb")
     };
 
     Zip(BuildDirectory, BuildDirectory + File(SymbolsPackage), files);
