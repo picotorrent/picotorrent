@@ -111,6 +111,7 @@ void torrent_details_controller::on_files_init()
         float p = (float)progress[i] / ti->file_size(i);
 
         files_->add_file(
+            i,
             ti->file_path(i),
             ti->file_size(i),
             p,
@@ -219,13 +220,7 @@ void torrent_details_controller::update_files()
     std::vector<int64_t> progress;
     torrent_->file_progress(progress);
 
-    for (int i = 0; i < ti->num_files(); i++)
-    {
-        float p = (float)progress[i] / ti->file_size(i);
-        files_->update_file_progress(i, p);
-    }
-
-    files_->refresh();
+    files_->refresh(progress);
 }
 
 void torrent_details_controller::update_overview()
