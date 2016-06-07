@@ -29,6 +29,7 @@ using picotorrent::core::torrent;
 
 struct files_page::file_item
 {
+    int index;
     std::string name;
     uint64_t size;
     float progress;
@@ -55,9 +56,9 @@ files_page::~files_page()
 {
 }
 
-void files_page::add_file(const std::string &name, uint64_t size, float progress, int priority)
+void files_page::add_file(int index, const std::string &name, uint64_t size, float progress, int priority)
 {
-    file_item item{ name,size,progress,priority };
+    file_item item{ index,name,size,progress,priority };
     items_.push_back(item);
 
     files_->set_item_count((int)items_.size());
@@ -79,15 +80,20 @@ signal_connector<void, const std::pair<int, int>&>& files_page::on_set_file_prio
     return on_set_file_prio_;
 }
 
-void files_page::refresh()
+void files_page::refresh(const std::vector<int64_t> &progress)
 {
-    files_->refresh();
-}
+    for (int i = 0; i < (int)items_.size(); i++)
+    {
+        int64_t p = progress[items_[i].index];
+        items_[i].progress = (float)p / items_[i].size;
+    }
 
-void files_page::update_file_progress(int index, float progress)
-{
-    file_item &item = items_[index];
-    item.progress = progress;
+    files_->refresh();
+
+    if (sort_items_)
+    {
+        sort_items_();
+    }
 }
 
 void files_page::on_init_dialog()
@@ -291,6 +297,10 @@ void files_page::on_list_sort(const std::pair<int, int> &p)
 
     if (sort_func)
     {
-        std::sort(items_.begin(), items_.end(), sort_func);
+        sort_items_ = [this, sort_func]()
+        {
+            std::sort(items_.begin(), items_.end(), sort_func);
+        };
+        sort_items_();
     }
 }
