@@ -110,6 +110,12 @@ void trackers_page::on_init_dialog()
     list_->add_column(LIST_COLUMN_PEERS,  TR("peers"),         scaler::x(80),  list_view::number);
     list_->add_column(LIST_COLUMN_SCRAPE, TR("scrape"),        scaler::x(80),  list_view::number);
 
+    list_->load_state("torrent_trackers_list");
+    on_destroy().connect([this]()
+    {
+        list_->save_state("torrent_trackers_list");
+    });
+
     list_->on_display().connect(std::bind(&trackers_page::on_list_display, this, std::placeholders::_1));
     list_->on_item_context_menu().connect(std::bind(&trackers_page::on_trackers_context_menu, this, std::placeholders::_1));
     list_->on_sort().connect(std::bind(&trackers_page::on_list_sort, this, std::placeholders::_1));

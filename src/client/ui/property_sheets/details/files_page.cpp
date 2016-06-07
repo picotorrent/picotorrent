@@ -100,6 +100,12 @@ void files_page::on_init_dialog()
     files_->add_column(LIST_COLUMN_PROGRESS, TR("progress"), scaler::x(120), list_view::progress);
     files_->add_column(LIST_COLUMN_PRIORITY, TR("priority"), scaler::x(80));
 
+    files_->load_state("torrent_files_list");
+    on_destroy().connect([this]()
+    {
+        files_->save_state("torrent_files_list");
+    });
+
     files_->on_display().connect(std::bind(&files_page::on_list_display, this, std::placeholders::_1));
     files_->on_item_context_menu().connect(std::bind(&files_page::on_list_item_context_menu, this, std::placeholders::_1));
     files_->on_item_image().connect(std::bind(&files_page::on_list_item_image, this, std::placeholders::_1));
