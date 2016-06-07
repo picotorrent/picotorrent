@@ -40,6 +40,7 @@ namespace controls
         int get_column_count();
         std::vector<int> get_selection();
         sort_order_t get_sort_order(int columnId);
+        void load_state(const std::string &id);
         
         core::signals::signal_connector<std::string, const std::pair<int, int>&>& on_display();
         core::signals::signal_connector<void, const std::vector<int>&>& on_item_context_menu();
@@ -49,6 +50,7 @@ namespace controls
 
         void refresh();
         void resize(int width, int height);
+        void save_state(const std::string &id);
         void set_column_sort(int columnId, sort_order_t order);
         void set_image_list(HIMAGELIST img);
         void set_item_count(int count);
@@ -56,9 +58,20 @@ namespace controls
     private:
         static LRESULT CALLBACK subclass_proc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
+        bool is_point_in_header(POINT p);
+        void set_column_visible(int columnId, bool visible);
+        void set_column_width(int columnId, int width);
+        void show_column_selector(POINT p);
+
         struct list_view_column
         {
+            list_view_column()
+                : visible(true)
+            {
+            }
+
             int id;
+            bool visible;
             std::wstring text;
             int width;
             int format;

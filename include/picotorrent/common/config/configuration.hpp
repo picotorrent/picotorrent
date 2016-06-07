@@ -80,7 +80,7 @@ namespace config
             void set_part_key(const char *part, const char* key, int value);
             void set_part_key(const char *part, const char* key, const std::string &value);
 
-        private:
+        protected:
             std::shared_ptr<picojson::object> cfg_;
         };
 
@@ -130,6 +130,23 @@ namespace config
             using part::part;
         };
 
+        struct ui_part : public part
+        {
+            friend class configuration;
+
+            struct list_view_column_state
+            {
+                bool visible;
+                int width;
+            };
+
+            DLL_EXPORT std::map<int, list_view_column_state> list_view_state(const std::string &id);
+            DLL_EXPORT void list_view_state(const std::string &id, const std::map<int, list_view_column_state> &cols);
+
+        protected:
+            using part::part;
+        };
+
         DLL_EXPORT configuration();
         DLL_EXPORT ~configuration();
 
@@ -137,6 +154,7 @@ namespace config
 
         DLL_EXPORT std::shared_ptr<session_part> session();
         DLL_EXPORT std::shared_ptr<websocket_part> websocket();
+        DLL_EXPORT std::shared_ptr<ui_part> ui();
 
         DLL_EXPORT close_action_t close_action();
         DLL_EXPORT void set_close_action(close_action_t action);

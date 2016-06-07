@@ -103,6 +103,12 @@ void peers_page::on_init_dialog()
     list_->add_column(LIST_COLUMN_DOWNLOAD, TR("dl"),     scaler::x(80), list_view::number);
     list_->add_column(LIST_COLUMN_UPLOAD,   TR("ul"),     scaler::x(80), list_view::number);
 
+    list_->load_state("torrent_peers_list");
+    on_destroy().connect([this]()
+    {
+        list_->save_state("torrent_peers_list");
+    });
+
     list_->on_display().connect(std::bind(&peers_page::on_list_display, this, std::placeholders::_1));
     list_->on_sort().connect(std::bind(&peers_page::on_list_sort, this, std::placeholders::_1));
 }

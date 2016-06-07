@@ -45,6 +45,13 @@ std::shared_ptr<configuration::websocket_part> configuration::websocket()
     return std::shared_ptr<websocket_part>(new websocket_part(value_));
 }
 
+std::shared_ptr<configuration::ui_part> configuration::ui()
+{
+    // Not using make_shared since that function is not a friend of
+    // the protected ctor.
+    return std::shared_ptr<ui_part>(new ui_part(value_));
+}
+
 configuration::close_action_t configuration::close_action()
 {
     return (configuration::close_action_t)get_or_default("close_action", (int64_t)configuration::close_action_t::prompt);

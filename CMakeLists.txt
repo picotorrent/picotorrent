@@ -65,6 +65,7 @@ set(PICOTORRENTCOMMON_SOURCES
     src/common/config/configuration_part
     src/common/config/configuration_session_part
     src/common/config/configuration_websocket_part
+    src/common/config/configuration_ui_part
 
     # Security
     src/common/security/certificate_manager

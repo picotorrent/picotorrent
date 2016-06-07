@@ -17,6 +17,7 @@
 #include <picotorrent/client/ui/task_dialog.hpp>
 #include <picotorrent/client/ui/taskbar_list.hpp>
 #include <picotorrent/client/ui/torrent_drop_target.hpp>
+#include <picotorrent/common/config/configuration.hpp>
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/hash.hpp>
 #include <picotorrent/core/session.hpp>
@@ -53,6 +54,7 @@ using picotorrent::client::ui::scaler;
 using picotorrent::client::ui::taskbar_list;
 using picotorrent::client::ui::sleep_manager;
 using picotorrent::client::ui::torrent_drop_target;
+using picotorrent::common::config::configuration;
 using picotorrent::common::to_string;
 using picotorrent::common::to_wstring;
 using picotorrent::core::signals::signal;
@@ -401,6 +403,8 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         list_view_->add_column(COLUMN_SEEDS,          TR("seeds"),          scaler::x(80),  list_view::number);
         list_view_->add_column(COLUMN_PEERS,          TR("peers"),          scaler::x(80),  list_view::number);
 
+        list_view_->load_state("torrents_list");
+
         noticon_ = std::make_shared<notify_icon>(hWnd);
         noticon_->add();
 
@@ -429,6 +433,8 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     case WM_DESTROY:
     {
+        list_view_->save_state("torrents_list");
+
         on_destroy_.emit();
         noticon_->remove();
 
