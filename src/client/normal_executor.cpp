@@ -2,6 +2,7 @@
 
 #include <functional>
 
+#include <picotorrent/plugin.hpp>
 #include <picotorrent/client/message_loop.hpp>
 #include <picotorrent/client/controllers/add_magnet_link_controller.hpp>
 #include <picotorrent/client/controllers/add_torrent_controller.hpp>
@@ -22,6 +23,7 @@
 #include <picotorrent/core/torrent.hpp>
 
 namespace controllers = picotorrent::client::controllers;
+using picotorrent::plugin;
 using picotorrent::client::message_loop;
 using picotorrent::client::normal_executor;
 using picotorrent::common::command_line;
@@ -106,6 +108,15 @@ int normal_executor::run(const command_line &cmd)
     {
         updater_->execute();
     }
+
+    HMODULE hMod = LoadLibrary(L"PicoTorrentPlugin.dll");
+    FARPROC proc = GetProcAddress(hMod, "create_plugin_host");
+
+    typedef plugin*(*CREATE_PLUGIN_FUNC)(session*);
+    CREATE_PLUGIN_FUNC cpf = (CREATE_PLUGIN_FUNC)proc;
+
+    plugin* p = cpf(session_.get());
+    p->load();
 
     return message_loop::run(main_window_->handle(), accelerators_);
 }
