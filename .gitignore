@@ -8,3 +8,11 @@ tools/Cake.CMake
 tools/nuget.exe
 tools/PicoTorrent.Libs
 tools/WiX.Toolset
+
+[D|d]ebug
+[R|r]elease
+
+.vs
+*.suo
+*.sdf
+*.user

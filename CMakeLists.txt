@@ -153,13 +153,6 @@ set(PICOTORRENTCLIENT_SOURCES
     src/client/pico.rc
 )
 
-set(PICOTORRENTNETFX_SOURCES
-    src/netfx/managed_bridge
-    src/netfx/clr_plugin
-    src/netfx/clr/plugin_host
-    src/netfx/clr/session
-)
-
 set(PICOTORRENTSERVER_SOURCES
     src/server/application
     src/server/hosting/console_host
@@ -260,11 +253,6 @@ target_link_libraries(
 )
 
 if(WIN32)
-    # This makes the C++/CLI project compile.
-    if(CMAKE_CXX_FLAGS_DEBUG MATCHES "/RTC1")
-        string(REPLACE "/RTC1" " " CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-    endif()
-
     target_link_libraries(
         PicoTorrentCore
 
@@ -296,27 +284,9 @@ if(WIN32)
     )
 
     add_library(
-        PicoTorrentNetFx
-        SHARED
-        ${PICOTORRENTNETFX_SOURCES}
-    )
-
-    add_library(
         PicoTorrentServer
         SHARED
         ${PICOTORRENTSERVER_SOURCES}
-    )
-
-    set_target_properties(
-        PicoTorrentNetFx
-        PROPERTIES
-        VS_DOTNET_REFERENCES "System;System.Windows.Forms")
-
-    target_compile_options(
-        PicoTorrentNetFx
-        PUBLIC
-        /clr
-        /EHa
     )
 
     target_link_libraries(
@@ -339,11 +309,6 @@ if(WIN32)
 
     target_link_libraries(
         PicoTorrentCommon
-        PicoTorrentCore
-    )
-
-    target_link_libraries(
-        PicoTorrentNetFx
         PicoTorrentCore
     )
 

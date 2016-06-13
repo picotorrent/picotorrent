@@ -48,6 +48,8 @@ namespace ui
         void torrent_updated(const std::vector<std::shared_ptr<core::torrent>>&);
 
     private:
+        struct plugin_handle;
+
         void on_check_for_update();
         bool on_close();
         void on_command_line_args(const common::command_line &cmd);
@@ -70,6 +72,7 @@ namespace ui
         std::shared_ptr<core::session> session_;
         std::shared_ptr<common::ws::websocket_server> ws_server_;
         std::shared_ptr<controllers::application_update_controller> updater_;
+        std::vector<std::shared_ptr<plugin_handle>> plugins_;
     };
 }
 }

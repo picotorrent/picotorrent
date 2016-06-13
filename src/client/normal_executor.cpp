@@ -17,6 +17,7 @@
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/common/command_line.hpp>
+#include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/common/config/configuration.hpp>
 #include <picotorrent/common/ws/websocket_server.hpp>
 #include <picotorrent/core/session.hpp>
@@ -27,10 +28,60 @@ using picotorrent::plugin;
 using picotorrent::client::message_loop;
 using picotorrent::client::normal_executor;
 using picotorrent::common::command_line;
+using picotorrent::common::to_wstring;
 using picotorrent::common::config::configuration;
 using picotorrent::common::ws::websocket_server;
 using picotorrent::core::session;
 using picotorrent::core::torrent;
+
+const char* plugin_func_name = "create_picotorrent_plugin";
+typedef plugin*(*CREATE_PLUGIN_FUNC)(session*, HWND);
+
+struct FreeLibraryDeleter
+{
+    typedef HMODULE pointer;
+    void operator()(HMODULE h) { FreeLibrary(h); }
+};
+
+struct normal_executor::plugin_handle
+{
+    plugin_handle(const std::string &path)
+    {
+        HMODULE mod = LoadLibrary(to_wstring(path).c_str());
+        module_ = std::unique_ptr<HMODULE, FreeLibraryDeleter>(mod);
+    }
+
+    void load(const std::shared_ptr<session> &sess, HWND mainWindow)
+    {
+        if (module_ == NULL)
+        {
+            return;
+        }
+
+        FARPROC proc = GetProcAddress(module_.get(), plugin_func_name);
+
+        if (proc == NULL)
+        {
+            return;
+        }
+
+        CREATE_PLUGIN_FUNC cpf = (CREATE_PLUGIN_FUNC)proc;
+
+        plugin_ = std::unique_ptr<plugin>(cpf(sess.get(), mainWindow));
+        plugin_->load();
+    }
+
+    void unload()
+    {
+        if (plugin_ == nullptr) { return; }
+        plugin_->unload();
+    }
+
+private:
+    std::unique_ptr<HMODULE, FreeLibraryDeleter> module_;
+    std::unique_ptr<plugin> plugin_;
+
+};
 
 normal_executor::normal_executor(
     const std::shared_ptr<session> &session,
@@ -109,14 +160,12 @@ int normal_executor::run(const command_line &cmd)
         updater_->execute();
     }
 
-    HMODULE hMod = LoadLibrary(L"PicoTorrentPlugin.dll");
-    FARPROC proc = GetProcAddress(hMod, "create_plugin_host");
+    // Load plugins
+    // TODO: remove hard coded path
+    std::shared_ptr<plugin_handle> plugin = std::make_shared<plugin_handle>("C:\\Code\\vktr\\picotorrent\\plugins\\netfx\\src\\x64\\Debug\\PicoTorrentShim.dll");
+    plugin->load(session_, main_window_->handle());
 
-    typedef plugin*(*CREATE_PLUGIN_FUNC)(session*);
-    CREATE_PLUGIN_FUNC cpf = (CREATE_PLUGIN_FUNC)proc;
-
-    plugin* p = cpf(session_.get());
-    p->load();
+    plugins_.push_back(plugin);
 
     return message_loop::run(main_window_->handle(), accelerators_);
 }
