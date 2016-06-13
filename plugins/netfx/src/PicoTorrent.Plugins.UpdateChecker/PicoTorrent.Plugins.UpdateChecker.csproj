@@ -45,7 +45,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PicoTorrent\PicoTorrent.csproj">
+    <ProjectReference Include="..\PicoTorrent.Fx\PicoTorrent.Fx.csproj">
       <Project>{72174244-239d-4495-8655-0a77bc922a3d}</Project>
       <Name>PicoTorrent</Name>
     </ProjectReference>

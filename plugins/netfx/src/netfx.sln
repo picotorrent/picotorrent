@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PicoTorrent", "PicoTorrent\PicoTorrent.csproj", "{72174244-239D-4495-8655-0A77BC922A3D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PicoTorrent.Fx", "PicoTorrent.Fx\PicoTorrent.Fx.csproj", "{72174244-239D-4495-8655-0A77BC922A3D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PicoTorrentShim", "PicoTorrentShim\PicoTorrentShim.vcxproj", "{5BB834EF-1287-4152-B4FE-97CCB47E31B9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "netfx", "netfx\netfx.vcxproj", "{5BB834EF-1287-4152-B4FE-97CCB47E31B9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PicoTorrent.Plugins.UpdateChecker", "PicoTorrent.Plugins.UpdateChecker\PicoTorrent.Plugins.UpdateChecker.csproj", "{07E1E0D4-ED52-4E12-B8C5-EA99ACE1F99E}"
 EndProject

@@ -22,7 +22,7 @@
     <ProjectGuid>{5BB834EF-1287-4152-B4FE-97CCB47E31B9}</ProjectGuid>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <Keyword>ManagedCProj</Keyword>
-    <RootNamespace>PicoTorrentShim</RootNamespace>
+    <RootNamespace>netfx</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -74,23 +74,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Code\vktr\picotorrent\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Code\vktr\picotorrent\build-x86\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>../../../../include;$(IncludePath)</IncludePath>
+    <LibraryPath>../../../../build-x86\Debug;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)/../../../build-x86/$(Configuration)/plugins/netfx/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Code\vktr\picotorrent\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Code\vktr\picotorrent\build-x64\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>../../../../include;$(IncludePath)</IncludePath>
+    <LibraryPath>../../../../build-x64\Debug;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)/../../../build-x64/$(Configuration)/plugins/netfx/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Code\vktr\picotorrent\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Code\vktr\picotorrent\build-x86\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>../../../../include;$(IncludePath)</IncludePath>
+    <LibraryPath>../../../../build-x86\Release;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)/../../../build-x86/$(Configuration)/plugins/netfx/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Code\vktr\picotorrent\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Code\vktr\picotorrent\build-x64\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>../../../../include;$(IncludePath)</IncludePath>
+    <LibraryPath>../../../../build-x64\Release;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)/../../../build-x64/$(Configuration)/plugins/netfx/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -118,7 +122,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies />
+      <AdditionalDependencies>PicoTorrentCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -159,7 +163,7 @@
     <ProjectReference Include="..\PicoTorrent.Plugins.UpdateChecker\PicoTorrent.Plugins.UpdateChecker.csproj">
       <Project>{07e1e0d4-ed52-4e12-b8c5-ea99ace1f99e}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\PicoTorrent\PicoTorrent.csproj">
+    <ProjectReference Include="..\PicoTorrent.Fx\PicoTorrent.Fx.csproj">
       <Project>{72174244-239d-4495-8655-0a77bc922a3d}</Project>
     </ProjectReference>
   </ItemGroup>

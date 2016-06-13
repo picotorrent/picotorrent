@@ -13,6 +13,8 @@ tools/WiX.Toolset
 [R|r]elease
 
 .vs
+*.db
+*.opendb
 *.suo
 *.sdf
 *.user

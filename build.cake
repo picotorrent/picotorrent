@@ -106,6 +106,26 @@ Task("Build")
     MSBuild(OutputDirectory + File("PicoTorrent.sln"), settings);
 });
 
+Task("Build-NetFx-Plugins")
+    .IsDependentOn("Build")
+    .Does(() =>
+{
+    var settings = new MSBuildSettings()
+                        .SetConfiguration(configuration)
+                        .WithProperty("Platform", platform);
+
+    if(platform == "x86")
+    {
+        settings.SetPlatformTarget(PlatformTarget.x86);
+    }
+    else
+    {
+        settings.SetPlatformTarget(PlatformTarget.x64);
+    }
+
+    MSBuild("./plugins/netfx/src/netfx.sln", settings);
+});
+
 Task("Setup-Library-Files")
     .Does(() =>
 {
@@ -302,6 +322,8 @@ Task("Sign-Installer-Bundle")
 //////////////////////////////////////////////////////////////////////
 
 Task("Default")
+    .IsDependentOn("Build")
+    .IsDependentOn("Build-NetFx-Plugins")
     .IsDependentOn("Build-Installer")
     .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package")
