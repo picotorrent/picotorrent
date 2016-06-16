@@ -1,12 +1,11 @@
 #include <picotorrent/client/ui/property_sheets/preferences/general_page.hpp>
 
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/translator.hpp>
 
 #include <windowsx.h>
 
-namespace i18n = picotorrent::client::i18n;
 using picotorrent::client::ui::property_sheets::preferences::general_page;
 using picotorrent::common::to_wstring;
 
@@ -22,11 +21,11 @@ general_page::~general_page()
 {
 }
 
-void general_page::add_languages(const std::vector<i18n::translation> &translations)
+void general_page::add_languages(const std::vector<picotorrent::common::translation> &translations)
 {
     HWND hCombo = GetDlgItem(handle(), ID_LANGUAGE);
 
-    for (const i18n::translation &translation : translations)
+    for (const common::translation &translation : translations)
     {
         int index = ComboBox_AddString(hCombo, to_wstring(translation.name).c_str());
         ComboBox_SetItemData(hCombo, index, translation.language_id);

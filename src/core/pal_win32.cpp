@@ -113,12 +113,54 @@ std::vector<std::string> pal::get_directory_entries(const std::string &dir, cons
 
     do
     {
-        res.push_back(combine_paths(dir, from_wide(ffd.cFileName)));
+        if (wcscmp(ffd.cFileName, L".") != 0
+            && wcscmp(ffd.cFileName, L"..") != 0)
+        {
+            res.push_back(combine_paths(dir, from_wide(ffd.cFileName)));
+        }
     } while (FindNextFile(hFind, &ffd) > 0);
 
     FindClose(hFind);
 
     return res;
+}
+
+std::vector<std::string> pal::get_directory_subdirs(const std::string &dir)
+{
+    std::vector<std::string> res;
+
+    WIN32_FIND_DATA ffd;
+    HANDLE hFind = FindFirstFileEx(
+        to_wide(combine_paths(dir, "*")).c_str(),
+        FindExInfoStandard,
+        &ffd,
+        FindExSearchLimitToDirectories,
+        NULL,
+        FIND_FIRST_EX_LARGE_FETCH);
+
+    if (hFind == INVALID_HANDLE_VALUE)
+    {
+        return res;
+    }
+
+    do
+    {
+        if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY
+            && wcscmp(ffd.cFileName, L".") != 0
+            && wcscmp(ffd.cFileName, L"..") != 0)
+        {
+            res.push_back(combine_paths(dir, from_wide(ffd.cFileName)));
+        }
+    } while (FindNextFile(hFind, &ffd) > 0);
+
+    FindClose(hFind);
+
+    return res;
+}
+
+std::string pal::get_file_name(const std::string &path)
+{
+    return from_wide(PathFindFileName(to_wide(path).c_str()));
 }
 
 void pal::remove_file(const std::string &path)

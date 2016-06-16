@@ -18,12 +18,12 @@ public:
     }
 };
 
-ClrBridge::ClrBridge(picotorrent::core::session* sess, HWND hWnd)
+ClrBridge::ClrBridge(picotorrent::extensibility::plugin_host* host)
 {
     System::AppDomain::CurrentDomain->AssemblyResolve += gcnew System::ResolveEventHandler(
         &AssemblyResolver::OnAssemblyResolve);
 
-    _engine = gcnew PicoTorrent::PluginEngine(sess, hWnd);
+    _engine = gcnew PicoTorrent::PluginEngine(host);
 }
 
 ClrBridge::~ClrBridge()

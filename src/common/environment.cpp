@@ -11,6 +11,15 @@ using picotorrent::common::command_line;
 using picotorrent::common::environment;
 using picotorrent::core::pal;
 
+std::string environment::get_application_path()
+{
+    TCHAR buf[MAX_PATH];
+    GetModuleFileName(NULL, buf, ARRAYSIZE(buf));
+    PathRemoveFileSpec(buf);
+
+    return to_string(buf);
+}
+
 std::string environment::get_data_path()
 {
     if (is_installed())
@@ -23,11 +32,7 @@ std::string environment::get_data_path()
         return pal::combine_paths(app_data, "PicoTorrent");
     }
 
-    TCHAR buf[MAX_PATH];
-    GetModuleFileName(NULL, buf, ARRAYSIZE(buf));
-    PathRemoveFileSpec(buf);
-
-    return to_string(buf);
+    return get_application_path();
 }
 
 std::string environment::get_special_folder(picotorrent::common::special_folder folder)

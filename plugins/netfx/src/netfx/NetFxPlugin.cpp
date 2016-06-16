@@ -2,9 +2,9 @@
 
 #include "ClrBridge.h"
 
-NetFxPlugin::NetFxPlugin(picotorrent::core::session *sess, HWND hWnd)
+NetFxPlugin::NetFxPlugin(picotorrent::extensibility::plugin_host* host)
 {
-    bridge_ = new ClrBridge(sess, hWnd);
+    bridge_ = new ClrBridge(host);
 }
 
 NetFxPlugin::~NetFxPlugin()

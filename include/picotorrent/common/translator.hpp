@@ -5,7 +5,9 @@
 #include <vector>
 #include <windows.h>
 
-#define TR(id) picotorrent::client::i18n::translator::instance().translate(id).c_str()
+#include <picotorrent/export.hpp>
+
+#define TR(id) picotorrent::common::translator::instance().translate(id).c_str()
 
 namespace picojson
 {
@@ -15,9 +17,7 @@ namespace picojson
 
 namespace picotorrent
 {
-namespace client
-{
-namespace i18n
+namespace common
 {
     struct translation
     {
@@ -28,12 +28,12 @@ namespace i18n
     class translator
     {
     public:
-        static translator& instance();
+        DLL_EXPORT static translator& instance();
 
-        std::vector<translation> get_available_translations();
-        int get_current_lang_id();
-        std::string translate(const std::string &key);
-        void set_current_language(int langId);
+        DLL_EXPORT std::vector<translation> get_available_translations();
+        DLL_EXPORT int get_current_lang_id();
+        DLL_EXPORT std::string translate(const std::string &key);
+        DLL_EXPORT void set_current_language(int langId);
 
     private:
         translator();
@@ -44,6 +44,5 @@ namespace i18n
         HINSTANCE instance_;
         picojson::object strings_;
     };
-}
 }
 }

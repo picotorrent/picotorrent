@@ -1,7 +1,7 @@
 #include <picotorrent/client/ui/property_sheets/preferences/advanced_page.hpp>
 
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+#include <picotorrent/common/translator.hpp>
 
 using picotorrent::client::ui::property_sheets::preferences::advanced_page;
 

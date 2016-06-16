@@ -1,7 +1,6 @@
 #include <picotorrent/client/controllers/view_preferences_controller.hpp>
 
 #include <picotorrent/core/session.hpp>
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/client/ui/property_sheets/property_sheet_page.hpp>
@@ -15,6 +14,7 @@
 #include <picotorrent/client/ui/task_dialog.hpp>
 
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/translator.hpp>
 #include <picotorrent/common/config/configuration.hpp>
 #include <picotorrent/common/security/certificate_manager.hpp>
 #include <picotorrent/common/ws/websocket_server.hpp>
@@ -270,7 +270,7 @@ void view_preferences_controller::on_connection_proxy_type_changed(int type)
 
 void view_preferences_controller::on_general_apply()
 {
-    int currentLang = i18n::translator::instance().get_current_lang_id();
+    int currentLang = common::translator::instance().get_current_lang_id();
     int selectedLang = gen_page_->get_selected_language();
 
     if (gen_page_->get_autostart_checked() && !has_run_key())
@@ -291,7 +291,7 @@ void view_preferences_controller::on_general_apply()
     }
 
     // Change language!
-    i18n::translator::instance().set_current_language(selectedLang);
+    common::translator::instance().set_current_language(selectedLang);
 
     // Notify the user about restarting PicoTorrent
     if (should_restart())
@@ -302,13 +302,13 @@ void view_preferences_controller::on_general_apply()
 
 void view_preferences_controller::on_general_init()
 {
-    std::vector<i18n::translation> langs = i18n::translator::instance().get_available_translations();
+    std::vector<common::translation> langs = common::translator::instance().get_available_translations();
 
     gen_page_->add_languages(langs);
     gen_page_->add_start_position(configuration::start_position_t::normal, TR("normal"));
     gen_page_->add_start_position(configuration::start_position_t::minimized, TR("minimized"));
     gen_page_->add_start_position(configuration::start_position_t::hidden, TR("hidden"));
-    gen_page_->select_language(i18n::translator::instance().get_current_lang_id());
+    gen_page_->select_language(common::translator::instance().get_current_lang_id());
     gen_page_->select_start_position((int)configuration::instance().start_position());
     gen_page_->set_autostart_checked(has_run_key());
 }

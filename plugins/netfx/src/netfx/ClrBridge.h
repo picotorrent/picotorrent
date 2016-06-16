@@ -4,7 +4,7 @@
 #include <vcclr.h>
 #include <windows.h>
 
-namespace picotorrent { namespace core { class session; } }
+namespace picotorrent { namespace extensibility { class plugin_host; } }
 
 namespace PicoTorrent
 {
@@ -14,7 +14,7 @@ namespace PicoTorrent
 class ClrBridge
 {
 public:
-    ClrBridge(picotorrent::core::session*, HWND hWnd);
+    ClrBridge(picotorrent::extensibility::plugin_host*);
     ~ClrBridge();
 
     void Load();

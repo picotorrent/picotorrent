@@ -1,27 +1,27 @@
 #include "PluginEngine.h"
 
+#include <picotorrent/extensibility/plugin_host.hpp>
+
 #include "PluginHost.h"
+#include "Translator.h"
 #include "VersionInformation.h"
+#include "Config/Configuration.h"
 #include "Core/Session.h"
 #include "Logging/Logger.h"
 #include "UI/MainWindow.h"
 
 using PicoTorrent::IPlugin;
 using PicoTorrent::PluginEngine;
-using PicoTorrent::PluginHost;
-using PicoTorrent::VersionInformation;
-using PicoTorrent::Core::ISession;
-using PicoTorrent::Core::Session;
-using PicoTorrent::Logging::Logger;
-using PicoTorrent::UI::MainWindow;
 
-PluginEngine::PluginEngine(picotorrent::core::session* sess, HWND hWnd)
+PluginEngine::PluginEngine(picotorrent::extensibility::plugin_host* host)
 {
-    _host = gcnew PluginHost(
-        gcnew Logger(),
-        gcnew Session(sess),
-        gcnew VersionInformation(),
-        gcnew MainWindow(hWnd));
+    _host = gcnew PicoTorrent::PluginHost(
+        gcnew PicoTorrent::Config::Configuration(),
+        gcnew PicoTorrent::Logging::Logger(),
+        gcnew PicoTorrent::Core::Session(host->get_session()),
+        gcnew PicoTorrent::Translator(),
+        gcnew PicoTorrent::VersionInformation(),
+        gcnew PicoTorrent::UI::MainWindow(host->get_main_window()));
 
     _plugins = gcnew System::Collections::Generic::List<IPlugin^>();
 }

@@ -1,8 +1,8 @@
 #include <picotorrent/client/ui/dialogs/magnet_link_dialog.hpp>
 
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/translator.hpp>
 #include <sstream>
 
 #include <commctrl.h>

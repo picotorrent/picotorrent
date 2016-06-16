@@ -6,12 +6,12 @@
 
 namespace picotorrent
 {
-namespace client
-{
-namespace i18n
+namespace common
 {
     struct translation;
 }
+namespace client
+{
 namespace ui
 {
 namespace property_sheets
@@ -24,7 +24,7 @@ namespace preferences
         general_page();
         ~general_page();
 
-        void add_languages(const std::vector<i18n::translation> &translations);
+        void add_languages(const std::vector<common::translation> &translations);
         void add_start_position(int id, const std::string &name);
         bool get_autostart_checked();
         int get_selected_language();

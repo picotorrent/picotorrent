@@ -1,8 +1,8 @@
 #include <picotorrent/client/ui/torrent_context_menu.hpp>
 
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/translator.hpp>
 
 using picotorrent::client::ui::torrent_context_menu;
 using picotorrent::common::to_wstring;

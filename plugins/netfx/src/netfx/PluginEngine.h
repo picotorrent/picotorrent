@@ -1,22 +1,19 @@
 #pragma once
 
-#include <windows.h>
-
-namespace picotorrent { namespace core { class session; } }
+namespace picotorrent { namespace extensibility { class plugin_host; } }
 
 namespace PicoTorrent
 {
     public interface class IPluginEngine
     {
         void LoadAll();
-
         void UnloadAll();
     };
 
     ref class PluginEngine : public IPluginEngine
     {
     public:
-        PluginEngine(picotorrent::core::session*, HWND hWnd);
+        PluginEngine(picotorrent::extensibility::plugin_host*);
 
         virtual void LoadAll();
         virtual void UnloadAll();

@@ -59,10 +59,12 @@ set(PICOTORRENTCOMMON_SOURCES
     src/common/command_line
     src/common/environment
     src/common/string_operations
+    src/common/translator
 
     # Configuration w/ parts
     src/common/config/configuration
     src/common/config/configuration_part
+    src/common/config/configuration_plugins_part
     src/common/config/configuration_session_part
     src/common/config/configuration_websocket_part
     src/common/config/configuration_ui_part
@@ -91,20 +93,14 @@ set(PICOTORRENTCLIENT_SOURCES
     src/client/controllers/add_magnet_link_controller
     src/client/controllers/add_torrent_controller
     src/client/controllers/application_close_controller
-    src/client/controllers/application_update_controller
     src/client/controllers/move_torrent_controller
     src/client/controllers/notifyicon_context_menu_controller
     src/client/controllers/remove_torrent_controller
     src/client/controllers/torrent_details_controller
     src/client/controllers/torrent_context_menu_controller
-    src/client/controllers/unhandled_exception_controller
     src/client/controllers/view_preferences_controller
-    src/client/i18n/translator
     src/client/logging/log
     src/client/logging/log_record
-    src/client/net/http_client
-    src/client/net/http_response
-    src/client/net/uri
 
     # QR components
     src/client/qr/bit_buffer
@@ -151,6 +147,11 @@ set(PICOTORRENTCLIENT_SOURCES
     src/client/ui/torrent_drop_target
 
     src/client/pico.rc
+)
+
+set(PICOTORRENTEXTENSIBILITY_SOURCES
+    src/extensibility/plugin_engine
+    src/extensibility/plugin_host
 )
 
 set(PICOTORRENTSERVER_SOURCES
@@ -284,6 +285,12 @@ if(WIN32)
     )
 
     add_library(
+        PicoTorrentExtensibility
+        SHARED
+        ${PICOTORRENTEXTENSIBILITY_SOURCES}
+    )
+
+    add_library(
         PicoTorrentServer
         SHARED
         ${PICOTORRENTSERVER_SOURCES}
@@ -302,12 +309,18 @@ if(WIN32)
         PicoTorrentClient
         PicoTorrentCommon
         PicoTorrentCore
+        PicoTorrentExtensibility
         comctl32
         UxTheme
-        winhttp
     )
 
     target_link_libraries(
+        PicoTorrentCommon
+        PicoTorrentCore
+    )
+
+    target_link_libraries(
+        PicoTorrentExtensibility
         PicoTorrentCommon
         PicoTorrentCore
     )

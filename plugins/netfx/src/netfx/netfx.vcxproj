@@ -103,7 +103,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PicoTorrentCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;PicoTorrentCommon.lib;PicoTorrentCore.lib;PicoTorrentExtensibility.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -113,7 +113,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PicoTorrentCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;PicoTorrentCommon.lib;PicoTorrentCore.lib;PicoTorrentExtensibility.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -122,7 +122,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PicoTorrentCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;PicoTorrentCommon.lib;PicoTorrentCore.lib;PicoTorrentExtensibility.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -131,29 +131,41 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PicoTorrentCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;PicoTorrentCommon.lib;PicoTorrentCore.lib;PicoTorrentExtensibility.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ClrBridge.h" />
+    <ClInclude Include="Config\Configuration.h" />
     <ClInclude Include="Core\Torrent.h" />
     <ClInclude Include="Logging\Logger.h" />
     <ClInclude Include="NetFxPlugin.h" />
     <ClInclude Include="PluginEngine.h" />
     <ClInclude Include="Core\Session.h" />
     <ClInclude Include="PluginHost.h" />
+    <ClInclude Include="Translator.h" />
+    <ClInclude Include="UI\MainMenu.h" />
     <ClInclude Include="UI\MainWindow.h" />
+    <ClInclude Include="UI\Menu.h" />
+    <ClInclude Include="UI\MenuItem.h" />
+    <ClInclude Include="UI\TaskDialog.h" />
     <ClInclude Include="VersionInformation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClrBridge.cpp" />
+    <ClCompile Include="Config\Configuration.cpp" />
     <ClCompile Include="Core\Torrent.cpp" />
     <ClCompile Include="Logging\Logger.cpp" />
     <ClCompile Include="PluginEngine.cpp" />
     <ClCompile Include="NetFxPlugin.cpp" />
     <ClCompile Include="Core\Session.cpp" />
     <ClCompile Include="PluginHost.cpp" />
+    <ClCompile Include="Translator.cpp" />
+    <ClCompile Include="UI\MainMenu.cpp" />
     <ClCompile Include="UI\MainWindow.cpp" />
+    <ClCompile Include="UI\Menu.cpp" />
+    <ClCompile Include="UI\MenuItem.cpp" />
+    <ClCompile Include="UI\TaskDialog.cpp" />
     <ClCompile Include="VersionInformation.cpp" />
   </ItemGroup>
   <ItemGroup>

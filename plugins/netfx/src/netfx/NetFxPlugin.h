@@ -4,14 +4,14 @@
 #include <picotorrent/plugin.hpp>
 #include <windows.h>
 
-namespace picotorrent { namespace core { class session; } }
+namespace picotorrent { namespace extensibility { class plugin_host; } }
 
 class ClrBridge;
 
 class NetFxPlugin : public picotorrent::plugin
 {
 public:
-    NetFxPlugin(picotorrent::core::session*, HWND hWnd);
+    NetFxPlugin(picotorrent::extensibility::plugin_host*);
     ~NetFxPlugin();
 
     void load();
@@ -23,8 +23,8 @@ private:
 
 extern "C"
 {
-    __declspec(dllexport) picotorrent::plugin* create_picotorrent_plugin(picotorrent::core::session* sess, HWND hWnd)
+    __declspec(dllexport) picotorrent::plugin* create_picotorrent_plugin(picotorrent::extensibility::plugin_host* host)
     {
-        return new NetFxPlugin(sess, hWnd);
+        return new NetFxPlugin(host);
     }
 }

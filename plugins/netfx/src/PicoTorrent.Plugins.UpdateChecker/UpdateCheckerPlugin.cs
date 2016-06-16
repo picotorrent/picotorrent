@@ -11,6 +11,8 @@ namespace PicoTorrent.Plugins.UpdateChecker
 {
     public class UpdateCheckerPlugin : IPlugin
     {
+        const int MenuItemId = 10000;
+
         private static readonly string UpdateUrl = "https://api.github.com/repos/picotorrent/picotorrent/releases/latest";
         private readonly IPluginHost _host;
 
@@ -22,23 +24,36 @@ namespace PicoTorrent.Plugins.UpdateChecker
 
         public void Load()
         {
-            LoadAsync();
+            var tr = _host.Translator.Translate("amp_check_for_update");
+
+            _host.MainWindow.Command += (sender, args) =>
+            {
+                if (args.Id == MenuItemId)
+                {
+                    TryCheckForUpdateAsync(true);
+                }
+            };
+
+            _host.MainWindow.MainMenu.Help.InsertSeparator();
+            _host.MainWindow.MainMenu.Help.Insert(MenuItemId, tr);
+
+            TryCheckForUpdateAsync();
         }
 
-        private async void LoadAsync()
+        private async void TryCheckForUpdateAsync(bool forced = false)
         {
             try
             {
-                await CheckForUpdateAsync();
+                await CheckForUpdateAsync(forced);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _host.Logger.Error("Unhandled exception when checking for update.", e);
                 throw;
             }
         }
-        
-        private async Task CheckForUpdateAsync()
+
+        private async Task CheckForUpdateAsync(bool forced)
         {
             using (var client = new HttpClient())
             {
@@ -59,15 +74,20 @@ namespace PicoTorrent.Plugins.UpdateChecker
                 var version = Version.Parse(rawVersion);
                 var currentVersion = Version.Parse(_host.VersionInformation.CurrentVersion);
 
-                _host.MainWindow.ShowMessageBox("Version", rawVersion);
-
-                if (version <= currentVersion)
+                if (version > currentVersion
+                    && (rawVersion != _host.Configuration.IgnoredUpdate || forced))
                 {
-                    _host.Logger.Information("Current version is greater than version from GitHub.");
-                    return;
+                    // A newer version is available on GitHub.
+                    new UpdateAvailableDialog(_host.Configuration, _host.MainWindow, _host.Translator)
+                        .Show(version, release["html_url"].ToString());
                 }
-
-                // A newer version is available on GitHub. Alert da user.
+                else if(forced)
+                {
+                    // We checked, but no new version is available. However, the user
+                    // forced this from a menu click. So alert them!
+                    new NoUpdateAvailableDialog(_host.MainWindow, _host.Translator)
+                        .Show();
+                }
             }
         }
     }

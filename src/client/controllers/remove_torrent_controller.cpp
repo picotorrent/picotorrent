@@ -3,10 +3,10 @@
 #include <algorithm>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent.hpp>
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
 #include <picotorrent/common/config/configuration.hpp>
+#include <picotorrent/common/translator.hpp>
 
 using picotorrent::client::controllers::remove_torrent_controller;
 using picotorrent::client::ui::main_window;

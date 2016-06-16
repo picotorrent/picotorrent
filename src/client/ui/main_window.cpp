@@ -5,7 +5,6 @@
 #include <iomanip>
 #include <sstream>
 
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/dialogs/about_dialog.hpp>
 #include <picotorrent/client/ui/notify_icon.hpp>
@@ -19,6 +18,7 @@
 #include <picotorrent/client/ui/torrent_drop_target.hpp>
 #include <picotorrent/common/config/configuration.hpp>
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/translator.hpp>
 #include <picotorrent/core/hash.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/session_metrics.hpp>
@@ -115,8 +115,6 @@ main_window::main_window(const std::shared_ptr<core::session> &sess)
     AppendMenu(view, MF_STRING, ID_VIEW_PREFERENCES, to_wstring(TR("amp_preferences")).c_str());
 
     HMENU help = CreateMenu();
-    AppendMenu(help, MF_STRING, ID_HELP_CHECK_FOR_UPDATE, to_wstring(TR("amp_check_for_update")).c_str());
-    AppendMenu(help, MF_SEPARATOR, 0, NULL);
     AppendMenu(help, MF_STRING, ID_HELP_ABOUT, to_wstring(TR("amp_about")).c_str());
 
     HMENU menuBar = CreateMenu();

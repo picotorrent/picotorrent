@@ -5,9 +5,9 @@
 
 #include <shlwapi.h>
 
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/translator.hpp>
 
 using picotorrent::client::ui::property_sheets::details::overview_page;
 using picotorrent::common::to_string;

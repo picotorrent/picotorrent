@@ -41,6 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NoUpdateAvailableDialog.cs" />
+    <Compile Include="UpdateAvailableDialog.cs" />
     <Compile Include="UpdateCheckerPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

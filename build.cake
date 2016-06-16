@@ -13,6 +13,7 @@ var OutputDirectory    = Directory("./build-" + platform);
 var BuildDirectory     = OutputDirectory + Directory(configuration);
 var PublishDirectory   = BuildDirectory + Directory("publish");
 var ResourceDirectory  = Directory("./res");
+var PluginsDirectory   = BuildDirectory + Directory("plugins");
 
 var LibraryDirectory   = Directory("./tools")
                        + Directory("PicoTorrent.Libs")
@@ -153,6 +154,7 @@ Task("Setup-Publish-Directory")
         BuildDirectory + File("PicoTorrentClient.dll"),
         BuildDirectory + File("PicoTorrentCommon.dll"),
         BuildDirectory + File("PicoTorrentCore.dll"),
+        BuildDirectory + File("PicoTorrentExtensibility.dll"),
         BuildDirectory + File("PicoTorrentServer.dll"),
 
         // 3rd party libraries
@@ -162,6 +164,15 @@ Task("Setup-Publish-Directory")
         LibraryDirectory + File("ssleay32.dll"),
         LibraryDirectory + File("torrent.dll")
     };
+
+    // Copy plugins
+    var pluginsPublishDirectory = PublishDirectory + Directory("plugins");
+    CreateDirectory(pluginsPublishDirectory);
+    CopyDirectory(PluginsDirectory, pluginsPublishDirectory);
+    // Delete all but the DLL files from plugins
+    var d = (string)pluginsPublishDirectory;
+    var f = GetFiles(d + "/**/*.*") - GetFiles(d + "/**/*.dll");
+    DeleteFiles(f);
 
     CreateDirectory(PublishDirectory);
     CopyFiles(files, PublishDirectory);
@@ -215,7 +226,7 @@ Task("Build-Installer-Bundle")
     WiXCandle("./installer/PicoTorrentBundle.wxs", new CandleSettings
     {
         Architecture = arch,
-        Extensions = new [] { "WixBalExtension", "WixUtilExtension" },
+        Extensions = new [] { "WixBalExtension", "WixNetFxExtension", "WixUtilExtension" },
         Defines = new Dictionary<string, string>
         {
             { "PicoTorrentInstaller", BuildDirectory + File(Installer) },
@@ -227,7 +238,7 @@ Task("Build-Installer-Bundle")
 
     WiXLight(BuildDirectory + File("PicoTorrentBundle.wixobj"), new LightSettings
     {
-        Extensions = new [] { "WixBalExtension", "WixUtilExtension" },
+        Extensions = new [] { "WixBalExtension", "WixNetFxExtension", "WixUtilExtension" },
         OutputFile = BuildDirectory + File(InstallerBundle)
     });
 });

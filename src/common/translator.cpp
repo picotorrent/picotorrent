@@ -1,4 +1,4 @@
-#include <picotorrent/client/i18n/translator.hpp>
+#include <picotorrent/common/translator.hpp>
 
 #include <picojson.hpp>
 #include <picotorrent/common/string_operations.hpp>
@@ -15,8 +15,8 @@
 #define TEXTFILE 256
 
 namespace pj = picojson;
-using picotorrent::client::i18n::translation;
-using picotorrent::client::i18n::translator;
+using picotorrent::common::translation;
+using picotorrent::common::translator;
 using picotorrent::common::to_string;
 using picotorrent::common::to_wstring;
 using picotorrent::common::config::configuration;

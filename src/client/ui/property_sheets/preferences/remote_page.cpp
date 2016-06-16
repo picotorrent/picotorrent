@@ -5,11 +5,11 @@
 #include <windowsx.h>
 #include <commctrl.h>
 
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/qr/qr_code.hpp>
 #include <picotorrent/client/ui/dialogs/remote_qr_dialog.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
+#include <picotorrent/common/translator.hpp>
 #include <picojson.hpp>
 
 namespace pj = picojson;

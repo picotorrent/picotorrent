@@ -31,6 +31,13 @@ configuration& configuration::instance()
     return instance;
 }
 
+std::shared_ptr<configuration::plugins_part> configuration::plugins()
+{
+    // Not using make_shared since that function is not a friend of
+    // the protected ctor.
+    return std::shared_ptr<plugins_part>(new plugins_part(value_));
+}
+
 std::shared_ptr<configuration::session_part> configuration::session()
 {
     // Not using make_shared since that function is not a friend of
