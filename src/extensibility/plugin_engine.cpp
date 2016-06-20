@@ -43,7 +43,7 @@ public:
 
         for (auto &plugin : plugins_)
         {
-            meta.push_back({ plugin->get_name(), plugin->get_version(), plugin->get_window() });
+            meta.push_back({ plugin->get_name(), plugin->get_version(), plugin->get_config_window() });
         }
 
         return meta;

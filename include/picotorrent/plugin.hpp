@@ -6,12 +6,19 @@
 
 namespace picotorrent
 {
+    struct plugin_config_window
+    {
+        virtual HWND handle() = 0;
+        virtual void load() = 0;
+        virtual void save() = 0;
+    };
+
     class plugin
     {
     public:
         virtual std::string get_name() = 0;
         virtual std::string get_version() = 0;
-        virtual HWND get_window() { return NULL; }
+        virtual std::shared_ptr<plugin_config_window> get_config_window() { return nullptr; }
         virtual void load() = 0;
         virtual void unload() = 0;
     };

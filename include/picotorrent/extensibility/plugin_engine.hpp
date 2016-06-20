@@ -8,6 +8,8 @@
 
 namespace picotorrent
 {
+    struct plugin_config_window;
+
 namespace extensibility
 {
     class plugin_host;
@@ -16,7 +18,7 @@ namespace extensibility
     {
         std::string name;
         std::string version;
-        HWND hwnd;
+        std::shared_ptr<picotorrent::plugin_config_window> config_window;
     };
 
     class plugin_engine

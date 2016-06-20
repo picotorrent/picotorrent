@@ -73,6 +73,7 @@ namespace controllers
         void on_remote_init();
 
         void on_plugins_init();
+        void on_plugins_plugin_changed(int index);
 
     private:
         void create_run_key();

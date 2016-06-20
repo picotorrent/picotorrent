@@ -54,7 +54,7 @@ namespace PicoTorrent.Plugins.UpdateChecker
 
         public Version Version => typeof(UpdateCheckerPlugin).Assembly.GetName().Version;
 
-        public IWindow GetWindow()
+        public IConfigurationWindow GetConfigurationWindow()
         {
             return null;
         }

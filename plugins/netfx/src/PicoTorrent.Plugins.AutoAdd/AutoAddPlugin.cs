@@ -1,5 +1,4 @@
-﻿using PicoTorrent.Plugins.AutoAdd.UI;
-using PicoTorrent.UI;
+﻿using PicoTorrent.UI;
 using System;
 
 namespace PicoTorrent.Plugins.AutoAdd
@@ -10,9 +9,9 @@ namespace PicoTorrent.Plugins.AutoAdd
 
         public Version Version => typeof(AutoAddPlugin).Assembly.GetName().Version;
 
-        public IWindow GetWindow()
+        public IConfigurationWindow GetConfigurationWindow()
         {
-            return new ConfigWindow();
+            return null;
         }
 
         public void Load()

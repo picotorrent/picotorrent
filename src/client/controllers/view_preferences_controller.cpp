@@ -20,6 +20,7 @@
 #include <picotorrent/common/security/certificate_manager.hpp>
 #include <picotorrent/common/ws/websocket_server.hpp>
 #include <picotorrent/extensibility/plugin_engine.hpp>
+#include <picotorrent/plugin.hpp>
 
 #include <vector>
 
@@ -51,7 +52,7 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
     dl_page_(std::make_unique<prefs::downloads_page>()),
     gen_page_(std::make_unique<prefs::general_page>()),
     remote_page_(std::make_unique<prefs::remote_page>()),
-    plugins_page_(std::make_unique<prefs::plugins_page>(plugins))
+    plugins_page_(std::make_unique<prefs::plugins_page>())
 {
     adv_page_->on_apply().connect(std::bind(&view_preferences_controller::on_advanced_apply, this));
     adv_page_->on_init().connect(std::bind(&view_preferences_controller::on_advanced_init, this));
@@ -72,6 +73,7 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
     remote_page_->on_init().connect(std::bind(&view_preferences_controller::on_remote_init, this));
 
     plugins_page_->on_init().connect(std::bind(&view_preferences_controller::on_plugins_init, this));
+    plugins_page_->on_plugin_changed().connect(std::bind(&view_preferences_controller::on_plugins_plugin_changed, this, std::placeholders::_1));
 }
 
 view_preferences_controller::~view_preferences_controller()
@@ -362,6 +364,22 @@ void view_preferences_controller::on_plugins_init()
     {
         plugins_page_->add_plugin(metadata.name, metadata.version);
     }
+
+    plugins_page_->select_plugin(0);
+    on_plugins_plugin_changed(0);
+}
+
+void view_preferences_controller::on_plugins_plugin_changed(int index)
+{
+    auto plugins = plugins_->get_plugins();
+    auto &p = plugins[index];
+
+    if (!p.config_window)
+    {
+        return;
+    }
+
+    plugins_page_->set_plugin_config_hwnd(p.config_window->handle());
 }
 
 void view_preferences_controller::create_run_key()

@@ -10,7 +10,7 @@ public:
 
     std::string get_name();
     std::string get_version();
-    HWND get_window();
+    std::shared_ptr<picotorrent::plugin_config_window> get_config_window();
     void load();
     void unload();
 

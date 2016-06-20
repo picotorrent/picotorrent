@@ -9,7 +9,7 @@ namespace PicoTorrent
 
         Version Version { get; }
 
-        IWindow GetWindow();
+        IConfigurationWindow GetConfigurationWindow();
 
         void Load();
 

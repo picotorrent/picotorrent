@@ -1,5 +1,7 @@
 #include "ClrPlugin.h"
 
+#include "ClrPluginConfigWindow.h"
+
 #include <msclr/marshal_cppstd.h>
 
 ClrPlugin::ClrPlugin(gcroot<PicoTorrent::IPlugin^> instance)
@@ -17,11 +19,12 @@ std::string ClrPlugin::get_version()
     return msclr::interop::marshal_as<std::string>(_instance->Version->ToString(3));
 }
 
-HWND ClrPlugin::get_window()
+std::shared_ptr<picotorrent::plugin_config_window> ClrPlugin::get_config_window()
 {
-    auto wnd = _instance->GetWindow();
-    if (wnd == nullptr) { return NULL; }
-    return static_cast<HWND>(wnd->GetHandle().ToPointer());
+    auto wnd = _instance->GetConfigurationWindow();
+    if (wnd == nullptr) { return nullptr; }
+
+    return std::shared_ptr<ClrPluginConfigWindow>(new ClrPluginConfigWindow(wnd));
 }
 
 void ClrPlugin::load()

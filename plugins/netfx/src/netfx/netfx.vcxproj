@@ -137,6 +137,7 @@
   <ItemGroup>
     <ClInclude Include="ClrBridge.h" />
     <ClInclude Include="ClrPlugin.h" />
+    <ClInclude Include="ClrPluginConfigWindow.h" />
     <ClInclude Include="Config\Configuration.h" />
     <ClInclude Include="Core\Torrent.h" />
     <ClInclude Include="Logging\Logger.h" />
@@ -154,6 +155,7 @@
   <ItemGroup>
     <ClCompile Include="ClrBridge.cpp" />
     <ClCompile Include="ClrPlugin.cpp" />
+    <ClCompile Include="ClrPluginConfigWindow.cpp" />
     <ClCompile Include="Config\Configuration.cpp" />
     <ClCompile Include="Core\Torrent.cpp" />
     <ClCompile Include="Logging\Logger.cpp" />
