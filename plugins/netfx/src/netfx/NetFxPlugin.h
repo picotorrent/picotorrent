@@ -2,20 +2,19 @@
 #pragma unmanaged
 
 #include <picotorrent/plugin.hpp>
-#include <windows.h>
+#include <vector>
 
 namespace picotorrent { namespace extensibility { class plugin_host; } }
 
 class ClrBridge;
 
-class NetFxPlugin : public picotorrent::plugin
+class NetFxPlugin
 {
 public:
     NetFxPlugin(picotorrent::extensibility::plugin_host*);
     ~NetFxPlugin();
 
-    void load();
-    void unload();
+    std::vector<picotorrent::plugin_ptr> get_plugins();
 
 private:
     ClrBridge* bridge_;
@@ -23,8 +22,9 @@ private:
 
 extern "C"
 {
-    __declspec(dllexport) picotorrent::plugin* create_picotorrent_plugin(picotorrent::extensibility::plugin_host* host)
+    __declspec(dllexport) picotorrent::plugin_wrapper* create_picotorrent_plugin(picotorrent::extensibility::plugin_host* host)
     {
-        return new NetFxPlugin(host);
+        NetFxPlugin nfp(host);
+        return new picotorrent::plugin_wrapper{ nfp.get_plugins() };
     }
 }

@@ -235,6 +235,7 @@ void normal_executor::on_view_preferences()
     controllers::view_preferences_controller view_prefs(
         session_,
         main_window_,
+        plugin_engine_,
         ws_server_);
 
     view_prefs.execute();

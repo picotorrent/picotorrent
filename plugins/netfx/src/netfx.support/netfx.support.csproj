@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{07E1E0D4-ED52-4E12-B8C5-EA99ACE1F99E}</ProjectGuid>
+    <ProjectGuid>{775012A6-8E8A-4677-8F46-127F3EAFA43B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PicoTorrent.Plugins.UpdateChecker</RootNamespace>
-    <AssemblyName>PicoTorrent.Plugins.UpdateChecker</AssemblyName>
+    <RootNamespace>PicoTorrent</RootNamespace>
+    <AssemblyName>netfx.support</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -32,7 +32,8 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,19 +42,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Dialogs\INoUpdateAvailableDialog.cs" />
-    <Compile Include="Dialogs\IUpdateAvailableDialog.cs" />
-    <Compile Include="Factory.cs" />
-    <Compile Include="Dialogs\NoUpdateAvailableDialog.cs" />
-    <Compile Include="Dialogs\UpdateAvailableDialog.cs" />
-    <Compile Include="UpdateCheckerPlugin.cs" />
+    <Compile Include="PluginAssemblyFinder.cs" />
+    <Compile Include="PluginResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegisterOnlyContainer.cs" />
+    <Compile Include="TinyIoC.cs" />
+    <Compile Include="UI\NetFxPluginConfiguration.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\NetFxPluginConfiguration.Designer.cs">
+      <DependentUpon>NetFxPluginConfiguration.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PicoTorrent.Fx\PicoTorrent.Fx.csproj">
       <Project>{72174244-239d-4495-8655-0a77bc922a3d}</Project>
       <Name>PicoTorrent.Fx</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\NetFxPluginConfiguration.resx">
+      <DependentUpon>NetFxPluginConfiguration.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

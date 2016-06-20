@@ -4,6 +4,8 @@
 #include <vcclr.h>
 #include <windows.h>
 
+#include <picotorrent/plugin.hpp>
+
 namespace picotorrent { namespace extensibility { class plugin_host; } }
 
 namespace PicoTorrent
@@ -15,10 +17,8 @@ class ClrBridge
 {
 public:
     ClrBridge(picotorrent::extensibility::plugin_host*);
-    ~ClrBridge();
 
-    void Load();
-    void Unload();
+    std::vector<picotorrent::plugin_ptr> GetPlugins();
 
 private:
     gcroot<PicoTorrent::IPluginEngine^> _engine;

@@ -1,5 +1,6 @@
 #include "ClrBridge.h"
 
+#include "ClrPlugin.h"
 #include "PluginEngine.h"
 
 ref class AssemblyResolver
@@ -26,17 +27,15 @@ ClrBridge::ClrBridge(picotorrent::extensibility::plugin_host* host)
     _engine = gcnew PicoTorrent::PluginEngine(host);
 }
 
-ClrBridge::~ClrBridge()
+std::vector<picotorrent::plugin_ptr> ClrBridge::GetPlugins()
 {
-}
+    std::vector<picotorrent::plugin_ptr> plugins;
 
-void ClrBridge::Load()
-{
-    _engine->LoadAll();
-}
+    for each (auto plugin in _engine->GetAll())
+    {
+        std::shared_ptr<picotorrent::plugin> p(new ClrPlugin(plugin));
+        plugins.push_back(p);
+    }
 
-void ClrBridge::Unload()
-{
-    _engine->UnloadAll();
+    return plugins;
 }
-

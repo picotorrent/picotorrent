@@ -44,13 +44,14 @@
     <Compile Include="Core\ISession.cs" />
     <Compile Include="Core\ITorrent.cs" />
     <Compile Include="Core\TorrentEventArgs.cs" />
+    <Compile Include="IContainer.cs" />
     <Compile Include="IPlugin.cs" />
-    <Compile Include="IPluginHost.cs" />
     <Compile Include="ITranslator.cs" />
     <Compile Include="IVersionInformation.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Logging\LoggerExtensions.cs" />
     <Compile Include="Logging\LogLevel.cs" />
+    <Compile Include="PluginFactoryAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TranslatorExtensions.cs" />
     <Compile Include="UI\CommandEventArgs.cs" />
@@ -59,11 +60,13 @@
     <Compile Include="UI\IMenu.cs" />
     <Compile Include="UI\IMenuItem.cs" />
     <Compile Include="UI\ITaskDialog.cs" />
+    <Compile Include="UI\IWindow.cs" />
     <Compile Include="UI\TaskDialogBehavior.cs" />
     <Compile Include="UI\TaskDialogButton.cs" />
     <Compile Include="UI\TaskDialogButtonClickedEventArgs.cs" />
     <Compile Include="UI\TaskDialogIcon.cs" />
     <Compile Include="UI\TaskDialogVerificationClickedEventArgs.cs" />
+    <Compile Include="UI\Window.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

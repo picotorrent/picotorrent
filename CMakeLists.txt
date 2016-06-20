@@ -122,16 +122,22 @@ set(PICOTORRENTCLIENT_SOURCES
     src/client/ui/dialogs/magnet_link_dialog
     src/client/ui/dialogs/remote_qr_dialog
     src/client/ui/property_sheets/property_sheet_page
+
+    # Details
     src/client/ui/property_sheets/details/files_page
     src/client/ui/property_sheets/details/options_page
     src/client/ui/property_sheets/details/overview_page
     src/client/ui/property_sheets/details/peers_page
     src/client/ui/property_sheets/details/trackers_page
+
+    # Preferences
     src/client/ui/property_sheets/preferences/advanced_page
     src/client/ui/property_sheets/preferences/connection_page
     src/client/ui/property_sheets/preferences/downloads_page
     src/client/ui/property_sheets/preferences/general_page
     src/client/ui/property_sheets/preferences/remote_page
+    src/client/ui/property_sheets/preferences/plugins_page
+
     src/client/ui/file_dialog_callback
     src/client/ui/main_window
     src/client/ui/notify_icon

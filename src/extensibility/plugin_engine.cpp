@@ -10,15 +10,17 @@
 #include <picotorrent/extensibility/plugin_host.hpp>
 
 using picotorrent::plugin;
+using picotorrent::plugin_wrapper;
 using picotorrent::common::config::configuration;
 using picotorrent::common::to_wstring;
 using picotorrent::core::pal;
 using picotorrent::core::session;
 using picotorrent::extensibility::plugin_engine;
 using picotorrent::extensibility::plugin_host;
+using picotorrent::extensibility::plugin_metadata;
 
 const char* plugin_func_name = "create_picotorrent_plugin";
-typedef plugin*(*CREATE_PLUGIN_FUNC)(plugin_host*);
+typedef plugin_wrapper*(*CREATE_PLUGIN_FUNC)(plugin_host*);
 
 struct FreeLibraryDeleter
 {
@@ -33,6 +35,18 @@ public:
     {
         HMODULE mod = LoadLibrary(to_wstring(path).c_str());
         module_ = std::unique_ptr<HMODULE, FreeLibraryDeleter>(mod);
+    }
+
+    std::vector<plugin_metadata> get_plugins()
+    {
+        std::vector<plugin_metadata> meta;
+
+        for (auto &plugin : plugins_)
+        {
+            meta.push_back({ plugin->get_name(), plugin->get_version(), plugin->get_window() });
+        }
+
+        return meta;
     }
 
     void load(const std::shared_ptr<plugin_host> &host)
@@ -52,20 +66,28 @@ public:
         host_ = host;
 
         CREATE_PLUGIN_FUNC cpf = (CREATE_PLUGIN_FUNC)proc;
+        plugin_wrapper* wrapper = cpf(host_.get());
 
-        plugin_ = std::unique_ptr<plugin>(cpf(host_.get()));
-        plugin_->load();
+        for (auto &plugin : wrapper->plugins)
+        {
+            plugins_.push_back(plugin);
+            plugin->load();
+        }
     }
 
     void unload()
     {
-        if (plugin_ == nullptr) { return; }
-        plugin_->unload();
+        if (plugins_.empty()) { return; }
+        
+        for (auto &plugin : plugins_)
+        {
+            plugin->unload();
+        }
     }
 
 private:
     std::unique_ptr<HMODULE, FreeLibraryDeleter> module_;
-    std::unique_ptr<plugin> plugin_;
+    std::vector<std::shared_ptr<plugin>> plugins_;
     std::shared_ptr<plugin_host> host_;
 };
 
@@ -105,4 +127,19 @@ void plugin_engine::unload_all()
     {
         plugin->unload();
     }
+}
+
+std::vector<plugin_metadata> plugin_engine::get_plugins()
+{
+    std::vector<plugin_metadata> meta;
+
+    for (auto &h : plugins_)
+    {
+        for (auto hw : h->get_plugins())
+        {
+            meta.push_back(hw);
+        }
+    }
+
+    return meta;
 }

@@ -12,12 +12,7 @@ NetFxPlugin::~NetFxPlugin()
     delete bridge_;
 }
 
-void NetFxPlugin::load()
+std::vector<picotorrent::plugin_ptr> NetFxPlugin::get_plugins()
 {
-    bridge_->Load();
-}
-
-void NetFxPlugin::unload()
-{
-    bridge_->Unload();
+    return bridge_->GetPlugins();
 }

@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{07E1E0D4-ED52-4E12-B8C5-EA99ACE1F99E}</ProjectGuid>
+    <ProjectGuid>{F87330A2-75DC-4136-A7C7-EC71C65CB9B1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PicoTorrent.Plugins.UpdateChecker</RootNamespace>
-    <AssemblyName>PicoTorrent.Plugins.UpdateChecker</AssemblyName>
+    <RootNamespace>PicoTorrent.Plugins.AutoAdd</RootNamespace>
+    <AssemblyName>PicoTorrent.Plugins.AutoAdd</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -32,7 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,13 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Dialogs\INoUpdateAvailableDialog.cs" />
-    <Compile Include="Dialogs\IUpdateAvailableDialog.cs" />
+    <Compile Include="AutoAddPlugin.cs" />
     <Compile Include="Factory.cs" />
-    <Compile Include="Dialogs\NoUpdateAvailableDialog.cs" />
-    <Compile Include="Dialogs\UpdateAvailableDialog.cs" />
-    <Compile Include="UpdateCheckerPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\ConfigWindow.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PicoTorrent.Fx\PicoTorrent.Fx.csproj">

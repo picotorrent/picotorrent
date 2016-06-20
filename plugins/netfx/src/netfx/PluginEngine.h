@@ -6,20 +6,16 @@ namespace PicoTorrent
 {
     public interface class IPluginEngine
     {
-        void LoadAll();
-        void UnloadAll();
+        System::Collections::Generic::IList<PicoTorrent::IPlugin^>^ GetAll();
     };
 
     ref class PluginEngine : public IPluginEngine
     {
     public:
         PluginEngine(picotorrent::extensibility::plugin_host*);
-
-        virtual void LoadAll();
-        virtual void UnloadAll();
+        virtual System::Collections::Generic::IList<PicoTorrent::IPlugin^>^ GetAll();
 
     private:
-        IPluginHost^ _host;
-        System::Collections::Generic::IList<PicoTorrent::IPlugin^>^ _plugins;
+        picotorrent::extensibility::plugin_host* _ptr;
     };
 }

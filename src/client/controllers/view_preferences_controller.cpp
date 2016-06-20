@@ -9,6 +9,7 @@
 #include <picotorrent/client/ui/property_sheets/preferences/downloads_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/general_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/remote_page.hpp>
+#include <picotorrent/client/ui/property_sheets/preferences/plugins_page.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
@@ -18,6 +19,7 @@
 #include <picotorrent/common/config/configuration.hpp>
 #include <picotorrent/common/security/certificate_manager.hpp>
 #include <picotorrent/common/ws/websocket_server.hpp>
+#include <picotorrent/extensibility/plugin_engine.hpp>
 
 #include <vector>
 
@@ -34,18 +36,22 @@ using picotorrent::client::ui::property_sheets::property_sheet_page;
 using picotorrent::client::ui::task_dialog;
 using picotorrent::common::config::configuration;
 using picotorrent::common::ws::websocket_server;
+using picotorrent::extensibility::plugin_engine;
 
 view_preferences_controller::view_preferences_controller(const std::shared_ptr<session> &sess,
     const std::shared_ptr<ui::main_window> &wnd,
+    const std::shared_ptr<plugin_engine> &plugins,
     const std::shared_ptr<websocket_server> &ws)
     : sess_(sess),
     wnd_(wnd),
+    plugins_(plugins),
     ws_(ws),
     adv_page_(std::make_unique<prefs::advanced_page>()),
     conn_page_(std::make_unique<prefs::connection_page>()),
     dl_page_(std::make_unique<prefs::downloads_page>()),
     gen_page_(std::make_unique<prefs::general_page>()),
-    remote_page_(std::make_unique<prefs::remote_page>())
+    remote_page_(std::make_unique<prefs::remote_page>()),
+    plugins_page_(std::make_unique<prefs::plugins_page>(plugins))
 {
     adv_page_->on_apply().connect(std::bind(&view_preferences_controller::on_advanced_apply, this));
     adv_page_->on_init().connect(std::bind(&view_preferences_controller::on_advanced_init, this));
@@ -64,6 +70,8 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
 
     remote_page_->on_apply().connect(std::bind(&view_preferences_controller::on_remote_apply, this));
     remote_page_->on_init().connect(std::bind(&view_preferences_controller::on_remote_init, this));
+
+    plugins_page_->on_init().connect(std::bind(&view_preferences_controller::on_plugins_init, this));
 }
 
 view_preferences_controller::~view_preferences_controller()
@@ -77,7 +85,8 @@ void view_preferences_controller::execute()
         *gen_page_,
         *dl_page_,
         *conn_page_,
-        *remote_page_
+        *remote_page_,
+        *plugins_page_
         //*adv_page_
     };
 
@@ -345,6 +354,14 @@ void view_preferences_controller::on_remote_init()
     std::string pub_key = common::security::certificate_manager::extract_public_key(cert_file);
 
     remote_page_->set_certificate_public_key(pub_key);
+}
+
+void view_preferences_controller::on_plugins_init()
+{
+    for (auto &metadata : plugins_->get_plugins())
+    {
+        plugins_page_->add_plugin(metadata.name, metadata.version);
+    }
 }
 
 void view_preferences_controller::create_run_key()

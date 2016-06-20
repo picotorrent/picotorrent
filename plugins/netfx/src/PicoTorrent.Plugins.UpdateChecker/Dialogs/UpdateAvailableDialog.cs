@@ -3,9 +3,9 @@ using System.Diagnostics;
 using PicoTorrent.Config;
 using PicoTorrent.UI;
 
-namespace PicoTorrent.Plugins.UpdateChecker
+namespace PicoTorrent.Plugins.UpdateChecker.Dialogs
 {
-    public sealed class UpdateAvailableDialog
+    public sealed class UpdateAvailableDialog : IUpdateAvailableDialog
     {
         private readonly IConfiguration _configuration;
         private readonly IMainWindow _mainWindow;

@@ -136,13 +136,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ClrBridge.h" />
+    <ClInclude Include="ClrPlugin.h" />
     <ClInclude Include="Config\Configuration.h" />
     <ClInclude Include="Core\Torrent.h" />
     <ClInclude Include="Logging\Logger.h" />
     <ClInclude Include="NetFxPlugin.h" />
     <ClInclude Include="PluginEngine.h" />
     <ClInclude Include="Core\Session.h" />
-    <ClInclude Include="PluginHost.h" />
     <ClInclude Include="Translator.h" />
     <ClInclude Include="UI\MainMenu.h" />
     <ClInclude Include="UI\MainWindow.h" />
@@ -153,13 +153,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClrBridge.cpp" />
+    <ClCompile Include="ClrPlugin.cpp" />
     <ClCompile Include="Config\Configuration.cpp" />
     <ClCompile Include="Core\Torrent.cpp" />
     <ClCompile Include="Logging\Logger.cpp" />
     <ClCompile Include="PluginEngine.cpp" />
     <ClCompile Include="NetFxPlugin.cpp" />
     <ClCompile Include="Core\Session.cpp" />
-    <ClCompile Include="PluginHost.cpp" />
     <ClCompile Include="Translator.cpp" />
     <ClCompile Include="UI\MainMenu.cpp" />
     <ClCompile Include="UI\MainWindow.cpp" />
@@ -170,8 +170,18 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\netfx.support\netfx.support.csproj">
+      <Project>{775012a6-8e8a-4677-8f46-127f3eafa43b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\PicoTorrent.Plugins.AutoAdd\PicoTorrent.Plugins.AutoAdd.csproj">
+      <Project>{f87330a2-75dc-4136-a7c7-ec71c65cb9b1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\PicoTorrent.Plugins.Pushbullet\PicoTorrent.Plugins.Pushbullet.csproj">
+      <Project>{42987f26-8d83-4ebc-87af-f0d0b4ad25bd}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\PicoTorrent.Plugins.UpdateChecker\PicoTorrent.Plugins.UpdateChecker.csproj">
       <Project>{07e1e0d4-ed52-4e12-b8c5-ea99ace1f99e}</Project>
     </ProjectReference>

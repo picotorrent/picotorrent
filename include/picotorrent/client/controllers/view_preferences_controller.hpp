@@ -16,6 +16,10 @@ namespace core
 {
     class session;
 }
+namespace extensibility
+{
+    class plugin_engine;
+}
 namespace client
 {
 namespace ui
@@ -32,6 +36,7 @@ namespace preferences
     class downloads_page;
     class general_page;
     class remote_page;
+    class plugins_page;
 }
 }
 }
@@ -43,6 +48,7 @@ namespace controllers
         view_preferences_controller(
             const std::shared_ptr<core::session> &sess,
             const std::shared_ptr<ui::main_window> &wnd,
+            const std::shared_ptr<extensibility::plugin_engine> &plugins,
             const std::shared_ptr<common::ws::websocket_server> &ws);
         ~view_preferences_controller();
         void execute();
@@ -66,6 +72,8 @@ namespace controllers
         void on_remote_apply();
         void on_remote_init();
 
+        void on_plugins_init();
+
     private:
         void create_run_key();
         void delete_run_key();
@@ -75,12 +83,16 @@ namespace controllers
 
         std::shared_ptr<core::session> sess_;
         std::shared_ptr<ui::main_window> wnd_;
+        std::shared_ptr<extensibility::plugin_engine> plugins_;
         std::shared_ptr<common::ws::websocket_server> ws_;
+
+        // pages
         std::unique_ptr<ui::property_sheets::preferences::advanced_page> adv_page_;
         std::unique_ptr<ui::property_sheets::preferences::connection_page> conn_page_;
         std::unique_ptr<ui::property_sheets::preferences::downloads_page> dl_page_;
         std::unique_ptr<ui::property_sheets::preferences::general_page> gen_page_;
         std::unique_ptr<ui::property_sheets::preferences::remote_page> remote_page_;
+        std::unique_ptr<ui::property_sheets::preferences::plugins_page> plugins_page_;
     };
 }
 }

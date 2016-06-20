@@ -1,8 +1,8 @@
 ﻿using PicoTorrent.UI;
 
-namespace PicoTorrent.Plugins.UpdateChecker
+namespace PicoTorrent.Plugins.UpdateChecker.Dialogs
 {
-    public sealed class NoUpdateAvailableDialog
+    public sealed class NoUpdateAvailableDialog : INoUpdateAvailableDialog
     {
         private readonly IMainWindow _mainWindow;
         private readonly ITranslator _translator;

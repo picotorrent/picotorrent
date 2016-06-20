@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 
 using PicoTorrent.Logging;
+using PicoTorrent.Plugins.UpdateChecker.Dialogs;
+using PicoTorrent.UI;
+using PicoTorrent.Config;
 
 namespace PicoTorrent.Plugins.UpdateChecker
 {
@@ -14,19 +17,53 @@ namespace PicoTorrent.Plugins.UpdateChecker
         const int MenuItemId = 10000;
 
         private static readonly string UpdateUrl = "https://api.github.com/repos/picotorrent/picotorrent/releases/latest";
-        private readonly IPluginHost _host;
 
-        public UpdateCheckerPlugin(IPluginHost host)
+        private readonly IConfiguration _configuration;
+        private readonly IMainWindow _mainWindow;
+        private readonly ITranslator _translator;
+        private readonly IVersionInformation _versionInformation;
+        private readonly IUpdateAvailableDialog _updateAvailableDialog;
+        private readonly INoUpdateAvailableDialog _noUpdateAvailableDialog;
+        private readonly ILogger _logger;
+
+        public UpdateCheckerPlugin(IConfiguration configuration,
+            IMainWindow mainWindow,
+            ITranslator translator,
+            IVersionInformation versionInformation,
+            IUpdateAvailableDialog updateAvailableDialog,
+            INoUpdateAvailableDialog noUpdateAvailableDialog,
+            ILogger logger)
         {
-            if (host == null) { throw new ArgumentNullException(nameof(host)); }
-            _host = host;
+            if (configuration == null) { throw new ArgumentNullException(nameof(configuration)); }
+            if (mainWindow == null) { throw new ArgumentNullException(nameof(mainWindow)); }
+            if (translator == null) { throw new ArgumentNullException(nameof(translator)); }
+            if (versionInformation == null) { throw new ArgumentNullException(nameof(versionInformation)); }
+            if (updateAvailableDialog == null) { throw new ArgumentNullException(nameof(updateAvailableDialog)); }
+            if (noUpdateAvailableDialog == null) { throw new ArgumentNullException(nameof(noUpdateAvailableDialog)); }
+            if (logger == null) { throw new ArgumentNullException(nameof(logger)); }
+            _configuration = configuration;
+            _mainWindow = mainWindow;
+            _translator = translator;
+            _versionInformation = versionInformation;
+            _updateAvailableDialog = updateAvailableDialog;
+            _noUpdateAvailableDialog = noUpdateAvailableDialog;
+            _logger = logger;
+        }
+
+        public string Name => "UpdateChecker";
+
+        public Version Version => typeof(UpdateCheckerPlugin).Assembly.GetName().Version;
+
+        public IWindow GetWindow()
+        {
+            return null;
         }
 
         public void Load()
         {
-            var tr = _host.Translator.Translate("amp_check_for_update");
+            var tr = _translator.Translate("amp_check_for_update");
 
-            _host.MainWindow.Command += (sender, args) =>
+            _mainWindow.Command += (sender, args) =>
             {
                 if (args.Id == MenuItemId)
                 {
@@ -34,11 +71,13 @@ namespace PicoTorrent.Plugins.UpdateChecker
                 }
             };
 
-            _host.MainWindow.MainMenu.Help.InsertSeparator();
-            _host.MainWindow.MainMenu.Help.Insert(MenuItemId, tr);
+            _mainWindow.MainMenu.Help.InsertSeparator();
+            _mainWindow.MainMenu.Help.Insert(MenuItemId, tr);
 
             TryCheckForUpdateAsync();
         }
+
+        public void Unload() { }
 
         private async void TryCheckForUpdateAsync(bool forced = false)
         {
@@ -48,7 +87,7 @@ namespace PicoTorrent.Plugins.UpdateChecker
             }
             catch (Exception e)
             {
-                _host.Logger.Error("Unhandled exception when checking for update.", e);
+                _logger.Error("Unhandled exception when checking for update.", e);
                 throw;
             }
         }
@@ -64,7 +103,7 @@ namespace PicoTorrent.Plugins.UpdateChecker
                 
                 if (!release.ContainsKey("tag_name"))
                 {
-                    _host.Logger.Warning("The JSON did not contain 'tag_name'.");
+                    _logger.Warning("The JSON did not contain 'tag_name'.");
                     return;
                 }
 
@@ -72,21 +111,20 @@ namespace PicoTorrent.Plugins.UpdateChecker
                 if (rawVersion.StartsWith("v")) { rawVersion = rawVersion.Substring(1); }
 
                 var version = Version.Parse(rawVersion);
-                var currentVersion = Version.Parse(_host.VersionInformation.CurrentVersion);
+                var currentVersion = Version.Parse(_versionInformation.CurrentVersion);
 
                 if (version > currentVersion
-                    && (rawVersion != _host.Configuration.IgnoredUpdate || forced))
+                    && (rawVersion != _configuration.IgnoredUpdate || forced))
                 {
                     // A newer version is available on GitHub.
-                    new UpdateAvailableDialog(_host.Configuration, _host.MainWindow, _host.Translator)
-                        .Show(version, release["html_url"].ToString());
+                    var url = release["html_url"].ToString();
+                    _updateAvailableDialog.Show(version, url);
                 }
                 else if(forced)
                 {
                     // We checked, but no new version is available. However, the user
                     // forced this from a menu click. So alert them!
-                    new NoUpdateAvailableDialog(_host.MainWindow, _host.Translator)
-                        .Show();
+                    _noUpdateAvailableDialog.Show();
                 }
             }
         }
