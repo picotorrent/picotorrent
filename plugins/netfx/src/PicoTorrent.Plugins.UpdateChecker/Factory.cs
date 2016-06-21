@@ -10,6 +10,7 @@ namespace PicoTorrent.Plugins.UpdateChecker
     {
         public static void Register(IContainer container)
         {
+            container.Register<IUpdateCheckerConfig, UpdateCheckerConfig>();
             container.Register<INoUpdateAvailableDialog, NoUpdateAvailableDialog>();
             container.Register<IUpdateAvailableDialog, UpdateAvailableDialog>();
 

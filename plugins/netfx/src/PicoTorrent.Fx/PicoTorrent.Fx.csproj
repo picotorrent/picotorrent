@@ -40,7 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Config\IConfiguration.cs" />
+    <Compile Include="IConfiguration.cs" />
     <Compile Include="Core\ISession.cs" />
     <Compile Include="Core\ITorrent.cs" />
     <Compile Include="Core\TorrentEventArgs.cs" />

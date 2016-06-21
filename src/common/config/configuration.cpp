@@ -31,6 +31,17 @@ configuration& configuration::instance()
     return instance;
 }
 
+pj::value configuration::get(const std::string &key)
+{
+    if (value_->find(key) == value_->end()) { return pj::value(); }
+    return value_->at(key);
+}
+
+void configuration::set(const std::string &key, const pj::value &val)
+{
+    (*value_)[key] = val;
+}
+
 std::shared_ptr<configuration::plugins_part> configuration::plugins()
 {
     // Not using make_shared since that function is not a friend of

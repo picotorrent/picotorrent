@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Diagnostics;
-using PicoTorrent.Config;
 using PicoTorrent.UI;
 
 namespace PicoTorrent.Plugins.UpdateChecker.Dialogs
 {
     public sealed class UpdateAvailableDialog : IUpdateAvailableDialog
     {
-        private readonly IConfiguration _configuration;
+        private readonly IUpdateCheckerConfig _config;
         private readonly IMainWindow _mainWindow;
         private readonly ITranslator _translator;
 
-        public UpdateAvailableDialog(IConfiguration configuration, IMainWindow mainWindow, ITranslator translator)
+        public UpdateAvailableDialog(
+            IUpdateCheckerConfig config,
+            IMainWindow mainWindow,
+            ITranslator translator)
         {
-            _configuration = configuration;
+            _config = config;
             _mainWindow = mainWindow;
             _translator = translator;
         }
@@ -36,11 +38,11 @@ namespace PicoTorrent.Plugins.UpdateChecker.Dialogs
                 {
                     if (args.IsChecked)
                     {
-                        _configuration.IgnoredUpdate = version.ToString();
+                        _config.IgnoredUpdate = version.ToString();
                     }
                     else
                     {
-                        _configuration.IgnoredUpdate = "";
+                        _config.IgnoredUpdate = "";
                     }
                 };
 

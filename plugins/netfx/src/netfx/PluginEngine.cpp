@@ -2,9 +2,9 @@
 
 #include <picotorrent/extensibility/plugin_host.hpp>
 
+#include "Configuration.h"
 #include "Translator.h"
 #include "VersionInformation.h"
-#include "Config/Configuration.h"
 #include "Core/Session.h"
 #include "Logging/Logger.h"
 #include "UI/MainWindow.h"
@@ -23,7 +23,7 @@ System::Collections::Generic::IList<PicoTorrent::IPlugin^>^ PluginEngine::GetAll
     auto container = gcnew TinyIoC::TinyIoCContainer();
     container->Register<PicoTorrent::ITranslator^>(gcnew PicoTorrent::Translator());
     container->Register<PicoTorrent::IVersionInformation^>(gcnew PicoTorrent::VersionInformation());
-    container->Register<PicoTorrent::Config::IConfiguration^>(gcnew PicoTorrent::Config::Configuration());
+    container->Register<PicoTorrent::IConfiguration^>(gcnew PicoTorrent::Configuration());
     container->Register<PicoTorrent::Core::ISession^>(gcnew PicoTorrent::Core::Session(_ptr->get_session()));
     container->Register<PicoTorrent::Logging::ILogger^>(gcnew PicoTorrent::Logging::Logger());
     container->Register<PicoTorrent::UI::IMainWindow^>(gcnew PicoTorrent::UI::MainWindow(_ptr->get_main_window()));

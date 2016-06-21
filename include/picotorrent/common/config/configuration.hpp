@@ -162,6 +162,9 @@ namespace config
 
         DLL_EXPORT static configuration &instance();
 
+        DLL_EXPORT picojson::value get(const std::string &key);
+        DLL_EXPORT void set(const std::string &key, const picojson::value &val);
+
         DLL_EXPORT std::shared_ptr<plugins_part> plugins();
         DLL_EXPORT std::shared_ptr<session_part> session();
         DLL_EXPORT std::shared_ptr<websocket_part> websocket();

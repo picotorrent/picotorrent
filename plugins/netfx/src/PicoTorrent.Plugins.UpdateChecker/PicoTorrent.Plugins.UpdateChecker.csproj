@@ -46,6 +46,8 @@
     <Compile Include="Factory.cs" />
     <Compile Include="Dialogs\NoUpdateAvailableDialog.cs" />
     <Compile Include="Dialogs\UpdateAvailableDialog.cs" />
+    <Compile Include="IUpdateCheckerConfig.cs" />
+    <Compile Include="UpdateCheckerConfig.cs" />
     <Compile Include="UpdateCheckerPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

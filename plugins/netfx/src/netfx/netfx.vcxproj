@@ -138,7 +138,7 @@
     <ClInclude Include="ClrBridge.h" />
     <ClInclude Include="ClrPlugin.h" />
     <ClInclude Include="ClrPluginConfigWindow.h" />
-    <ClInclude Include="Config\Configuration.h" />
+    <ClInclude Include="Configuration.h" />
     <ClInclude Include="Core\Torrent.h" />
     <ClInclude Include="Logging\Logger.h" />
     <ClInclude Include="NetFxPlugin.h" />
@@ -156,7 +156,7 @@
     <ClCompile Include="ClrBridge.cpp" />
     <ClCompile Include="ClrPlugin.cpp" />
     <ClCompile Include="ClrPluginConfigWindow.cpp" />
-    <ClCompile Include="Config\Configuration.cpp" />
+    <ClCompile Include="Configuration.cpp" />
     <ClCompile Include="Core\Torrent.cpp" />
     <ClCompile Include="Logging\Logger.cpp" />
     <ClCompile Include="PluginEngine.cpp" />
@@ -172,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
