@@ -22,6 +22,7 @@ namespace preferences
         void add_plugin(const std::string &name, const std::string &version);
         core::signals::signal_connector<void, int>& on_plugin_changed();
         void select_plugin(int index);
+        void set_dirty();
         void set_plugin_config_hwnd(HWND hWnd);
 
     protected:

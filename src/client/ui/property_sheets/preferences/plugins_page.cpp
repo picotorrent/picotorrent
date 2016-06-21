@@ -42,6 +42,11 @@ void plugins_page::select_plugin(int index)
     ComboBox_SetCurSel(ctl, index);
 }
 
+void plugins_page::set_dirty()
+{
+    PropSheet_Changed(GetParent(handle()), handle());
+}
+
 void plugins_page::set_plugin_config_hwnd(HWND hWnd)
 {
     SetParent(hWnd, handle());

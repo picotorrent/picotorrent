@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 
+#include <picotorrent/plugin.hpp>
+
 namespace picotorrent
 {
 namespace common
@@ -72,8 +74,10 @@ namespace controllers
         void on_remote_apply();
         void on_remote_init();
 
+        void on_plugins_apply();
         void on_plugins_init();
         void on_plugins_plugin_changed(int index);
+        void on_plugins_plugin_dirty();
 
     private:
         void create_run_key();
@@ -85,6 +89,7 @@ namespace controllers
         std::shared_ptr<core::session> sess_;
         std::shared_ptr<ui::main_window> wnd_;
         std::shared_ptr<extensibility::plugin_engine> plugins_;
+        std::shared_ptr<picotorrent::plugin_config_window> current_plugin_wnd_;
         std::shared_ptr<common::ws::websocket_server> ws_;
 
         // pages

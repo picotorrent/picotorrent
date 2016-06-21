@@ -11,7 +11,9 @@ namespace PicoTorrent.Plugins.Pushbullet
     {
         public static void Register(IContainer container)
         {
-            container.Register<IConfigurationWindow, PushbulletConfig>();
+            container.Register<IPushbulletConfig, PushbulletConfig>();
+            container.Register<IConfigControl, ConfigControl>();
+            container.Register<IConfigurationWindow, PushbulletConfigurationWindow>();
 
             // Register plugin
             container.Register<IPlugin, PushbulletPlugin>();

@@ -15,6 +15,7 @@ public:
     void unload();
 
 private:
+    std::shared_ptr<picotorrent::plugin_config_window> _cfg;
     gcroot<PicoTorrent::IPlugin^> _instance;
 };
 

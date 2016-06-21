@@ -4,6 +4,8 @@
 #include <vector>
 #include <windows.h>
 
+#include <picotorrent/core/signals/signal.hpp>
+
 namespace picotorrent
 {
     struct plugin_config_window
@@ -11,6 +13,17 @@ namespace picotorrent
         virtual HWND handle() = 0;
         virtual void load() = 0;
         virtual void save() = 0;
+
+        core::signals::signal_connector<void, void>& on_dirty()
+        {
+            return dirty;
+        }
+
+    protected:
+        void emit_dirty() { dirty.emit(); }
+
+    private:
+        core::signals::signal<void, void> dirty;
     };
 
     class plugin

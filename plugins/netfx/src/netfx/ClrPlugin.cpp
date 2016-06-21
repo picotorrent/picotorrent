@@ -7,6 +7,8 @@
 ClrPlugin::ClrPlugin(gcroot<PicoTorrent::IPlugin^> instance)
     : _instance(instance)
 {
+    auto wnd = _instance->GetConfigurationWindow();
+    if (wnd != nullptr) { _cfg = std::shared_ptr<ClrPluginConfigWindow>(new ClrPluginConfigWindow(wnd)); }
 }
 
 std::string ClrPlugin::get_name()
@@ -21,10 +23,7 @@ std::string ClrPlugin::get_version()
 
 std::shared_ptr<picotorrent::plugin_config_window> ClrPlugin::get_config_window()
 {
-    auto wnd = _instance->GetConfigurationWindow();
-    if (wnd == nullptr) { return nullptr; }
-
-    return std::shared_ptr<ClrPluginConfigWindow>(new ClrPluginConfigWindow(wnd));
+    return _cfg;
 }
 
 void ClrPlugin::load()

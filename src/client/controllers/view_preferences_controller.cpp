@@ -72,6 +72,7 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
     remote_page_->on_apply().connect(std::bind(&view_preferences_controller::on_remote_apply, this));
     remote_page_->on_init().connect(std::bind(&view_preferences_controller::on_remote_init, this));
 
+    plugins_page_->on_apply().connect(std::bind(&view_preferences_controller::on_plugins_apply, this));
     plugins_page_->on_init().connect(std::bind(&view_preferences_controller::on_plugins_init, this));
     plugins_page_->on_plugin_changed().connect(std::bind(&view_preferences_controller::on_plugins_plugin_changed, this, std::placeholders::_1));
 }
@@ -358,6 +359,14 @@ void view_preferences_controller::on_remote_init()
     remote_page_->set_certificate_public_key(pub_key);
 }
 
+void view_preferences_controller::on_plugins_apply()
+{
+    if (current_plugin_wnd_ != nullptr)
+    {
+        current_plugin_wnd_->save();
+    }
+}
+
 void view_preferences_controller::on_plugins_init()
 {
     for (auto &metadata : plugins_->get_plugins())
@@ -371,15 +380,39 @@ void view_preferences_controller::on_plugins_init()
 
 void view_preferences_controller::on_plugins_plugin_changed(int index)
 {
+    auto dirty_callback = std::bind(&view_preferences_controller::on_plugins_plugin_dirty, this);
+
+    if (current_plugin_wnd_ != nullptr)
+    {
+        current_plugin_wnd_->on_dirty().disconnect(dirty_callback);
+        current_plugin_wnd_->save();
+
+        // Hide it!
+        ShowWindow(current_plugin_wnd_->handle(), SW_HIDE);
+
+        current_plugin_wnd_ = nullptr;
+    }
+
     auto plugins = plugins_->get_plugins();
     auto &p = plugins[index];
 
     if (!p.config_window)
     {
+        // TODO show the "No config available" window
         return;
     }
 
-    plugins_page_->set_plugin_config_hwnd(p.config_window->handle());
+    current_plugin_wnd_ = p.config_window;
+    current_plugin_wnd_->load();
+    current_plugin_wnd_->on_dirty().connect(dirty_callback);
+
+    plugins_page_->set_plugin_config_hwnd(current_plugin_wnd_->handle());
+    ShowWindow(current_plugin_wnd_->handle(), SW_SHOW);
+}
+
+void view_preferences_controller::on_plugins_plugin_dirty()
+{
+    plugins_page_->set_dirty();
 }
 
 void view_preferences_controller::create_run_key()
