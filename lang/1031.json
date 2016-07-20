@@ -168,6 +168,10 @@
         "uploaded": "Hochgeladen",
         "storage_mode": "Storage Modus",
         "sparse": "Sparse",
-        "full": "Full"
+        "full": "Full",
+        "show_qr_code": "<a href=\"#\">QR Code anzeigen</a>",
+        "invalid_download_rate_limit": "Ungültiges DL Limit",
+        "invalid_upload_rate_limit": "Ungültiges UL Limit",
+        "error_when_loading_torrent": "Fehler beim Laden des Torrents"
     }
 }
