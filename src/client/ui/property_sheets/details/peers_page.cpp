@@ -1,11 +1,11 @@
 #include <picotorrent/client/ui/property_sheets/details/peers_page.hpp>
 
-#include <picotorrent/core/peer.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
+#include <picotorrent/core/peer.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 #include <cassert>
 #include <shlwapi.h>
@@ -17,10 +17,12 @@
 #define LIST_COLUMN_DOWNLOAD 4
 #define LIST_COLUMN_UPLOAD 5
 
-using picotorrent::core::peer;
 using picotorrent::client::ui::controls::list_view;
 using picotorrent::client::ui::property_sheets::details::peers_page;
 using picotorrent::client::ui::scaler;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
+using picotorrent::core::peer;
 
 struct peers_page::peer_state
 {
@@ -78,6 +80,11 @@ void peers_page::refresh(const std::vector<peer> &peers)
 
     assert(peers_.size() == peers.size());
     list_->set_item_count((int)peers_.size());
+
+    if (sort_items_)
+    {
+        sort_items_();
+    }
 }
 
 BOOL peers_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam)
@@ -96,7 +103,14 @@ void peers_page::on_init_dialog()
     list_->add_column(LIST_COLUMN_DOWNLOAD, TR("dl"),     scaler::x(80), list_view::number);
     list_->add_column(LIST_COLUMN_UPLOAD,   TR("ul"),     scaler::x(80), list_view::number);
 
+    list_->load_state("torrent_peers_list");
+    on_destroy().connect([this]()
+    {
+        list_->save_state("torrent_peers_list");
+    });
+
     list_->on_display().connect(std::bind(&peers_page::on_list_display, this, std::placeholders::_1));
+    list_->on_sort().connect(std::bind(&peers_page::on_list_sort, this, std::placeholders::_1));
 }
 
 std::string peers_page::on_list_display(const std::pair<int, int> &p)
@@ -130,5 +144,61 @@ std::string peers_page::on_list_display(const std::pair<int, int> &p)
     }
     default:
         return "<unknown column>";
+    }
+}
+
+void peers_page::on_list_sort(const std::pair<int, int> &p)
+{
+    list_view::sort_order_t order = (list_view::sort_order_t)p.second;
+    bool asc = order == list_view::sort_order_t::asc;
+
+    std::function<bool(const peer_state&, const peer_state&)> sort_func;
+
+    switch (p.first)
+    {
+    case LIST_COLUMN_IP:
+        sort_func = [asc](const peer_state &p1, const peer_state &p2)
+        {
+            if (asc) { return p1.peer.ip() < p2.peer.ip(); }
+            return p1.peer.ip() > p2.peer.ip();
+        };
+        break;
+    case LIST_COLUMN_CLIENT:
+        sort_func = [asc](const peer_state &p1, const peer_state &p2)
+        {
+            if (asc) { return p1.peer.client() < p2.peer.client(); }
+            return p1.peer.client() > p2.peer.client();
+        };
+        break;
+    case LIST_COLUMN_FLAGS:
+        sort_func = [asc](const peer_state &p1, const peer_state &p2)
+        {
+            if (asc) { return p1.peer.flags_str() < p2.peer.flags_str(); }
+            return p1.peer.flags_str() > p2.peer.flags_str();
+        };
+        break;
+    case LIST_COLUMN_DOWNLOAD:
+        sort_func = [asc](const peer_state &p1, const peer_state &p2)
+        {
+            if (asc) { return p1.peer.download_rate() < p2.peer.download_rate(); }
+            return p1.peer.download_rate() > p2.peer.download_rate();
+        };
+        break;
+    case LIST_COLUMN_UPLOAD:
+        sort_func = [asc](const peer_state &p1, const peer_state &p2)
+        {
+            if (asc) { return p1.peer.upload_rate() < p2.peer.upload_rate(); }
+            return p1.peer.upload_rate() > p2.peer.upload_rate();
+        };
+        break;
+    }
+
+    if (sort_func)
+    {
+        sort_items_ = [this, sort_func]()
+        {
+            std::sort(peers_.begin(), peers_.end(), sort_func);
+        };
+        sort_items_();
     }
 }

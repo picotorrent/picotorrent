@@ -1,13 +1,13 @@
 #include <picotorrent/client/ui/property_sheets/details/trackers_page.hpp>
 
-#include <picotorrent/core/torrent.hpp>
-#include <picotorrent/core/tracker.hpp>
-#include <picotorrent/core/tracker_status.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
+#include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/core/torrent.hpp>
+#include <picotorrent/core/tracker.hpp>
+#include <picotorrent/core/tracker_status.hpp>
 
 #include <cassert>
 #include <chrono>
@@ -23,12 +23,14 @@
 #define LIST_COLUMN_PEERS  4
 #define LIST_COLUMN_SCRAPE 5
 
-using picotorrent::core::torrent;
-using picotorrent::core::tracker;
-using picotorrent::core::tracker_status;
 using picotorrent::client::ui::controls::list_view;
 using picotorrent::client::ui::property_sheets::details::trackers_page;
 using picotorrent::client::ui::scaler;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
+using picotorrent::core::torrent;
+using picotorrent::core::tracker;
+using picotorrent::core::tracker_status;
 
 struct trackers_page::tracker_state
 {
@@ -90,6 +92,11 @@ void trackers_page::refresh(const std::shared_ptr<torrent> &torrent)
     }), trackers_.end());
 
     list_->set_item_count((int)trackers_.size());
+
+    if (sort_items_)
+    {
+        sort_items_;
+    }
 }
 
 void trackers_page::on_init_dialog()
@@ -103,8 +110,15 @@ void trackers_page::on_init_dialog()
     list_->add_column(LIST_COLUMN_PEERS,  TR("peers"),         scaler::x(80),  list_view::number);
     list_->add_column(LIST_COLUMN_SCRAPE, TR("scrape"),        scaler::x(80),  list_view::number);
 
+    list_->load_state("torrent_trackers_list");
+    on_destroy().connect([this]()
+    {
+        list_->save_state("torrent_trackers_list");
+    });
+
     list_->on_display().connect(std::bind(&trackers_page::on_list_display, this, std::placeholders::_1));
     list_->on_item_context_menu().connect(std::bind(&trackers_page::on_trackers_context_menu, this, std::placeholders::_1));
+    list_->on_sort().connect(std::bind(&trackers_page::on_list_sort, this, std::placeholders::_1));
 }
 
 std::string trackers_page::on_list_display(const std::pair<int, int> &p)
@@ -179,6 +193,65 @@ std::string trackers_page::on_list_display(const std::pair<int, int> &p)
     }
     default:
         return "<unknown column>";
+    }
+}
+
+void trackers_page::on_list_sort(const std::pair<int, int> &p)
+{
+    list_view::sort_order_t order = (list_view::sort_order_t)p.second;
+    bool asc = order == list_view::sort_order_t::asc;
+
+    std::function<bool(const tracker_state&, const tracker_state&)> sort_func;
+
+    switch (p.first)
+    {
+    case LIST_COLUMN_URL:
+        sort_func = [asc](const tracker_state &t1, const tracker_state &t2)
+        {
+            if (asc) { return t1.tracker.url() < t2.tracker.url(); }
+            return t1.tracker.url() > t2.tracker.url();
+        };
+        break;
+    case LIST_COLUMN_STATUS:
+        sort_func = [asc](const tracker_state &t1, const tracker_state &t2)
+        {
+            if (asc) { return t1.tracker.status() < t2.tracker.status(); }
+            return t1.tracker.status() > t2.tracker.status();
+        };
+        break;
+    case LIST_COLUMN_UPDATE:
+        sort_func = [asc](const tracker_state &t1, const tracker_state &t2)
+        {
+            if (asc) { return t1.tracker.next_announce_in() < t2.tracker.next_announce_in(); }
+            return t1.tracker.next_announce_in() > t2.tracker.next_announce_in();
+        };
+        break;
+    case LIST_COLUMN_PEERS:
+        sort_func = [asc](const tracker_state &t1, const tracker_state &t2)
+        {
+            if (asc) { return t1.status.num_peers < t2.status.num_peers; }
+            return t1.status.num_peers > t2.status.num_peers;
+        };
+        break;
+    case LIST_COLUMN_SCRAPE:
+        sort_func = [asc](const tracker_state &t1, const tracker_state &t2)
+        {
+            int t1s = t1.status.scrape_complete + t1.status.scrape_incomplete;
+            int t2s = t2.status.scrape_complete + t2.status.scrape_incomplete;
+
+            if (asc) { return t1s < t2s; }
+            return t1s > t2s;
+        };
+        break;
+    }
+
+    if (sort_func)
+    {
+        sort_items_ = [this, sort_func]()
+        {
+            std::sort(trackers_.begin(), trackers_.end(), sort_func);
+        };
+        sort_items_();
     }
 }
 

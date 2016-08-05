@@ -1,8 +1,8 @@
 #include <picotorrent/client/ui/notify_icon.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 #include <windows.h>
 #include <commctrl.h>
@@ -10,6 +10,7 @@
 #include <strsafe.h>
 
 using picotorrent::client::ui::notify_icon;
+using picotorrent::common::to_wstring;
 
 notify_icon::notify_icon(HWND parent)
     : parent_(parent)

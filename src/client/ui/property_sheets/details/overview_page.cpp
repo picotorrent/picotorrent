@@ -6,10 +6,11 @@
 #include <shlwapi.h>
 
 #include <picotorrent/client/i18n/translator.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 using picotorrent::client::ui::property_sheets::details::overview_page;
+using picotorrent::common::to_string;
 
 overview_page::overview_page()
 {

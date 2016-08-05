@@ -1,12 +1,12 @@
 #include <picotorrent/client/ui/property_sheets/details/files_page.hpp>
 
-#include <picotorrent/core/torrent.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/controls/menu.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
+#include <picotorrent/core/torrent.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 #include <shellapi.h>
 #include <shlwapi.h>
@@ -17,16 +17,19 @@
 #define LIST_COLUMN_PROGRESS 3
 #define LIST_COLUMN_PRIORITY 4
 
-using picotorrent::core::signals::signal;
-using picotorrent::core::signals::signal_connector;
-using picotorrent::core::torrent;
 using picotorrent::client::ui::controls::list_view;
 using picotorrent::client::ui::controls::menu;
 using picotorrent::client::ui::property_sheets::details::files_page;
 using picotorrent::client::ui::scaler;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
+using picotorrent::core::signals::signal;
+using picotorrent::core::signals::signal_connector;
+using picotorrent::core::torrent;
 
 struct files_page::file_item
 {
+    int index;
     std::string name;
     uint64_t size;
     float progress;
@@ -53,9 +56,9 @@ files_page::~files_page()
 {
 }
 
-void files_page::add_file(const std::string &name, uint64_t size, float progress, int priority)
+void files_page::add_file(int index, const std::string &name, uint64_t size, float progress, int priority)
 {
-    file_item item{ name,size,progress,priority };
+    file_item item{ index,name,size,progress,priority };
     items_.push_back(item);
 
     files_->set_item_count((int)items_.size());
@@ -77,15 +80,20 @@ signal_connector<void, const std::pair<int, int>&>& files_page::on_set_file_prio
     return on_set_file_prio_;
 }
 
-void files_page::refresh()
+void files_page::refresh(const std::vector<int64_t> &progress)
 {
-    files_->refresh();
-}
+    for (int i = 0; i < (int)items_.size(); i++)
+    {
+        int64_t p = progress[items_[i].index];
+        items_[i].progress = (float)p / items_[i].size;
+    }
 
-void files_page::update_file_progress(int index, float progress)
-{
-    file_item &item = items_[index];
-    item.progress = progress;
+    files_->refresh();
+
+    if (sort_items_)
+    {
+        sort_items_();
+    }
 }
 
 void files_page::on_init_dialog()
@@ -98,10 +106,17 @@ void files_page::on_init_dialog()
     files_->add_column(LIST_COLUMN_PROGRESS, TR("progress"), scaler::x(120), list_view::progress);
     files_->add_column(LIST_COLUMN_PRIORITY, TR("priority"), scaler::x(80));
 
+    files_->load_state("torrent_files_list");
+    on_destroy().connect([this]()
+    {
+        files_->save_state("torrent_files_list");
+    });
+
     files_->on_display().connect(std::bind(&files_page::on_list_display, this, std::placeholders::_1));
     files_->on_item_context_menu().connect(std::bind(&files_page::on_list_item_context_menu, this, std::placeholders::_1));
     files_->on_item_image().connect(std::bind(&files_page::on_list_item_image, this, std::placeholders::_1));
     files_->on_progress().connect(std::bind(&files_page::on_list_progress, this, std::placeholders::_1));
+    files_->on_sort().connect(std::bind(&files_page::on_list_sort, this, std::placeholders::_1));
 
     files_->set_image_list(images_);
 }
@@ -239,4 +254,53 @@ float files_page::on_list_progress(const std::pair<int, int> &p)
     }
 
     return -1;
+}
+
+void files_page::on_list_sort(const std::pair<int, int> &p)
+{
+    list_view::sort_order_t order = (list_view::sort_order_t)p.second;
+    bool asc = order == list_view::sort_order_t::asc;
+
+    std::function<bool(const file_item&, const file_item&)> sort_func;
+
+    switch (p.first)
+    {
+    case LIST_COLUMN_NAME:
+        sort_func = [asc](const file_item &f1, const file_item &f2)
+        {
+            if (asc) { return f1.name < f2.name; }
+            return f1.name > f2.name;
+        };
+        break;
+    case LIST_COLUMN_SIZE:
+        sort_func = [asc](const file_item &f1, const file_item &f2)
+        {
+            if (asc) { return f1.size < f2.size; }
+            return f1.size > f2.size;
+        };
+        break;
+    case LIST_COLUMN_PROGRESS:
+        sort_func = [asc](const file_item &f1, const file_item &f2)
+        {
+            if (asc) { return f1.progress < f2.progress; }
+            return f1.progress > f2.progress;
+        };
+        break;
+    case LIST_COLUMN_PRIORITY:
+        sort_func = [asc](const file_item &f1, const file_item &f2)
+        {
+            if (asc) { return f1.priority < f2.priority; }
+            return f1.priority > f2.priority;
+        };
+        break;
+    }
+
+    if (sort_func)
+    {
+        sort_items_ = [this, sort_func]()
+        {
+            std::sort(items_.begin(), items_.end(), sort_func);
+        };
+        sort_items_();
+    }
 }

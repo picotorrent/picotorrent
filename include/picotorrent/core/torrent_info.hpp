@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <picotorrent/common.hpp>
+#include <picotorrent/export.hpp>
 #include <string>
 
 namespace libtorrent
@@ -28,7 +28,7 @@ namespace core
         DLL_EXPORT torrent_info(const libtorrent::torrent_info &info);
         DLL_EXPORT ~torrent_info();
 
-        DLL_EXPORT static torrent_info_ptr try_load(const std::string &path);
+        DLL_EXPORT static torrent_info_ptr try_load(const std::string &path, std::string &err);
 
         DLL_EXPORT std::string file_path(int index) const;
         DLL_EXPORT int64_t file_size(int index) const;

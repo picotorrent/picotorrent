@@ -1,6 +1,7 @@
 #include <picotorrent/client/logging/log.hpp>
 
-#include <picotorrent/client/environment.hpp>
+#include <picotorrent/common/command_line.hpp>
+#include <picotorrent/common/environment.hpp>
 #include <picotorrent/core/pal.hpp>
 
 #include <picotorrent/_aux/disable_3rd_party_warnings.hpp>
@@ -11,8 +12,9 @@
 #include <windows.h>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
-using picotorrent::client::environment;
 using picotorrent::client::logging::log;
+using picotorrent::common::command_line;
+using picotorrent::common::environment;
 using picotorrent::core::pal;
 
 log::log()
@@ -40,8 +42,8 @@ void log::init()
 
     // Only do the following if we have a debug build
     // or passed --enable-logging on the command line
-    std::wstring cmd = GetCommandLine();
-    if (!is_debug && cmd.find(L"--enable-logging") == std::wstring::npos)
+    command_line cmd = command_line::parse(GetCommandLine());
+    if (!is_debug && !cmd.enable_logging())
     {
         out_ = std::make_unique<std::ostringstream>();
         return;

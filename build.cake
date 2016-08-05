@@ -130,7 +130,10 @@ Task("Setup-Publish-Directory")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.exe"),
+        BuildDirectory + File("PicoTorrentClient.dll"),
+        BuildDirectory + File("PicoTorrentCommon.dll"),
         BuildDirectory + File("PicoTorrentCore.dll"),
+        BuildDirectory + File("PicoTorrentServer.dll"),
 
         // 3rd party libraries
         LibraryDirectory + File(BoostRandom),
@@ -224,7 +227,10 @@ Task("Build-Symbols-Package")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.pdb"),
-        BuildDirectory + File("PicoTorrentCore.pdb")
+        BuildDirectory + File("PicoTorrentClient.pdb"),
+        BuildDirectory + File("PicoTorrentCommon.pdb"),
+        BuildDirectory + File("PicoTorrentCore.pdb"),
+        BuildDirectory + File("PicoTorrentServer.pdb")
     };
 
     Zip(BuildDirectory, BuildDirectory + File(SymbolsPackage), files);

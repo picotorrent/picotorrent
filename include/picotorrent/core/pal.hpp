@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include <picotorrent/common.hpp>
+#include <picotorrent/export.hpp>
 
 namespace picotorrent
 {

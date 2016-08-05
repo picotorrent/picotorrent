@@ -2,7 +2,7 @@
 
 #include <chrono>
 #include <memory>
-#include <picotorrent/common.hpp>
+#include <picotorrent/export.hpp>
 #include <string>
 
 namespace libtorrent

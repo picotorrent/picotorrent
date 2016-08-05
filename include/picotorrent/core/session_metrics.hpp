@@ -1,6 +1,6 @@
 #pragma once
 
-#include <picotorrent/common.hpp>
+#include <picotorrent/export.hpp>
 #include <stddef.h>
 #include <stdint.h>
 #include <vector>

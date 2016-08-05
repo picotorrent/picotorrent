@@ -1,7 +1,5 @@
 #include <picotorrent/client/ui/dialogs/remote_qr_dialog.hpp>
 
-#include <picotorrent/core/version_info.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/qr/bit_buffer.hpp>
 #include <picotorrent/client/qr/qr_8bit_byte.hpp>
@@ -9,6 +7,8 @@
 #include <picotorrent/client/qr/qr_data.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
+#include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/core/version_info.hpp>
 
 #include <sstream>
 
@@ -19,13 +19,14 @@
 
 #define QR_SET WM_USER+1
 
-using picotorrent::core::version_info;
 using picotorrent::client::qr::bit_buffer;
 using picotorrent::client::qr::qr_8bit_byte;
 using picotorrent::client::qr::qr_code;
 using picotorrent::client::qr::qr_data;
 using picotorrent::client::ui::dialogs::remote_qr_dialog;
 using picotorrent::client::ui::scaler;
+using picotorrent::common::to_string;
+using picotorrent::core::version_info;
 
 class qr_control
 {

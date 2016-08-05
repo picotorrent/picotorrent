@@ -1,8 +1,8 @@
 #include <picotorrent/client/net/http_client.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/net/http_response.hpp>
 #include <picotorrent/client/net/uri.hpp>
+#include <picotorrent/common/string_operations.hpp>
 #include <sstream>
 #include <vector>
 #include <windows.h>
@@ -11,6 +11,7 @@
 using picotorrent::client::net::http_client;
 using picotorrent::client::net::http_response;
 using picotorrent::client::net::uri;
+using picotorrent::common::to_wstring;
 
 class request_state
 {

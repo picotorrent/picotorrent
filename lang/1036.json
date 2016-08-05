@@ -168,6 +168,10 @@
         "uploaded": "Émis",
         "storage_mode": "Mode de stockage",
         "sparse": "Sparse",
-        "full": "Plein"
+        "full": "Plein",
+        "show_qr_code": "<a href=\"#\">Afficher le code QR</a>", 
+        "invalid_download_rate_limit": "Limite de téléchargement invalide.", 
+        "invalid_upload_rate_limit": "Limite d'émission invalide.", 
+        "error_when_loading_torrent": "Erreur de chargement du torrent" 
     }
 }

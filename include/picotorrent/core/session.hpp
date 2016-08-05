@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include <picotorrent/common.hpp>
+#include <picotorrent/export.hpp>
 #include <picotorrent/core/signals/signal.hpp>
 
 namespace boost {

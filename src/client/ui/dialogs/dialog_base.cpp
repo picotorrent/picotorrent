@@ -1,10 +1,10 @@
 #include <picotorrent/client/ui/dialogs/dialog_base.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
-using picotorrent::client::to_string;
-using picotorrent::client::to_wstring;
 using picotorrent::client::ui::dialogs::dialog_base;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
 
 dialog_base::dialog_base(int id)
     : id_(id),
@@ -30,10 +30,11 @@ std::string dialog_base::get_dlg_item_text(int controlId)
 {
     HWND hItem = GetDlgItem(handle(), controlId);
 
-    TCHAR t[1024];
-    GetWindowText(hItem, t, ARRAYSIZE(t));
+    int length = GetWindowTextLength(hItem);
+    std::vector<wchar_t> t(length + 1);
+    GetWindowText(hItem, &t[0], (int)t.size());
 
-    return to_string(t);
+    return to_string(&t[0]);
 }
 
 bool dialog_base::is_dlg_button_checked(int controlId)

@@ -1,13 +1,14 @@
 #include <picotorrent/client/ui/property_sheets/preferences/general_page.hpp>
 
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+#include <picotorrent/common/string_operations.hpp>
 
 #include <windowsx.h>
 
 namespace i18n = picotorrent::client::i18n;
 using picotorrent::client::ui::property_sheets::preferences::general_page;
+using picotorrent::common::to_wstring;
 
 general_page::general_page()
 {

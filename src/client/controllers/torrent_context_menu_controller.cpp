@@ -1,26 +1,27 @@
 #include <picotorrent/client/controllers/torrent_context_menu_controller.hpp>
 
 #include <algorithm>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/controllers/move_torrent_controller.hpp>
 #include <picotorrent/client/controllers/remove_torrent_controller.hpp>
 #include <picotorrent/client/controllers/torrent_details_controller.hpp>
+#include <picotorrent/client/ui/main_window.hpp>
+#include <picotorrent/client/ui/resources.hpp>
+#include <picotorrent/client/ui/torrent_context_menu.hpp>
+#include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/core/hash.hpp>
 #include <picotorrent/core/pal.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent.hpp>
-#include <picotorrent/client/ui/main_window.hpp>
-#include <picotorrent/client/ui/resources.hpp>
-#include <picotorrent/client/ui/torrent_context_menu.hpp>
 #include <shlobj.h>
 #include <shlwapi.h>
 #include <sstream>
 
+using picotorrent::client::ui::main_window;
+using picotorrent::client::ui::torrent_context_menu;
+using picotorrent::common::to_wstring;
 using picotorrent::core::pal;
 using picotorrent::core::session;
 using picotorrent::core::torrent;
-using picotorrent::client::ui::main_window;
-using picotorrent::client::ui::torrent_context_menu;
 
 using picotorrent::client::controllers::move_torrent_controller;
 using picotorrent::client::controllers::remove_torrent_controller;

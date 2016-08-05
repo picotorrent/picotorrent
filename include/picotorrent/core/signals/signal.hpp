@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <functional>
-#include <picotorrent/common.hpp>
+#include <picotorrent/export.hpp>
 #include <vector>
 
 namespace picotorrent

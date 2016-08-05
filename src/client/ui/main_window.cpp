@@ -5,11 +5,6 @@
 #include <iomanip>
 #include <sstream>
 
-#include <commctrl.h>
-#include <picotorrent/core/session.hpp>
-#include <picotorrent/core/session_metrics.hpp>
-#include <picotorrent/core/torrent.hpp>
-#include <picotorrent/client/string_operations.hpp>
 #include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/dialogs/about_dialog.hpp>
@@ -22,6 +17,14 @@
 #include <picotorrent/client/ui/task_dialog.hpp>
 #include <picotorrent/client/ui/taskbar_list.hpp>
 #include <picotorrent/client/ui/torrent_drop_target.hpp>
+#include <picotorrent/common/config/configuration.hpp>
+#include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/core/hash.hpp>
+#include <picotorrent/core/session.hpp>
+#include <picotorrent/core/session_metrics.hpp>
+#include <picotorrent/core/torrent.hpp>
+
+#include <commctrl.h>
 #include <shellapi.h>
 #include <shlwapi.h>
 #include <shobjidl.h>
@@ -42,8 +45,6 @@
 #define COLUMN_RATIO 11
 
 namespace core = picotorrent::core;
-using picotorrent::core::signals::signal;
-using picotorrent::core::signals::signal_connector;
 using picotorrent::client::ui::controls::list_view;
 using picotorrent::client::ui::dialogs::about_dialog;
 using picotorrent::client::ui::main_window;
@@ -53,6 +54,11 @@ using picotorrent::client::ui::scaler;
 using picotorrent::client::ui::taskbar_list;
 using picotorrent::client::ui::sleep_manager;
 using picotorrent::client::ui::torrent_drop_target;
+using picotorrent::common::config::configuration;
+using picotorrent::common::to_string;
+using picotorrent::common::to_wstring;
+using picotorrent::core::signals::signal;
+using picotorrent::core::signals::signal_connector;
 
 const UINT main_window::TaskbarButtonCreated = RegisterWindowMessage(L"TaskbarButtonCreated");
 
@@ -269,7 +275,15 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
         case WM_LBUTTONDBLCLK:
         {
-            ShowWindow(handle(), SW_RESTORE);
+            if (IsIconic(handle()))
+            {
+                ShowWindow(handle(), SW_RESTORE);
+            }
+            else
+            {
+                ShowWindow(handle(), SW_SHOW);
+            }
+
             SetForegroundWindow(handle());
 
             break;
@@ -334,11 +348,10 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     {
         COPYDATASTRUCT *cds = reinterpret_cast<COPYDATASTRUCT*>(lParam);
         wchar_t *ptr = reinterpret_cast<wchar_t*>(cds->lpData);
-        std::wstring args(ptr);
 
-        if (copydata_cb_)
+        if (ptr && copydata_cb_)
         {
-            copydata_cb_(args);
+            copydata_cb_(ptr);
         }
 
         break;
@@ -390,6 +403,8 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         list_view_->add_column(COLUMN_SEEDS,          TR("seeds"),          scaler::x(80),  list_view::number);
         list_view_->add_column(COLUMN_PEERS,          TR("peers"),          scaler::x(80),  list_view::number);
 
+        list_view_->load_state("torrents_list");
+
         noticon_ = std::make_shared<notify_icon>(hWnd);
         noticon_->add();
 
@@ -418,6 +433,8 @@ LRESULT main_window::wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     case WM_DESTROY:
     {
+        list_view_->save_state("torrents_list");
+
         on_destroy_.emit();
         noticon_->remove();
 
@@ -572,6 +589,11 @@ std::string main_window::on_list_display(const std::pair<int, int> &p)
     switch (p.first)
     {
     case COLUMN_NAME:
+        if (t->name().empty())
+        {
+            return t->info_hash()->to_string();
+        }
+
         return t->name();
     case COLUMN_QUEUE_POSITION:
         if (t->queue_position() < 0)
@@ -581,6 +603,11 @@ std::string main_window::on_list_display(const std::pair<int, int> &p)
 
         return std::to_string(t->queue_position() + 1);
     case COLUMN_SIZE:
+        if (t->state() == core::torrent_state::state_t::downloading_metadata)
+        {
+            return "-";
+        }
+
         TCHAR size[128];
         StrFormatByteSize64(t->size(), size, ARRAYSIZE(size));
         return to_string(size);

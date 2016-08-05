@@ -53,20 +53,41 @@ if(WIN32)
 else()
 endif()
 
-set(PICOTORRENT_SOURCES
-    src/client/application
-    src/client/application_initializer
-    src/client/command_line
+set(PICOTORRENTCOMMON_SOURCES
+    src/common/application
+    src/common/application_initializer
+    src/common/command_line
+    src/common/environment
+    src/common/string_operations
 
     # Configuration w/ parts
-    src/client/configuration
-    src/client/configuration_part
-    src/client/configuration_session_part
-    src/client/configuration_websocket_part
+    src/common/config/configuration
+    src/common/config/configuration_part
+    src/common/config/configuration_session_part
+    src/common/config/configuration_websocket_part
+    src/common/config/configuration_ui_part
 
-    src/client/environment
+    # Security
+    src/common/security/certificate_manager
+    src/common/security/dh_params
+    src/common/security/random_string_generator
+
+    # WebSocket server
+    src/common/ws/websocket_server
+    src/common/ws/messages/pico_state_message
+    src/common/ws/messages/torrent_added_message
+    src/common/ws/messages/torrent_finished_message
+    src/common/ws/messages/torrent_removed_message
+    src/common/ws/messages/torrent_updated_message
+    src/common/ws/serialization/torrent_serializer
+)
+
+set(PICOTORRENTCLIENT_SOURCES
+    src/client/application
     src/client/message_loop
-    src/client/string_operations
+    src/client/normal_executor
+    src/client/other_instance_executor
+    
     src/client/controllers/add_magnet_link_controller
     src/client/controllers/add_torrent_controller
     src/client/controllers/application_close_controller
@@ -129,19 +150,18 @@ set(PICOTORRENT_SOURCES
     src/client/ui/torrent_context_menu
     src/client/ui/torrent_drop_target
 
-    # Security
-    src/client/security/certificate_manager
-    src/client/security/dh_params
-    src/client/security/random_string_generator
+    src/client/pico.rc
+)
 
-    # WebSocket server
-    src/client/ws/websocket_server
-    src/client/ws/messages/pico_state_message
-    src/client/ws/messages/torrent_added_message
-    src/client/ws/messages/torrent_finished_message
-    src/client/ws/messages/torrent_removed_message
-    src/client/ws/messages/torrent_updated_message
-    src/client/ws/serialization/torrent_serializer
+set(PICOTORRENTSERVER_SOURCES
+    src/server/application
+    src/server/hosting/console_host
+    src/server/hosting/windows_service_host
+)
+
+set(PICOTORRENT_SOURCES
+    src/main
+    src/client/pico.rc
 )
 
 if(WIN32)
@@ -214,7 +234,7 @@ if(WIN32)
         -D_WIN32
         -D_WIN32_WINNT=0x0600
         -DNOMINMAX
-        -DPICOCORE_DLL
+        -DPICO_EXPORT_DLL
         -DUNICODE
         -DWIN32
         -DWIN32_LEAN_AND_MEAN
@@ -249,21 +269,53 @@ if(WIN32)
         PicoTorrent
         WIN32
         ${PICOTORRENT_SOURCES}
-        src/main
+    )
 
-        # The resources belong to the application itself
-        # to avoid linker issues.
-        src/client/pico.rc
+    add_library(
+        PicoTorrentClient
+        SHARED
+        ${PICOTORRENTCLIENT_SOURCES}
+    )
+
+    add_library(
+        PicoTorrentCommon
+        SHARED
+        ${PICOTORRENTCOMMON_SOURCES}
+    )
+
+    add_library(
+        PicoTorrentServer
+        SHARED
+        ${PICOTORRENTSERVER_SOURCES}
     )
 
     target_link_libraries(
         PicoTorrent
 
+        PicoTorrentClient
+        PicoTorrentCommon
         PicoTorrentCore
+        PicoTorrentServer
+    )
 
+    target_link_libraries(
+        PicoTorrentClient
+        PicoTorrentCommon
+        PicoTorrentCore
         comctl32
         UxTheme
         winhttp
+    )
+
+    target_link_libraries(
+        PicoTorrentCommon
+        PicoTorrentCore
+    )
+
+    target_link_libraries(
+        PicoTorrentServer
+        PicoTorrentCommon
+        PicoTorrentCore
     )
 endif()
 
