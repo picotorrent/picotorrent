@@ -107,7 +107,11 @@ int normal_executor::run(const command_line &cmd)
     auto host = std::make_shared<plugin_host>(session_.get(), main_window_->handle());
     plugin_engine_->load_all(host);
 
-    return message_loop::run(main_window_->handle(), accelerators_);
+    int res = message_loop::run(main_window_->handle(), accelerators_);
+
+    plugin_engine_->unload_all();
+
+    return res;
 }
 
 void normal_executor::notification_available()

@@ -6,6 +6,8 @@ namespace PicoTorrent.Plugins.Pushbullet.UI
     {
         event EventHandler AccessTokenChanged;
 
+        event EventHandler EventsChanged;
+
         event EventHandler TestAccessToken;
 
         string AccessToken { get; set; }
@@ -14,5 +16,8 @@ namespace PicoTorrent.Plugins.Pushbullet.UI
 
         void Disable();
         void Enable();
+
+        Event GetEvents();
+        void SetEvents(Event e);
     }
 }

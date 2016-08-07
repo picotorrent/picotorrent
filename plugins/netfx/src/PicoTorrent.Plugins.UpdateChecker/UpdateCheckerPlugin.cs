@@ -106,7 +106,7 @@ namespace PicoTorrent.Plugins.UpdateChecker
                     return;
                 }
 
-                var rawVersion = "0.12.0"; // release["tag_name"].ToString();
+                var rawVersion = release["tag_name"].ToString();
                 if (rawVersion.StartsWith("v")) { rawVersion = rawVersion.Substring(1); }
 
                 var version = Version.Parse(rawVersion);

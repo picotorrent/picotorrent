@@ -3,6 +3,7 @@
 #include <picotorrent/extensibility/plugin_host.hpp>
 
 #include "Configuration.h"
+#include "Environment.h"
 #include "Translator.h"
 #include "VersionInformation.h"
 #include "Core/Session.h"
@@ -21,6 +22,7 @@ System::Collections::Generic::IList<PicoTorrent::IPlugin^>^ PluginEngine::GetAll
 {
     // Create a new container and register dependencies in it
     auto container = gcnew TinyIoC::TinyIoCContainer();
+    container->Register<PicoTorrent::IEnvironment^>(gcnew PicoTorrent::Environment());
     container->Register<PicoTorrent::ITranslator^>(gcnew PicoTorrent::Translator());
     container->Register<PicoTorrent::IVersionInformation^>(gcnew PicoTorrent::VersionInformation());
     container->Register<PicoTorrent::IConfiguration^>(gcnew PicoTorrent::Configuration());

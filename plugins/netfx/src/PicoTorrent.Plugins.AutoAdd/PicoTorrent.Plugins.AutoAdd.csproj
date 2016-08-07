@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -41,9 +42,31 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoAddConfig.cs" />
     <Compile Include="AutoAddPlugin.cs" />
+    <Compile Include="Data\HistoryRepository.cs" />
+    <Compile Include="Data\IHistoryRepository.cs" />
     <Compile Include="Factory.cs" />
+    <Compile Include="FolderWatcher.cs" />
+    <Compile Include="IAutoAddConfig.cs" />
+    <Compile Include="IFolderWatcher.cs" />
+    <Compile Include="Models\Folder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\ControlExtensions.cs" />
+    <Compile Include="UI\Dialogs\FolderDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Dialogs\FolderDialog.Designer.cs">
+      <DependentUpon>FolderDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\AutoAddConfigurationWindow.cs" />
+    <Compile Include="UI\ConfigControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\ConfigControl.Designer.cs">
+      <DependentUpon>ConfigControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\IConfigControl.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PicoTorrent.Fx\PicoTorrent.Fx.csproj">
@@ -52,6 +75,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Dialogs\FolderDialog.resx">
+      <DependentUpon>FolderDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\ConfigControl.resx">
+      <DependentUpon>ConfigControl.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

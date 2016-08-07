@@ -110,7 +110,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;PICOJSON_USE_INT64;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;PicoTorrentCommon.lib;PicoTorrentCore.lib;PicoTorrentExtensibility.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -140,10 +140,13 @@
     <ClInclude Include="ClrPluginConfigWindow.h" />
     <ClInclude Include="Configuration.h" />
     <ClInclude Include="Core\Torrent.h" />
+    <ClInclude Include="Core\TorrentInfo.h" />
+    <ClInclude Include="Environment.h" />
     <ClInclude Include="Logging\Logger.h" />
     <ClInclude Include="NetFxPlugin.h" />
     <ClInclude Include="PluginEngine.h" />
     <ClInclude Include="Core\Session.h" />
+    <ClInclude Include="Core\TorrentInfoParser.h" />
     <ClInclude Include="Translator.h" />
     <ClInclude Include="UI\MainMenu.h" />
     <ClInclude Include="UI\MainWindow.h" />
@@ -158,10 +161,13 @@
     <ClCompile Include="ClrPluginConfigWindow.cpp" />
     <ClCompile Include="Configuration.cpp" />
     <ClCompile Include="Core\Torrent.cpp" />
+    <ClCompile Include="Core\TorrentInfo.cpp" />
+    <ClCompile Include="Environment.cpp" />
     <ClCompile Include="Logging\Logger.cpp" />
     <ClCompile Include="PluginEngine.cpp" />
     <ClCompile Include="NetFxPlugin.cpp" />
     <ClCompile Include="Core\Session.cpp" />
+    <ClCompile Include="Core\TorrentInfoParser.cpp" />
     <ClCompile Include="Translator.cpp" />
     <ClCompile Include="UI\MainMenu.cpp" />
     <ClCompile Include="UI\MainWindow.cpp" />

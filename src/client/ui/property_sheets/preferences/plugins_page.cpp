@@ -64,7 +64,7 @@ void plugins_page::set_plugin_config_hwnd(HWND hWnd)
         paddingY,
         prc.right - prc.left - padding - padding,
         prc.bottom - prc.top - paddingY - padding,
-        SWP_NOZORDER | SWP_NOACTIVATE);
+        SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW);
 }
 
 BOOL plugins_page::on_command(HWND hDlg, UINT uCtrlId, WPARAM wParam, LPARAM lParam)

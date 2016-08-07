@@ -33,6 +33,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
@@ -45,6 +46,10 @@
   <ItemGroup>
     <Compile Include="Factory.cs" />
     <Compile Include="IPushbulletConfig.cs" />
+    <Compile Include="Net\IPushbulletClient.cs" />
+    <Compile Include="Net\Contracts\Note.cs" />
+    <Compile Include="Net\PushbulletClient.cs" />
+    <Compile Include="Net\PushbulletHttpException.cs" />
     <Compile Include="PushbulletConfig.cs" />
     <Compile Include="PushbulletPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

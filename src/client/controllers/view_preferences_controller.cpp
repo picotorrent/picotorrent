@@ -373,9 +373,6 @@ void view_preferences_controller::on_plugins_init()
     {
         plugins_page_->add_plugin(metadata.name, metadata.version);
     }
-
-    plugins_page_->select_plugin(0);
-    on_plugins_plugin_changed(0);
 }
 
 void view_preferences_controller::on_plugins_plugin_changed(int index)
@@ -407,7 +404,6 @@ void view_preferences_controller::on_plugins_plugin_changed(int index)
     current_plugin_wnd_->on_dirty().connect(dirty_callback);
 
     plugins_page_->set_plugin_config_hwnd(current_plugin_wnd_->handle());
-    ShowWindow(current_plugin_wnd_->handle(), SW_SHOW);
 }
 
 void view_preferences_controller::on_plugins_plugin_dirty()

@@ -25,7 +25,9 @@ T Configuration::Get(System::String^ key)
 
     if (v.is<pj::null>()) { return T(); }
 
-    System::String^ json = msclr::interop::marshal_as<System::String^>(v.serialize());
+    std::string serialized = v.serialize();
+    System::String^ json = msclr::interop::marshal_as<System::String^>(serialized);
+
     return _serializer->Deserialize<T>(json);
 }
 

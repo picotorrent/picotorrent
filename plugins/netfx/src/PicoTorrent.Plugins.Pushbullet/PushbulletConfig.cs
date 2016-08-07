@@ -1,21 +1,22 @@
-﻿using System;
-
-namespace PicoTorrent.Plugins.Pushbullet
+﻿namespace PicoTorrent.Plugins.Pushbullet
 {
-    public sealed class PushbulletConfig : IPushbulletConfig
+    public sealed class PushbulletConfig : ConfigurationPart, IPushbulletConfig
     {
-        private readonly IConfiguration _config;
-
         public PushbulletConfig(IConfiguration config)
+            : base(config, "pushbullet")
         {
-            if (config == null) throw new ArgumentNullException(nameof(config));
-            _config = config;
         }
 
         public string AccessToken
         {
-            get { return (_config.Get<string>("pushbullet_access_token") ?? string.Empty).ToString(); }
-            set { _config.Set("pushbullet_access_token", value); }
+            get { return Get("access_token", string.Empty); }
+            set { Set("access_token", value); }
+        }
+
+        public Event Events
+        {
+            get { return Get("enabled_events", Event.None); }
+            set { Set("enabled_events", value); }
         }
     }
 }

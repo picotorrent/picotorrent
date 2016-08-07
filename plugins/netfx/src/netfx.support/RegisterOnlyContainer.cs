@@ -19,5 +19,12 @@ namespace PicoTorrent
         {
             _container.Register<TContract, TImplementation>();
         }
+
+        public void RegisterSingleton<TContract, TImplementation>()
+            where TContract : class
+            where TImplementation : class, TContract
+        {
+            _container.Register<TContract, TImplementation>().AsSingleton();
+        }
     }
 }
