@@ -23,7 +23,7 @@ namespace PicoTorrent.Plugins.AutoAdd.UI
         }
 
         public event EventHandler FoldersChanged;
-        
+
         public IEnumerable<Folder> GetFolders()
         {
             return this.SafeInvoke(() =>

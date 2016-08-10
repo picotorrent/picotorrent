@@ -281,6 +281,8 @@ std::shared_ptr<session_configuration> configuration::session_configuration()
 {
     auto cfg = std::make_shared<core::session_configuration>();
 
+    // Logging
+
     // Limits
     cfg->active_checking = session()->active_checking();
     cfg->active_dht_limit = session()->active_dht_limit();

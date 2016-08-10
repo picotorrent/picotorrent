@@ -1,7 +1,6 @@
 #include <picotorrent/client/controllers/view_preferences_controller.hpp>
 
 #include <picotorrent/core/session.hpp>
-#include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/client/ui/property_sheets/property_sheet_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/advanced_page.hpp>
@@ -17,6 +16,7 @@
 #include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/common/translator.hpp>
 #include <picotorrent/common/config/configuration.hpp>
+#include <picotorrent/common/logging/log.hpp>
 #include <picotorrent/common/security/certificate_manager.hpp>
 #include <picotorrent/common/ws/websocket_server.hpp>
 #include <picotorrent/extensibility/plugin_engine.hpp>

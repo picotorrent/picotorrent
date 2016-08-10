@@ -9,7 +9,7 @@ namespace Logging
     public:
         Logger();
 
-        virtual void Log(LogLevel level, System::String^ message, System::Exception^ exception);
+        virtual void Log(LogLevel level, System::String^ sourceName, System::String^ message, System::Exception^ exception);
     };
 
 }

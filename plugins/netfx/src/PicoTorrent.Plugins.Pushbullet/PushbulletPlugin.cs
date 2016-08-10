@@ -1,4 +1,5 @@
 ﻿using PicoTorrent.Core;
+using PicoTorrent.Logging;
 using PicoTorrent.Plugins.Pushbullet.Net;
 using PicoTorrent.UI;
 using System;
@@ -7,22 +8,26 @@ namespace PicoTorrent.Plugins.Pushbullet
 {
     public class PushbulletPlugin : Plugin
     {
+        private readonly ILogger _logger;
         private readonly IPushbulletConfig _config;
         private readonly IPushbulletClient _client;
         private readonly IConfigurationWindow _configWindow;
         private readonly ISession _session;
 
         public PushbulletPlugin(
+            ILogger logger,
             IPushbulletConfig config,
             IPushbulletClient client,
             IConfigurationWindow configWindow,
             ISession session)
         {
+            if (logger == null) throw new ArgumentNullException(nameof(logger));
             if (config == null) throw new ArgumentNullException(nameof(config));
             if (client == null) throw new ArgumentNullException(nameof(client));
             if (configWindow == null) throw new ArgumentNullException(nameof(configWindow));
             if (session == null) throw new ArgumentNullException(nameof(session));
 
+            _logger = logger;
             _config = config;
             _client = client;
             _configWindow = configWindow;
@@ -73,9 +78,9 @@ namespace PicoTorrent.Plugins.Pushbullet
             {
                 await _client.PushNoteAsync("PicoTorrent", msg);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TODO: log
+                _logger.Error("Could not send Pushbullet notification.", ex);
             }
         }
     }

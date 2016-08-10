@@ -69,6 +69,10 @@ set(PICOTORRENTCOMMON_SOURCES
     src/common/config/configuration_websocket_part
     src/common/config/configuration_ui_part
 
+    # Logging
+    src/common/logging/log
+    src/common/logging/log_record
+
     # Security
     src/common/security/certificate_manager
     src/common/security/dh_params
@@ -99,8 +103,6 @@ set(PICOTORRENTCLIENT_SOURCES
     src/client/controllers/torrent_details_controller
     src/client/controllers/torrent_context_menu_controller
     src/client/controllers/view_preferences_controller
-    src/client/logging/log
-    src/client/logging/log_record
 
     # QR components
     src/client/qr/bit_buffer

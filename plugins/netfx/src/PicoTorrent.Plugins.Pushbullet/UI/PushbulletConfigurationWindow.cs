@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Threading.Tasks;
-using PicoTorrent.UI;
-using System.Net.Http;
-using System.Text;
-using System.Web.Script.Serialization;
-using System.Net;
 using System.Windows.Forms;
 using PicoTorrent.Plugins.Pushbullet.Net;
+using PicoTorrent.UI;
 
 namespace PicoTorrent.Plugins.Pushbullet.UI
 {

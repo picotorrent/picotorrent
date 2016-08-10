@@ -1,4 +1,4 @@
-#include <picotorrent/client/logging/log.hpp>
+#include <picotorrent/common/logging/log.hpp>
 
 #include <picotorrent/common/command_line.hpp>
 #include <picotorrent/common/environment.hpp>
@@ -12,7 +12,7 @@
 #include <windows.h>
 #include <picotorrent/_aux/enable_3rd_party_warnings.hpp>
 
-using picotorrent::client::logging::log;
+using picotorrent::common::logging::log;
 using picotorrent::common::command_line;
 using picotorrent::common::environment;
 using picotorrent::core::pal;
@@ -26,7 +26,7 @@ log::~log()
 {
 }
 
-picotorrent::client::logging::log& log::instance()
+picotorrent::common::logging::log& log::instance()
 {
     static log inst;
     return inst;
@@ -68,7 +68,7 @@ void log::init()
     SetUnhandledExceptionFilter(&log::on_unhandled_exception);
 }
 
-picotorrent::client::logging::log_record log::open_record(picotorrent::client::logging::log_level level, const char* functionName)
+picotorrent::common::logging::log_record log::open_record(picotorrent::common::logging::log_level level, const char* functionName)
 {
     SYSTEMTIME st;
     GetLocalTime(&st);
@@ -84,7 +84,7 @@ picotorrent::client::logging::log_record log::open_record(picotorrent::client::l
         << functionName
         << " - "
         ;
-    return picotorrent::client::logging::log_record(*out_);
+    return picotorrent::common::logging::log_record(*out_);
 }
 
 void log::set_unhandled_exception_callback(const std::function<void(const std::string&)> &callback)
@@ -92,7 +92,7 @@ void log::set_unhandled_exception_callback(const std::function<void(const std::s
     unhandled_exception_callback_ = callback;
 }
 
-std::ostream& picotorrent::client::logging::operator<<(std::ostream &stream, const picotorrent::client::logging::log_level level)
+std::ostream& picotorrent::common::logging::operator<<(std::ostream &stream, const picotorrent::common::logging::log_level level)
 {
     const char* levels[] =
     {
