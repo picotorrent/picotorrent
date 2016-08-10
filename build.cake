@@ -290,6 +290,27 @@ Task("Build-Chocolatey-Package")
     System.IO.Directory.SetCurrentDirectory(currentDirectory.ToString());
 });
 
+Task("Build-NetFx-NuGet-Package")
+    .IsDependentOn("Build-NetFx-Plugins")
+    .Does(() =>
+{
+    NuGetPack(new NuGetPackSettings
+    {
+        Id = "PicoTorrent.Fx",
+        Version = Version,
+        Title = "PicoTorrent.Fx",
+        Authors = new [] { "PicoTorrent contributors" },
+        Owners = new [] { "Viktor Elofsson" },
+        Description = "Framework for writing PicoTorrent plugins.",
+        Files = new []
+        {
+            new NuSpecContent { Source = "PicoTorrent.Fx.dll", Target = "lib/net46" }
+        },
+        BasePath = "./plugins/netfx/src/PicoTorrent.Fx/bin/" + configuration,
+        OutputDirectory = BuildDirectory
+    });
+});
+
 Task("Sign")
     .IsDependentOn("Build")
     .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
@@ -339,7 +360,8 @@ Task("Default")
     .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
-    .IsDependentOn("Build-Symbols-Package");
+    .IsDependentOn("Build-Symbols-Package")
+    .IsDependentOn("Build-NetFx-NuGet-Package");
 
 Task("Publish")
     .IsDependentOn("Build")
