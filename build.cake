@@ -13,6 +13,7 @@ var OutputDirectory    = Directory("./build-" + platform);
 var BuildDirectory     = OutputDirectory + Directory(configuration);
 var PublishDirectory   = BuildDirectory + Directory("publish");
 var ResourceDirectory  = Directory("./res");
+var PluginsDirectory   = BuildDirectory + Directory("plugins");
 
 var LibraryDirectory   = Directory("./tools")
                        + Directory("PicoTorrent.Libs")
@@ -106,6 +107,26 @@ Task("Build")
     MSBuild(OutputDirectory + File("PicoTorrent.sln"), settings);
 });
 
+Task("Build-NetFx-Plugins")
+    .IsDependentOn("Build")
+    .Does(() =>
+{
+    var settings = new MSBuildSettings()
+                        .SetConfiguration(configuration)
+                        .WithProperty("Platform", platform);
+
+    if(platform == "x86")
+    {
+        settings.SetPlatformTarget(PlatformTarget.x86);
+    }
+    else
+    {
+        settings.SetPlatformTarget(PlatformTarget.x64);
+    }
+
+    MSBuild("./plugins/netfx/src/netfx.sln", settings);
+});
+
 Task("Setup-Library-Files")
     .Does(() =>
 {
@@ -133,6 +154,7 @@ Task("Setup-Publish-Directory")
         BuildDirectory + File("PicoTorrentClient.dll"),
         BuildDirectory + File("PicoTorrentCommon.dll"),
         BuildDirectory + File("PicoTorrentCore.dll"),
+        BuildDirectory + File("PicoTorrentExtensibility.dll"),
         BuildDirectory + File("PicoTorrentServer.dll"),
 
         // 3rd party libraries
@@ -142,6 +164,15 @@ Task("Setup-Publish-Directory")
         LibraryDirectory + File("ssleay32.dll"),
         LibraryDirectory + File("torrent.dll")
     };
+
+    // Copy plugins
+    var pluginsPublishDirectory = PublishDirectory + Directory("plugins");
+    CreateDirectory(pluginsPublishDirectory);
+    CopyDirectory(PluginsDirectory, pluginsPublishDirectory);
+    // Delete all but the DLL files from plugins
+    var d = (string)pluginsPublishDirectory;
+    var f = GetFiles(d + "/**/*.*") - GetFiles(d + "/**/*.dll");
+    DeleteFiles(f);
 
     CreateDirectory(PublishDirectory);
     CopyFiles(files, PublishDirectory);
@@ -195,7 +226,7 @@ Task("Build-Installer-Bundle")
     WiXCandle("./installer/PicoTorrentBundle.wxs", new CandleSettings
     {
         Architecture = arch,
-        Extensions = new [] { "WixBalExtension", "WixUtilExtension" },
+        Extensions = new [] { "WixBalExtension", "WixNetFxExtension", "WixUtilExtension" },
         Defines = new Dictionary<string, string>
         {
             { "PicoTorrentInstaller", BuildDirectory + File(Installer) },
@@ -207,7 +238,7 @@ Task("Build-Installer-Bundle")
 
     WiXLight(BuildDirectory + File("PicoTorrentBundle.wixobj"), new LightSettings
     {
-        Extensions = new [] { "WixBalExtension", "WixUtilExtension" },
+        Extensions = new [] { "WixBalExtension", "WixNetFxExtension", "WixUtilExtension" },
         OutputFile = BuildDirectory + File(InstallerBundle)
     });
 });
@@ -259,6 +290,27 @@ Task("Build-Chocolatey-Package")
     System.IO.Directory.SetCurrentDirectory(currentDirectory.ToString());
 });
 
+Task("Build-NetFx-NuGet-Package")
+    .IsDependentOn("Build-NetFx-Plugins")
+    .Does(() =>
+{
+    NuGetPack(new NuGetPackSettings
+    {
+        Id = "PicoTorrent.Fx",
+        Version = Version,
+        Title = "PicoTorrent.Fx",
+        Authors = new [] { "PicoTorrent contributors" },
+        Owners = new [] { "Viktor Elofsson" },
+        Description = "Framework for writing PicoTorrent plugins.",
+        Files = new []
+        {
+            new NuSpecContent { Source = "PicoTorrent.Fx.dll", Target = "lib/net46" }
+        },
+        BasePath = "./plugins/netfx/src/PicoTorrent.Fx/bin/" + configuration,
+        OutputDirectory = BuildDirectory
+    });
+});
+
 Task("Sign")
     .IsDependentOn("Build")
     .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
@@ -302,11 +354,14 @@ Task("Sign-Installer-Bundle")
 //////////////////////////////////////////////////////////////////////
 
 Task("Default")
+    .IsDependentOn("Build")
+    .IsDependentOn("Build-NetFx-Plugins")
     .IsDependentOn("Build-Installer")
     .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
-    .IsDependentOn("Build-Symbols-Package");
+    .IsDependentOn("Build-Symbols-Package")
+    .IsDependentOn("Build-NetFx-NuGet-Package");
 
 Task("Publish")
     .IsDependentOn("Build")

@@ -1,8 +1,8 @@
 #include <picotorrent/client/ui/status_bar.hpp>
 
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/translator.hpp>
 
 #include <commctrl.h>
 #include <shlwapi.h>

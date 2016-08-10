@@ -17,7 +17,7 @@ namespace core
     class hash;
     class torrent_info;
 
-    typedef std::shared_ptr<torrent_info> torrent_info_ptr;
+    typedef std::unique_ptr<torrent_info> torrent_info_ptr;
 
     class torrent_info
     {

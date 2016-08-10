@@ -6,29 +6,33 @@
 #include <picotorrent/client/controllers/add_magnet_link_controller.hpp>
 #include <picotorrent/client/controllers/add_torrent_controller.hpp>
 #include <picotorrent/client/controllers/application_close_controller.hpp>
-#include <picotorrent/client/controllers/application_update_controller.hpp>
 #include <picotorrent/client/controllers/notifyicon_context_menu_controller.hpp>
 #include <picotorrent/client/controllers/remove_torrent_controller.hpp>
 #include <picotorrent/client/controllers/torrent_context_menu_controller.hpp>
 #include <picotorrent/client/controllers/torrent_details_controller.hpp>
-#include <picotorrent/client/controllers/unhandled_exception_controller.hpp>
 #include <picotorrent/client/controllers/view_preferences_controller.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/common/command_line.hpp>
+#include <picotorrent/common/string_operations.hpp>
 #include <picotorrent/common/config/configuration.hpp>
 #include <picotorrent/common/ws/websocket_server.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent.hpp>
+#include <picotorrent/extensibility/plugin_engine.hpp>
+#include <picotorrent/extensibility/plugin_host.hpp>
 
 namespace controllers = picotorrent::client::controllers;
 using picotorrent::client::message_loop;
 using picotorrent::client::normal_executor;
 using picotorrent::common::command_line;
+using picotorrent::common::to_wstring;
 using picotorrent::common::config::configuration;
 using picotorrent::common::ws::websocket_server;
 using picotorrent::core::session;
 using picotorrent::core::torrent;
+using picotorrent::extensibility::plugin_engine;
+using picotorrent::extensibility::plugin_host;
 
 normal_executor::normal_executor(
     const std::shared_ptr<session> &session,
@@ -36,7 +40,8 @@ normal_executor::normal_executor(
 
     : accelerators_(LoadAccelerators(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_PICO_ACCELERATORS))),
     session_(session),
-    ws_server_(ws_server)
+    ws_server_(ws_server),
+    plugin_engine_(std::make_shared<plugin_engine>())
 {
     main_window_ = std::make_shared<ui::main_window>(session_);
     main_window_->on_command(ID_FILE_ADD_TORRENT, std::bind(&normal_executor::on_file_add_torrent, this));
@@ -45,7 +50,6 @@ normal_executor::normal_executor(
     main_window_->on_command(IDA_REMOVE_TORRENTS_DATA, std::bind(&normal_executor::on_remove_torrents_accelerator, this, true));
     main_window_->on_command(IDA_SELECT_ALL, std::bind(&normal_executor::on_select_all_accelerator, this));
     main_window_->on_command(ID_VIEW_PREFERENCES, std::bind(&normal_executor::on_view_preferences, this));
-    main_window_->on_command(ID_HELP_CHECK_FOR_UPDATE, std::bind(&normal_executor::on_check_for_update, this));
 
     main_window_->on_close(std::bind(&normal_executor::on_close, this));
     main_window_->on_copydata(std::bind(&normal_executor::on_copydata, this, std::placeholders::_1));
@@ -100,14 +104,14 @@ int normal_executor::run(const command_line &cmd)
         on_command_line_args(cmd);
     }
 
-    updater_ = std::make_shared<controllers::application_update_controller>(main_window_);
+    auto host = std::make_shared<plugin_host>(session_.get(), main_window_->handle());
+    plugin_engine_->load_all(host);
 
-    if (cfg.check_for_updates())
-    {
-        updater_->execute();
-    }
+    int res = message_loop::run(main_window_->handle(), accelerators_);
 
-    return message_loop::run(main_window_->handle(), accelerators_);
+    plugin_engine_->unload_all();
+
+    return res;
 }
 
 void normal_executor::notification_available()
@@ -133,11 +137,6 @@ void normal_executor::torrent_removed(const std::shared_ptr<torrent> &t)
 void normal_executor::torrent_updated(const std::vector<std::shared_ptr<torrent>> &t)
 {
     main_window_->torrent_updated(t);
-}
-
-void normal_executor::on_check_for_update()
-{
-    updater_->execute(true);
 }
 
 bool normal_executor::on_close()
@@ -240,6 +239,7 @@ void normal_executor::on_view_preferences()
     controllers::view_preferences_controller view_prefs(
         session_,
         main_window_,
+        plugin_engine_,
         ws_server_);
 
     view_prefs.execute();

@@ -3,12 +3,12 @@
 #include <picotorrent/client/message_loop.hpp>
 #include <picotorrent/client/normal_executor.hpp>
 #include <picotorrent/client/other_instance_executor.hpp>
-#include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 
 #include <picotorrent/common/command_line.hpp>
 #include <picotorrent/common/config/configuration.hpp>
+#include <picotorrent/common/logging/log.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/session_configuration.hpp>
 
@@ -23,9 +23,9 @@ namespace ui = picotorrent::client::ui;
 using picotorrent::client::application;
 using picotorrent::client::normal_executor;
 using picotorrent::client::other_instance_executor;
-using picotorrent::client::logging::log;
 using picotorrent::common::command_line;
 using picotorrent::common::config::configuration;
+using picotorrent::common::logging::log;
 
 application::application()
 {

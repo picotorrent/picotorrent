@@ -84,6 +84,16 @@ namespace config
             std::shared_ptr<picojson::object> cfg_;
         };
 
+        struct plugins_part : public part
+        {
+            friend class configuration;
+
+            DLL_EXPORT std::vector<std::string> search_paths();
+
+        protected:
+            using part::part;
+        };
+
         struct session_part : public part
         {
             friend class configuration;
@@ -152,6 +162,10 @@ namespace config
 
         DLL_EXPORT static configuration &instance();
 
+        DLL_EXPORT picojson::value get(const std::string &key);
+        DLL_EXPORT void set(const std::string &key, const picojson::value &val);
+
+        DLL_EXPORT std::shared_ptr<plugins_part> plugins();
         DLL_EXPORT std::shared_ptr<session_part> session();
         DLL_EXPORT std::shared_ptr<websocket_part> websocket();
         DLL_EXPORT std::shared_ptr<ui_part> ui();

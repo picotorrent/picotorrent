@@ -7,4 +7,14 @@ tools/Cake
 tools/Cake.CMake
 tools/nuget.exe
 tools/PicoTorrent.Libs
-tools/WiX.Toolset
+tools/WiX
+
+[D|d]ebug
+[R|r]elease
+
+.vs
+*.db
+*.opendb
+*.suo
+*.sdf
+*.user

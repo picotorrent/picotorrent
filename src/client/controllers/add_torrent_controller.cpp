@@ -2,13 +2,13 @@
 
 #include <algorithm>
 #include <picotorrent/common/command_line.hpp>
+#include <picotorrent/common/translator.hpp>
+#include <picotorrent/common/logging/log.hpp>
 #include <picotorrent/core/add_request.hpp>
 #include <picotorrent/core/pal.hpp>
 #include <picotorrent/core/session.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/core/torrent_info.hpp>
-#include <picotorrent/client/i18n/translator.hpp>
-#include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/dialogs/add_torrent_dialog.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/open_file_dialog.hpp>
@@ -111,7 +111,7 @@ void add_torrent_controller::execute(const std::vector<std::shared_ptr<core::tor
     {
         auto req = std::make_shared<core::add_request>();
         req->set_save_path(default_save_path);
-        req->set_torrent_info(ti);
+        req->set_torrent_info(*ti);
 
         requests_.push_back(req);
     }
@@ -143,7 +143,7 @@ void add_torrent_controller::add_files(const std::vector<std::string> &paths)
         }
 
         auto r = std::make_shared<core::add_request>();
-        r->set_torrent_info(ti);
+        r->set_torrent_info(*ti);
         r->set_save_path(save_path);
 
         requests_.push_back(r);
@@ -336,7 +336,7 @@ void add_torrent_controller::on_torrent_files_context_menu(const std::vector<int
 void add_torrent_controller::show_torrent(int index)
 {
     std::shared_ptr<core::add_request> &req = requests_[index];
-    core::torrent_info_ptr ti = req->ti();
+    auto ti = req->ti();
 
     if (ti)
     {

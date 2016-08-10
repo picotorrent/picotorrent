@@ -1,9 +1,9 @@
 #include <picotorrent/client/controllers/application_close_controller.hpp>
 
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
 #include <picotorrent/common/config/configuration.hpp>
+#include <picotorrent/common/translator.hpp>
 
 #define ID_DLG_CLOSE    1000
 #define ID_DLG_MINIMIZE 1001

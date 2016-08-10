@@ -1,8 +1,6 @@
 #include <picotorrent/client/controllers/view_preferences_controller.hpp>
 
 #include <picotorrent/core/session.hpp>
-#include <picotorrent/client/i18n/translator.hpp>
-#include <picotorrent/client/logging/log.hpp>
 #include <picotorrent/client/ui/dialogs/preferences_dialog.hpp>
 #include <picotorrent/client/ui/property_sheets/property_sheet_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/advanced_page.hpp>
@@ -10,14 +8,19 @@
 #include <picotorrent/client/ui/property_sheets/preferences/downloads_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/general_page.hpp>
 #include <picotorrent/client/ui/property_sheets/preferences/remote_page.hpp>
+#include <picotorrent/client/ui/property_sheets/preferences/plugins_page.hpp>
 #include <picotorrent/client/ui/main_window.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/task_dialog.hpp>
 
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/translator.hpp>
 #include <picotorrent/common/config/configuration.hpp>
+#include <picotorrent/common/logging/log.hpp>
 #include <picotorrent/common/security/certificate_manager.hpp>
 #include <picotorrent/common/ws/websocket_server.hpp>
+#include <picotorrent/extensibility/plugin_engine.hpp>
+#include <picotorrent/plugin.hpp>
 
 #include <vector>
 
@@ -34,18 +37,22 @@ using picotorrent::client::ui::property_sheets::property_sheet_page;
 using picotorrent::client::ui::task_dialog;
 using picotorrent::common::config::configuration;
 using picotorrent::common::ws::websocket_server;
+using picotorrent::extensibility::plugin_engine;
 
 view_preferences_controller::view_preferences_controller(const std::shared_ptr<session> &sess,
     const std::shared_ptr<ui::main_window> &wnd,
+    const std::shared_ptr<plugin_engine> &plugins,
     const std::shared_ptr<websocket_server> &ws)
     : sess_(sess),
     wnd_(wnd),
+    plugins_(plugins),
     ws_(ws),
     adv_page_(std::make_unique<prefs::advanced_page>()),
     conn_page_(std::make_unique<prefs::connection_page>()),
     dl_page_(std::make_unique<prefs::downloads_page>()),
     gen_page_(std::make_unique<prefs::general_page>()),
-    remote_page_(std::make_unique<prefs::remote_page>())
+    remote_page_(std::make_unique<prefs::remote_page>()),
+    plugins_page_(std::make_unique<prefs::plugins_page>())
 {
     adv_page_->on_apply().connect(std::bind(&view_preferences_controller::on_advanced_apply, this));
     adv_page_->on_init().connect(std::bind(&view_preferences_controller::on_advanced_init, this));
@@ -64,6 +71,10 @@ view_preferences_controller::view_preferences_controller(const std::shared_ptr<s
 
     remote_page_->on_apply().connect(std::bind(&view_preferences_controller::on_remote_apply, this));
     remote_page_->on_init().connect(std::bind(&view_preferences_controller::on_remote_init, this));
+
+    plugins_page_->on_apply().connect(std::bind(&view_preferences_controller::on_plugins_apply, this));
+    plugins_page_->on_init().connect(std::bind(&view_preferences_controller::on_plugins_init, this));
+    plugins_page_->on_plugin_changed().connect(std::bind(&view_preferences_controller::on_plugins_plugin_changed, this, std::placeholders::_1));
 }
 
 view_preferences_controller::~view_preferences_controller()
@@ -77,7 +88,8 @@ void view_preferences_controller::execute()
         *gen_page_,
         *dl_page_,
         *conn_page_,
-        *remote_page_
+        *remote_page_,
+        *plugins_page_
         //*adv_page_
     };
 
@@ -270,7 +282,7 @@ void view_preferences_controller::on_connection_proxy_type_changed(int type)
 
 void view_preferences_controller::on_general_apply()
 {
-    int currentLang = i18n::translator::instance().get_current_lang_id();
+    int currentLang = common::translator::instance().get_current_lang_id();
     int selectedLang = gen_page_->get_selected_language();
 
     if (gen_page_->get_autostart_checked() && !has_run_key())
@@ -291,7 +303,7 @@ void view_preferences_controller::on_general_apply()
     }
 
     // Change language!
-    i18n::translator::instance().set_current_language(selectedLang);
+    common::translator::instance().set_current_language(selectedLang);
 
     // Notify the user about restarting PicoTorrent
     if (should_restart())
@@ -302,13 +314,13 @@ void view_preferences_controller::on_general_apply()
 
 void view_preferences_controller::on_general_init()
 {
-    std::vector<i18n::translation> langs = i18n::translator::instance().get_available_translations();
+    std::vector<common::translation> langs = common::translator::instance().get_available_translations();
 
     gen_page_->add_languages(langs);
     gen_page_->add_start_position(configuration::start_position_t::normal, TR("normal"));
     gen_page_->add_start_position(configuration::start_position_t::minimized, TR("minimized"));
     gen_page_->add_start_position(configuration::start_position_t::hidden, TR("hidden"));
-    gen_page_->select_language(i18n::translator::instance().get_current_lang_id());
+    gen_page_->select_language(common::translator::instance().get_current_lang_id());
     gen_page_->select_start_position((int)configuration::instance().start_position());
     gen_page_->set_autostart_checked(has_run_key());
 }
@@ -345,6 +357,58 @@ void view_preferences_controller::on_remote_init()
     std::string pub_key = common::security::certificate_manager::extract_public_key(cert_file);
 
     remote_page_->set_certificate_public_key(pub_key);
+}
+
+void view_preferences_controller::on_plugins_apply()
+{
+    if (current_plugin_wnd_ != nullptr)
+    {
+        current_plugin_wnd_->save();
+    }
+}
+
+void view_preferences_controller::on_plugins_init()
+{
+    for (auto &metadata : plugins_->get_plugins())
+    {
+        plugins_page_->add_plugin(metadata.name, metadata.version);
+    }
+}
+
+void view_preferences_controller::on_plugins_plugin_changed(int index)
+{
+    auto dirty_callback = std::bind(&view_preferences_controller::on_plugins_plugin_dirty, this);
+
+    if (current_plugin_wnd_ != nullptr)
+    {
+        current_plugin_wnd_->on_dirty().disconnect(dirty_callback);
+        current_plugin_wnd_->save();
+
+        // Hide it!
+        ShowWindow(current_plugin_wnd_->handle(), SW_HIDE);
+
+        current_plugin_wnd_ = nullptr;
+    }
+
+    auto plugins = plugins_->get_plugins();
+    auto &p = plugins[index];
+
+    if (!p.config_window)
+    {
+        // TODO show the "No config available" window
+        return;
+    }
+
+    current_plugin_wnd_ = p.config_window;
+    current_plugin_wnd_->load();
+    current_plugin_wnd_->on_dirty().connect(dirty_callback);
+
+    plugins_page_->set_plugin_config_hwnd(current_plugin_wnd_->handle());
+}
+
+void view_preferences_controller::on_plugins_plugin_dirty()
+{
+    plugins_page_->set_dirty();
 }
 
 void view_preferences_controller::create_run_key()

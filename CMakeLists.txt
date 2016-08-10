@@ -59,13 +59,19 @@ set(PICOTORRENTCOMMON_SOURCES
     src/common/command_line
     src/common/environment
     src/common/string_operations
+    src/common/translator
 
     # Configuration w/ parts
     src/common/config/configuration
     src/common/config/configuration_part
+    src/common/config/configuration_plugins_part
     src/common/config/configuration_session_part
     src/common/config/configuration_websocket_part
     src/common/config/configuration_ui_part
+
+    # Logging
+    src/common/logging/log
+    src/common/logging/log_record
 
     # Security
     src/common/security/certificate_manager
@@ -91,20 +97,12 @@ set(PICOTORRENTCLIENT_SOURCES
     src/client/controllers/add_magnet_link_controller
     src/client/controllers/add_torrent_controller
     src/client/controllers/application_close_controller
-    src/client/controllers/application_update_controller
     src/client/controllers/move_torrent_controller
     src/client/controllers/notifyicon_context_menu_controller
     src/client/controllers/remove_torrent_controller
     src/client/controllers/torrent_details_controller
     src/client/controllers/torrent_context_menu_controller
-    src/client/controllers/unhandled_exception_controller
     src/client/controllers/view_preferences_controller
-    src/client/i18n/translator
-    src/client/logging/log
-    src/client/logging/log_record
-    src/client/net/http_client
-    src/client/net/http_response
-    src/client/net/uri
 
     # QR components
     src/client/qr/bit_buffer
@@ -126,16 +124,22 @@ set(PICOTORRENTCLIENT_SOURCES
     src/client/ui/dialogs/magnet_link_dialog
     src/client/ui/dialogs/remote_qr_dialog
     src/client/ui/property_sheets/property_sheet_page
+
+    # Details
     src/client/ui/property_sheets/details/files_page
     src/client/ui/property_sheets/details/options_page
     src/client/ui/property_sheets/details/overview_page
     src/client/ui/property_sheets/details/peers_page
     src/client/ui/property_sheets/details/trackers_page
+
+    # Preferences
     src/client/ui/property_sheets/preferences/advanced_page
     src/client/ui/property_sheets/preferences/connection_page
     src/client/ui/property_sheets/preferences/downloads_page
     src/client/ui/property_sheets/preferences/general_page
     src/client/ui/property_sheets/preferences/remote_page
+    src/client/ui/property_sheets/preferences/plugins_page
+
     src/client/ui/file_dialog_callback
     src/client/ui/main_window
     src/client/ui/notify_icon
@@ -151,6 +155,11 @@ set(PICOTORRENTCLIENT_SOURCES
     src/client/ui/torrent_drop_target
 
     src/client/pico.rc
+)
+
+set(PICOTORRENTEXTENSIBILITY_SOURCES
+    src/extensibility/plugin_engine
+    src/extensibility/plugin_host
 )
 
 set(PICOTORRENTSERVER_SOURCES
@@ -284,6 +293,12 @@ if(WIN32)
     )
 
     add_library(
+        PicoTorrentExtensibility
+        SHARED
+        ${PICOTORRENTEXTENSIBILITY_SOURCES}
+    )
+
+    add_library(
         PicoTorrentServer
         SHARED
         ${PICOTORRENTSERVER_SOURCES}
@@ -302,12 +317,18 @@ if(WIN32)
         PicoTorrentClient
         PicoTorrentCommon
         PicoTorrentCore
+        PicoTorrentExtensibility
         comctl32
         UxTheme
-        winhttp
     )
 
     target_link_libraries(
+        PicoTorrentCommon
+        PicoTorrentCore
+    )
+
+    target_link_libraries(
+        PicoTorrentExtensibility
         PicoTorrentCommon
         PicoTorrentCore
     )

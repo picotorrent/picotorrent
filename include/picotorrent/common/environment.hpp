@@ -19,6 +19,7 @@ namespace common
     class environment
     {
     public:
+        DLL_EXPORT static std::string get_application_path();
         DLL_EXPORT static std::string get_data_path();
         DLL_EXPORT static std::string get_special_folder(special_folder folder);
         DLL_EXPORT static std::string get_temporary_directory();

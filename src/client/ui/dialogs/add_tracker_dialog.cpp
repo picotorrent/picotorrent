@@ -1,7 +1,7 @@
 #include <picotorrent/client/ui/dialogs/add_tracker_dialog.hpp>
 
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/resources.hpp>
+#include <picotorrent/common/translator.hpp>
 
 #include <commctrl.h>
 #include <strsafe.h>

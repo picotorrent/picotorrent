@@ -1,12 +1,12 @@
 #include <picotorrent/client/ui/property_sheets/details/files_page.hpp>
 
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/controls/menu.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
 #include <picotorrent/core/torrent.hpp>
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/translator.hpp>
 
 #include <shellapi.h>
 #include <shlwapi.h>

@@ -68,6 +68,8 @@
                                Version="$(var.VCRedistVersion)" />
             </ExePackage>
 
+            <PackageGroupRef Id="NetFx46Web" />
+
             <RollbackBoundary />
 
             <MsiPackage Id="PicoTorrentPackage"

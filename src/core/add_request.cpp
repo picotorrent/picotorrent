@@ -88,9 +88,9 @@ void add_request::set_save_path(const std::string &path)
     params_->save_path = path;
 }
 
-void add_request::set_torrent_info(const std::shared_ptr<picotorrent::core::torrent_info> &file)
+void add_request::set_torrent_info(const picotorrent::core::torrent_info &ti)
 {
-    params_->ti = boost::make_shared<lt::torrent_info>(*file->info_);
+    params_->ti = boost::make_shared<lt::torrent_info>(*ti.info_);
 }
 
 void add_request::set_url(const std::string &url)

@@ -38,7 +38,7 @@ namespace core
         DLL_EXPORT void set_allocation_mode(allocation_mode_t mode);
         DLL_EXPORT void set_file_priority(int file_index, int priority);
         DLL_EXPORT void set_save_path(const std::string &path);
-        DLL_EXPORT void set_torrent_info(const std::shared_ptr<core::torrent_info> &file);
+        DLL_EXPORT void set_torrent_info(const core::torrent_info &file);
         DLL_EXPORT void set_url(const std::string &url);
 
     private:

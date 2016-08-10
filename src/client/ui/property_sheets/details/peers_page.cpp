@@ -1,11 +1,11 @@
 #include <picotorrent/client/ui/property_sheets/details/peers_page.hpp>
 
-#include <picotorrent/client/i18n/translator.hpp>
 #include <picotorrent/client/ui/controls/list_view.hpp>
 #include <picotorrent/client/ui/resources.hpp>
 #include <picotorrent/client/ui/scaler.hpp>
 #include <picotorrent/core/peer.hpp>
 #include <picotorrent/common/string_operations.hpp>
+#include <picotorrent/common/translator.hpp>
 
 #include <cassert>
 #include <shlwapi.h>
