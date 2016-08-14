@@ -15,6 +15,11 @@ public:
         System::String^ baseName = System::IO::Path::GetDirectoryName(location);
         System::String^ dll = System::IO::Path::Combine(baseName, name + ".dll");
 
+        if (!System::IO::File::Exists(dll))
+        {
+            return nullptr;
+        }
+
         return System::Reflection::Assembly::LoadFrom(dll);
     }
 };

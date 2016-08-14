@@ -56,6 +56,8 @@ namespace core
         DLL_EXPORT void reload_settings(const std::shared_ptr<session_configuration> &config);
         DLL_EXPORT void remove_torrent(const std::shared_ptr<torrent> &torrent, bool remove_data = false);
 
+        DLL_EXPORT void set_ip_blocklist(const std::vector<std::pair<std::string, std::string>> &blocklist);
+
         DLL_EXPORT core::signals::signal_connector<void, const std::shared_ptr<torrent_info>&>& on_metadata_received();
         DLL_EXPORT core::signals::signal_connector<void, void>& on_notifications_available();
         DLL_EXPORT core::signals::signal_connector<void, const std::shared_ptr<torrent>&>& on_torrent_added();

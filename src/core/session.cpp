@@ -17,6 +17,7 @@
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/create_torrent.hpp>
 #include <libtorrent/error_code.hpp>
+#include <libtorrent/ip_filter.hpp>
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/peer_info.hpp>
@@ -178,6 +179,21 @@ void session::unload()
 void session::remove_torrent(const torrent_ptr &torrent, bool remove_data)
 {
     sess_->remove_torrent(torrent->status_->handle, remove_data ? lt::session::delete_files : 0);
+}
+
+void session::set_ip_blocklist(const std::vector<std::pair<std::string, std::string>> &blocklist)
+{
+    lt::ip_filter filter;
+    
+    for (auto &p : blocklist)
+    {
+        lt::address a1 = lt::address::from_string(p.first);
+        lt::address a2 = lt::address::from_string(p.second);
+
+        filter.add_rule(a1, a2, lt::ip_filter::access_flags::blocked);
+    }
+
+    sess_->set_ip_filter(filter);
 }
 
 signal_connector<void, const std::shared_ptr<torrent_info>&>& session::on_metadata_received()
