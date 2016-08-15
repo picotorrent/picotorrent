@@ -168,6 +168,11 @@
         "uploaded": "Yüklenmiş",
         "storage_mode": "Disk Modu",
         "sparse": "Sparse",
-        "full": "Dolu"
+        "full": "Dolu",
+        "show_qr_code": "<a href=\"#\">QR kodunu göster</a>",
+        "invalid_download_rate_limit": "Geçersiz indirme oranı limiti.",
+        "invalid_upload_rate_limit": "Geçersiz upload oranı limiti..",
+        "error_when_loading_torrent": "Torrent yüklenirken hata oluştu",
+        "plugins": "Eklentiler"
     }
 }
