@@ -32,7 +32,12 @@ configure_file("${CMAKE_SOURCE_DIR}/src/core/version_info.cpp.in" "${CMAKE_SOURC
 
 set(PICOTORRENT_SOURCES
     src/CMainFrame
+    src/Environment
     src/Main
+
+    src/IO/Directory
+    src/IO/File
+    src/IO/Path
 
     src/client/pico.rc
 )

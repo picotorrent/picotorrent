@@ -11,7 +11,7 @@ int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
     CMainFrame wndMain;
 
-    if (wndMain.CreateEx() == NULL)
+    if (wndMain.Create() == NULL)
     {
         ATLTRACE(_T("Main window creation failed!\n"));
         return 0;
@@ -31,20 +31,11 @@ int WINAPI wWinMain(
     _In_ LPTSTR        lpstrCmdLine,
     _In_ int           nCmdShow)
 {
-    HRESULT hRes = ::CoInitialize(NULL);
-    ATLASSERT(SUCCEEDED(hRes));
-
-    AtlInitCommonControls(ICC_LISTVIEW_CLASSES);
-
-    hRes = _Module.Init(NULL, hInstance);
-    ATLASSERT(SUCCEEDED(hRes));
-
-    AtlAxWinInit();
+    ::InitCommonControls();
+    _Module.Init(NULL, hInstance);
 
     int nRet = Run(lpstrCmdLine, nCmdShow);
 
     _Module.Term();
-    ::CoUninitialize();
-
     return nRet;
 }
