@@ -1,6 +1,5 @@
 #pragma once
 
-#define IDC_STATIC -1
 #define TEXTFILE 256
 
 // Keyboard accelerators

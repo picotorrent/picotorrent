@@ -167,7 +167,7 @@ FONT 9, "MS Shell Dlg"
 {
     // -- Plugins list
     COMBOBOX ID_PLUGINS_COMBO, 5, 5, 242, 10, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL "", IDC_STATIC, "Static", SS_ETCHEDHORZ, 5, 25, 242, 1
+    CONTROL "", -1, "Static", SS_ETCHEDHORZ, 5, 25, 242, 1
 }
 
 // Preferences - Advanced

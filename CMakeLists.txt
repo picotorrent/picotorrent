@@ -30,146 +30,10 @@ endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 configure_file("${CMAKE_SOURCE_DIR}/src/core/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/core/version_info.cpp" @ONLY)
 
-set(PICOTORRENTCORE_SOURCES
-    # Misc
-    src/core/version_info
-
-    # BitTorrent components
-    src/core/add_request
-    src/core/is_valid_torrent_file
-    src/core/hash
-    src/core/peer
-    src/core/session
-    src/core/session_metrics
-    src/core/torrent
-    src/core/torrent_info
-    src/core/torrent_state
-    src/core/tracker
-)
-
-# Append the correct PAL file to the core sources
-if(WIN32)
-    list(APPEND PICOTORRENTCORE_SOURCES src/core/pal_win32)
-else()
-endif()
-
-set(PICOTORRENTCOMMON_SOURCES
-    src/common/application
-    src/common/application_initializer
-    src/common/command_line
-    src/common/environment
-    src/common/string_operations
-    src/common/translator
-
-    # Configuration w/ parts
-    src/common/config/configuration
-    src/common/config/configuration_part
-    src/common/config/configuration_plugins_part
-    src/common/config/configuration_session_part
-    src/common/config/configuration_websocket_part
-    src/common/config/configuration_ui_part
-
-    # Logging
-    src/common/logging/log
-    src/common/logging/log_record
-
-    # Security
-    src/common/security/certificate_manager
-    src/common/security/dh_params
-    src/common/security/random_string_generator
-
-    # WebSocket server
-    src/common/ws/websocket_server
-    src/common/ws/messages/pico_state_message
-    src/common/ws/messages/torrent_added_message
-    src/common/ws/messages/torrent_finished_message
-    src/common/ws/messages/torrent_removed_message
-    src/common/ws/messages/torrent_updated_message
-    src/common/ws/serialization/torrent_serializer
-)
-
-set(PICOTORRENTCLIENT_SOURCES
-    src/client/application
-    src/client/message_loop
-    src/client/normal_executor
-    src/client/other_instance_executor
-    
-    src/client/controllers/add_magnet_link_controller
-    src/client/controllers/add_torrent_controller
-    src/client/controllers/application_close_controller
-    src/client/controllers/move_torrent_controller
-    src/client/controllers/notifyicon_context_menu_controller
-    src/client/controllers/remove_torrent_controller
-    src/client/controllers/torrent_details_controller
-    src/client/controllers/torrent_context_menu_controller
-    src/client/controllers/view_preferences_controller
-
-    # QR components
-    src/client/qr/bit_buffer
-    src/client/qr/polynomial
-    src/client/qr/qr_8bit_byte
-    src/client/qr/qr_code
-    src/client/qr/qr_data
-    src/client/qr/qr_math
-    src/client/qr/qr_util
-    src/client/qr/rs_block
-
-    src/client/ui/controls/control_base
-    src/client/ui/controls/list_view
-    src/client/ui/controls/menu
-    src/client/ui/dialogs/dialog_base
-    src/client/ui/dialogs/about_dialog
-    src/client/ui/dialogs/add_torrent_dialog
-    src/client/ui/dialogs/add_tracker_dialog
-    src/client/ui/dialogs/magnet_link_dialog
-    src/client/ui/dialogs/remote_qr_dialog
-    src/client/ui/property_sheets/property_sheet_page
-
-    # Details
-    src/client/ui/property_sheets/details/files_page
-    src/client/ui/property_sheets/details/options_page
-    src/client/ui/property_sheets/details/overview_page
-    src/client/ui/property_sheets/details/peers_page
-    src/client/ui/property_sheets/details/trackers_page
-
-    # Preferences
-    src/client/ui/property_sheets/preferences/advanced_page
-    src/client/ui/property_sheets/preferences/connection_page
-    src/client/ui/property_sheets/preferences/downloads_page
-    src/client/ui/property_sheets/preferences/general_page
-    src/client/ui/property_sheets/preferences/remote_page
-    src/client/ui/property_sheets/preferences/plugins_page
-
-    src/client/ui/file_dialog_callback
-    src/client/ui/main_window
-    src/client/ui/notify_icon
-    src/client/ui/notifyicon_context_menu
-    src/client/ui/open_file_dialog
-    src/client/ui/open_torrent_dialog
-    src/client/ui/scaler
-    src/client/ui/sleep_manager
-    src/client/ui/status_bar
-    src/client/ui/task_dialog
-    src/client/ui/taskbar_list
-    src/client/ui/torrent_context_menu
-    src/client/ui/torrent_drop_target
-
-    src/client/pico.rc
-)
-
-set(PICOTORRENTEXTENSIBILITY_SOURCES
-    src/extensibility/plugin_engine
-    src/extensibility/plugin_host
-)
-
-set(PICOTORRENTSERVER_SOURCES
-    src/server/application
-    src/server/hosting/console_host
-    src/server/hosting/windows_service_host
-)
-
 set(PICOTORRENT_SOURCES
-    src/main
+    src/CMainFrame
+    src/Main
+
     src/client/pico.rc
 )
 
@@ -248,22 +112,17 @@ if(WIN32)
         -DWIN32
         -DWIN32_LEAN_AND_MEAN
     )
-endif()
 
-add_library(
-    PicoTorrentCore
-    SHARED
-    ${PICOTORRENTCORE_SOURCES}
-)
+    add_executable(
+        PicoTorrent
+        WIN32
+        ${PICOTORRENT_SOURCES}
+    )
 
-target_link_libraries(
-    PicoTorrentCore
-    ${PICO_LIBS}
-)
-
-if(WIN32)
     target_link_libraries(
-        PicoTorrentCore
+        PicoTorrent
+
+        ${PICO_LIBS}
 
         # Boost Random
         debug boost_random-vc140-mt-gd-1_60
@@ -273,70 +132,4 @@ if(WIN32)
         debug boost_system-vc140-mt-gd-1_60
         optimized boost_system-vc140-mt-1_60
     )
-
-    add_executable(
-        PicoTorrent
-        WIN32
-        ${PICOTORRENT_SOURCES}
-    )
-
-    add_library(
-        PicoTorrentClient
-        SHARED
-        ${PICOTORRENTCLIENT_SOURCES}
-    )
-
-    add_library(
-        PicoTorrentCommon
-        SHARED
-        ${PICOTORRENTCOMMON_SOURCES}
-    )
-
-    add_library(
-        PicoTorrentExtensibility
-        SHARED
-        ${PICOTORRENTEXTENSIBILITY_SOURCES}
-    )
-
-    add_library(
-        PicoTorrentServer
-        SHARED
-        ${PICOTORRENTSERVER_SOURCES}
-    )
-
-    target_link_libraries(
-        PicoTorrent
-
-        PicoTorrentClient
-        PicoTorrentCommon
-        PicoTorrentCore
-        PicoTorrentServer
-    )
-
-    target_link_libraries(
-        PicoTorrentClient
-        PicoTorrentCommon
-        PicoTorrentCore
-        PicoTorrentExtensibility
-        comctl32
-        UxTheme
-    )
-
-    target_link_libraries(
-        PicoTorrentCommon
-        PicoTorrentCore
-    )
-
-    target_link_libraries(
-        PicoTorrentExtensibility
-        PicoTorrentCommon
-        PicoTorrentCore
-    )
-
-    target_link_libraries(
-        PicoTorrentServer
-        PicoTorrentCommon
-        PicoTorrentCore
-    )
 endif()
-

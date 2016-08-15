@@ -151,11 +151,11 @@ Task("Setup-Publish-Directory")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.exe"),
-        BuildDirectory + File("PicoTorrentClient.dll"),
+        /*BuildDirectory + File("PicoTorrentClient.dll"),
         BuildDirectory + File("PicoTorrentCommon.dll"),
         BuildDirectory + File("PicoTorrentCore.dll"),
         BuildDirectory + File("PicoTorrentExtensibility.dll"),
-        BuildDirectory + File("PicoTorrentServer.dll"),
+        BuildDirectory + File("PicoTorrentServer.dll"),*/
 
         // 3rd party libraries
         LibraryDirectory + File(BoostRandom),
@@ -164,15 +164,6 @@ Task("Setup-Publish-Directory")
         LibraryDirectory + File("ssleay32.dll"),
         LibraryDirectory + File("torrent.dll")
     };
-
-    // Copy plugins
-    var pluginsPublishDirectory = PublishDirectory + Directory("plugins");
-    CreateDirectory(pluginsPublishDirectory);
-    CopyDirectory(PluginsDirectory, pluginsPublishDirectory);
-    // Delete all but the DLL files from plugins
-    var d = (string)pluginsPublishDirectory;
-    var f = GetFiles(d + "/**/*.*") - GetFiles(d + "/**/*.dll");
-    DeleteFiles(f);
 
     CreateDirectory(PublishDirectory);
     CopyFiles(files, PublishDirectory);
@@ -355,13 +346,14 @@ Task("Sign-Installer-Bundle")
 
 Task("Default")
     .IsDependentOn("Build")
-    .IsDependentOn("Build-NetFx-Plugins")
+    //.IsDependentOn("Build-NetFx-Plugins")
     .IsDependentOn("Build-Installer")
     .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
     .IsDependentOn("Build-Symbols-Package")
-    .IsDependentOn("Build-NetFx-NuGet-Package");
+    //.IsDependentOn("Build-NetFx-NuGet-Package")
+    ;
 
 Task("Publish")
     .IsDependentOn("Build")
