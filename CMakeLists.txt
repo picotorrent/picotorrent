@@ -34,10 +34,20 @@ set(PICOTORRENT_SOURCES
     src/CMainFrame
     src/Environment
     src/Main
+    src/Translator
+
+    src/Controllers/AddTorrentController
+
+    src/Dialogs/AddTorrentDialog
+    src/Dialogs/OpenFileDialog
 
     src/IO/Directory
     src/IO/File
     src/IO/Path
+
+    src/UI/ListView
+    src/UI/MainMenu
+    src/UI/StatusBar
 
     src/client/pico.rc
 )

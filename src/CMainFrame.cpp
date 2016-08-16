@@ -11,17 +11,27 @@
 #include <libtorrent/torrent_status.hpp>
 
 #include "Environment.hpp"
+#include "StringUtils.hpp"
+#include "Translator.hpp"
+#include "Controllers/AddTorrentController.hpp"
 #include "IO/Directory.hpp"
 #include "IO/File.hpp"
 #include "IO/Path.hpp"
+#include "UI/ListView.hpp"
+#include "UI/MainMenu.hpp"
+#include "UI/StatusBar.hpp"
 
-std::wstring ToWideString(const std::string &str)
-{
-    int size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
-    std::wstring result(size, '\0');
-    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &result[0], size);
-    return result;
-}
+#define LV_COL_NAME 1
+#define LV_COL_QUEUE_POSITION 2
+#define LV_COL_SIZE 3
+#define LV_COL_STATUS 4
+#define LV_COL_PROGRESS 5
+#define LV_COL_ETA 6
+#define LV_COL_DL 7
+#define LV_COL_UL 8
+#define LV_COL_SEEDS 9
+#define LV_COL_PEERS 10
+#define LV_COL_RATIO 11
 
 namespace lt = libtorrent;
 
@@ -325,11 +335,41 @@ void CMainFrame::OnAlertNotify()
     PostMessage(LT_SESSION_ALERT);
 }
 
+void CMainFrame::OnFileAddTorrent(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    Controllers::AddTorrentController atc(m_session);
+    atc.Execute();
+}
+
 LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     // Create the UI
+    ResizeClient(800, 200);
+    SetMenu(UI::MainMenu());
+    SetWindowText(TEXT("PicoTorrent"));
 
-    // Disable session interaction while session loading
+    // Torrent list view
+    CListViewCtrl list;
+    list.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | LVS_OWNERDATA | LVS_REPORT);
+
+    m_torrentList = std::make_shared<UI::ListView>(list);
+    m_torrentList->AddColumn(LV_COL_NAME, TRW("name"), 280, UI::ListView::ColumnType::Text);
+    m_torrentList->AddColumn(LV_COL_QUEUE_POSITION, TRW("queue_position"), 30, UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_SIZE, TRW("size"), 80, UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_STATUS, TRW("status"), 120, UI::ListView::ColumnType::Text);
+    m_torrentList->AddColumn(LV_COL_PROGRESS, TRW("progress"), 100, UI::ListView::ColumnType::Progress);
+    m_torrentList->AddColumn(LV_COL_ETA, TRW("eta"), 80, UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_DL, TRW("dl"), 80, UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_UL, TRW("ul"), 80, UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_RATIO, TRW("ratio"), 80, UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_SEEDS, TRW("seeds"), 80, UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_PEERS, TRW("peers"), 80, UI::ListView::ColumnType::Number);
+
+    m_hWndClient = m_torrentList->GetHandle();
+
+    // Set our status bar
+    m_statusBar = std::make_shared<UI::StatusBar>();
+    m_hWndStatusBar = m_statusBar->Create(m_hWnd, rcDefault);
 
     // Create session
     lt::settings_pack settings;

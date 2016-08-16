@@ -14,3 +14,7 @@
 #include <atldlgs.h>
 #include <atlctrlw.h>
 #include <atlcrack.h>
+
+#define PT_LV_GETITEMTEXT WM_USER+1000
+#define PT_LV_GETITEMPROGRESS WM_USER+1001
+#define PT_LV_GETITEMICON WM_USER+1002
