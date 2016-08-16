@@ -59,8 +59,19 @@ void AddTorrentController::Execute()
         params.push_back(p);
     }
 
-    Dialogs::AddTorrentDialog dlg(m_session, params);
-    dlg.DoModal();
+    Dialogs::AddTorrentDialog dlg(params);
+
+    switch (dlg.DoModal())
+    {
+    case IDOK:
+    {
+        for (auto& p : dlg.GetParams())
+        {
+            m_session->async_add_torrent(*p);
+        }
+        break;
+    }
+    }
 }
 
 std::vector<std::wstring> AddTorrentController::OpenFiles()

@@ -32,6 +32,8 @@ int WINAPI wWinMain(
     _In_ int           nCmdShow)
 {
     ::InitCommonControls();
+    ::SetProcessDPIAware();
+
     _Module.Init(NULL, hInstance);
 
     int nRet = Run(lpstrCmdLine, nCmdShow);

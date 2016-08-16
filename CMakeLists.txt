@@ -34,6 +34,7 @@ set(PICOTORRENT_SOURCES
     src/CMainFrame
     src/Environment
     src/Main
+    src/Scaler
     src/Translator
 
     src/Controllers/AddTorrentController
@@ -75,6 +76,7 @@ if(WIN32)
         dbghelp
         iphlpapi
         shlwapi
+        uxtheme
 
         # Rasterbar-libtorrent
         torrent

@@ -1,35 +1,28 @@
 #include "MainMenu.hpp"
 
 #include "../resources.h"
+#include "../Translator.hpp"
 
 using UI::MainMenu;
 
-MainMenu::MainMenu()
+HMENU MainMenu::Create()
 {
-    CreateMenu();
+    HMENU file = CreateMenu();
+    AppendMenu(file, MF_STRING, ID_FILE_ADD_TORRENT, TRW("amp_add_torrent"));
+    AppendMenu(file, MF_STRING, ID_FILE_ADD_MAGNET_LINK, TRW("amp_add_magnet_link_s"));
+    AppendMenu(file, MF_SEPARATOR, 0, NULL);
+    AppendMenu(file, MF_STRING, ID_FILE_EXIT, TRW("amp_exit"));
 
-    CMenu fileMenu;
-    if (fileMenu.CreateMenu())
-    {
-        fileMenu.AppendMenu(MF_STRING, ID_FILE_ADD_TORRENT, TEXT("Add torrent(s)"));
-        fileMenu.AppendMenu(MF_STRING, ID_FILE_ADD_MAGNET_LINK, TEXT("Add magnet link(s)"));
-        fileMenu.AppendMenu(MF_SEPARATOR);
-        fileMenu.AppendMenu(MF_STRING, ID_FILE_EXIT, TEXT("Exit"));
-    }
+    HMENU view = CreateMenu();
+    AppendMenu(view, MF_STRING, ID_VIEW_PREFERENCES, TRW("amp_preferences"));
 
-    CMenu viewMenu;
-    if (viewMenu.CreateMenu())
-    {
-        viewMenu.AppendMenu(MF_STRING, ID_VIEW_PREFERENCES, TEXT("Preferences"));
-    }
+    HMENU help = CreateMenu();
+    AppendMenu(help, MF_STRING, ID_HELP_ABOUT, TRW("amp_about"));
 
-    CMenu helpMenu;
-    if (helpMenu.CreateMenu())
-    {
-        helpMenu.AppendMenu(MF_STRING, ID_HELP_ABOUT, TEXT("About"));
-    }
+    HMENU menuBar = CreateMenu();
+    AppendMenu(menuBar, MF_POPUP, (UINT_PTR)file, TRW("amp_file"));
+    AppendMenu(menuBar, MF_POPUP, (UINT_PTR)view, TRW("amp_view"));
+    AppendMenu(menuBar, MF_POPUP, (UINT_PTR)help, TRW("amp_help"));
 
-    AppendMenu(MF_POPUP, fileMenu, TEXT("File"));
-    AppendMenu(MF_POPUP, viewMenu, TEXT("View"));
-    AppendMenu(MF_POPUP, helpMenu, TEXT("Help"));
+    return menuBar;
 }

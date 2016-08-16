@@ -11,6 +11,7 @@
 #include <libtorrent/torrent_status.hpp>
 
 #include "Environment.hpp"
+#include "Scaler.hpp"
 #include "StringUtils.hpp"
 #include "Translator.hpp"
 #include "Controllers/AddTorrentController.hpp"
@@ -49,6 +50,14 @@ struct SessionLoadItem
     std::string save_path;
     std::string url;
 };
+
+CMainFrame::CMainFrame()
+{
+}
+
+CMainFrame::~CMainFrame()
+{
+}
 
 void CMainFrame::LoadState()
 {
@@ -344,8 +353,8 @@ void CMainFrame::OnFileAddTorrent(UINT uNotifyCode, int nID, CWindow wndCtl)
 LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     // Create the UI
-    ResizeClient(800, 200);
-    SetMenu(UI::MainMenu());
+    ResizeClient(SX(800), SY(200));
+    SetMenu(UI::MainMenu::Create());
     SetWindowText(TEXT("PicoTorrent"));
 
     // Torrent list view
@@ -353,17 +362,17 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     list.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | LVS_OWNERDATA | LVS_REPORT);
 
     m_torrentList = std::make_shared<UI::ListView>(list);
-    m_torrentList->AddColumn(LV_COL_NAME, TRW("name"), 280, UI::ListView::ColumnType::Text);
-    m_torrentList->AddColumn(LV_COL_QUEUE_POSITION, TRW("queue_position"), 30, UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_SIZE, TRW("size"), 80, UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_STATUS, TRW("status"), 120, UI::ListView::ColumnType::Text);
-    m_torrentList->AddColumn(LV_COL_PROGRESS, TRW("progress"), 100, UI::ListView::ColumnType::Progress);
-    m_torrentList->AddColumn(LV_COL_ETA, TRW("eta"), 80, UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_DL, TRW("dl"), 80, UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_UL, TRW("ul"), 80, UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_RATIO, TRW("ratio"), 80, UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_SEEDS, TRW("seeds"), 80, UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_PEERS, TRW("peers"), 80, UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_NAME, TRW("name"), SX(280), UI::ListView::ColumnType::Text);
+    m_torrentList->AddColumn(LV_COL_QUEUE_POSITION, TRW("queue_position"), SX(30), UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_SIZE, TRW("size"), SX(80), UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_STATUS, TRW("status"), SX(120), UI::ListView::ColumnType::Text);
+    m_torrentList->AddColumn(LV_COL_PROGRESS, TRW("progress"), SX(100), UI::ListView::ColumnType::Progress);
+    m_torrentList->AddColumn(LV_COL_ETA, TRW("eta"), SX(80), UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_DL, TRW("dl"), SX(80), UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_UL, TRW("ul"), SX(80), UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_RATIO, TRW("ratio"), SX(80), UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_SEEDS, TRW("seeds"), SX(80), UI::ListView::ColumnType::Number);
+    m_torrentList->AddColumn(LV_COL_PEERS, TRW("peers"), SX(80), UI::ListView::ColumnType::Number);
 
     m_hWndClient = m_torrentList->GetHandle();
 
@@ -384,7 +393,9 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     LoadState();
 
     m_session->set_alert_notify(std::bind(&CMainFrame::OnAlertNotify, this));
-    // TODO: m_session->set_load_function()
+
+    // Set the timer which updates every second
+    SetTimer(6060, 1000);
 
     return 0;
 }
@@ -399,7 +410,113 @@ void CMainFrame::OnDestroy()
     PostQuitMessage(0);
 }
 
+LRESULT CMainFrame::OnLVGetItemProgress(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    UI::ListView::GetItemProgress* git = reinterpret_cast<UI::ListView::GetItemProgress*>(lParam);
+
+    if (git->item_index >= m_hashes.size())
+    {
+        // LOG
+        return 0;
+    }
+
+    lt::sha1_hash& hash = m_hashes.at(git->item_index);
+    lt::torrent_status& ts = m_torrents.at(hash);
+
+    switch (git->column_id)
+    {
+    case LV_COL_PROGRESS:
+    {
+        git->progress = ts.progress;
+        break;
+    }
+    }
+
+    return 0;
+}
+
+LRESULT CMainFrame::OnLVGetItemText(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    UI::ListView::GetItemText* git = reinterpret_cast<UI::ListView::GetItemText*>(lParam);
+
+    if (git->item_index >= m_hashes.size())
+    {
+        // LOG
+        return 0;
+    }
+
+    lt::sha1_hash& hash = m_hashes.at(git->item_index);
+    lt::torrent_status& ts = m_torrents.at(hash);
+
+    switch (git->column_id)
+    {
+    case LV_COL_NAME:
+    {
+        git->text = ToWideString(ts.name);
+        break;
+    }
+    case LV_COL_QUEUE_POSITION:
+    {
+        if (ts.queue_position < 0)
+        {
+            git->text = TEXT("-");
+        }
+        else
+        {
+            git->text = std::to_wstring(ts.queue_position + 1);
+        }
+    }
+    }
+
+    return 0;
+}
+
 LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
+    std::vector<lt::alert*> alerts;
+    m_session->pop_alerts(&alerts);
+
+    for (lt::alert* alert : alerts)
+    {
+        switch (alert->type())
+        {
+        case lt::add_torrent_alert::alert_type:
+        {
+            lt::add_torrent_alert* ata = lt::alert_cast<lt::add_torrent_alert>(alert);
+
+            if (ata->error)
+            {
+                // LOG
+                break;
+            }
+
+            m_hashes.push_back({ ata->handle.info_hash() });
+            m_torrents.insert({ ata->handle.info_hash(), ata->handle.status() });
+            m_torrentList->SetItemCount((int)m_torrents.size());
+            break;
+        }
+        case lt::state_update_alert::alert_type:
+        {
+            lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
+            if (sua->status.empty()) { break; }
+
+            for (lt::torrent_status& ts : sua->status)
+            {
+                m_torrents[ts.info_hash] = ts;
+            }
+
+            std::pair<int, int> indices = m_torrentList->GetVisibleIndices();
+            m_torrentList->RedrawItems(indices.first, indices.second);
+
+            break;
+        }
+        }
+    }
+
     return 0;
+}
+
+void CMainFrame::OnTimerElapsed(UINT_PTR nIDEvent)
+{
+    m_session->post_torrent_updates();
 }

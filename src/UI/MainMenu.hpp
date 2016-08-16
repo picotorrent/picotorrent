@@ -4,9 +4,9 @@
 
 namespace UI
 {
-class MainMenu : public CMenu
+class MainMenu
 {
 public:
-    MainMenu();
+    static HMENU Create();
 };
 }

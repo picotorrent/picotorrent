@@ -1,6 +1,20 @@
 #pragma once
 
+#include <windows.h>
+
+#define PT_LV_GETITEMTEXT WM_USER+1000
+#define PT_LV_GETITEMPROGRESS WM_USER+1001
+#define PT_LV_GETITEMICON WM_USER+1002
+#define PT_LV_SHOWCONTEXTMENU WM_USER+1003
+
+// Messages
+
 #define TEXTFILE 256
+
+#define PRIORITY_DO_NOT_DOWNLOAD 0
+#define PRIORITY_NORMAL 4
+#define PRIORITY_HIGH 6
+#define PRIORITY_MAXIMUM 7
 
 // Keyboard accelerators
 #define IDR_PICO_ACCELERATORS 8000
