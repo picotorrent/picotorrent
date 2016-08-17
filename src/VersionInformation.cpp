@@ -7,7 +7,7 @@ std::string VersionInformation::GetBranch()
 
 std::string VersionInformation::GetCommitHash()
 {
-    return "74cc429";
+    return "d27394c";
 }
 
 std::string VersionInformation::GetCurrentVersion()

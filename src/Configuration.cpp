@@ -1,7 +1,7 @@
 #include "Configuration.hpp"
 
 #include <picojson.hpp>
-
+#include <sstream>
 #include <windows.h>
 
 #include "Environment.hpp"
@@ -53,6 +53,143 @@ std::string Configuration::GetDefaultSavePath()
 void Configuration::SetDefaultSavePath(const std::string& path)
 {
     Set("default_save_path", path);
+}
+
+std::vector<std::pair<std::string, int>> Configuration::GetListenInterfaces()
+{
+    std::vector<std::pair<std::string, int>> defaultInterfaces = {
+        { "0.0.0.0", 6881 },
+        { "[::]", 6881 }
+    };
+
+    if (m_cfg->find("listen_interfaces") == m_cfg->end())
+    {
+        return defaultInterfaces;
+    }
+
+    pj::array ifaces = m_cfg->at("listen_interfaces").get<pj::array>();
+    std::vector<std::pair<std::string, int>> result;
+
+    for (const pj::value &v : ifaces)
+    {
+        std::string net_addr = v.get<std::string>();
+        size_t idx = net_addr.find_last_of(":");
+
+        if (idx == 0)
+        {
+            continue;
+        }
+
+        std::string addr = net_addr.substr(0, idx);
+        int port = std::stoi(net_addr.substr(idx + 1));
+        result.push_back({ addr, port });
+    }
+
+    return result;
+}
+
+void Configuration::SetListenInterfaces(const std::vector<std::pair<std::string, int>>& interfaces)
+{
+    pj::array ifaces;
+
+    for (const std::pair<std::string, int> &v : interfaces)
+    {
+        std::stringstream ss;
+        ss << v.first << ":" << v.second;
+        ifaces.push_back(pj::value(ss.str()));
+    }
+
+    (*m_cfg)["listen_interfaces"] = pj::value(ifaces);
+}
+
+Configuration::ProxyType Configuration::GetProxyType()
+{
+    return (ProxyType)Get("proxy_type", (int64_t)ProxyType::None);
+}
+
+void Configuration::SetProxyType(ProxyType type)
+{
+    Set("proxy_type", (int64_t)type);
+}
+
+std::string Configuration::GetProxyHost()
+{
+    return Get<std::string>("proxy_host", "");
+}
+
+void Configuration::SetProxyHost(const std::string& host)
+{
+    Set("proxy_host", host);
+}
+
+int Configuration::GetProxyPort()
+{
+    return Get("proxy_port", 0);
+}
+
+void Configuration::SetProxyPort(int port)
+{
+    Set("proxy_port", port);
+}
+
+std::string Configuration::GetProxyUsername()
+{
+    return Get<std::string>("proxy_username", "");
+}
+
+void Configuration::SetProxyUsername(const std::string& username)
+{
+    Set("proxy_username", username);
+}
+
+std::string Configuration::GetProxyPassword()
+{
+    return Get<std::string>("proxy_password", "");
+}
+
+void Configuration::SetProxyPassword(const std::string& password)
+{
+    Set("proxy_password", password);
+}
+
+bool Configuration::GetProxyForce()
+{
+    return Get("proxy_force", false);
+}
+
+void Configuration::SetProxyForce(bool force)
+{
+    Set("proxy_force", force);
+}
+
+bool Configuration::GetProxyHostnames()
+{
+    return Get("proxy_hostnames", false);
+}
+
+void Configuration::SetProxyHostnames(bool b)
+{
+    Set("proxy_hostnames", b);
+}
+
+bool Configuration::GetProxyPeers()
+{
+    return Get("proxy_peers", false);
+}
+
+void Configuration::SetProxyPeers(bool b)
+{
+    Set("proxy_peers", b);
+}
+
+bool Configuration::GetProxyTrackers()
+{
+    return Get("proxy_trackers", false);
+}
+
+void Configuration::SetProxyTrackers(bool b)
+{
+    Set("proxy_trackers", b);
 }
 
 Configuration::StartupPosition Configuration::GetStartupPosition()

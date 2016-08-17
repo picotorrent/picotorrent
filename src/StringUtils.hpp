@@ -3,6 +3,8 @@
 #include <string>
 #include <windows.h>
 
+#define TWS(val) ToWideString(val).c_str()
+
 static std::string ToString(const std::wstring &str)
 {
     int size = WideCharToMultiByte(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0, NULL, NULL);

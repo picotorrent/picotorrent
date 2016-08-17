@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace picojson
 {
@@ -13,6 +14,17 @@ namespace picojson
 class Configuration
 {
 public:
+    enum ProxyType
+    {
+        None,
+        SOCKS4,
+        SOCKS5,
+        SOCKS5_Password,
+        HTTP,
+        HTTP_Password,
+        I2P
+    };
+
     enum StartupPosition
     {
         Normal,
@@ -74,6 +86,36 @@ public:
 
     std::string GetDefaultSavePath();
     void SetDefaultSavePath(const std::string& path);
+
+    std::vector<std::pair<std::string, int>> GetListenInterfaces();
+    void SetListenInterfaces(const std::vector<std::pair<std::string, int>>& interfaces);
+
+    ProxyType GetProxyType();
+    void SetProxyType(ProxyType type);
+
+    std::string GetProxyHost();
+    void SetProxyHost(const std::string &host);
+
+    int GetProxyPort();
+    void SetProxyPort(int port);
+
+    std::string GetProxyUsername();
+    void SetProxyUsername(const std::string &user);
+
+    std::string GetProxyPassword();
+    void SetProxyPassword(const std::string &pass);
+
+    bool GetProxyForce();
+    void SetProxyForce(bool value);
+
+    bool GetProxyHostnames();
+    void SetProxyHostnames(bool value);
+
+    bool GetProxyPeers();
+    void SetProxyPeers(bool value);
+
+    bool GetProxyTrackers();
+    void SetProxyTrackers(bool value);
 
     StartupPosition GetStartupPosition();
     void SetStartupPosition(StartupPosition pos);

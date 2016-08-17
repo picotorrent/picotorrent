@@ -52,6 +52,7 @@ set(PICOTORRENT_SOURCES
     src/IO/File
     src/IO/Path
 
+    src/PropertySheets/Preferences/ConnectionPage
     src/PropertySheets/Preferences/DownloadsPage
     src/PropertySheets/Preferences/GeneralPage
     src/PropertySheets/Preferences/PreferencesSheet

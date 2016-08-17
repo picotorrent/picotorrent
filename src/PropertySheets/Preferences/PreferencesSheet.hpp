@@ -8,6 +8,7 @@ namespace PropertySheets
 {
 namespace Preferences
 {
+    class ConnectionPage;
     class DownloadsPage;
     class GeneralPage;
 
@@ -27,6 +28,7 @@ namespace Preferences
             CHAIN_MSG_MAP(CPropertySheetImpl<PreferencesSheet>)
         END_MSG_MAP()
 
+        std::unique_ptr<ConnectionPage> m_connection;
         std::unique_ptr<DownloadsPage> m_downloads;
         std::unique_ptr<GeneralPage> m_general;
     };
