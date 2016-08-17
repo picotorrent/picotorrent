@@ -1,0 +1,16 @@
+#include "VersionInformation.hpp"
+
+std::string VersionInformation::GetBranch()
+{
+    return "@GIT_BRANCH@";
+}
+
+std::string VersionInformation::GetCommitHash()
+{
+    return "@GIT_COMMIT_HASH@";
+}
+
+std::string VersionInformation::GetCurrentVersion()
+{
+    return "@VERSION@";
+}

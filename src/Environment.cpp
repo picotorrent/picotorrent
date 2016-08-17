@@ -15,21 +15,27 @@ std::wstring Environment::GetDataPath()
 {
     if (IsInstalled())
     {
-        PWSTR buf;
-        HRESULT hResult = SHGetKnownFolderPath(
-            FOLDERID_LocalAppData,
-            0,
-            NULL,
-            &buf);
-
-        std::wstring res = buf;
-        CoTaskMemFree(buf);
-        
-        return res;
+        return GetKnownFolderPath(FOLDERID_LocalAppData);
     }
 
     return GetApplicationPath();
 }
+
+std::wstring Environment::GetKnownFolderPath(const KNOWNFOLDERID& rfid)
+{
+    PWSTR buf;
+    HRESULT hResult = SHGetKnownFolderPath(
+        rfid,
+        0,
+        NULL,
+        &buf);
+
+    std::wstring res = buf;
+    CoTaskMemFree(buf);
+
+    return res;
+}
+
 
 bool Environment::IsInstalled()
 {

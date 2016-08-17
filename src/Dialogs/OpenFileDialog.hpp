@@ -18,6 +18,7 @@ public:
     std::vector<std::wstring> GetPaths();
 
     void SetFileTypes(UINT len, COMDLG_FILTERSPEC* types);
+    void SetFolder(const std::wstring& path);
     void SetGuid(const GUID guid);
     void SetOptions(DWORD dwOptions);
     void SetTitle(const std::wstring& title);

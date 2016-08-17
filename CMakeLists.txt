@@ -28,23 +28,33 @@ else(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PICO_ARCH "x86")
 endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
-configure_file("${CMAKE_SOURCE_DIR}/src/core/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/core/version_info.cpp" @ONLY)
+configure_file("${CMAKE_SOURCE_DIR}/src/VersionInformation.cpp.in" "${CMAKE_SOURCE_DIR}/src/VersionInformation.cpp" @ONLY)
 
 set(PICOTORRENT_SOURCES
     src/CMainFrame
+    src/Configuration
+    src/Configuration_Section
+    src/Configuration_SessionSection
     src/Environment
     src/Main
     src/Scaler
     src/Translator
+    src/VersionInformation
 
     src/Controllers/AddTorrentController
+    src/Controllers/ViewPreferencesController
 
+    src/Dialogs/AboutDialog
     src/Dialogs/AddTorrentDialog
     src/Dialogs/OpenFileDialog
 
     src/IO/Directory
     src/IO/File
     src/IO/Path
+
+    src/PropertySheets/Preferences/DownloadsPage
+    src/PropertySheets/Preferences/GeneralPage
+    src/PropertySheets/Preferences/PreferencesSheet
 
     src/UI/ListView
     src/UI/MainMenu

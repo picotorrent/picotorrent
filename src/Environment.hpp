@@ -9,5 +9,6 @@ class Environment
 public:
     static std::wstring GetApplicationPath();
     static std::wstring GetDataPath();
+    static std::wstring GetKnownFolderPath(const KNOWNFOLDERID& rfid);
     static bool IsInstalled();
 };

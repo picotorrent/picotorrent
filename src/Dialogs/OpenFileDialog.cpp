@@ -66,6 +66,18 @@ void OpenFileDialog::SetFileTypes(UINT len, COMDLG_FILTERSPEC* types)
     m_dlg->SetFileTypes(len, types);
 }
 
+void OpenFileDialog::SetFolder(const std::wstring& path)
+{
+    IShellItem *folder;
+    HRESULT res = SHCreateItemFromParsingName(path.c_str(), NULL, IID_PPV_ARGS(&folder));
+
+    if (SUCCEEDED(res))
+    {
+        m_dlg->SetFolder(folder);
+        folder->Release();
+    }
+}
+
 void OpenFileDialog::SetGuid(const GUID guid)
 {
     m_dlg->SetClientGuid(guid);

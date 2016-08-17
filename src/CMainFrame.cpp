@@ -15,6 +15,8 @@
 #include "StringUtils.hpp"
 #include "Translator.hpp"
 #include "Controllers/AddTorrentController.hpp"
+#include "Controllers/ViewPreferencesController.hpp"
+#include "Dialogs/AboutDialog.hpp"
 #include "IO/Directory.hpp"
 #include "IO/File.hpp"
 #include "IO/Path.hpp"
@@ -348,6 +350,18 @@ void CMainFrame::OnFileAddTorrent(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     Controllers::AddTorrentController atc(m_session);
     atc.Execute();
+}
+
+void CMainFrame::OnViewPreferences(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    Controllers::ViewPreferencesController ctrl(m_session);
+    ctrl.Execute();
+}
+
+void CMainFrame::OnHelpAbout(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    Dialogs::AboutDialog dlg;
+    dlg.DoModal();
 }
 
 LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)

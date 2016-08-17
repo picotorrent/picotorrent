@@ -54,7 +54,13 @@ void AddTorrentController::Execute()
         }
 
         auto p = std::make_shared<lt::add_torrent_params>();
-        p->ti = boost::make_shared<lt::torrent_info>(node);
+        p->ti = boost::make_shared<lt::torrent_info>(node, ltec);
+
+        if (ltec)
+        {
+            // LOG
+            continue;
+        }
 
         params.push_back(p);
     }

@@ -31,6 +31,8 @@ private:
 
     void OnAlertNotify();
     void OnFileAddTorrent(UINT uNotifyCode, int nID, CWindow wndCtl);
+    void OnHelpAbout(UINT uNotifyCode, int nID, CWindow wndCtl);
+    void OnViewPreferences(UINT uNotifyCode, int nID, CWindow wndCtl);
     
     // Message handlers
     LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -47,6 +49,8 @@ private:
 
         // Command handlers
         COMMAND_ID_HANDLER_EX(ID_FILE_ADD_TORRENT, OnFileAddTorrent)
+        COMMAND_ID_HANDLER_EX(ID_HELP_ABOUT, OnHelpAbout)
+        COMMAND_ID_HANDLER_EX(ID_VIEW_PREFERENCES, OnViewPreferences)
 
         // List view
         MESSAGE_HANDLER_EX(PT_LV_GETITEMPROGRESS, OnLVGetItemProgress)
