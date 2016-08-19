@@ -4,6 +4,7 @@
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
 
+#include "../Configuration.hpp"
 #include "../Dialogs/AddTorrentDialog.hpp"
 #include "../Dialogs/OpenFileDialog.hpp"
 #include "../IO/File.hpp"
@@ -30,6 +31,7 @@ void AddTorrentController::Execute()
         return;
     }
 
+    Configuration& cfg = Configuration::GetInstance();
     std::vector<std::shared_ptr<lt::add_torrent_params>> params;
     
     for (auto& path : res)
@@ -54,6 +56,7 @@ void AddTorrentController::Execute()
         }
 
         auto p = std::make_shared<lt::add_torrent_params>();
+        p->save_path = cfg.GetDefaultSavePath();
         p->ti = boost::make_shared<lt::torrent_info>(node, ltec);
 
         if (ltec)

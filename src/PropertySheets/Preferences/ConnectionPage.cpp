@@ -13,6 +13,132 @@ ConnectionPage::ConnectionPage()
     SetTitle(m_title.c_str());
 }
 
+void ConnectionPage::ChangeProxy(int type)
+{
+    m_proxyHost.EnableWindow(FALSE);
+    m_proxyPort.EnableWindow(FALSE);
+    m_proxyUsername.EnableWindow(FALSE);
+    m_proxyPassword.EnableWindow(FALSE);
+    m_proxyForce.EnableWindow(FALSE);
+    m_proxyHostnames.EnableWindow(FALSE);
+    m_proxyPeers.EnableWindow(FALSE);
+    m_proxyTrackers.EnableWindow(FALSE);
+
+    switch (type)
+    {
+    case Configuration::ProxyType::SOCKS4:
+    case Configuration::ProxyType::SOCKS5:
+    case Configuration::ProxyType::SOCKS5_Password:
+    case Configuration::ProxyType::HTTP:
+    case Configuration::ProxyType::HTTP_Password:
+    case Configuration::ProxyType::I2P:
+    {
+        m_proxyHost.EnableWindow(TRUE);
+        m_proxyPort.EnableWindow(TRUE);
+        m_proxyForce.EnableWindow(TRUE);
+        m_proxyPeers.EnableWindow(TRUE);
+        m_proxyTrackers.EnableWindow(TRUE);
+        m_proxyHostnames.EnableWindow(TRUE);
+        break;
+    }
+    }
+
+    switch (type)
+    {
+    case Configuration::ProxyType::SOCKS5_Password:
+    case Configuration::ProxyType::HTTP_Password:
+    {
+        m_proxyUsername.EnableWindow(TRUE);
+        m_proxyPassword.EnableWindow(TRUE);
+        break;
+    }
+    }
+}
+
+std::vector<std::pair<std::string, int>> ConnectionPage::GetListenInterfaces()
+{
+    std::vector<std::pair<std::string, int>> result;
+    std::string::size_type pos = 0;
+    std::string::size_type prev = 0;
+    std::string l = m_listenInterfaces.GetValueA();
+
+    while ((pos = l.find('\n', prev)) != std::string::npos)
+    {
+        std::string net_addr = Trim(l.substr(prev, pos - prev));
+        size_t idx = net_addr.find_last_of(":");
+
+        if (idx == std::string::npos)
+        {
+            continue;
+        }
+
+        std::string addr = net_addr.substr(0, idx);
+        int port = std::stoi(net_addr.substr(idx + 1));
+
+        result.push_back({ addr,port });
+        prev = pos + 1;
+    }
+
+    // To get the last substring (or only, if delimiter is not found)
+    std::string last_net_addr = Trim(l.substr(prev, pos - prev));
+    size_t lidx = last_net_addr.find_last_of(":");
+
+    if (lidx != std::string::npos)
+    {
+        std::string addr = last_net_addr.substr(0, lidx);
+        int port = std::stoi(last_net_addr.substr(lidx + 1));
+        result.push_back({ addr,port });
+    }
+
+    return result;
+}
+
+BOOL ConnectionPage::OnApply()
+{
+    Configuration& cfg = Configuration::GetInstance();
+
+    cfg.SetListenInterfaces(GetListenInterfaces());
+    cfg.SetProxyType(m_proxyType.GetSelectedItemData<Configuration::ProxyType>());
+    cfg.SetProxyHost(m_proxyHost.GetValueA());
+
+    std::string port = m_proxyPort.GetValueA();
+    cfg.SetProxyPort(port.empty() ? -1 : std::stoi(port));
+
+    cfg.SetProxyUsername(m_proxyUsername.GetValueA());
+    cfg.SetProxyPassword(m_proxyPassword.GetValueA());
+    cfg.SetProxyForce(m_proxyForce.IsChecked());
+    cfg.SetProxyHostnames(m_proxyHostnames.IsChecked());
+    cfg.SetProxyPeers(m_proxyPeers.IsChecked());
+    cfg.SetProxyTrackers(m_proxyTrackers.IsChecked());
+
+    return TRUE;
+}
+
+void ConnectionPage::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    switch (nID)
+    {
+    case ID_PROXY_TYPE:
+        if (uNotifyCode == CBN_SELENDOK) { SetModified(); }
+        ChangeProxy(m_proxyType.GetSelectedItemData<Configuration::ProxyType>());
+        break;
+    case ID_PROXY_HOST:
+    case ID_PROXY_PORT:
+    case ID_PROXY_USERNAME:
+    case ID_PROXY_PASSWORD:
+        if (uNotifyCode == EN_CHANGE) { SetModified(); }
+        break;
+    case ID_PROXY_FORCE:
+    case ID_PROXY_HOSTNAMES:
+    case ID_PROXY_PEERS:
+    case ID_PROXY_TRACKERS:
+        UI::CheckBox cb = GetDlgItem(nID);
+        cb.Toggle();
+        SetModified();
+        break;
+    }
+}
+
 BOOL ConnectionPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 {
     SetDlgItemText(ID_LISTEN_INTERFACE_GROUP, TRW("listen_interface"));
@@ -63,10 +189,14 @@ BOOL ConnectionPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
     if (cfg.GetProxyPort() > 0) { m_proxyPort.SetWindowText(TWS(std::to_string(cfg.GetProxyPort()))); }
     m_proxyUsername.SetWindowText(TWS(cfg.GetProxyUsername()));
     m_proxyPassword.SetWindowText(TWS(cfg.GetProxyPassword()));
-    if (cfg.GetProxyForce()) { m_proxyForce.SetCheck(BST_CHECKED); }
-    if (cfg.GetProxyHostnames()) { m_proxyHostnames.SetCheck(BST_CHECKED); }
-    if (cfg.GetProxyPeers()) { m_proxyPeers.SetCheck(BST_CHECKED); }
-    if (cfg.GetProxyTrackers()) { m_proxyTrackers.SetCheck(BST_CHECKED); }
+
+    // Checkboxes
+    if (cfg.GetProxyForce()) { m_proxyForce.Check(); }
+    if (cfg.GetProxyHostnames()) { m_proxyHostnames.Check(); }
+    if (cfg.GetProxyPeers()) { m_proxyPeers.Check(); }
+    if (cfg.GetProxyTrackers()) { m_proxyTrackers.Check(); }
+
+    ChangeProxy(cfg.GetProxyType());
 
     return FALSE;
 }

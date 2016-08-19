@@ -17,6 +17,13 @@ public:
         Text
     };
 
+    enum SortOrder
+    {
+        Unknown,
+        Ascending,
+        Descending
+    };
+
     struct GetItemText
     {
         int column_id;
@@ -31,6 +38,13 @@ public:
         float progress;
     };
 
+    struct SetColumnSortOrder
+    {
+        int column_id;
+        bool did_sort;
+        SortOrder order;
+    };
+
     struct ShowContextMenu
     {
         POINT point;
@@ -42,9 +56,16 @@ public:
 
     void AddColumn(int columnId, const std::wstring& title, int size, ColumnType type);
     HWND GetHandle();
+    
+    SortOrder GetSortOrder(int columnId);
+    void SetSortOrder(int columnId, SortOrder sort);
+
     std::pair<int, int> GetVisibleIndices();
     void RedrawItems(int first, int last);
     void SetItemCount(int count);
+
+protected:
+    virtual std::wstring GetItemText(int columnId, int itemIndex) = 0;
 
 private:
     struct Column;

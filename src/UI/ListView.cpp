@@ -8,6 +8,8 @@
 
 #include <algorithm>
 
+#define LV_SUBCLASS_ID 1890
+
 using UI::ListView;
 
 struct ListView::Column
@@ -27,7 +29,7 @@ ListView::ListView(HWND hWndList)
     SetWindowSubclass(
         m_list.GetParent(),
         &ListView::SubclassProc,
-        123,
+        LV_SUBCLASS_ID,
         (DWORD_PTR)this);
 
     // Load progress theme
@@ -77,6 +79,28 @@ HWND ListView::GetHandle()
     return m_list;
 }
 
+ListView::SortOrder ListView::GetSortOrder(int columnId)
+{
+    CHeaderCtrl header = m_list.GetHeader();
+    auto col = std::find_if(
+        m_cols.begin(),
+        m_cols.end(),
+        [columnId](const Column& c) { return c.id == columnId; });
+
+    if (col == m_cols.end()) { return SortOrder::Unknown; }
+
+    HDITEM hdrItem = { 0 };
+    hdrItem.mask = HDI_FORMAT;
+
+    if (header.GetItem(col->position, &hdrItem))
+    {
+        if (hdrItem.fmt & HDF_SORTDOWN) { return SortOrder::Descending; }
+        if (hdrItem.fmt & HDF_SORTUP) { return SortOrder::Ascending; }
+    }
+
+    return SortOrder::Unknown;
+}
+
 std::pair<int, int> ListView::GetVisibleIndices()
 {
     std::pair<int, int> indices;
@@ -112,6 +136,47 @@ void ListView::SetItemCount(int count)
     m_list.SetItemCount(count);
 }
 
+void ListView::SetSortOrder(int columnId, SortOrder order)
+{
+    CHeaderCtrl header = m_list.GetHeader();
+
+    auto col = std::find_if(
+        m_cols.begin(),
+        m_cols.end(),
+        [columnId](const Column& c) { return c.id == columnId; });
+
+    if (col == m_cols.end()) { return; }
+
+    HDITEM hdrItem = { 0 };
+    hdrItem.mask = HDI_FORMAT;
+
+    if (!header.GetItem(col->position, &hdrItem))
+    {
+        return;
+    }
+
+    switch (order)
+    {
+    case SortOrder::Ascending:
+    {
+        hdrItem.fmt = (hdrItem.fmt & ~HDF_SORTDOWN) | HDF_SORTUP;
+        break;
+    }
+    case SortOrder::Descending:
+    {
+        hdrItem.fmt = (hdrItem.fmt & ~HDF_SORTUP) | HDF_SORTDOWN;
+        break;
+    }
+    default:
+    {
+        hdrItem.fmt = hdrItem.fmt & ~(HDF_SORTDOWN | HDF_SORTUP);
+        break;
+    }
+    }
+
+    header.SetItem(col->position, &hdrItem);
+}
+
 LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
     ListView *lv = reinterpret_cast<ListView*>(dwRefData);
@@ -143,6 +208,41 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 
         switch (nmhdr->code)
         {
+        case LVN_COLUMNCLICK:
+        {
+            LPNMLISTVIEW lpListView = reinterpret_cast<LPNMLISTVIEW>(nmhdr);
+            int position = lpListView->iSubItem;
+            auto col = std::find_if(
+                lv->m_cols.begin(),
+                lv->m_cols.end(),
+                [position](const Column& c) { return c.position == position; });
+
+            if (col == lv->m_cols.end()) { break; }
+
+            SortOrder currentSortOrder = lv->GetSortOrder(col->id);
+            SortOrder newSortOrder = SortOrder::Ascending;
+            if (currentSortOrder == SortOrder::Ascending) { newSortOrder = SortOrder::Descending; }
+            if (currentSortOrder == SortOrder::Descending) { newSortOrder = SortOrder::Ascending; }
+
+            SetColumnSortOrder scso{ col->id, false, newSortOrder };
+            lv->m_list.GetParent().SendMessage(PT_LV_SETCOLUMNSORTORDER, NULL, reinterpret_cast<LPARAM>(&scso));
+
+            if (!scso.did_sort)
+            {
+                break;
+            }
+
+            for (auto& it : lv->m_cols)
+            {
+                lv->SetSortOrder(it.id, SortOrder::Unknown);
+            }
+
+            auto idx = lv->GetVisibleIndices();
+            lv->RedrawItems(idx.first, idx.second);
+            lv->SetSortOrder(col->id, newSortOrder);
+
+            break;
+        }
         case LVN_GETDISPINFO:
         {
             NMLVDISPINFO* inf = reinterpret_cast<NMLVDISPINFO*>(nmhdr);
@@ -158,12 +258,8 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                 if (col != lv->m_cols.end()
                     && (col->type == ColumnType::Text || col->type == ColumnType::Number))
                 {
-                    GetItemText git;
-                    git.column_id = col->id;
-                    git.item_index = inf->item.iItem;
-
-                    lv->m_list.GetParent().SendMessage(PT_LV_GETITEMTEXT, NULL, reinterpret_cast<LPARAM>(&git));
-                    StringCchCopy(inf->item.pszText, inf->item.cchTextMax, git.text.c_str());
+                    std::wstring value = lv->GetItemText(col->id, inf->item.iItem);
+                    StringCchCopy(inf->item.pszText, inf->item.cchTextMax, value.c_str());
                 }
             }
 

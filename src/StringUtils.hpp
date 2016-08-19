@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+#include <cctype>
 #include <string>
 #include <windows.h>
 
@@ -19,4 +21,11 @@ static std::wstring ToWideString(const std::string& str)
     std::wstring result(size, '\0');
     MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &result[0], size);
     return result;
+}
+
+static std::string Trim(const std::string& str)
+{
+    auto wsfront = std::find_if_not(str.begin(), str.end(), [](int c) {return std::isspace(c); });
+    auto wsback = std::find_if_not(str.rbegin(), str.rend(), [](int c) {return std::isspace(c); }).base();
+    return (wsback <= wsfront ? std::string() : std::string(wsfront, wsback));
 }

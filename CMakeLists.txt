@@ -44,6 +44,8 @@ set(PICOTORRENT_SOURCES
     src/Controllers/AddTorrentController
     src/Controllers/ViewPreferencesController
 
+    src/Core/Torrent
+
     src/Dialogs/AboutDialog
     src/Dialogs/AddTorrentDialog
     src/Dialogs/OpenFileDialog
@@ -57,9 +59,14 @@ set(PICOTORRENT_SOURCES
     src/PropertySheets/Preferences/GeneralPage
     src/PropertySheets/Preferences/PreferencesSheet
 
+    src/UI/CheckBox
+    src/UI/ComboBox
     src/UI/ListView
     src/UI/MainMenu
     src/UI/StatusBar
+    src/UI/TextBox
+    src/UI/TorrentFileListView
+    src/UI/TorrentListView
 
     src/client/pico.rc
 )

@@ -2,11 +2,13 @@
 
 #include <fstream>
 #include <queue>
+#include <strsafe.h>
 
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session.hpp>
+#include <libtorrent/session_stats.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 
@@ -16,13 +18,14 @@
 #include "Translator.hpp"
 #include "Controllers/AddTorrentController.hpp"
 #include "Controllers/ViewPreferencesController.hpp"
+#include "Core/Torrent.hpp"
 #include "Dialogs/AboutDialog.hpp"
 #include "IO/Directory.hpp"
 #include "IO/File.hpp"
 #include "IO/Path.hpp"
-#include "UI/ListView.hpp"
 #include "UI/MainMenu.hpp"
 #include "UI/StatusBar.hpp"
+#include "UI/TorrentListView.hpp"
 
 #define LV_COL_NAME 1
 #define LV_COL_QUEUE_POSITION 2
@@ -54,6 +57,8 @@ struct SessionLoadItem
 };
 
 CMainFrame::CMainFrame()
+    :
+    m_metrics(lt::session_stats_metrics())
 {
 }
 
@@ -216,6 +221,7 @@ void CMainFrame::LoadTorrents()
             }
 
             params.ti = boost::make_shared<lt::torrent_info>(node);
+            m_muted_hashes.push_back(params.ti->info_hash());
         }
 
         if (params.save_path.empty())
@@ -289,6 +295,12 @@ void CMainFrame::SaveTorrents()
     }
 
     // LOG(info) << "Saving resume data for " << numOutstandingResumeData << " torrent(s)";
+    std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
+
+    if (!IO::Directory::Exists(torrents_dir))
+    {
+        IO::Directory::Create(torrents_dir);
+    }
 
     while (numOutstandingResumeData > 0)
     {
@@ -329,14 +341,11 @@ void CMainFrame::SaveTorrents()
             lt::bencode(std::back_inserter(buf), *rd->resume_data);
 
             std::string info_hash = lt::to_hex(rd->handle.info_hash().to_string());
-            std::wstringstream file_name;
-            file_name << ToWideString(info_hash) << TEXT(".dat");
-
-            std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
-            std::wstring torrent_file = IO::Path::Combine(torrents_dir, file_name.str());
+            std::string file_name = info_hash + ".dat";
+            std::wstring dat_file = IO::Path::Combine(torrents_dir, TWS(file_name));
 
             std::error_code ec;
-            IO::File::WriteAllBytes(torrent_file, buf, ec);
+            IO::File::WriteAllBytes(dat_file, buf, ec);
         }
     }
 }
@@ -368,6 +377,7 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     // Create the UI
     ResizeClient(SX(800), SY(200));
+    SetIcon(LoadIcon(lpCreateStruct->hInstance, MAKEINTRESOURCE(IDI_APPICON)));
     SetMenu(UI::MainMenu::Create());
     SetWindowText(TEXT("PicoTorrent"));
 
@@ -375,19 +385,7 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     CListViewCtrl list;
     list.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | LVS_OWNERDATA | LVS_REPORT);
 
-    m_torrentList = std::make_shared<UI::ListView>(list);
-    m_torrentList->AddColumn(LV_COL_NAME, TRW("name"), SX(280), UI::ListView::ColumnType::Text);
-    m_torrentList->AddColumn(LV_COL_QUEUE_POSITION, TRW("queue_position"), SX(30), UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_SIZE, TRW("size"), SX(80), UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_STATUS, TRW("status"), SX(120), UI::ListView::ColumnType::Text);
-    m_torrentList->AddColumn(LV_COL_PROGRESS, TRW("progress"), SX(100), UI::ListView::ColumnType::Progress);
-    m_torrentList->AddColumn(LV_COL_ETA, TRW("eta"), SX(80), UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_DL, TRW("dl"), SX(80), UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_UL, TRW("ul"), SX(80), UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_RATIO, TRW("ratio"), SX(80), UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_SEEDS, TRW("seeds"), SX(80), UI::ListView::ColumnType::Number);
-    m_torrentList->AddColumn(LV_COL_PEERS, TRW("peers"), SX(80), UI::ListView::ColumnType::Number);
-
+    m_torrentList = std::make_shared<UI::TorrentListView>(list, m_hashes, m_torrents);
     m_hWndClient = m_torrentList->GetHandle();
 
     // Set our status bar
@@ -405,6 +403,7 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_session->add_dht_router({ "dht.aelitis.com", 6881 }); // Vuze
 
     LoadState();
+    LoadTorrents();
 
     m_session->set_alert_notify(std::bind(&CMainFrame::OnAlertNotify, this));
 
@@ -420,6 +419,7 @@ void CMainFrame::OnDestroy()
     m_session->set_alert_notify(notify_func_t());
 
     SaveState();
+    SaveTorrents();
 
     PostQuitMessage(0);
 }
@@ -449,40 +449,70 @@ LRESULT CMainFrame::OnLVGetItemProgress(UINT uMsg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-LRESULT CMainFrame::OnLVGetItemText(UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CMainFrame::OnLVSetColumnSortOrder(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    UI::ListView::GetItemText* git = reinterpret_cast<UI::ListView::GetItemText*>(lParam);
+    UI::ListView::SetColumnSortOrder* scso = reinterpret_cast<UI::ListView::SetColumnSortOrder*>(lParam);
 
-    if (git->item_index >= m_hashes.size())
-    {
-        // LOG
-        return 0;
-    }
+    std::function<bool(const lt::torrent_status& ts1, const lt::torrent_status& ts2)> sort;
+    bool is_ascending = (scso->order == UI::ListView::SortOrder::Ascending);
 
-    lt::sha1_hash& hash = m_hashes.at(git->item_index);
-    lt::torrent_status& ts = m_torrents.at(hash);
+    /*
+#define LV_COL_STATUS 4
+#define LV_COL_PROGRESS 5
+#define LV_COL_ETA 6
+#define LV_COL_DL 7
+#define LV_COL_UL 8
+#define LV_COL_SEEDS 9
+#define LV_COL_PEERS 10
+#define LV_COL_RATIO 11*/
 
-    switch (git->column_id)
+    switch (scso->column_id)
     {
     case LV_COL_NAME:
     {
-        git->text = ToWideString(ts.name);
+        sort = [this, is_ascending](const lt::torrent_status& ts1, const lt::torrent_status& ts2)
+        {
+            if (is_ascending) { return ts1.name < ts2.name; }
+            else { return ts1.name > ts2.name; }
+        };
         break;
     }
     case LV_COL_QUEUE_POSITION:
     {
-        if (ts.queue_position < 0)
+        sort = [this, is_ascending](const lt::torrent_status& ts1, const lt::torrent_status& ts2)
         {
-            git->text = TEXT("-");
-        }
-        else
+            if (is_ascending) { return ts1.queue_position < ts2.queue_position; }
+            else { return ts1.queue_position > ts2.queue_position; }
+        };
+        break;
+    }
+    case LV_COL_SIZE:
+    {
+        sort = [this, is_ascending](const lt::torrent_status& ts1, const lt::torrent_status& ts2)
         {
-            git->text = std::to_wstring(ts.queue_position + 1);
-        }
+            int64_t t1s = ts1.handle.torrent_file()->total_size();
+            int64_t t2s = ts2.handle.torrent_file()->total_size();
+
+            if (is_ascending) { return t1s < t2s; }
+            else { return t1s > t2s; }
+        };
+        break;
     }
     }
 
-    return 0;
+    if (sort)
+    {
+        scso->did_sort = true;
+        std::sort(m_hashes.begin(), m_hashes.end(),
+            [this, sort](const lt::sha1_hash& h1, const lt::sha1_hash& h2)
+            {
+                const lt::torrent_status& ts1 = m_torrents.at(h1);
+                const lt::torrent_status& ts2 = m_torrents.at(h2);
+                return sort(ts1, ts2);
+            });
+    }
+
+    return FALSE;
 }
 
 LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -504,9 +534,81 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
                 break;
             }
 
-            m_hashes.push_back({ ata->handle.info_hash() });
-            m_torrents.insert({ ata->handle.info_hash(), ata->handle.status() });
+            // A check to see if this is a hash we have added from the
+            // torrent directory when starting PicoTorrent.
+            std::vector<lt::sha1_hash>::iterator h = std::find(
+                m_muted_hashes.begin(),
+                m_muted_hashes.end(),
+                ata->handle.info_hash());
+
+            if (h == m_muted_hashes.end())
+            {
+                if (ata->handle.torrent_file())
+                {
+                    std::error_code ec;
+                    Core::Torrent::Save(ata->handle.torrent_file(), ec);
+
+                    // Post the torrent resume data so we can save it as well.
+                    // Since we load each torrent by the .dat file and not .torrent
+                    // file, we need this here.
+                    ata->handle.save_resume_data();
+                }
+                else
+                {
+                    // Save metadata resume info
+                }
+            }
+            else
+            {
+                m_muted_hashes.erase(h);
+            }
+
+            lt::sha1_hash hash = ata->handle.info_hash();
+
+            m_hashes.push_back(hash);
+            m_torrents.insert({ hash, ata->handle.status() });
             m_torrentList->SetItemCount((int)m_torrents.size());
+
+            break;
+        }
+        case lt::metadata_received_alert::alert_type:
+        {
+            lt::metadata_received_alert* mra = lt::alert_cast<lt::metadata_received_alert>(alert);
+
+            std::error_code ec;
+            Core::Torrent::Save(mra->handle.torrent_file(), ec);
+
+            mra->handle.save_resume_data();
+            break;
+        }
+        case lt::save_resume_data_alert::alert_type:
+        {
+            // Save resume data to the .dat file
+            lt::save_resume_data_alert* srda = lt::alert_cast<lt::save_resume_data_alert>(alert);
+            
+            // Insert PicoTorrent-specific data
+            srda->resume_data->dict().insert({ "pT-queuePosition", srda->handle.status().queue_position });
+            // ... and more
+
+            std::vector<char> buf;
+            lt::bencode(std::back_inserter(buf), *srda->resume_data);
+
+            std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
+            if (!IO::Directory::Exists(torrents_dir)) { IO::Directory::Create(torrents_dir); }
+
+            std::string hash = lt::to_hex(srda->handle.info_hash().to_string());
+            std::string file_name = hash + ".dat";
+
+            std::wstring dat_file = IO::Path::Combine(torrents_dir, TWS(file_name));
+            std::error_code ec;
+            IO::File::WriteAllBytes(dat_file, buf, ec);
+
+            break;
+        }
+        case lt::session_stats_alert::alert_type:
+        {
+            lt::session_stats_alert* ssa = lt::alert_cast<lt::session_stats_alert>(alert);
+            // ssa->
             break;
         }
         case lt::state_update_alert::alert_type:
@@ -514,10 +616,16 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
             lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
             if (sua->status.empty()) { break; }
 
+            int dl_rate = 0;
+
             for (lt::torrent_status& ts : sua->status)
             {
                 m_torrents[ts.info_hash] = ts;
+                dl_rate += ts.download_payload_rate;
             }
+
+            OutputDebugStringA(std::to_string(dl_rate).c_str());
+            OutputDebugStringA(",");
 
             std::pair<int, int> indices = m_torrentList->GetVisibleIndices();
             m_torrentList->RedrawItems(indices.first, indices.second);
@@ -532,5 +640,6 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 
 void CMainFrame::OnTimerElapsed(UINT_PTR nIDEvent)
 {
+    m_session->post_session_stats();
     m_session->post_torrent_updates();
 }

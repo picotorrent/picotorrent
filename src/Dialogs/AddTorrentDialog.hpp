@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace libtorrent { struct add_torrent_params; }
-namespace UI { class ListView; }
+namespace UI { class TorrentFileListView; }
 
 namespace Dialogs
 {
@@ -48,7 +48,7 @@ private:
     END_MSG_MAP()
 
     std::vector<std::shared_ptr<libtorrent::add_torrent_params>> m_params;
-    std::shared_ptr<UI::ListView> m_fileList;
+    std::shared_ptr<UI::TorrentFileListView> m_fileList;
 
     CComboBox m_torrents;
     CEdit m_size;

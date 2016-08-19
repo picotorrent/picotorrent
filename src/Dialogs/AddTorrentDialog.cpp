@@ -10,7 +10,7 @@
 #include "../resources.h"
 #include "../Scaler.hpp"
 #include "../Translator.hpp"
-#include "../UI/ListView.hpp"
+#include "../UI/TorrentFileListView.hpp"
 
 #define LV_COL_NAME 0
 #define LV_COL_SIZE 1
@@ -78,7 +78,11 @@ BOOL AddTorrentDialog::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
     SetDlgItemText(ID_ADD_STORAGE_MODE_FULL, TRW("full"));
 
     // Set up list view
-    m_fileList = std::make_shared<UI::ListView>(GetDlgItem(ID_FILES));
+    m_fileList = std::make_shared<UI::TorrentFileListView>(
+        GetDlgItem(ID_FILES),
+        m_params[0]->ti->files(),
+        m_params[0]->file_priorities);
+
     m_fileList->AddColumn(LV_COL_NAME, TRW("name"), SX(270), UI::ListView::ColumnType::Text);
     m_fileList->AddColumn(LV_COL_SIZE, TRW("size"), SX(80), UI::ListView::ColumnType::Number);
     m_fileList->AddColumn(LV_COL_PRIO, TRW("priority"), SX(120), UI::ListView::ColumnType::Text);
@@ -130,7 +134,7 @@ void AddTorrentDialog::OnChangeSavePath(UINT uNotifyCode, int nID, CWindow wndCt
 
 LRESULT AddTorrentDialog::OnLVGetItemText(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    std::shared_ptr<lt::add_torrent_params> prm = m_params.at(m_torrents.GetCurSel());
+    /*std::shared_ptr<lt::add_torrent_params> prm = m_params.at(m_torrents.GetCurSel());
 
     UI::ListView::GetItemText* git = reinterpret_cast<UI::ListView::GetItemText*>(lParam);
 
@@ -155,7 +159,7 @@ LRESULT AddTorrentDialog::OnLVGetItemText(UINT uMsg, WPARAM wParam, LPARAM lPara
         }
         break;
     }
-
+    */
     return 0;
 }
 
