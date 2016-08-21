@@ -21,6 +21,46 @@ const GUID DLG_SAVE = { 0x7D5FE367, 0xE148, 0x4A96,{ 0xB3, 0x26, 0x42, 0xEF, 0x2
 namespace lt = libtorrent;
 using Dialogs::AddTorrentDialog;
 
+class ListViewModel : public UI::TorrentFileListView::ViewModel
+{
+    std::shared_ptr<lt::add_torrent_params> m_params;
+
+public:
+    ListViewModel(const std::shared_ptr<lt::add_torrent_params>& params)
+        : m_params(params)
+    {
+    }
+
+    std::wstring GetFileName(int itemIndex)
+    {
+        return TWS(m_params->ti->files().file_path(itemIndex));
+    }
+
+    int64_t GetFileSize(int itemIndex)
+    {
+        return m_params->ti->files().file_size(itemIndex);
+    }
+
+    uint8_t GetFilePriority(int itemIndex)
+    {
+        if (m_params->file_priorities.size() > itemIndex)
+        {
+            return m_params->file_priorities[itemIndex];
+        }
+        return PRIORITY_NORMAL;
+    }
+
+    void SetFilePriority(int itemIndex, uint8_t prio)
+    {
+        if (m_params->file_priorities.size() < itemIndex + 1)
+        {
+            m_params->file_priorities.resize(itemIndex + 1, PRIORITY_NORMAL);
+        }
+
+        m_params->file_priorities[itemIndex] = prio;
+    }
+};
+
 AddTorrentDialog::AddTorrentDialog(
     const std::vector<std::shared_ptr<lt::add_torrent_params>>& params)
     : m_params(params)
@@ -30,23 +70,6 @@ AddTorrentDialog::AddTorrentDialog(
 std::vector<std::shared_ptr<libtorrent::add_torrent_params>>& AddTorrentDialog::GetParams()
 {
     return m_params;
-}
-
-std::wstring AddTorrentDialog::GetPriorityString(int priority)
-{
-    switch (priority)
-    {
-    case PRIORITY_DO_NOT_DOWNLOAD:
-        return TRW("do_not_download");
-    case PRIORITY_NORMAL:
-        return TRW("normal");
-    case PRIORITY_HIGH:
-        return TRW("high");
-    case PRIORITY_MAXIMUM:
-        return TRW("maximum");
-    default:
-        return TRW("unknown");
-    }
 }
 
 void AddTorrentDialog::OnEndDialog(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -77,15 +100,7 @@ BOOL AddTorrentDialog::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
     SetDlgItemText(ID_ADD_STORAGE_MODE_SPARSE, TRW("sparse"));
     SetDlgItemText(ID_ADD_STORAGE_MODE_FULL, TRW("full"));
 
-    // Set up list view
-    m_fileList = std::make_shared<UI::TorrentFileListView>(
-        GetDlgItem(ID_FILES),
-        m_params[0]->ti->files(),
-        m_params[0]->file_priorities);
-
-    m_fileList->AddColumn(LV_COL_NAME, TRW("name"), SX(270), UI::ListView::ColumnType::Text);
-    m_fileList->AddColumn(LV_COL_SIZE, TRW("size"), SX(80), UI::ListView::ColumnType::Number);
-    m_fileList->AddColumn(LV_COL_PRIO, TRW("priority"), SX(120), UI::ListView::ColumnType::Text);
+    m_fileList = std::make_shared<UI::TorrentFileListView>(GetDlgItem(ID_FILES));
 
     for (auto p : m_params)
     {
@@ -132,119 +147,6 @@ void AddTorrentDialog::OnChangeSavePath(UINT uNotifyCode, int nID, CWindow wndCt
     m_savePath.SetWindowText(res[0].c_str());
 }
 
-LRESULT AddTorrentDialog::OnLVGetItemText(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    /*std::shared_ptr<lt::add_torrent_params> prm = m_params.at(m_torrents.GetCurSel());
-
-    UI::ListView::GetItemText* git = reinterpret_cast<UI::ListView::GetItemText*>(lParam);
-
-    switch (git->column_id)
-    {
-    case LV_COL_NAME:
-        git->text = ToWideString(prm->ti->files().file_path(git->item_index));
-        break;
-    case LV_COL_SIZE:
-        TCHAR s[1024];
-        StrFormatByteSize64(prm->ti->files().file_size(git->item_index), s, ARRAYSIZE(s));
-        git->text = s;
-        break;
-    case LV_COL_PRIO:
-        if (prm->file_priorities.size() > git->item_index)
-        {
-            git->text = GetPriorityString(prm->file_priorities[git->item_index]);
-        }
-        else
-        {
-            git->text = GetPriorityString(PRIORITY_NORMAL);
-        }
-        break;
-    }
-    */
-    return 0;
-}
-
-LRESULT AddTorrentDialog::OnLVShowContextMenu(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    UI::ListView::ShowContextMenu* scm = reinterpret_cast<UI::ListView::ShowContextMenu*>(lParam);
-    if (scm->selected_indices.empty()) { return 0; }
-    std::shared_ptr<lt::add_torrent_params> prm = m_params.at(m_torrents.GetCurSel());
-
-    HMENU prioMenu = CreateMenu();
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_MAX, TRW("maximum"));
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_HIGH, TRW("high"));
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_NORMAL, TRW("normal"));
-    AppendMenu(prioMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_SKIP, TRW("do_not_download"));
-
-    HMENU menu = CreatePopupMenu();
-    AppendMenu(menu, MF_POPUP, (UINT_PTR)prioMenu, TRW("priority"));
-
-    // If only one file is selected, check that files priority
-    if (scm->selected_indices.size() == 1)
-    {
-        int idx = scm->selected_indices[0];
-        int prio = prm->file_priorities.size() > idx
-            ? prm->file_priorities[idx]
-            : PRIORITY_NORMAL;
-
-        switch (prio)
-        {
-        case PRIORITY_DO_NOT_DOWNLOAD:
-            CheckMenuItem(prioMenu, TORRENT_FILE_PRIO_SKIP, MF_BYCOMMAND | MF_CHECKED);
-            break;
-        case PRIORITY_NORMAL:
-            CheckMenuItem(prioMenu, TORRENT_FILE_PRIO_NORMAL, MF_BYCOMMAND | MF_CHECKED);
-            break;
-        case PRIORITY_HIGH:
-            CheckMenuItem(prioMenu, TORRENT_FILE_PRIO_HIGH, MF_BYCOMMAND | MF_CHECKED);
-            break;
-        case PRIORITY_MAXIMUM:
-            CheckMenuItem(prioMenu, TORRENT_FILE_PRIO_MAX, MF_BYCOMMAND | MF_CHECKED);
-            break;
-        }
-    }
-
-    int res = TrackPopupMenu(
-        menu,
-        TPM_NONOTIFY | TPM_RETURNCMD,
-        scm->point.x,
-        scm->point.y,
-        0,
-        m_fileList->GetHandle(),
-        NULL);
-
-    for (int idx : scm->selected_indices)
-    {
-        if (prm->file_priorities.size() < idx + 1)
-        {
-            prm->file_priorities.resize(idx + 1, PRIORITY_NORMAL);
-        }
-
-        switch (res)
-        {
-        case TORRENT_FILE_PRIO_SKIP:
-            prm->file_priorities[idx] = PRIORITY_DO_NOT_DOWNLOAD;
-            break;
-        case TORRENT_FILE_PRIO_NORMAL:
-            prm->file_priorities[idx] = PRIORITY_NORMAL;
-            break;
-        case TORRENT_FILE_PRIO_HIGH:
-            prm->file_priorities[idx] = PRIORITY_HIGH;
-            break;
-        case TORRENT_FILE_PRIO_MAX:
-            prm->file_priorities[idx] = PRIORITY_MAXIMUM;
-            break;
-        }
-    }
-
-    auto idxLo = std::min_element(scm->selected_indices.begin(), scm->selected_indices.end());
-    auto idxHi = std::max_element(scm->selected_indices.begin(), scm->selected_indices.end());
-
-    m_fileList->RedrawItems(*idxLo, *idxHi);
-
-    return 0;
-}
-
 void AddTorrentDialog::OnTorrentSelected(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     ShowTorrent(m_torrents.GetCurSel());
@@ -279,8 +181,11 @@ void AddTorrentDialog::ShowTorrent(int torrentIndex)
     {
         TCHAR s[1024];
         StrFormatByteSize64(ti->total_size(), s, ARRAYSIZE(s));
-
         m_size.SetWindowText(s);
+
+        auto vm = std::make_unique<ListViewModel>(m_params[torrentIndex]);
+
+        m_fileList->UpdateModel(std::move(vm));
         m_fileList->SetItemCount(ti->num_files());
     }
     else

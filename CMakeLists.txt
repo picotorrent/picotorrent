@@ -68,6 +68,8 @@ set(PICOTORRENT_SOURCES
     src/UI/TorrentFileListView
     src/UI/TorrentListView
 
+    src/ViewModels/TorrentListViewModel
+
     src/client/pico.rc
 )
 

@@ -43,7 +43,6 @@ private:
     // Message handlers
     LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
     void OnDestroy();
-    LRESULT OnLVGetItemProgress(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnLVSetColumnSortOrder(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
     void OnTimerElapsed(UINT_PTR nIDEvent);
@@ -57,10 +56,6 @@ private:
         COMMAND_ID_HANDLER_EX(ID_FILE_ADD_TORRENT, OnFileAddTorrent)
         COMMAND_ID_HANDLER_EX(ID_HELP_ABOUT, OnHelpAbout)
         COMMAND_ID_HANDLER_EX(ID_VIEW_PREFERENCES, OnViewPreferences)
-
-        // List view
-        MESSAGE_HANDLER_EX(PT_LV_GETITEMPROGRESS, OnLVGetItemProgress)
-        MESSAGE_HANDLER_EX(PT_LV_SETCOLUMNSORTORDER, OnLVSetColumnSortOrder);
 
         MESSAGE_HANDLER(LT_SESSION_ALERT, OnSessionAlert)
         CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)

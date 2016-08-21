@@ -26,18 +26,7 @@
 #include "UI/MainMenu.hpp"
 #include "UI/StatusBar.hpp"
 #include "UI/TorrentListView.hpp"
-
-#define LV_COL_NAME 1
-#define LV_COL_QUEUE_POSITION 2
-#define LV_COL_SIZE 3
-#define LV_COL_STATUS 4
-#define LV_COL_PROGRESS 5
-#define LV_COL_ETA 6
-#define LV_COL_DL 7
-#define LV_COL_UL 8
-#define LV_COL_SEEDS 9
-#define LV_COL_PEERS 10
-#define LV_COL_RATIO 11
+#include "ViewModels/TorrentListViewModel.hpp"
 
 namespace lt = libtorrent;
 
@@ -385,7 +374,8 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     CListViewCtrl list;
     list.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | LVS_OWNERDATA | LVS_REPORT);
 
-    m_torrentList = std::make_shared<UI::TorrentListView>(list, m_hashes, m_torrents);
+    auto model = std::make_unique<ViewModels::TorrentListViewModel>(m_hashes, m_torrents);
+    m_torrentList = std::make_shared<UI::TorrentListView>(list, std::move(model));
     m_hWndClient = m_torrentList->GetHandle();
 
     // Set our status bar
@@ -422,97 +412,6 @@ void CMainFrame::OnDestroy()
     SaveTorrents();
 
     PostQuitMessage(0);
-}
-
-LRESULT CMainFrame::OnLVGetItemProgress(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    UI::ListView::GetItemProgress* git = reinterpret_cast<UI::ListView::GetItemProgress*>(lParam);
-
-    if (git->item_index >= m_hashes.size())
-    {
-        // LOG
-        return 0;
-    }
-
-    lt::sha1_hash& hash = m_hashes.at(git->item_index);
-    lt::torrent_status& ts = m_torrents.at(hash);
-
-    switch (git->column_id)
-    {
-    case LV_COL_PROGRESS:
-    {
-        git->progress = ts.progress;
-        break;
-    }
-    }
-
-    return 0;
-}
-
-LRESULT CMainFrame::OnLVSetColumnSortOrder(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    UI::ListView::SetColumnSortOrder* scso = reinterpret_cast<UI::ListView::SetColumnSortOrder*>(lParam);
-
-    std::function<bool(const lt::torrent_status& ts1, const lt::torrent_status& ts2)> sort;
-    bool is_ascending = (scso->order == UI::ListView::SortOrder::Ascending);
-
-    /*
-#define LV_COL_STATUS 4
-#define LV_COL_PROGRESS 5
-#define LV_COL_ETA 6
-#define LV_COL_DL 7
-#define LV_COL_UL 8
-#define LV_COL_SEEDS 9
-#define LV_COL_PEERS 10
-#define LV_COL_RATIO 11*/
-
-    switch (scso->column_id)
-    {
-    case LV_COL_NAME:
-    {
-        sort = [this, is_ascending](const lt::torrent_status& ts1, const lt::torrent_status& ts2)
-        {
-            if (is_ascending) { return ts1.name < ts2.name; }
-            else { return ts1.name > ts2.name; }
-        };
-        break;
-    }
-    case LV_COL_QUEUE_POSITION:
-    {
-        sort = [this, is_ascending](const lt::torrent_status& ts1, const lt::torrent_status& ts2)
-        {
-            if (is_ascending) { return ts1.queue_position < ts2.queue_position; }
-            else { return ts1.queue_position > ts2.queue_position; }
-        };
-        break;
-    }
-    case LV_COL_SIZE:
-    {
-        sort = [this, is_ascending](const lt::torrent_status& ts1, const lt::torrent_status& ts2)
-        {
-            int64_t t1s = ts1.handle.torrent_file()->total_size();
-            int64_t t2s = ts2.handle.torrent_file()->total_size();
-
-            if (is_ascending) { return t1s < t2s; }
-            else { return t1s > t2s; }
-        };
-        break;
-    }
-    }
-
-    if (sort)
-    {
-        scso->did_sort = true;
-        std::sort(m_hashes.begin(), m_hashes.end(),
-            [this, sort](const lt::sha1_hash& h1, const lt::sha1_hash& h2)
-            {
-                const lt::torrent_status& ts1 = m_torrents.at(h1);
-                const lt::torrent_status& ts2 = m_torrents.at(h2);
-                return sort(ts1, ts2);
-            });
-    }
-
-    return FALSE;
 }
 
 LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)

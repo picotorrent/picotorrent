@@ -22,15 +22,11 @@ public:
     std::vector<std::shared_ptr<libtorrent::add_torrent_params>>& GetParams();
 
 private:
-    std::wstring GetPriorityString(int priority);
-
     void OnEndDialog(UINT uNotifyCode, int nID, CWindow wndCtl);
     BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam);
     void OnTorrentSelected(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnChangeStorageMode(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnChangeSavePath(UINT uNotifyCode, int nID, CWindow wndCtl);
-    LRESULT OnLVGetItemText(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    LRESULT OnLVShowContextMenu(UINT uMsg, WPARAM wParam, LPARAM lParam);
     void ShowTorrent(int torrentIndex);
 
     BEGIN_MSG_MAP_EX(AddTorrentDialog)
@@ -41,10 +37,6 @@ private:
         COMMAND_ID_HANDLER_EX(ID_ADD_STORAGE_MODE_FULL, OnChangeStorageMode)
         COMMAND_ID_HANDLER_EX(ID_ADD_STORAGE_MODE_SPARSE, OnChangeStorageMode)
         COMMAND_ID_HANDLER_EX(ID_BROWSE, OnChangeSavePath)
-
-        // ListView things
-        MESSAGE_HANDLER_EX(PT_LV_GETITEMTEXT, OnLVGetItemText)
-        MESSAGE_HANDLER_EX(PT_LV_SHOWCONTEXTMENU, OnLVShowContextMenu)
     END_MSG_MAP()
 
     std::vector<std::shared_ptr<libtorrent::add_torrent_params>> m_params;

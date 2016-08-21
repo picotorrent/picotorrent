@@ -24,33 +24,6 @@ public:
         Descending
     };
 
-    struct GetItemText
-    {
-        int column_id;
-        int item_index;
-        std::wstring text;
-    };
-
-    struct GetItemProgress
-    {
-        int column_id;
-        int item_index;
-        float progress;
-    };
-
-    struct SetColumnSortOrder
-    {
-        int column_id;
-        bool did_sort;
-        SortOrder order;
-    };
-
-    struct ShowContextMenu
-    {
-        POINT point;
-        std::vector<int> selected_indices;
-    };
-
     ListView(HWND hWndList);
     ~ListView();
 
@@ -65,7 +38,10 @@ public:
     void SetItemCount(int count);
 
 protected:
+    virtual float GetItemProgress(int columnId, int itemIndex) { return -1; }
     virtual std::wstring GetItemText(int columnId, int itemIndex) = 0;
+    virtual void ShowContextMenu(POINT p, const std::vector<int>& selectedIndices) { };
+    virtual bool Sort(int columnId, SortOrder order) { return false; }
 
 private:
     struct Column;

@@ -7,9 +7,12 @@
 
 #include <strsafe.h>
 
+#include "../Dialogs/OpenFileDialog.hpp"
+#include "../IO/Path.hpp"
 #include "../resources.h"
 #include "../Scaler.hpp"
 #include "../Translator.hpp"
+#include "../ViewModels/TorrentListViewModel.hpp"
 
 #define LV_COL_NAME 1
 #define LV_COL_QUEUE_POSITION 2
@@ -25,15 +28,15 @@
 
 namespace lt = libtorrent;
 using UI::TorrentListView;
+using ViewModels::TorrentListViewModel;
 
 TorrentListView::TorrentListView(
     HWND hWnd,
-    const std::vector<lt::sha1_hash>& hashes,
-    const std::map<libtorrent::sha1_hash, libtorrent::torrent_status>& torrents)
-    : ListView::ListView(hWnd),
-    m_hashes(hashes),
-    m_torrents(torrents)
+    std::unique_ptr<ViewModels::TorrentListViewModel> model)
+    : ListView::ListView(hWnd)
 {
+    m_model = std::move(model);
+
     AddColumn(LV_COL_NAME, TRW("name"), SX(280), UI::ListView::ColumnType::Text);
     AddColumn(LV_COL_QUEUE_POSITION, TRW("queue_position"), SX(30), UI::ListView::ColumnType::Number);
     AddColumn(LV_COL_SIZE, TRW("size"), SX(80), UI::ListView::ColumnType::Number);
@@ -47,56 +50,47 @@ TorrentListView::TorrentListView(
     AddColumn(LV_COL_PEERS, TRW("peers"), SX(80), UI::ListView::ColumnType::Number);
 }
 
+float TorrentListView::GetItemProgress(int columnId, int itemIndex)
+{
+    switch (columnId)
+    {
+    case LV_COL_PROGRESS:
+        return m_model->GetProgress(itemIndex);
+    }
+
+    return -1;
+}
+
 std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
 {
-    const lt::sha1_hash& hash = m_hashes.at(itemIndex);
-    const lt::torrent_status& ts = m_torrents.at(hash);
-
     switch (columnId)
     {
     case LV_COL_NAME:
-    {
-        return ToWideString(ts.name);
-    }
+        return m_model->GetName(itemIndex);
     case LV_COL_QUEUE_POSITION:
     {
-        if (ts.queue_position < 0) { return TEXT("-"); }
-        return std::to_wstring(ts.queue_position + 1);
+        int qp = m_model->GetQueuePosition(itemIndex);
+        if (qp < 0) { return TEXT("-"); }
+        return std::to_wstring(qp + 1);
     }
     case LV_COL_SIZE:
     {
         TCHAR s[100];
-        StrFormatByteSize64(ts.handle.torrent_file()->total_size(), s, ARRAYSIZE(s));
+        StrFormatByteSize64(m_model->GetSize(itemIndex), s, ARRAYSIZE(s));
         return s;
     }
     case LV_COL_STATUS:
     {
         break;
     }
-    case LV_COL_PROGRESS:
-    {
-        break;
-    }
     case LV_COL_ETA:
     {
-        bool is_paused = ts.paused && !ts.auto_managed;
-        int eta = -1;
+        std::chrono::seconds eta = m_model->GetETA(itemIndex);
+        if (eta.count() < 0) { return TEXT("-"); }
 
-        if (!is_paused)
-        {
-            int64_t remaining_bytes = ts.total_wanted - ts.total_wanted_done;
-            if (remaining_bytes > 0 && ts.download_payload_rate > 0)
-            {
-                eta = (int)(remaining_bytes / ts.download_payload_rate);
-            }
-        }
-
-        std::chrono::seconds next(eta);
-        if (next.count() < 0) { return TEXT("-"); }
-
-        std::chrono::hours hours_left = std::chrono::duration_cast<std::chrono::hours>(next);
-        std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(next - hours_left);
-        std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(next - hours_left - min_left);
+        std::chrono::hours hours_left = std::chrono::duration_cast<std::chrono::hours>(eta);
+        std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(eta - hours_left);
+        std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(eta - hours_left - min_left);
 
         TCHAR t[100];
         StringCchPrintf(
@@ -112,8 +106,8 @@ std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
     case LV_COL_UL:
     {
         int rate = columnId == LV_COL_DL
-            ? ts.download_payload_rate
-            : ts.upload_payload_rate;
+            ? m_model->GetDownloadRate(itemIndex)
+            : m_model->GetUploadRate(itemIndex);
 
         if (rate < 1024)
         {
@@ -126,43 +120,198 @@ std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
 
         return speed;
     }
+    case LV_COL_RATIO:
+    {
+        std::wstringstream wss;
+        wss << std::fixed << std::setprecision(3) << m_model->GetShareRatio(itemIndex);
+        return wss.str();
+    }
     case LV_COL_SEEDS:
     {
+        auto p = m_model->GetSeeds(itemIndex);
         TCHAR seeds[1024];
         StringCchPrintf(
             seeds,
             ARRAYSIZE(seeds),
             TEXT("%d (%d)"),
-            ts.num_seeds,
-            ts.list_seeds);
+            p.first,
+            p.second);
         return seeds;
     }
     case LV_COL_PEERS:
     {
-        int num = ts.num_peers < ts.num_seeds;
-        int list = ts.list_peers - ts.list_seeds;
+        auto p = m_model->GetPeers(itemIndex);
         TCHAR peers[1024];
         StringCchPrintf(
             peers,
             ARRAYSIZE(peers),
             TEXT("%d (%d)"),
-            std::max(num, 0),
-            std::max(list, 0));
+            std::max(p.first, 0),
+            std::max(p.second, 0));
         return peers;
-    }
-    case LV_COL_RATIO:
-    {
-        int64_t ul = ts.all_time_upload;
-        int64_t dl = ts.all_time_download;
-        float ratio = 0;
-
-        if (dl > 0) { ratio = (float)ul / (float)dl; }
-
-        std::wstringstream wss;
-        wss << std::fixed << std::setprecision(3) << ratio;
-        return wss.str();
     }
     }
 
     return TEXT("?unknown?");
+}
+
+void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
+{
+    HMENU menu = CreatePopupMenu();
+    AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_PAUSE, TRW("pause"));
+    AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_RESUME, TRW("resume"));
+    AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_RESUME_FORCE, TRW("resume_force"));
+    AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_DETAILS, TRW("details"));
+    AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_MOVE, TRW("move"));
+
+    HMENU queue = CreateMenu();
+    AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_UP, TRW("up"));
+    AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_DOWN, TRW("down"));
+    AppendMenu(queue, MF_SEPARATOR, 0, NULL);
+    AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_TOP, TRW("top"));
+    AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_BOTTOM, TRW("bottom"));
+
+    HMENU remove = CreateMenu();
+    AppendMenu(remove, MF_STRING, TORRENT_CONTEXT_MENU_REMOVE, TRW("remove_torrent"));
+    AppendMenu(remove, MF_STRING, TORRENT_CONTEXT_MENU_REMOVE_DATA, TRW("remove_torrent_and_files"));
+
+    AppendMenu(menu, MF_POPUP, (UINT_PTR)queue, TRW("queuing"));
+    AppendMenu(menu, MF_POPUP, (UINT_PTR)remove, TRW("remove"));
+    AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_COPY_SHA, TRW("copy_info_hash"));
+    AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER, TRW("open_in_explorer"));
+
+    // Configure the menu
+    bool allPaused = std::all_of(sel.begin(), sel.end(), [this](int i) { return m_model->IsPaused(i); });
+    bool allNotPaused = std::all_of(sel.begin(), sel.end(), [this](int i) { return !m_model->IsPaused(i); });
+
+    if (allPaused)
+    {
+        RemoveMenu(menu, TORRENT_CONTEXT_MENU_PAUSE, MF_BYCOMMAND);
+        SetMenuDefaultItem(menu, TORRENT_CONTEXT_MENU_RESUME, FALSE);
+    }
+    else if (allNotPaused)
+    {
+        RemoveMenu(menu, TORRENT_CONTEXT_MENU_RESUME, MF_BYCOMMAND);
+        RemoveMenu(menu, TORRENT_CONTEXT_MENU_RESUME_FORCE, MF_BYCOMMAND);
+        SetMenuDefaultItem(menu, TORRENT_CONTEXT_MENU_PAUSE, FALSE);
+    }
+
+    if (sel.size() > 1)
+    {
+        EnableMenuItem(menu, TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER, MF_BYCOMMAND | MF_DISABLED);
+        EnableMenuItem(menu, TORRENT_CONTEXT_MENU_QUEUE_UP, MF_BYCOMMAND | MF_DISABLED);
+        EnableMenuItem(menu, TORRENT_CONTEXT_MENU_QUEUE_DOWN, MF_BYCOMMAND | MF_DISABLED);
+        EnableMenuItem(menu, TORRENT_CONTEXT_MENU_QUEUE_TOP, MF_BYCOMMAND | MF_DISABLED);
+        EnableMenuItem(menu, TORRENT_CONTEXT_MENU_QUEUE_BOTTOM, MF_BYCOMMAND | MF_DISABLED);
+    }
+
+    int res = TrackPopupMenu(
+        menu,
+        TPM_NONOTIFY | TPM_RETURNCMD,
+        p.x,
+        p.y,
+        0,
+        GetHandle(),
+        NULL);
+    
+    switch (res)
+    {
+    case TORRENT_CONTEXT_MENU_PAUSE:
+        std::for_each(sel.begin(), sel.end(), [this](int i) { m_model->Pause(i); });
+        break;
+    case TORRENT_CONTEXT_MENU_RESUME:
+    case TORRENT_CONTEXT_MENU_RESUME_FORCE:
+        std::for_each(sel.begin(), sel.end(), [this, res](int i) { m_model->Resume(i, res == TORRENT_CONTEXT_MENU_RESUME_FORCE); });
+        break;
+    case TORRENT_CONTEXT_MENU_MOVE:
+    {
+        Dialogs::OpenFileDialog dlg;
+        dlg.SetOptions(dlg.GetOptions() | FOS_PICKFOLDERS | FOS_PATHMUSTEXIST);
+        dlg.SetTitle(TRW("select_destination"));
+        dlg.Show();
+
+        auto paths = dlg.GetPaths();
+        if (paths.size() == 0) { break; }
+
+        std::for_each(sel.begin(), sel.end(), [this, paths](int i) { m_model->Move(i, paths[0]); });
+        break;
+    }
+    case TORRENT_CONTEXT_MENU_QUEUE_UP:
+        m_model->QueueUp(sel[0]);
+        break;
+    case TORRENT_CONTEXT_MENU_QUEUE_DOWN:
+        m_model->QueueDown(sel[0]);
+        break;
+    case TORRENT_CONTEXT_MENU_QUEUE_TOP:
+        m_model->QueueTop(sel[0]);
+        break;
+    case TORRENT_CONTEXT_MENU_QUEUE_BOTTOM:
+        m_model->QueueBottom(sel[0]);
+        break;
+    case TORRENT_CONTEXT_MENU_REMOVE:
+    case TORRENT_CONTEXT_MENU_REMOVE_DATA:
+        break;
+    case TORRENT_CONTEXT_MENU_COPY_SHA:
+        break;
+    case TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER:
+    {
+        std::wstring savePath = m_model->GetSavePath(sel[0]);
+        std::wstring path = IO::Path::Combine(savePath, m_model->GetName(sel[0]));
+
+        LPITEMIDLIST il = ILCreateFromPath(path.c_str());
+        SHOpenFolderAndSelectItems(il, 0, 0, 0);
+        ILFree(il);
+        break;
+    }
+    case TORRENT_CONTEXT_MENU_DETAILS:
+        break;
+    }
+}
+
+bool TorrentListView::Sort(int columnId, ListView::SortOrder order)
+{
+    bool isAscending = order == SortOrder::Ascending;
+    ViewModels::TorrentListViewModel& model = *m_model;
+
+    switch (columnId)
+    {
+    case LV_COL_NAME:
+        TorrentListViewModel::Sort::ByName(model, isAscending);
+        return true;
+    case LV_COL_QUEUE_POSITION:
+        TorrentListViewModel::Sort::ByQueuePosition(model, isAscending);
+        return true;
+    case LV_COL_SIZE:
+        TorrentListViewModel::Sort::BySize(model, isAscending);
+        return true;
+    case LV_COL_STATUS:
+        TorrentListViewModel::Sort::ByStatus(model, isAscending);
+        return true;
+    case LV_COL_PROGRESS:
+        TorrentListViewModel::Sort::ByProgress(model, isAscending);
+        return true;
+    case LV_COL_ETA:
+        TorrentListViewModel::Sort::ByETA(model, isAscending);
+        return true;
+    case LV_COL_DL:
+        TorrentListViewModel::Sort::ByDownloadRate(model, isAscending);
+        return true;
+    case LV_COL_UL:
+        TorrentListViewModel::Sort::ByUploadRate(model, isAscending);
+        return true;
+    case LV_COL_SEEDS:
+        TorrentListViewModel::Sort::BySeeds(model, isAscending);
+        return true;
+    case LV_COL_PEERS:
+        TorrentListViewModel::Sort::ByPeers(model, isAscending);
+        return true;
+    case LV_COL_RATIO:
+        TorrentListViewModel::Sort::ByShareRatio(model, isAscending);
+        return true;
+    }
+
+    return false;
 }

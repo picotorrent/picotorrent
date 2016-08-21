@@ -188,17 +188,17 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
         HWND hWndTarget = reinterpret_cast<HWND>(wParam);
         if (hWndTarget != lv->m_list) { break; }
 
-        ShowContextMenu scm;
-        scm.point = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+        POINT p = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+        std::vector<int> selectedIndices;
 
         int pos = lv->m_list.GetNextItem(-1, LVNI_SELECTED);
         while (pos != -1)
         {
-            scm.selected_indices.push_back(pos);
+            selectedIndices.push_back(pos);
             pos = lv->m_list.GetNextItem(pos, LVNI_SELECTED);
         }
 
-        lv->m_list.GetParent().SendMessage(PT_LV_SHOWCONTEXTMENU, NULL, reinterpret_cast<LPARAM>(&scm));
+        lv->ShowContextMenu(p, selectedIndices);
         break;
     }
     case WM_NOTIFY:
@@ -224,10 +224,7 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             if (currentSortOrder == SortOrder::Ascending) { newSortOrder = SortOrder::Descending; }
             if (currentSortOrder == SortOrder::Descending) { newSortOrder = SortOrder::Ascending; }
 
-            SetColumnSortOrder scso{ col->id, false, newSortOrder };
-            lv->m_list.GetParent().SendMessage(PT_LV_SETCOLUMNSORTORDER, NULL, reinterpret_cast<LPARAM>(&scso));
-
-            if (!scso.did_sort)
+            if (!lv->Sort(col->id, newSortOrder))
             {
                 break;
             }
@@ -286,13 +283,8 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 
                 if (col->type != ColumnType::Progress) { break; }
 
-                GetItemProgress gip;
-                gip.column_id = col->id;
-                gip.item_index = (int)lpCustomDraw->nmcd.dwItemSpec;
-                gip.progress = -1;
-
-                lv->m_list.GetParent().SendMessage(PT_LV_GETITEMPROGRESS, NULL, reinterpret_cast<LPARAM>(&gip));
-                if (gip.progress < 0) { break; }
+                float progress = lv->GetItemProgress(col->id, (int)lpCustomDraw->nmcd.dwItemSpec);
+                if (progress < 0) { break; }
 
                 HDC hDc = lpCustomDraw->nmcd.hdc;
                 RECT rc = { 0 };
@@ -322,7 +314,7 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                 rc.top += SY(1);
 
                 int width = rc.right - rc.left;
-                int newWidth = (int)(width * gip.progress);
+                int newWidth = (int)(width * progress);
                 rc.right = rc.left + newWidth;
 
                 DrawThemeBackground(
@@ -341,7 +333,7 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                     &text);
 
                 TCHAR progress_str[100];
-                StringCchPrintf(progress_str, ARRAYSIZE(progress_str), TEXT("%.2f%%"), gip.progress * 100);
+                StringCchPrintf(progress_str, ARRAYSIZE(progress_str), TEXT("%.2f%%"), progress * 100);
                 DrawText(hDc, progress_str, -1, &text, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 
                 return CDRF_SKIPDEFAULT;

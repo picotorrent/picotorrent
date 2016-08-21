@@ -3,12 +3,13 @@
 #include "ListView.hpp"
 
 #include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
-namespace libtorrent
+namespace ViewModels
 {
-    class sha1_hash;
-    struct torrent_status;
+    class TorrentListViewModel;
 }
 
 namespace UI
@@ -16,15 +17,15 @@ namespace UI
     class TorrentListView : public ListView
     {
     public:
-        TorrentListView(HWND hWnd,
-            const std::vector<libtorrent::sha1_hash>& hashes,
-            const std::map<libtorrent::sha1_hash, libtorrent::torrent_status>& torrents);
+        TorrentListView(HWND hWnd, std::unique_ptr<ViewModels::TorrentListViewModel> model);
 
     protected:
+        float GetItemProgress(int columnId, int itemIndex);
         std::wstring GetItemText(int columnId, int itemIndex);
+        void ShowContextMenu(POINT p, const std::vector<int>& selectedIndices);
+        bool Sort(int columnId, SortOrder order);
 
     private:
-        const std::vector<libtorrent::sha1_hash>& m_hashes;
-        const std::map<libtorrent::sha1_hash, libtorrent::torrent_status>& m_torrents;
+        std::unique_ptr<ViewModels::TorrentListViewModel> m_model;
     };
 }
