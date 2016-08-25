@@ -6,6 +6,7 @@
 #include <strsafe.h>
 
 #include "../../Configuration.hpp"
+#include "../../Models/Peer.hpp"
 #include "../../resources.h"
 #include "../../Translator.hpp"
 #include "../../UI/PeerListView.hpp"
@@ -33,6 +34,18 @@ BOOL PeersPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 {
     // Set up UI
     m_peerList = std::make_unique<UI::PeerListView>(GetDlgItem(ID_DETAILS_PEERS_LIST));
+
+    // Add current peers
+    std::vector<lt::peer_info> peers;
+    m_torrent.get_peer_info(peers);
+
+    for (auto& peer : peers)
+    {
+        Models::Peer p(peer);
+        m_peerList->Add(p);
+    }
+
+    m_peerList->SetItemCount((int)peers.size());
 
     ::SendMessage(
         ::GetParent(::GetParent(m_hWnd)),

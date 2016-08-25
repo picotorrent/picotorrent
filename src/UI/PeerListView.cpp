@@ -45,6 +45,12 @@ void PeerListView::Update(const Models::Peer& model)
 
 std::wstring PeerListView::GetItemText(int columnId, int itemIndex)
 {
+    switch (columnId)
+    {
+    case LV_COL_IP:
+        return m_models.at(itemIndex).endpoint();
+    }
+
     return L"?unknown column?";
 }
 
