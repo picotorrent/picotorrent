@@ -27,10 +27,12 @@ private:
     void OnTorrentSelected(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnChangeStorageMode(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnChangeSavePath(UINT uNotifyCode, int nID, CWindow wndCtl);
+    LRESULT OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lParam);
     void ShowTorrent(int torrentIndex);
 
     BEGIN_MSG_MAP_EX(AddTorrentDialog)
         MSG_WM_INITDIALOG(OnInitDialog)
+        MESSAGE_HANDLER_EX(PT_PRIORITIZEFILES, OnPrioritizeFiles)
         COMMAND_HANDLER_EX(ID_TORRENT, CBN_SELENDOK, OnTorrentSelected)
         COMMAND_ID_HANDLER_EX(IDCANCEL, OnEndDialog)
         COMMAND_ID_HANDLER_EX(IDOK, OnEndDialog)

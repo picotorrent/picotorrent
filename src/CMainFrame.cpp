@@ -1,6 +1,6 @@
 #include "CMainFrame.hpp"
 
-#include <fstream>
+#include <algorithm>
 #include <queue>
 #include <strsafe.h>
 
@@ -12,21 +12,29 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 
+#include "Commands/MoveTorrentsCommand.hpp"
+#include "Commands/PauseTorrentsCommand.hpp"
+#include "Commands/RemoveTorrentsCommand.hpp"
+#include "Commands/ResumeTorrentsCommand.hpp"
+#include "Commands/ShowTorrentDetailsCommand.hpp"
+#include "Configuration.hpp"
 #include "Environment.hpp"
 #include "Scaler.hpp"
 #include "StringUtils.hpp"
 #include "Translator.hpp"
 #include "Controllers/AddTorrentController.hpp"
+#include "Controllers/TorrentDetailsController.hpp"
 #include "Controllers/ViewPreferencesController.hpp"
 #include "Core/Torrent.hpp"
 #include "Dialogs/AboutDialog.hpp"
+#include "Dialogs/OpenFileDialog.hpp"
 #include "IO/Directory.hpp"
 #include "IO/File.hpp"
 #include "IO/Path.hpp"
+#include "Models/Torrent.hpp"
 #include "UI/MainMenu.hpp"
 #include "UI/StatusBar.hpp"
 #include "UI/TorrentListView.hpp"
-#include "ViewModels/TorrentListViewModel.hpp"
 
 namespace lt = libtorrent;
 
@@ -86,6 +94,156 @@ void CMainFrame::LoadState()
     }
 
     m_session->load_state(node);
+}
+
+LRESULT CMainFrame::OnRegisterNotify(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    HWND hWndTarget = reinterpret_cast<HWND>(lParam);
+    m_listeners.push_back(hWndTarget);
+
+    return FALSE;
+}
+
+
+LRESULT CMainFrame::OnUnregisterNotify(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    HWND hWndTarget = reinterpret_cast<HWND>(lParam);
+    
+    auto f = std::find(m_listeners.begin(), m_listeners.end(), hWndTarget);
+    if (f != m_listeners.end()) { m_listeners.erase(f); }
+
+    return FALSE;
+}
+
+LRESULT CMainFrame::OnMoveTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    Dialogs::OpenFileDialog dlg;
+    dlg.SetOptions(dlg.GetOptions() | FOS_PICKFOLDERS | FOS_PATHMUSTEXIST);
+    dlg.SetTitle(TRW("select_destination"));
+    dlg.Show();
+
+    auto paths = dlg.GetPaths();
+    if (paths.size() == 0) { return FALSE; }
+
+    auto* mv = reinterpret_cast<Commands::MoveTorrentsCommand*>(lParam);
+
+    for (auto&t : mv->torrents)
+    {
+        const lt::torrent_handle& th = m_torrents.at(t.infoHash());
+        th.move_storage(ToString(paths[0]));
+    }
+
+    return FALSE;
+}
+
+LRESULT CMainFrame::OnPauseTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    auto* ptc = reinterpret_cast<Commands::PauseTorrentsCommand*>(lParam);
+
+    for (auto& t : ptc->torrents)
+    {
+        const lt::torrent_handle& th = m_torrents.at(t.infoHash());
+
+        th.auto_managed(false);
+        th.pause();
+    }
+
+    return FALSE;
+}
+
+LRESULT CMainFrame::OnRemoveTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    Configuration& cfg = Configuration::GetInstance();
+    bool prompt = cfg.GetPromptForRemovingData();
+    bool shouldRemove = !prompt;
+
+    if (prompt)
+    {
+        std::wstring content = TRW("confirm_remove_description");
+        std::wstring mainInstruction = TRW("confirm_remove");
+        std::wstring verificationText = TRW("do_not_ask_again");
+
+        TASKDIALOGCONFIG tdf = { 0 };
+        tdf.cbSize = sizeof(TASKDIALOGCONFIG);
+        tdf.dwCommonButtons = TDCBF_OK_BUTTON | TDCBF_CANCEL_BUTTON;
+        tdf.dwFlags = TDF_POSITION_RELATIVE_TO_WINDOW;
+        tdf.hwndParent = m_hWnd;
+        tdf.pszContent = content.c_str();
+        tdf.pszMainIcon = TD_WARNING_ICON;
+        tdf.pszMainInstruction = mainInstruction.c_str();
+        tdf.pszVerificationText = verificationText.c_str();
+        tdf.pszWindowTitle = TEXT("PicoTorrent");
+
+        int pnButton = 0;
+        BOOL pfVerificationFlagChecked = FALSE;
+        HRESULT hResult = TaskDialogIndirect(&tdf, &pnButton, NULL, &pfVerificationFlagChecked);
+
+        if (hResult != S_OK)
+        {
+            // LOg
+            return false;
+        }
+
+        switch (pnButton)
+        {
+        case IDOK:
+        {
+            if (pfVerificationFlagChecked)
+            {
+                cfg.SetPromptForRemovingData(false);
+            }
+
+            shouldRemove = true;
+            break;
+        }
+        }
+    }
+
+    if (!shouldRemove) { return FALSE; }
+
+    auto* rm = reinterpret_cast<Commands::RemoveTorrentsCommand*>(lParam);
+    int flags = rm->removeData ? lt::session::options_t::delete_files : 0;
+
+    for (auto& t : rm->torrents)
+    {
+        const lt::torrent_handle& th = m_torrents.at(t.infoHash());
+        m_session->remove_torrent(th, flags);
+    }
+
+    return FALSE;
+}
+
+LRESULT CMainFrame::OnResumeTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    auto* res = reinterpret_cast<Commands::ResumeTorrentsCommand*>(lParam);
+
+    for (auto& t : res->torrents)
+    {
+        const lt::torrent_handle& th = m_torrents.at(t.infoHash());
+        const lt::torrent_status& ts = th.status();
+
+        if (ts.paused && ts.errc)
+        {
+            th.clear_error();
+        }
+
+        th.set_upload_mode(false);
+        th.auto_managed(!res->force);
+        th.pause();
+    }
+
+    return FALSE;
+}
+
+LRESULT CMainFrame::OnShowTorrentDetails(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    auto* show = reinterpret_cast<Commands::ShowTorrentDetailsCommand*>(lParam);
+    const lt::torrent_handle& th = m_torrents.at(show->torrent.infoHash());
+
+    Controllers::TorrentDetailsController controller(m_hWnd, th);
+    controller.Execute();
+
+    return FALSE;
 }
 
 void CMainFrame::LoadTorrents()
@@ -341,7 +499,7 @@ void CMainFrame::SaveTorrents()
 
 void CMainFrame::OnAlertNotify()
 {
-    PostMessage(LT_SESSION_ALERT);
+    PostMessage(PT_ALERT);
 }
 
 void CMainFrame::OnFileAddTorrent(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -374,9 +532,8 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     CListViewCtrl list;
     list.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | LVS_OWNERDATA | LVS_REPORT);
 
-    auto model = std::make_unique<ViewModels::TorrentListViewModel>(m_hashes, m_torrents);
-    m_torrentList = std::make_shared<UI::TorrentListView>(list, std::move(model));
-    m_hWndClient = m_torrentList->GetHandle();
+    m_torrentList = std::make_shared<UI::TorrentListView>(list);
+    m_hWndClient = *m_torrentList;
 
     // Set our status bar
     m_statusBar = std::make_shared<UI::StatusBar>();
@@ -462,11 +619,12 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
                 m_muted_hashes.erase(h);
             }
 
-            lt::sha1_hash hash = ata->handle.info_hash();
+            // Our torrent handle
+            m_torrents.insert({ ata->handle.info_hash(), ata->handle });
 
-            m_hashes.push_back(hash);
-            m_torrents.insert({ hash, ata->handle.status() });
-            m_torrentList->SetItemCount((int)m_torrents.size());
+            // Add a model to our torrent list
+            Models::Torrent model(ata->handle.info_hash(), ata->handle.status());
+            m_torrentList->Add(model);
 
             break;
         }
@@ -519,16 +677,32 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 
             for (lt::torrent_status& ts : sua->status)
             {
-                m_torrents[ts.info_hash] = ts;
+                Models::Torrent model(ts.info_hash, ts);
+                m_torrentList->Update(model);
+
+                // Send PT_TORRENT_UPDATED
+                for (HWND hWndListener : m_listeners)
+                {
+                    ::SendMessage(hWndListener, PT_TORRENT_UPDATED, NULL, (LPARAM)&ts.info_hash);
+                }
+
                 dl_rate += ts.download_payload_rate;
             }
-
-            OutputDebugStringA(std::to_string(dl_rate).c_str());
-            OutputDebugStringA(",");
 
             std::pair<int, int> indices = m_torrentList->GetVisibleIndices();
             m_torrentList->RedrawItems(indices.first, indices.second);
 
+            break;
+        }
+        case lt::torrent_removed_alert::alert_type:
+        {
+            lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
+
+            Models::Torrent t(tra->info_hash);
+            m_torrentList->Remove(t);
+
+            // Remove from m_torrents
+            m_torrents.erase(tra->info_hash);
             break;
         }
         }

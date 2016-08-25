@@ -6,7 +6,9 @@
 
 #include <strsafe.h>
 
+#include "../Commands/PrioritizeFilesCommand.hpp"
 #include "../Dialogs/OpenFileDialog.hpp"
+#include "../Models/TorrentFile.hpp"
 #include "../resources.h"
 #include "../Scaler.hpp"
 #include "../Translator.hpp"
@@ -20,46 +22,6 @@ const GUID DLG_SAVE = { 0x7D5FE367, 0xE148, 0x4A96,{ 0xB3, 0x26, 0x42, 0xEF, 0x2
 
 namespace lt = libtorrent;
 using Dialogs::AddTorrentDialog;
-
-class ListViewModel : public UI::TorrentFileListView::ViewModel
-{
-    std::shared_ptr<lt::add_torrent_params> m_params;
-
-public:
-    ListViewModel(const std::shared_ptr<lt::add_torrent_params>& params)
-        : m_params(params)
-    {
-    }
-
-    std::wstring GetFileName(int itemIndex)
-    {
-        return TWS(m_params->ti->files().file_path(itemIndex));
-    }
-
-    int64_t GetFileSize(int itemIndex)
-    {
-        return m_params->ti->files().file_size(itemIndex);
-    }
-
-    uint8_t GetFilePriority(int itemIndex)
-    {
-        if (m_params->file_priorities.size() > itemIndex)
-        {
-            return m_params->file_priorities[itemIndex];
-        }
-        return PRIORITY_NORMAL;
-    }
-
-    void SetFilePriority(int itemIndex, uint8_t prio)
-    {
-        if (m_params->file_priorities.size() < itemIndex + 1)
-        {
-            m_params->file_priorities.resize(itemIndex + 1, PRIORITY_NORMAL);
-        }
-
-        m_params->file_priorities[itemIndex] = prio;
-    }
-};
 
 AddTorrentDialog::AddTorrentDialog(
     const std::vector<std::shared_ptr<lt::add_torrent_params>>& params)
@@ -147,6 +109,34 @@ void AddTorrentDialog::OnChangeSavePath(UINT uNotifyCode, int nID, CWindow wndCt
     m_savePath.SetWindowText(res[0].c_str());
 }
 
+LRESULT AddTorrentDialog::OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    auto cmd = reinterpret_cast<Commands::PrioritizeFilesCommand*>(lParam);
+    int current = m_torrents.GetCurSel();
+    auto prm = m_params.at(current);
+    auto files = prm->ti->files();
+
+    for (auto idx : cmd->indices)
+    {
+        if (prm->file_priorities.size() <= idx)
+        {
+            prm->file_priorities.resize(idx + 1, PRIORITY_NORMAL);
+        }
+
+        prm->file_priorities.at(idx) = cmd->priority;
+
+        // Update model
+        Models::TorrentFile tf{ idx };
+        tf.name = TWS(files.file_path(idx));
+        tf.priority = cmd->priority;
+        tf.size = files.file_size(idx);
+
+        m_fileList->Update(tf);
+    }
+
+    return FALSE;
+}
+
 void AddTorrentDialog::OnTorrentSelected(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     ShowTorrent(m_torrents.GetCurSel());
@@ -163,6 +153,7 @@ void AddTorrentDialog::ShowTorrent(int torrentIndex)
     std::shared_ptr<lt::add_torrent_params> prm = m_params.at(torrentIndex);
     boost::shared_ptr<lt::torrent_info> ti = prm->ti;
 
+    m_fileList->RemoveAll();
     m_savePath.SetWindowText(ToWideString(prm->save_path).c_str());
     m_storageFull.SetCheck(BST_UNCHECKED);
     m_storageSparse.SetCheck(BST_UNCHECKED);
@@ -183,9 +174,21 @@ void AddTorrentDialog::ShowTorrent(int torrentIndex)
         StrFormatByteSize64(ti->total_size(), s, ARRAYSIZE(s));
         m_size.SetWindowText(s);
 
-        auto vm = std::make_unique<ListViewModel>(m_params[torrentIndex]);
+        // Add model to list
+        const lt::file_storage& files = ti->files();
 
-        m_fileList->UpdateModel(std::move(vm));
+        for (int i = 0; i < files.num_files(); i++)
+        {
+            Models::TorrentFile tf{ i };
+            tf.name = TWS(files.file_path(i));
+            tf.priority = prm->file_priorities.size() > i
+                ? prm->file_priorities.at(i)
+                : PRIORITY_NORMAL;
+            tf.size = files.file_size(i);
+
+            m_fileList->Add(tf);
+        }
+
         m_fileList->SetItemCount(ti->num_files());
     }
     else

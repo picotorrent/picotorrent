@@ -2,12 +2,12 @@
 
 std::string VersionInformation::GetBranch()
 {
-    return "f/wtl-refactor";
+    return "";
 }
 
 std::string VersionInformation::GetCommitHash()
 {
-    return "62dd734";
+    return "";
 }
 
 std::string VersionInformation::GetCurrentVersion()

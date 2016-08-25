@@ -2,14 +2,12 @@
 
 #include "ListView.hpp"
 
-#include <map>
-#include <memory>
 #include <string>
 #include <vector>
 
-namespace ViewModels
+namespace Models
 {
-    class TorrentListViewModel;
+    class Torrent;
 }
 
 namespace UI
@@ -17,7 +15,11 @@ namespace UI
     class TorrentListView : public ListView
     {
     public:
-        TorrentListView(HWND hWnd, std::unique_ptr<ViewModels::TorrentListViewModel> model);
+        TorrentListView(HWND hWndList);
+
+        void Add(const Models::Torrent& model);
+        void Remove(const Models::Torrent& model);
+        void Update(const Models::Torrent& model);
 
     protected:
         float GetItemProgress(int columnId, int itemIndex);
@@ -26,6 +28,6 @@ namespace UI
         bool Sort(int columnId, SortOrder order);
 
     private:
-        std::unique_ptr<ViewModels::TorrentListViewModel> m_model;
+        std::vector<Models::Torrent> m_models;
     };
 }

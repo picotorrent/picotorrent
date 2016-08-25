@@ -31,6 +31,7 @@ endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 configure_file("${CMAKE_SOURCE_DIR}/src/VersionInformation.cpp.in" "${CMAKE_SOURCE_DIR}/src/VersionInformation.cpp" @ONLY)
 
 set(PICOTORRENT_SOURCES
+    src/Clipboard
     src/CMainFrame
     src/Configuration
     src/Configuration_Section
@@ -42,6 +43,7 @@ set(PICOTORRENT_SOURCES
     src/VersionInformation
 
     src/Controllers/AddTorrentController
+    src/Controllers/TorrentDetailsController
     src/Controllers/ViewPreferencesController
 
     src/Core/Torrent
@@ -54,6 +56,14 @@ set(PICOTORRENT_SOURCES
     src/IO/File
     src/IO/Path
 
+    src/Models/Torrent
+
+    src/PropertySheets/Details/DetailsSheet
+    src/PropertySheets/Details/FilesPage
+    src/PropertySheets/Details/OptionsPage
+    src/PropertySheets/Details/OverviewPage
+    src/PropertySheets/Details/PeersPage
+
     src/PropertySheets/Preferences/ConnectionPage
     src/PropertySheets/Preferences/DownloadsPage
     src/PropertySheets/Preferences/GeneralPage
@@ -63,12 +73,11 @@ set(PICOTORRENT_SOURCES
     src/UI/ComboBox
     src/UI/ListView
     src/UI/MainMenu
+    src/UI/PeerListView
     src/UI/StatusBar
     src/UI/TextBox
     src/UI/TorrentFileListView
     src/UI/TorrentListView
-
-    src/ViewModels/TorrentListViewModel
 
     src/client/pico.rc
 )

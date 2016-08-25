@@ -90,6 +90,9 @@ public:
     std::vector<std::pair<std::string, int>> GetListenInterfaces();
     void SetListenInterfaces(const std::vector<std::pair<std::string, int>>& interfaces);
 
+    bool GetPromptForRemovingData();
+    void SetPromptForRemovingData(bool val);
+
     ProxyType GetProxyType();
     void SetProxyType(ProxyType type);
 

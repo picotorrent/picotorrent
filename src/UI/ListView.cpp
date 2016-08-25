@@ -20,14 +20,13 @@ struct ListView::Column
 };
 
 ListView::ListView(HWND hWndList)
-    : m_list(hWndList)
+    : CListViewCtrl(hWndList)
 {
-    ListView_SetExtendedListViewStyle(
-        m_list,
+    SetExtendedListViewStyle(
         LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
     SetWindowSubclass(
-        m_list.GetParent(),
+        GetParent(),
         &ListView::SubclassProc,
         LV_SUBCLASS_ID,
         (DWORD_PTR)this);
@@ -42,7 +41,7 @@ ListView::ListView(HWND hWndList)
         CW_USEDEFAULT,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        m_list,
+        m_hWnd,
         NULL,
         GetModuleHandle(NULL),
         NULL);
@@ -59,8 +58,8 @@ ListView::~ListView()
 
 void ListView::AddColumn(int columnId, const std::wstring& title, int size, ColumnType type)
 {
-    int existingColumns = m_list.GetHeader().GetItemCount();
-    int columnPosition = m_list.InsertColumn(
+    int existingColumns = GetHeader().GetItemCount();
+    int columnPosition = InsertColumn(
         existingColumns,
         title.c_str(),
         type == ColumnType::Text ? LVCFMT_LEFT : LVCFMT_RIGHT,
@@ -74,14 +73,8 @@ void ListView::AddColumn(int columnId, const std::wstring& title, int size, Colu
     m_cols.push_back(c);
 }
 
-HWND ListView::GetHandle()
-{
-    return m_list;
-}
-
 ListView::SortOrder ListView::GetSortOrder(int columnId)
 {
-    CHeaderCtrl header = m_list.GetHeader();
     auto col = std::find_if(
         m_cols.begin(),
         m_cols.end(),
@@ -92,7 +85,7 @@ ListView::SortOrder ListView::GetSortOrder(int columnId)
     HDITEM hdrItem = { 0 };
     hdrItem.mask = HDI_FORMAT;
 
-    if (header.GetItem(col->position, &hdrItem))
+    if (GetHeader().GetItem(col->position, &hdrItem))
     {
         if (hdrItem.fmt & HDF_SORTDOWN) { return SortOrder::Descending; }
         if (hdrItem.fmt & HDF_SORTUP) { return SortOrder::Ascending; }
@@ -104,42 +97,35 @@ ListView::SortOrder ListView::GetSortOrder(int columnId)
 std::pair<int, int> ListView::GetVisibleIndices()
 {
     std::pair<int, int> indices;
-    indices.first = m_list.GetTopIndex();
+    indices.first = GetTopIndex();
 
-    if (m_list.GetItemCount() == 0)
+    if (GetItemCount() == 0)
     {
         return std::pair<int, int>();
     }
 
     RECT rc;
-    m_list.GetItemRect(indices.first, &rc, LVIR_BOUNDS);
+    GetItemRect(indices.first, &rc, LVIR_BOUNDS);
 
     RECT client;
-    m_list.GetClientRect(&client);
+    GetClientRect(&client);
 
     int clientHeight = client.bottom - client.top;
     int itemHeight = rc.bottom - rc.top;
 
     indices.second = (clientHeight / itemHeight) + indices.first + 1;
-    if (indices.second > m_list.GetItemCount()) { indices.second = m_list.GetItemCount(); }
+    if (indices.second > GetItemCount()) { indices.second = GetItemCount(); }
 
     return indices;
 }
 
-void ListView::RedrawItems(int first, int last)
+void ListView::SendCommand(UINT uMsg, LPARAM lParam)
 {
-    m_list.RedrawItems(first, last);
-}
-
-void ListView::SetItemCount(int count)
-{
-    m_list.SetItemCount(count);
+    GetParent().SendMessage(uMsg, NULL, lParam);
 }
 
 void ListView::SetSortOrder(int columnId, SortOrder order)
 {
-    CHeaderCtrl header = m_list.GetHeader();
-
     auto col = std::find_if(
         m_cols.begin(),
         m_cols.end(),
@@ -150,7 +136,7 @@ void ListView::SetSortOrder(int columnId, SortOrder order)
     HDITEM hdrItem = { 0 };
     hdrItem.mask = HDI_FORMAT;
 
-    if (!header.GetItem(col->position, &hdrItem))
+    if (!GetHeader().GetItem(col->position, &hdrItem))
     {
         return;
     }
@@ -174,7 +160,7 @@ void ListView::SetSortOrder(int columnId, SortOrder order)
     }
     }
 
-    header.SetItem(col->position, &hdrItem);
+    GetHeader().SetItem(col->position, &hdrItem);
 }
 
 LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -186,25 +172,28 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
     case WM_CONTEXTMENU:
     {
         HWND hWndTarget = reinterpret_cast<HWND>(wParam);
-        if (hWndTarget != lv->m_list) { break; }
+        if (hWndTarget != lv->m_hWnd) { break; }
 
         POINT p = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
         std::vector<int> selectedIndices;
 
-        int pos = lv->m_list.GetNextItem(-1, LVNI_SELECTED);
+        int pos = lv->GetNextItem(-1, LVNI_SELECTED);
         while (pos != -1)
         {
             selectedIndices.push_back(pos);
-            pos = lv->m_list.GetNextItem(pos, LVNI_SELECTED);
+            pos = lv->GetNextItem(pos, LVNI_SELECTED);
         }
 
-        lv->ShowContextMenu(p, selectedIndices);
+        if (!selectedIndices.empty())
+        {
+            lv->ShowContextMenu(p, selectedIndices);
+        }
         break;
     }
     case WM_NOTIFY:
     {
         LPNMHDR nmhdr = reinterpret_cast<LPNMHDR>(lParam);
-        if (nmhdr->hwndFrom != lv->m_list) { break; }
+        if (nmhdr->hwndFrom != lv->m_hWnd) { break; }
 
         switch (nmhdr->code)
         {
@@ -288,7 +277,7 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 
                 HDC hDc = lpCustomDraw->nmcd.hdc;
                 RECT rc = { 0 };
-                lv->m_list.GetSubItemRect(
+                lv->GetSubItemRect(
                     (int)lpCustomDraw->nmcd.dwItemSpec,
                     lpCustomDraw->iSubItem,
                     LVIR_BOUNDS,
@@ -326,7 +315,7 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                     NULL);
 
                 RECT text = { 0 };
-                lv->m_list.GetSubItemRect(
+                lv->GetSubItemRect(
                     (int)lpCustomDraw->nmcd.dwItemSpec,
                     lpCustomDraw->iSubItem,
                     LVIR_BOUNDS,

@@ -102,6 +102,16 @@ void Configuration::SetListenInterfaces(const std::vector<std::pair<std::string,
     (*m_cfg)["listen_interfaces"] = pj::value(ifaces);
 }
 
+bool Configuration::GetPromptForRemovingData()
+{
+    return Get("prompt_for_remove_data", true);
+}
+
+void Configuration::SetPromptForRemovingData(bool val)
+{
+    Set("prompt_for_remove_data", val);
+}
+
 Configuration::ProxyType Configuration::GetProxyType()
 {
     return (ProxyType)Get("proxy_type", (int64_t)ProxyType::None);

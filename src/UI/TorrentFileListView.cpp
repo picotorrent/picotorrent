@@ -1,26 +1,67 @@
 #include "TorrentFileListView.hpp"
 
+#include "../Commands/PrioritizeFilesCommand.hpp"
+#include "../Models/TorrentFile.hpp"
 #include "../resources.h"
 #include "../Scaler.hpp"
 #include "../Translator.hpp"
 
 #define LV_COL_NAME 0
 #define LV_COL_SIZE 1
-#define LV_COL_PRIO 2
+#define LV_COL_PROGRESS 2
+#define LV_COL_PRIO 3
 
 using UI::TorrentFileListView;
 
-TorrentFileListView::TorrentFileListView(HWND hWnd)
-    : ListView::ListView(hWnd)
+TorrentFileListView::TorrentFileListView(HWND hWnd, bool showProgress)
+    : ListView::ListView(hWnd),
+    m_showProgress(showProgress)
 {
     AddColumn(LV_COL_NAME, TRW("name"), SX(270), ColumnType::Text);
     AddColumn(LV_COL_SIZE, TRW("size"), SX(80), ColumnType::Number);
+
+    if (showProgress)
+    {
+        AddColumn(LV_COL_PROGRESS, TRW("progress"), SX(120), ColumnType::Progress);
+    }
+
     AddColumn(LV_COL_PRIO, TRW("priority"), SX(120), ColumnType::Text);
 }
 
-void TorrentFileListView::UpdateModel(std::unique_ptr<TorrentFileListView::ViewModel> vm)
+TorrentFileListView::~TorrentFileListView()
 {
-    m_model = std::move(vm);
+}
+
+void TorrentFileListView::Add(const Models::TorrentFile& file)
+{
+    m_models.push_back(file);
+}
+
+void TorrentFileListView::RemoveAll()
+{
+    m_models.clear();
+}
+
+void TorrentFileListView::Update(const Models::TorrentFile& model)
+{
+    auto f = std::find(m_models.begin(), m_models.end(), model);
+
+    if (f != m_models.end())
+    {
+        auto index = std::distance(m_models.begin(), f);
+        m_models.at(index) = model;
+    }
+}
+
+float TorrentFileListView::GetItemProgress(int columnId, int itemIndex)
+{
+    switch (columnId)
+    {
+    case LV_COL_PROGRESS:
+        return m_models.at(itemIndex).progress;
+    }
+
+    return -1;
 }
 
 std::wstring TorrentFileListView::GetItemText(int columnId, int itemIndex)
@@ -28,13 +69,13 @@ std::wstring TorrentFileListView::GetItemText(int columnId, int itemIndex)
     switch (columnId)
     {
     case LV_COL_NAME:
-        return m_model->GetFileName(itemIndex);
+        return m_models.at(itemIndex).name;
     case LV_COL_SIZE:
         TCHAR s[1024];
-        StrFormatByteSize64(m_model->GetFileSize(itemIndex), s, ARRAYSIZE(s));
+        StrFormatByteSize64(m_models.at(itemIndex).size, s, ARRAYSIZE(s));
         return s;
     case LV_COL_PRIO:
-        return GetPriorityString(m_model->GetFilePriority(itemIndex));
+        return GetPriorityString(m_models.at(itemIndex).priority);
     }
 
     return L"?unknown column?";
@@ -56,7 +97,7 @@ void TorrentFileListView::ShowContextMenu(POINT p, const std::vector<int>& selec
     if (selectedIndices.size() == 1)
     {
         int idx = selectedIndices[0];
-        uint8_t prio = m_model->GetFilePriority(idx);
+        uint8_t prio = m_models.at(idx).priority;
 
         switch (prio)
         {
@@ -81,27 +122,34 @@ void TorrentFileListView::ShowContextMenu(POINT p, const std::vector<int>& selec
         p.x,
         p.y,
         0,
-        GetHandle(),
+        m_hWnd,
         NULL);
 
-    for (int idx : selectedIndices)
+    if (res == 0)
     {
-        switch (res)
-        {
-        case TORRENT_FILE_PRIO_SKIP:
-            m_model->SetFilePriority(idx, PRIORITY_DO_NOT_DOWNLOAD);
-            break;
-        case TORRENT_FILE_PRIO_NORMAL:
-            m_model->SetFilePriority(idx, PRIORITY_NORMAL);
-            break;
-        case TORRENT_FILE_PRIO_HIGH:
-            m_model->SetFilePriority(idx, PRIORITY_HIGH);
-            break;
-        case TORRENT_FILE_PRIO_MAX:
-            m_model->SetFilePriority(idx, PRIORITY_MAXIMUM);
-            break;
-        }
+        return;
     }
+
+    Commands::PrioritizeFilesCommand prio;
+    prio.indices = selectedIndices;
+
+    switch (res)
+    {
+    case TORRENT_FILE_PRIO_SKIP:
+        prio.priority = PRIORITY_DO_NOT_DOWNLOAD;
+        break;
+    case TORRENT_FILE_PRIO_NORMAL:
+        prio.priority = PRIORITY_NORMAL;
+        break;
+    case TORRENT_FILE_PRIO_HIGH:
+        prio.priority = PRIORITY_HIGH;
+        break;
+    case TORRENT_FILE_PRIO_MAX:
+        prio.priority = PRIORITY_MAXIMUM;
+        break;
+    }
+
+    SendCommand(PT_PRIORITIZEFILES, (LPARAM)&prio);
 
     auto idxLo = std::min_element(selectedIndices.begin(), selectedIndices.end());
     auto idxHi = std::max_element(selectedIndices.begin(), selectedIndices.end());

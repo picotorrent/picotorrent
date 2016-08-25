@@ -7,7 +7,7 @@
 
 namespace UI
 {
-class ListView
+class ListView : public CListViewCtrl
 {
 public:
     enum ColumnType
@@ -28,16 +28,15 @@ public:
     ~ListView();
 
     void AddColumn(int columnId, const std::wstring& title, int size, ColumnType type);
-    HWND GetHandle();
-    
+
     SortOrder GetSortOrder(int columnId);
     void SetSortOrder(int columnId, SortOrder sort);
 
     std::pair<int, int> GetVisibleIndices();
-    void RedrawItems(int first, int last);
-    void SetItemCount(int count);
 
 protected:
+    void SendCommand(UINT uMsg, LPARAM lParam);
+
     virtual float GetItemProgress(int columnId, int itemIndex) { return -1; }
     virtual std::wstring GetItemText(int columnId, int itemIndex) = 0;
     virtual void ShowContextMenu(POINT p, const std::vector<int>& selectedIndices) { };
@@ -47,7 +46,6 @@ private:
     struct Column;
 
     static LRESULT CALLBACK SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
-    CListViewCtrl m_list;
     std::vector<Column> m_cols;
 
     HWND m_progress;

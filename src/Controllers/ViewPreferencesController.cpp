@@ -17,4 +17,6 @@ void ViewPreferencesController::Execute()
 {
     PropertySheets::Preferences::PreferencesSheet sheet;
     sheet.DoModal();
+
+    // TODO: reload session settings
 }
