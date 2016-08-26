@@ -36,13 +36,13 @@ namespace Details
 
     private:
         std::vector<Models::TorrentFile> Map(const libtorrent::torrent_handle& th);
-        void OnDestroy();
         BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam);
+        BOOL OnKillActive();
+        BOOL OnSetActive();
         LRESULT OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lParam);
         LRESULT OnTorrentUpdated(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
         BEGIN_MSG_MAP_EX(FilesPage)
-            MSG_WM_DESTROY(OnDestroy)
             MSG_WM_INITDIALOG(OnInitDialog)
 
             MESSAGE_HANDLER_EX(PT_PRIORITIZEFILES, OnPrioritizeFiles)

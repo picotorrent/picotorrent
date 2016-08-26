@@ -5,6 +5,8 @@
 #include "../Scaler.hpp"
 #include "../Translator.hpp"
 
+#include <strsafe.h>
+
 #define LV_COL_IP 1
 #define LV_COL_CLIENT 2
 #define LV_COL_FLAGS 3
@@ -32,6 +34,12 @@ void PeerListView::Add(const Models::Peer& model)
     m_models.push_back(model);
 }
 
+void PeerListView::Remove(const Models::Peer& model)
+{
+    auto f = std::find(m_models.begin(), m_models.end(), model);
+    if (f != m_models.end()) { m_models.erase(f); }
+}
+
 void PeerListView::Update(const Models::Peer& model)
 {
     auto f = std::find(m_models.begin(), m_models.end(), model);
@@ -48,7 +56,28 @@ std::wstring PeerListView::GetItemText(int columnId, int itemIndex)
     switch (columnId)
     {
     case LV_COL_IP:
-        return m_models.at(itemIndex).endpoint();
+        return m_models.at(itemIndex).GetEndpoint();
+    case LV_COL_CLIENT:
+        return m_models.at(itemIndex).GetClient();
+    case LV_COL_FLAGS:
+        return m_models.at(itemIndex).GetFlags();
+    case LV_COL_DOWNLOAD:
+    case LV_COL_UPLOAD:
+    {
+        int rate = columnId == LV_COL_DOWNLOAD
+            ? m_models.at(itemIndex).GetDownloadRate()
+            : m_models.at(itemIndex).GetUploadRate();
+
+        if (rate < 1024)
+        {
+            return TEXT("-");
+        }
+
+        TCHAR result[100];
+        StrFormatByteSize64(rate, result, ARRAYSIZE(result));
+        StringCchPrintf(result, ARRAYSIZE(result), L"%s/s", result);
+        return result;
+    }
     }
 
     return L"?unknown column?";

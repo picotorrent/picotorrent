@@ -46,21 +46,21 @@ std::vector<Models::TorrentFile> FilesPage::Map(const lt::torrent_handle& th)
     return result;
 }
 
-void FilesPage::OnDestroy()
-{
-    ::SendMessage(
-        ::GetParent(::GetParent(m_hWnd)),
-        PT_UNREGISTERNOTIFY,
-        NULL,
-        (LPARAM)m_hWnd);
-}
-
 BOOL FilesPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 {
     // Set up UI
     m_filesList = std::make_unique<UI::TorrentFileListView>(
         GetDlgItem(ID_DETAILS_FILES_LIST),
         true);
+
+    return FALSE;
+}
+
+BOOL FilesPage::OnSetActive()
+{
+    // Clear files
+    m_filesList->RemoveAll();
+    m_filesList->SetItemCount(0);
 
     // Add files
     if (m_torrent.torrent_file())
@@ -79,7 +79,18 @@ BOOL FilesPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
         NULL,
         (LPARAM)m_hWnd);
 
-    return FALSE;
+    return TRUE;
+}
+
+BOOL FilesPage::OnKillActive()
+{
+    ::SendMessage(
+        ::GetParent(::GetParent(m_hWnd)),
+        PT_UNREGISTERNOTIFY,
+        NULL,
+        (LPARAM)m_hWnd);
+
+    return TRUE;
 }
 
 LRESULT FilesPage::OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lParam)
