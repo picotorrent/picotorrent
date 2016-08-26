@@ -1,5 +1,6 @@
 #include "AboutDialog.hpp"
 
+#include <shellapi.h>
 #include <strsafe.h>
 
 #include "../Scaler.hpp"
@@ -16,6 +17,19 @@ AboutDialog::AboutDialog()
 AboutDialog::~AboutDialog()
 {
     DeleteObject(m_font);
+}
+
+LRESULT AboutDialog::OnClick(LPNMHDR pnmh)
+{
+    PNMLINK pNMLink = reinterpret_cast<PNMLINK>(pnmh);
+    LITEM item = pNMLink->item;
+
+    if ((pnmh->idFrom == ID_GITHUB_LINK) && (item.iLink == 0))
+    {
+        ShellExecute(NULL, L"open", item.szUrl, NULL, NULL, SW_SHOW);
+    }
+
+    return FALSE;
 }
 
 void AboutDialog::OnEndDialog(UINT uNotifyCode, int nID, CWindow wndCtl)

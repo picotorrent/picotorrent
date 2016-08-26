@@ -14,11 +14,13 @@ public:
     ~AboutDialog();
 
 private:
+    LRESULT OnClick(LPNMHDR pnmh);
     void OnEndDialog(UINT uNotifyCode, int nID, CWindow wndCtl);
     BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam);
 
     BEGIN_MSG_MAP_EX(AboutDialog)
         MSG_WM_INITDIALOG(OnInitDialog)
+        NOTIFY_CODE_HANDLER_EX(NM_CLICK, OnClick)
         COMMAND_ID_HANDLER_EX(IDCANCEL, OnEndDialog)
         COMMAND_ID_HANDLER_EX(IDOK, OnEndDialog)
     END_MSG_MAP()
