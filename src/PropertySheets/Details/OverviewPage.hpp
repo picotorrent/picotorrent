@@ -5,6 +5,11 @@
 
 #include <string>
 
+namespace libtorrent
+{
+    struct torrent_handle;
+}
+
 namespace PropertySheets
 {
 namespace Details
@@ -15,28 +20,23 @@ namespace Details
 
     public:
         enum { IDD = IDD_DETAILS_OVERVIEW };
-        OverviewPage();
-
-    protected:
-        //BOOL OnApply();
+        OverviewPage(const libtorrent::torrent_handle& th);
 
     private:
-        void OnDestroy();
-        LRESULT OnFoo(UINT uMsg, WPARAM wParam, LPARAM lParam);
         BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam);
-
-        /*void OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl);
-        void SelectComboBoxItemWithData(CComboBox& cb, int data);*/
+        BOOL OnKillActive();
+        BOOL OnSetActive();
+        LRESULT OnTorrentUpdated(UINT uMsg, WPARAM wParam, LPARAM lParam);
+        void Update();
 
         BEGIN_MSG_MAP_EX(OverviewPage)
             MSG_WM_INITDIALOG(OnInitDialog)
-            MSG_WM_DESTROY(OnDestroy)
-
-            MESSAGE_HANDLER_EX(8989, OnFoo)
+            MESSAGE_HANDLER_EX(PT_TORRENT_UPDATED, OnTorrentUpdated)
             CHAIN_MSG_MAP(CPropertyPageImpl<OverviewPage>)
         END_MSG_MAP()
 
         std::wstring m_title;
+        const libtorrent::torrent_handle& m_torrent;
     };
 }
 }

@@ -42,6 +42,11 @@ namespace Models
         float shareRatio() const;
         bool isPaused() const;
         std::wstring savePath() const;
+        int64_t downloadedBytes() const;
+        int64_t uploadedBytes() const;
+        int piecesHave() const;
+        int pieceLength() const;
+        int piecesCount() const;
 
     private:
         std::unique_ptr<libtorrent::sha1_hash> m_hash;

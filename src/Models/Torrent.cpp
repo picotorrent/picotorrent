@@ -49,7 +49,6 @@ bool Torrent::operator!=(const Torrent& other)
 lt::sha1_hash Torrent::infoHash() const
 {
     return *m_hash;
-    //return TWS(lt::to_hex(m_status->info_hash.to_string()));
 }
 
 std::wstring Torrent::name() const
@@ -142,4 +141,39 @@ bool Torrent::isPaused() const
 std::wstring Torrent::savePath() const
 {
     return TWS(m_status->save_path);
+}
+
+int64_t Torrent::downloadedBytes() const
+{
+    return m_status->all_time_download;
+}
+
+int64_t Torrent::uploadedBytes() const
+{
+    return m_status->all_time_upload;
+}
+
+int Torrent::piecesHave() const
+{
+    return m_status->num_pieces;
+}
+
+int Torrent::pieceLength() const
+{
+    if (m_status->handle.torrent_file())
+    {
+        return m_status->handle.torrent_file()->piece_length();
+    }
+
+    return -1;
+}
+
+int Torrent::piecesCount() const
+{
+    if (m_status->handle.torrent_file())
+    {
+        return m_status->handle.torrent_file()->num_pieces();
+    }
+
+    return -1;
 }
