@@ -33,6 +33,7 @@
 #include "IO/Path.hpp"
 #include "Models/Torrent.hpp"
 #include "UI/MainMenu.hpp"
+#include "UI/NotifyIcon.hpp"
 #include "UI/StatusBar.hpp"
 #include "UI/TorrentListView.hpp"
 
@@ -528,6 +529,10 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     SetMenu(UI::MainMenu::Create());
     SetWindowText(TEXT("PicoTorrent"));
 
+    // NotifyIcon
+    m_notifyIcon = std::make_shared<UI::NotifyIcon>(m_hWnd);
+    m_notifyIcon->Create();
+
     // Torrent list view
     CListViewCtrl list;
     list.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | LVS_OWNERDATA | LVS_REPORT);
@@ -567,6 +572,9 @@ void CMainFrame::OnDestroy()
 
     SaveState();
     SaveTorrents();
+
+    // Destroy the notify icon
+    m_notifyIcon->Destroy();
 
     PostQuitMessage(0);
 }

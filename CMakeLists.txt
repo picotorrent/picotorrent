@@ -73,6 +73,7 @@ set(PICOTORRENT_SOURCES
     src/UI/CheckBox
     src/UI/ComboBox
     src/UI/ListView
+    src/UI/NotifyIcon
     src/UI/MainMenu
     src/UI/PeerListView
     src/UI/StatusBar

@@ -18,6 +18,7 @@ namespace libtorrent
 
 namespace UI
 {
+    class NotifyIcon;
     class StatusBar;
     class TorrentListView;
 }
@@ -80,6 +81,7 @@ private:
     std::vector<libtorrent::sha1_hash> m_muted_hashes;
     std::shared_ptr<libtorrent::session> m_session;
     std::map<libtorrent::sha1_hash, libtorrent::torrent_handle> m_torrents;
+    std::shared_ptr<UI::NotifyIcon> m_notifyIcon;
     std::shared_ptr<UI::StatusBar> m_statusBar;
     std::shared_ptr<UI::TorrentListView> m_torrentList;
 };
