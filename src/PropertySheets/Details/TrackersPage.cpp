@@ -5,7 +5,10 @@
 
 #include <strsafe.h>
 
+#include "../../Commands/AddTrackerCommand.hpp"
+#include "../../Commands/RemoveTrackersCommand.hpp"
 #include "../../Configuration.hpp"
+#include "../../Dialogs/AddTrackerDialog.hpp"
 #include "../../Models/Tracker.hpp"
 #include "../../resources.h"
 #include "../../Translator.hpp"
@@ -55,8 +58,66 @@ Models::Tracker TrackersPage::Map(const lt::announce_entry& entry)
     return t;
 }
 
+LRESULT TrackersPage::OnAddTracker(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    auto cmd = reinterpret_cast<Commands::AddTrackerCommand*>(lParam);
+
+    if (!cmd->url.empty())
+    {
+        lt::announce_entry entry(TS(cmd->url));
+        m_torrent.add_tracker(entry);
+
+        // Add it to the list
+        Models::Tracker t = Map(entry);
+        m_trackerList->Add(t);
+        m_trackerList->SetItemCount(m_trackerList->GetItemCount() + 1);
+    }
+
+    return FALSE;
+}
+
+LRESULT TrackersPage::OnRemoveTrackers(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    auto cmd = reinterpret_cast<Commands::RemoveTrackersCommand*>(lParam);
+
+    if (cmd->trackers.size() > 0)
+    {
+        auto trackers = m_torrent.trackers();
+
+        for (auto it = trackers.begin(); it != trackers.end();)
+        {
+            std::string url = it->url;
+
+            auto f = std::find_if(
+                cmd->trackers.begin(),
+                cmd->trackers.end(),
+                [url](const Models::Tracker& t) { return t.url == url; });
+            
+            if (f != cmd->trackers.end())
+            {
+                Models::Tracker t = Map(*it);
+                m_trackerList->Remove(t);
+
+                it = trackers.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+
+        m_torrent.replace_trackers(trackers);
+        m_trackerList->SetItemCount((int)trackers.size());
+    }
+
+    return FALSE;
+}
+
 BOOL TrackersPage::OnKillActive()
 {
+    m_trackerList->RemoveAll();
+    m_trackerList->SetItemCount(0);
+
     KillTimer(REFRESH_TIMER);
     return TRUE;
 }

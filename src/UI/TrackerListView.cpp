@@ -2,6 +2,9 @@
 
 #include <strsafe.h>
 
+#include "../Commands/AddTrackerCommand.hpp"
+#include "../Commands/RemoveTrackersCommand.hpp"
+#include "../Dialogs/AddTrackerDialog.hpp"
 #include "../Models/Tracker.hpp"
 #include "../Scaler.hpp"
 #include "../Translator.hpp"
@@ -32,6 +35,21 @@ TrackerListView::~TrackerListView()
 void TrackerListView::Add(const Models::Tracker& tracker)
 {
     m_trackers.push_back(tracker);
+}
+
+void TrackerListView::Remove(const Models::Tracker& tracker)
+{
+    auto f = std::find_if(m_trackers.begin(), m_trackers.end(), [tracker](const Models::Tracker& t) { return t.url == tracker.url; });
+
+    if (f != m_trackers.end())
+    {
+        m_trackers.erase(f);
+    }
+}
+
+void TrackerListView::RemoveAll()
+{
+    m_trackers.clear();
 }
 
 void TrackerListView::Update(const Models::Tracker& tracker)
@@ -126,17 +144,28 @@ void TrackerListView::ShowContextMenu(POINT p, const std::vector<int>& selectedI
         m_hWnd,
         NULL);
 
+    std::vector<Models::Tracker> trackers;
+    std::for_each(
+        selectedIndices.begin(),
+        selectedIndices.end(),
+        [this, &trackers](int i) { trackers.push_back(m_trackers.at(i)); });
+
     switch (res)
     {
     case CTX_MENU_ADD:
     {
-        // Show AddTrackerDialog
-        // send AddTrackerCommand
+        Dialogs::AddTrackerDialog dlg;
+        if (dlg.DoModal() == IDOK)
+        {
+            Commands::AddTrackerCommand cmd{ dlg.GetUrl() };
+            SendCommand(PT_ADDTRACKER, (LPARAM)&cmd);
+        }
         break;
     }
     case CTX_MENU_REMOVE:
     {
-        // send RemoveTrackerCommand
+        Commands::RemoveTrackersCommand cmd{ trackers };
+        SendCommand(PT_REMOVETRACKERS, (LPARAM)&cmd);
         break;
     }
     }

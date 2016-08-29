@@ -21,6 +21,7 @@ namespace UI
 
         void Add(const Models::Tracker& tracker);
         void Update(const Models::Tracker& tracker);
+        void Remove(const Models::Tracker& tracker);
         void RemoveAll();
 
     protected:
