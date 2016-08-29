@@ -17,6 +17,7 @@ namespace Details
     class OptionsPage;
     class OverviewPage;
     class PeersPage;
+    class TrackersPage;
 
     class DetailsSheet : public CPropertySheetImpl<DetailsSheet>
     {
@@ -34,6 +35,7 @@ namespace Details
         std::unique_ptr<OptionsPage> m_options;
         std::unique_ptr<OverviewPage> m_overview;
         std::unique_ptr<PeersPage> m_peers;
+        std::unique_ptr<TrackersPage> m_trackers;
     };
 }
 }

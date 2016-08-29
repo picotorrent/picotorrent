@@ -37,6 +37,7 @@ set(PICOTORRENT_SOURCES
     src/Configuration_Section
     src/Configuration_SessionSection
     src/Environment
+    src/Log
     src/Main
     src/Scaler
     src/Translator
@@ -64,6 +65,7 @@ set(PICOTORRENT_SOURCES
     src/PropertySheets/Details/OptionsPage
     src/PropertySheets/Details/OverviewPage
     src/PropertySheets/Details/PeersPage
+    src/PropertySheets/Details/TrackersPage
 
     src/PropertySheets/Preferences/ConnectionPage
     src/PropertySheets/Preferences/DownloadsPage
@@ -80,6 +82,7 @@ set(PICOTORRENT_SOURCES
     src/UI/TextBox
     src/UI/TorrentFileListView
     src/UI/TorrentListView
+    src/UI/TrackerListView
 
     src/client/pico.rc
 )

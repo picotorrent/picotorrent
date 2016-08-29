@@ -193,6 +193,11 @@ std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
 
 void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
 {
+    if (sel.empty())
+    {
+        return;
+    }
+
     HMENU menu = CreatePopupMenu();
     AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_PAUSE, TRW("pause"));
     AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_RESUME, TRW("resume"));

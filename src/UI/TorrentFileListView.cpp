@@ -83,6 +83,11 @@ std::wstring TorrentFileListView::GetItemText(int columnId, int itemIndex)
 
 void TorrentFileListView::ShowContextMenu(POINT p, const std::vector<int>& selectedIndices)
 {
+    if (selectedIndices.empty())
+    {
+        return;
+    }
+
     HMENU prioMenu = CreateMenu();
     AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_MAX, TRW("maximum"));
     AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_HIGH, TRW("high"));

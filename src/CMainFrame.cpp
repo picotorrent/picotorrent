@@ -19,6 +19,7 @@
 #include "Commands/ShowTorrentDetailsCommand.hpp"
 #include "Configuration.hpp"
 #include "Environment.hpp"
+#include "Log.hpp"
 #include "Scaler.hpp"
 #include "StringUtils.hpp"
 #include "Translator.hpp"
@@ -139,7 +140,7 @@ LRESULT CMainFrame::OnMoveTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT CMainFrame::OnPauseTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    auto* ptc = reinterpret_cast<Commands::PauseTorrentsCommand*>(lParam);
+    auto ptc = reinterpret_cast<Commands::PauseTorrentsCommand*>(lParam);
 
     for (auto& t : ptc->torrents)
     {
@@ -202,7 +203,7 @@ LRESULT CMainFrame::OnRemoveTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     if (!shouldRemove) { return FALSE; }
 
-    auto* rm = reinterpret_cast<Commands::RemoveTorrentsCommand*>(lParam);
+    auto rm = reinterpret_cast<Commands::RemoveTorrentsCommand*>(lParam);
     int flags = rm->removeData ? lt::session::options_t::delete_files : 0;
 
     for (auto& t : rm->torrents)
@@ -216,7 +217,7 @@ LRESULT CMainFrame::OnRemoveTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT CMainFrame::OnResumeTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    auto* res = reinterpret_cast<Commands::ResumeTorrentsCommand*>(lParam);
+    auto res = reinterpret_cast<Commands::ResumeTorrentsCommand*>(lParam);
 
     for (auto& t : res->torrents)
     {
@@ -238,7 +239,7 @@ LRESULT CMainFrame::OnResumeTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 LRESULT CMainFrame::OnShowTorrentDetails(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    auto* show = reinterpret_cast<Commands::ShowTorrentDetailsCommand*>(lParam);
+    auto show = reinterpret_cast<Commands::ShowTorrentDetailsCommand*>(lParam);
     const lt::torrent_handle& th = m_torrents.at(show->torrent.infoHash());
 
     Controllers::TorrentDetailsController controller(m_hWnd, th);
@@ -259,13 +260,15 @@ void CMainFrame::LoadTorrents()
     }
 
     std::vector<std::wstring> torrent_dat_files = IO::Directory::GetFiles(torrents_dir, TEXT("*.dat"));
-    // LOG amount of torrents
+    LOG(Info) << "Loading " << torrent_dat_files.size() << " torrent(s)";
 
     typedef std::pair<int64_t, SessionLoadItem> prio_item_t;
     auto comparer = [](const prio_item_t &lhs, const prio_item_t &rhs)
     {
         return lhs.first > rhs.first;
     };
+
+    Configuration& cfg = Configuration::GetInstance();
 
     std::priority_queue<prio_item_t, std::vector<prio_item_t>, decltype(comparer)> queue(comparer);
     int64_t maxPosition = std::numeric_limits<int64_t>::max();
@@ -279,7 +282,7 @@ void CMainFrame::LoadTorrents()
 
         if (ec)
         {
-            // LOG
+            LOG(Debug) << "Could not read file '" << dat_file << "', error: " << ec;
             continue;
         }
 
@@ -293,18 +296,18 @@ void CMainFrame::LoadTorrents()
 
         if (ltec)
         {
-            // LOG
+            LOG(Debug) << "Unable to decode bencoded file '" << dat_file << ", error: " << ltec;
             continue;
         }
 
         if (node.type() != lt::bdecode_node::type_t::dict_t)
         {
-            // LOG
+            LOG(Debug) << "File not a bencoded dictionary, '" << dat_file << "'";
             continue;
         }
 
         item.magnet_uri = node.dict_find_string_value("pT-magnetUri");
-        item.save_path = node.dict_find_string_value("pT-savePath" /* config default save path */);
+        item.save_path = node.dict_find_string_value("pT-savePath", cfg.GetDefaultSavePath().c_str());
         item.url = node.dict_find_string_value("pT-url");
 
         int64_t queuePosition = node.dict_find_int_value("pT-queuePosition", maxPosition);
@@ -323,7 +326,7 @@ void CMainFrame::LoadTorrents()
         if (!IO::File::Exists(torrent_file)
             && item.magnet_uri.empty())
         {
-            // LOG
+            LOG(Warning) << "Dat file did not have a corresponding torrent file, deleting.";
             IO::File::Delete(torrent_file);
             continue;
         }
@@ -340,7 +343,7 @@ void CMainFrame::LoadTorrents()
 
             if (ltec)
             {
-                // LOG
+                LOG(Debug) << "Could not decode resume data.";
             }
         }
 
@@ -351,7 +354,8 @@ void CMainFrame::LoadTorrents()
 
             if (ec)
             {
-                // LOG
+                LOG(Info) << "Could not read torrent file '" << torrent_file << "'";
+                continue;
             }
 
             lt::bdecode_node node;
@@ -364,7 +368,7 @@ void CMainFrame::LoadTorrents()
 
             if (ltec)
             {
-                // LOG
+                LOG(Info) << "Could not decode torrent file '" << torrent_file << "'";
                 continue;
             }
 
@@ -412,7 +416,7 @@ void CMainFrame::SaveState()
 
     if (ec)
     {
-        // LOG
+        LOG(Warning) << "Could not save session state, error: " << ec;
     }
 }
 
@@ -434,7 +438,6 @@ void CMainFrame::SaveTorrents()
             || !st.has_metadata
             || !st.need_save_resume)
         {
-            // TODO(log)
             continue;
         }
 
@@ -442,7 +445,7 @@ void CMainFrame::SaveTorrents()
         ++numOutstandingResumeData;
     }
 
-    // LOG(info) << "Saving resume data for " << numOutstandingResumeData << " torrent(s)";
+    LOG(Info) << "Saving resume data for " << numOutstandingResumeData << " torrent(s)";
     std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
 
     if (!IO::Directory::Exists(torrents_dir))
@@ -465,7 +468,6 @@ void CMainFrame::SaveTorrents()
             if (tp)
             {
                 ++numPaused;
-                // TODO(log)
                 continue;
             }
 
@@ -473,7 +475,6 @@ void CMainFrame::SaveTorrents()
             {
                 ++numFailed;
                 --numOutstandingResumeData;
-                // TODO(log)
                 continue;
             }
 

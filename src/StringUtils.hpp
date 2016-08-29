@@ -5,6 +5,7 @@
 #include <string>
 #include <windows.h>
 
+#define TS(val) ToString(val).c_str()
 #define TWS(val) ToWideString(val).c_str()
 
 static std::string ToString(const std::wstring &str)

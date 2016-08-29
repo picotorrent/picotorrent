@@ -184,10 +184,7 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             pos = lv->GetNextItem(pos, LVNI_SELECTED);
         }
 
-        if (!selectedIndices.empty())
-        {
-            lv->ShowContextMenu(p, selectedIndices);
-        }
+        lv->ShowContextMenu(p, selectedIndices);
         break;
     }
     case WM_NOTIFY:
