@@ -16,7 +16,10 @@ struct ListView::Column
 {
     int id;
     int position;
+    std::wstring text;
     ColumnType type;
+    bool visible;
+    int width;
 };
 
 ListView::ListView(HWND hWndList)
@@ -68,7 +71,10 @@ void ListView::AddColumn(int columnId, const std::wstring& title, int size, Colu
     Column c;
     c.id = columnId;
     c.position = columnPosition;
+    c.text = title;
     c.type = type;
+    c.visible = true;
+    c.width = size;
 
     m_cols.push_back(c);
 }
@@ -163,6 +169,64 @@ void ListView::SetSortOrder(int columnId, SortOrder order)
     GetHeader().SetItem(col->position, &hdrItem);
 }
 
+bool ListView::IsPointInHeader(POINT p)
+{
+    CHeaderCtrl header = GetHeader();
+    header.ScreenToClient(&p);
+
+    for (int i = 0; i < header.GetItemCount(); i++)
+    {
+        RECT colRect;
+        header.GetItemRect(i, &colRect);
+
+        if (PtInRect(&colRect, p))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void ListView::ShowColumnContextMenu(POINT p)
+{
+    HMENU hColumnSelector = CreatePopupMenu();
+
+    for (int i = 0; i < (int)m_cols.size(); i++)
+    {
+        Column& col = m_cols.at(i);
+
+        UINT uFlags = MF_STRING;
+
+        if (col.visible)
+        {
+            uFlags |= MF_CHECKED;
+        }
+
+        AppendMenu(hColumnSelector, uFlags, 1000 + i, col.text.c_str());
+    }
+
+    int res = TrackPopupMenu(
+        hColumnSelector,
+        TPM_NONOTIFY | TPM_RETURNCMD,
+        p.x,
+        p.y,
+        0,
+        m_hWnd,
+        NULL);
+
+    if (res <= 0)
+    {
+        return;
+    }
+
+    res -= 1000;
+
+    Column& col = m_cols.at(res);
+    SetColumnWidth(res, col.visible ? 0 : col.width);
+    col.visible = !col.visible;
+}
+
 LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
     ListView *lv = reinterpret_cast<ListView*>(dwRefData);
@@ -175,6 +239,13 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
         if (hWndTarget != lv->m_hWnd) { break; }
 
         POINT p = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+
+        if (lv->IsPointInHeader(p))
+        {
+            lv->ShowColumnContextMenu(p);
+            break;
+        }
+
         std::vector<int> selectedIndices;
 
         int pos = lv->GetNextItem(-1, LVNI_SELECTED);

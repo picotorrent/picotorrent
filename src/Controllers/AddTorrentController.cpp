@@ -83,6 +83,35 @@ void AddTorrentController::Execute()
     }
 }
 
+void AddTorrentController::Execute(const std::vector<lt::torrent_info>& torrents)
+{
+    Configuration& cfg = Configuration::GetInstance();
+    std::vector<std::shared_ptr<lt::add_torrent_params>> params;
+
+    for (auto& ti : torrents)
+    {
+        auto p = std::make_shared<lt::add_torrent_params>();
+        p->save_path = cfg.GetDefaultSavePath();
+        p->ti = boost::make_shared<lt::torrent_info>(ti);
+
+        params.push_back(p);
+    }
+
+    Dialogs::AddTorrentDialog dlg(params);
+
+    switch (dlg.DoModal())
+    {
+    case IDOK:
+    {
+        for (auto& p : dlg.GetParams())
+        {
+            m_session->async_add_torrent(*p);
+        }
+        break;
+    }
+    }
+}
+
 std::vector<std::wstring> AddTorrentController::OpenFiles()
 {
     COMDLG_FILTERSPEC fileTypes[] =

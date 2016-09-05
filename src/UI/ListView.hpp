@@ -43,6 +43,9 @@ protected:
     virtual bool Sort(int columnId, SortOrder order) { return false; }
 
 private:
+    bool IsPointInHeader(POINT p);
+    void ShowColumnContextMenu(POINT p);
+
     struct Column;
 
     static LRESULT CALLBACK SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);

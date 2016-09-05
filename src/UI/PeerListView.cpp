@@ -56,17 +56,17 @@ std::wstring PeerListView::GetItemText(int columnId, int itemIndex)
     switch (columnId)
     {
     case LV_COL_IP:
-        return m_models.at(itemIndex).GetEndpoint();
+        return m_models.at(itemIndex).endpoint;
     case LV_COL_CLIENT:
-        return m_models.at(itemIndex).GetClient();
+        return m_models.at(itemIndex).client;
     case LV_COL_FLAGS:
-        return m_models.at(itemIndex).GetFlags();
+        return m_models.at(itemIndex).flags;
     case LV_COL_DOWNLOAD:
     case LV_COL_UPLOAD:
     {
         int rate = columnId == LV_COL_DOWNLOAD
-            ? m_models.at(itemIndex).GetDownloadRate()
-            : m_models.at(itemIndex).GetUploadRate();
+            ? m_models.at(itemIndex).downloadRate
+            : m_models.at(itemIndex).uploadRate;
 
         if (rate < 1024)
         {

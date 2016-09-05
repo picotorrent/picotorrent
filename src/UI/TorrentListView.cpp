@@ -11,6 +11,7 @@
 #include "../Clipboard.hpp"
 #include "../Commands/MoveTorrentsCommand.hpp"
 #include "../Commands/PauseTorrentsCommand.hpp"
+#include "../Commands/QueueTorrentCommand.hpp"
 #include "../Commands/RemoveTorrentsCommand.hpp"
 #include "../Commands/ResumeTorrentsCommand.hpp"
 #include "../Commands/ShowTorrentDetailsCommand.hpp"
@@ -87,7 +88,7 @@ float TorrentListView::GetItemProgress(int columnId, int itemIndex)
     switch (columnId)
     {
     case LV_COL_PROGRESS:
-        return m_models.at(itemIndex).progress();
+        return m_models.at(itemIndex).progress;
     }
 
     return -1;
@@ -98,26 +99,67 @@ std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
     switch (columnId)
     {
     case LV_COL_NAME:
-        return m_models.at(itemIndex).name();
+        return m_models.at(itemIndex).name;
     case LV_COL_QUEUE_POSITION:
     {
-        int qp = m_models.at(itemIndex).queuePosition();
+        int qp = m_models.at(itemIndex).queuePosition;
         if (qp < 0) { return TEXT("-"); }
         return std::to_wstring(qp + 1);
     }
     case LV_COL_SIZE:
     {
         TCHAR s[100];
-        StrFormatByteSize64(m_models.at(itemIndex).size(), s, ARRAYSIZE(s));
+        StrFormatByteSize64(m_models.at(itemIndex).size, s, ARRAYSIZE(s));
         return s;
     }
     case LV_COL_STATUS:
     {
+        switch (m_models.at(itemIndex).state)
+        {
+        case Torrent::State::CheckingResumeData:
+            return TRW("state_checking_resume_data");
+        case Torrent::State::Downloading:
+            return TRW("state_downloading");
+        case Torrent::State::DownloadingChecking:
+            return TRW("state_downloading_checking");
+        case Torrent::State::DownloadingForced:
+            return TRW("state_downloading_forced");
+        case Torrent::State::DownloadingMetadata:
+            return TRW("state_downloading_metadata");
+        case Torrent::State::DownloadingPaused:
+            return TRW("state_downloading_paused");
+        case Torrent::State::DownloadingQueued:
+            return TRW("state_downloading_queued");
+        case Torrent::State::DownloadingStalled:
+            return TRW("state_downloading_stalled");
+        case Torrent::State::Error:
+            TCHAR err[1024];
+            StringCchPrintf(
+                err,
+                ARRAYSIZE(err),
+                TRW("state_error"),
+                m_models.at(itemIndex).errorMessage.c_str());
+            return err;
+        case Torrent::State::Unknown:
+            return TRW("state_unknown");
+        case Torrent::State::Uploading:
+            return TRW("state_uploading");
+        case Torrent::State::UploadingChecking:
+            return TRW("state_uploading_checking");
+        case Torrent::State::UploadingForced:
+            return TRW("state_uploading_forced");
+        case Torrent::State::UploadingPaused:
+            return TRW("state_uploading_paused");
+        case Torrent::State::UploadingQueued:
+            return TRW("state_uploading_queued");
+        case Torrent::State::UploadingStalled:
+            return TRW("state_uploading_stalled");
+        }
         break;
     }
     case LV_COL_ETA:
     {
-        std::chrono::seconds eta(m_models.at(itemIndex).eta());
+        std::chrono::seconds eta = m_models.at(itemIndex).eta;
         if (eta.count() < 0) { return TEXT("-"); }
 
         std::chrono::hours hours_left = std::chrono::duration_cast<std::chrono::hours>(eta);
@@ -138,8 +180,8 @@ std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
     case LV_COL_UL:
     {
         int rate = columnId == LV_COL_DL
-            ? m_models.at(itemIndex).downloadRate()
-            : m_models.at(itemIndex).uploadRate();
+            ? m_models.at(itemIndex).downloadRate
+            : m_models.at(itemIndex).uploadRate;
 
         if (rate < 1024)
         {
@@ -155,13 +197,13 @@ std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
     case LV_COL_RATIO:
     {
         std::wstringstream wss;
-        wss << std::fixed << std::setprecision(3) << m_models.at(itemIndex).shareRatio();
+        wss << std::fixed << std::setprecision(3) << m_models.at(itemIndex).shareRatio;
         return wss.str();
     }
     case LV_COL_SEEDS:
     {
-        int num = m_models.at(itemIndex).seedsConnected();
-        int list = m_models.at(itemIndex).seedsTotal();
+        int num = m_models.at(itemIndex).seedsConnected;
+        int list = m_models.at(itemIndex).seedsTotal;
 
         TCHAR seeds[1024];
         StringCchPrintf(
@@ -174,8 +216,8 @@ std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
     }
     case LV_COL_PEERS:
     {
-        int num = m_models.at(itemIndex).peersConnected();
-        int list = m_models.at(itemIndex).peersTotal();
+        int num = m_models.at(itemIndex).peersConnected;
+        int list = m_models.at(itemIndex).peersTotal;
 
         TCHAR peers[1024];
         StringCchPrintf(
@@ -225,8 +267,8 @@ void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
     AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER, TRW("open_in_explorer"));
 
     // Configure the menu
-    bool allPaused = std::all_of(sel.begin(), sel.end(), [this](int i) { return m_models[i].isPaused(); });
-    bool allNotPaused = std::all_of(sel.begin(), sel.end(), [this](int i) { return !m_models[i].isPaused(); });
+    bool allPaused = std::all_of(sel.begin(), sel.end(), [this](int i) { return m_models[i].isPaused; });
+    bool allNotPaused = std::all_of(sel.begin(), sel.end(), [this](int i) { return !m_models[i].isPaused; });
 
     if (allPaused)
     {
@@ -269,39 +311,51 @@ void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
     case TORRENT_CONTEXT_MENU_PAUSE:
     {
         Commands::PauseTorrentsCommand pause{ selection };
-        SendCommand(PT_PAUSETORRENTS, (LPARAM)&pause);
+        SendCommand(PT_PAUSETORRENTS, reinterpret_cast<LPARAM>(&pause));
         break;
     }
     case TORRENT_CONTEXT_MENU_RESUME:
     case TORRENT_CONTEXT_MENU_RESUME_FORCE:
     {
         Commands::ResumeTorrentsCommand resume{ res == TORRENT_CONTEXT_MENU_RESUME_FORCE, selection };
-        SendCommand(PT_RESUMETORRENTS, (LPARAM)&resume);
+        SendCommand(PT_RESUMETORRENTS, reinterpret_cast<LPARAM>(&resume));
         break;
     }
     case TORRENT_CONTEXT_MENU_MOVE:
     {
         Commands::MoveTorrentsCommand move{ selection };
-        SendCommand(PT_MOVETORRENTS, (LPARAM)&move);
+        SendCommand(PT_MOVETORRENTS, reinterpret_cast<LPARAM>(&move));
         break;
     }
     case TORRENT_CONTEXT_MENU_QUEUE_UP:
-        // m_model->QueueUp(sel[0]);
+    {
+        Commands::QueueTorrentCommand cmd{ Commands::QueueTorrentCommand::Up, m_models.at(sel[0]) };
+        SendCommand(PT_QUEUETORRENT, reinterpret_cast<LPARAM>(&cmd));
         break;
+    }
     case TORRENT_CONTEXT_MENU_QUEUE_DOWN:
-        // m_model->QueueDown(sel[0]);
+    {
+        Commands::QueueTorrentCommand cmd{ Commands::QueueTorrentCommand::Down, m_models.at(sel[0]) };
+        SendCommand(PT_QUEUETORRENT, reinterpret_cast<LPARAM>(&cmd));
         break;
+    }
     case TORRENT_CONTEXT_MENU_QUEUE_TOP:
-        // m_model->QueueTop(sel[0]);
+    {
+        Commands::QueueTorrentCommand cmd{ Commands::QueueTorrentCommand::Top, m_models.at(sel[0]) };
+        SendCommand(PT_QUEUETORRENT, reinterpret_cast<LPARAM>(&cmd));
         break;
+    }
     case TORRENT_CONTEXT_MENU_QUEUE_BOTTOM:
-        // m_model->QueueBottom(sel[0]);
+    {
+        Commands::QueueTorrentCommand cmd{ Commands::QueueTorrentCommand::Bottom, m_models.at(sel[0]) };
+        SendCommand(PT_QUEUETORRENT, reinterpret_cast<LPARAM>(&cmd));
         break;
+    }
     case TORRENT_CONTEXT_MENU_REMOVE:
     case TORRENT_CONTEXT_MENU_REMOVE_DATA:
     {
         Commands::RemoveTorrentsCommand remove{ res == TORRENT_CONTEXT_MENU_REMOVE_DATA,selection };
-        SendCommand(PT_REMOVETORRENTS, (LPARAM)&remove);
+        SendCommand(PT_REMOVETORRENTS, reinterpret_cast<LPARAM>(&remove));
         break;
     }
     case TORRENT_CONTEXT_MENU_COPY_SHA:
@@ -310,7 +364,7 @@ void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
         std::for_each(sel.begin(), sel.end(),
             [this, &ss](int i)
         {
-            ss << L"," << TWS(lt::to_hex(m_models[i].infoHash().to_string()));
+            ss << L"," << TWS(lt::to_hex(m_models[i].infoHash.to_string()));
         });
 
         Clipboard::Set(ss.str().substr(1));
@@ -318,8 +372,8 @@ void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
     }
     case TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER:
     {
-        std::wstring savePath = m_models.at(sel[0]).savePath();
-        std::wstring path = IO::Path::Combine(savePath, m_models.at(sel[0]).name());
+        std::wstring savePath = m_models.at(sel[0]).savePath;
+        std::wstring path = IO::Path::Combine(savePath, m_models.at(sel[0]).name);
 
         LPITEMIDLIST il = ILCreateFromPath(path.c_str());
         SHOpenFolderAndSelectItems(il, 0, 0, 0);
@@ -328,7 +382,7 @@ void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
     }
     case TORRENT_CONTEXT_MENU_DETAILS:
         Commands::ShowTorrentDetailsCommand show{ selection[0] };
-        SendCommand(PT_SHOWTORRENTDETAILS, (LPARAM)&show);
+        SendCommand(PT_SHOWTORRENTDETAILS, reinterpret_cast<LPARAM>(&show));
         break;
     }
 }

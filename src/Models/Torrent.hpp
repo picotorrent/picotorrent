@@ -1,55 +1,70 @@
 #pragma once
 
-#include <memory>
+#include <chrono>
 #include <string>
 
-namespace libtorrent { class sha1_hash; struct torrent_status; }
+#include <libtorrent/sha1_hash.hpp>
+
+namespace libtorrent { struct torrent_status; }
 
 namespace Models
 {
-    class Torrent
+    struct Torrent
     {
-    public:
-        Torrent(const libtorrent::sha1_hash& hash);
-        Torrent(const libtorrent::sha1_hash& hash, const libtorrent::torrent_status& ts);
-        Torrent(const Torrent& other);
-
-        ~Torrent();
-
-        Torrent& operator=(Torrent other);
-        bool operator==(const Torrent& other);
-        bool operator!=(const Torrent& other);
-
-        friend void swap(Torrent& first, Torrent& second)
+        enum State
         {
-            std::swap(first.m_hash, second.m_hash);
-            std::swap(first.m_status, second.m_status);
+            Unknown = -1,
+            CheckingResumeData,
+            Downloading,
+            DownloadingChecking,
+            DownloadingForced,
+            DownloadingMetadata,
+            DownloadingPaused,
+            DownloadingQueued,
+            DownloadingStalled,
+            Error,
+            Uploading,
+            UploadingChecking,
+            UploadingForced,
+            UploadingPaused,
+            UploadingQueued,
+            UploadingStalled
+        };
+
+        static Torrent Map(const libtorrent::sha1_hash& hash);
+        static Torrent Map(const libtorrent::torrent_status& status);
+
+        bool operator==(const Torrent& other)
+        {
+            return infoHash == other.infoHash;
         }
 
-        libtorrent::sha1_hash infoHash() const;
-        std::wstring name() const;
-        int queuePosition() const;
-        int64_t size() const;
-        int status() const;
-        float progress() const;
-        int eta() const;
-        int downloadRate() const;
-        int uploadRate() const;
-        int seedsConnected() const;
-        int seedsTotal() const;
-        int peersConnected() const;
-        int peersTotal() const;
-        float shareRatio() const;
-        bool isPaused() const;
-        std::wstring savePath() const;
-        int64_t downloadedBytes() const;
-        int64_t uploadedBytes() const;
-        int piecesHave() const;
-        int pieceLength() const;
-        int piecesCount() const;
+        bool operator!=(const Torrent& other)
+        {
+            return !(*this == other);
+        }
 
-    private:
-        std::unique_ptr<libtorrent::sha1_hash> m_hash;
-        std::unique_ptr<libtorrent::torrent_status> m_status;
+        libtorrent::sha1_hash infoHash;
+        std::wstring name;
+        int queuePosition;
+        int64_t size;
+        State state;
+        float progress;
+        std::chrono::seconds eta;
+        int downloadRate;
+        int uploadRate;
+        int seedsConnected;
+        int seedsTotal;
+        int peersConnected;
+        int peersTotal;
+        float shareRatio;
+        bool isPaused;
+        std::wstring savePath;
+        int64_t downloadedBytes;
+        int64_t uploadedBytes;
+        int piecesHave;
+        int pieceLength;
+        int piecesCount;
+        std::wstring errorMessage;
     };
 }

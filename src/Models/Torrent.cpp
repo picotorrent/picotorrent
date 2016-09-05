@@ -9,171 +9,175 @@
 namespace lt = libtorrent;
 using Models::Torrent;
 
-Torrent::Torrent(const lt::sha1_hash& hash)
-    : m_hash(std::make_unique<lt::sha1_hash>(hash))
+Torrent Torrent::Map(const lt::sha1_hash& hash)
 {
+    return Torrent{ hash };
 }
 
-Torrent::Torrent(const lt::sha1_hash& hash, const lt::torrent_status& ts)
-    : m_hash(std::make_unique<lt::sha1_hash>(hash)),
-    m_status(std::make_unique<lt::torrent_status>(ts))
+Torrent Torrent::Map(const lt::torrent_status& status)
 {
-}
-
-Torrent::Torrent(const Torrent& other)
-    : m_hash(std::make_unique<lt::sha1_hash>(*other.m_hash.get())),
-    m_status(std::make_unique<lt::torrent_status>(*other.m_status.get()))
-{
-}
-
-Torrent::~Torrent()
-{
-}
-
-Torrent& Torrent::operator=(Torrent other)
-{
-    swap(*this, other);
-    return *this;
-}
-
-bool Torrent::operator==(const Torrent& other)
-{
-    return *m_hash == *other.m_hash;
-}
-
-bool Torrent::operator!=(const Torrent& other)
-{
-    return !(*this == other);
-}
-
-lt::sha1_hash Torrent::infoHash() const
-{
-    return *m_hash;
-}
-
-std::wstring Torrent::name() const
-{
-    return TWS(m_status->name);
-}
-
-int Torrent::queuePosition() const
-{
-    return m_status->queue_position;
-}
-
-int64_t Torrent::size() const
-{
-    return m_status->handle.torrent_file()->total_size();
-}
-
-int Torrent::status() const
-{
-    return m_status->state;
-}
-
-float Torrent::progress() const
-{
-    return m_status->progress;
-}
-
-int Torrent::eta() const
-{
+    bool isPaused = status.paused && !status.auto_managed;
+    float ratio = 0;
     int eta = -1;
+    int pieceLength = -1;
+    int piecesCount = -1;
+    State state = State::Unknown;
 
-    if (!isPaused())
+    if (status.all_time_download > 0)
     {
-        int64_t remaining_bytes = m_status->total_wanted - m_status->total_wanted_done;
-        if (remaining_bytes > 0 && downloadRate() > 0)
+        ratio = (float)status.all_time_upload / (float)status.all_time_download;
+    }
+
+    if (!isPaused)
+    {
+        int64_t remaining_bytes = status.total_wanted - status.total_wanted_done;
+        if (remaining_bytes > 0 && status.download_payload_rate > 0)
         {
-            eta = (int)(remaining_bytes / downloadRate());
+            eta = (int)(remaining_bytes / status.download_payload_rate);
         }
     }
 
-    return eta;
-}
-
-int Torrent::downloadRate() const
-{
-    return m_status->download_payload_rate;
-}
-
-int Torrent::uploadRate() const
-{
-    return m_status->upload_payload_rate;
-}
-
-int Torrent::seedsConnected() const
-{
-    return m_status->num_seeds;
-}
-
-int Torrent::seedsTotal() const
-{
-    return m_status->list_seeds;
-}
-
-int Torrent::peersConnected() const
-{
-    return m_status->num_peers - m_status->num_seeds;
-}
-
-int Torrent::peersTotal() const
-{
-    return m_status->list_peers - m_status->list_seeds;
-}
-
-float Torrent::shareRatio() const
-{
-    int64_t ul = m_status->all_time_upload;
-    int64_t dl = m_status->all_time_download;
-    float ratio = 0;
-
-    if (dl > 0) { ratio = (float)ul / (float)dl; }
-
-    return ratio;
-}
-
-bool Torrent::isPaused() const
-{
-    return m_status->paused && !m_status->auto_managed;
-}
-
-std::wstring Torrent::savePath() const
-{
-    return TWS(m_status->save_path);
-}
-
-int64_t Torrent::downloadedBytes() const
-{
-    return m_status->all_time_download;
-}
-
-int64_t Torrent::uploadedBytes() const
-{
-    return m_status->all_time_upload;
-}
-
-int Torrent::piecesHave() const
-{
-    return m_status->num_pieces;
-}
-
-int Torrent::pieceLength() const
-{
-    if (m_status->handle.torrent_file())
+    if (status.handle.torrent_file())
     {
-        return m_status->handle.torrent_file()->piece_length();
+        pieceLength = status.handle.torrent_file()->piece_length();
     }
 
-    return -1;
-}
-
-int Torrent::piecesCount() const
-{
-    if (m_status->handle.torrent_file())
+    if (status.handle.torrent_file())
     {
-        return m_status->handle.torrent_file()->num_pieces();
+        piecesCount = status.handle.torrent_file()->num_pieces();
     }
 
-    return -1;
+    /*
+    State
+    */
+    bool hasError = status.paused && status.errc;
+    bool isSeeding = (status.state == lt::torrent_status::state_t::finished
+        || status.state == lt::torrent_status::state_t::seeding);
+    bool isQueued = (status.paused && status.auto_managed);
+    bool isChecking = (status.state == lt::torrent_status::state_t::checking_files
+        || status.state == lt::torrent_status::state_t::checking_resume_data);
+    bool isForced = (!status.paused && !status.auto_managed);
+
+    if (isPaused)
+    {
+        if (hasError)
+        {
+            state = State::Error;
+        }
+        else
+        {
+            if (isSeeding)
+            {
+                state = State::UploadingPaused;
+            }
+            else
+            {
+                state = State::DownloadingPaused;
+            }
+        }
+    }
+    else
+    {
+        if (isQueued && !isChecking)
+        {
+            if (isSeeding)
+            {
+                state = State::UploadingQueued;
+            }
+            else
+            {
+                state = State::DownloadingQueued;
+            }
+        }
+        else
+        {
+            switch (status.state)
+            {
+            case lt::torrent_status::state_t::finished:
+            case lt::torrent_status::state_t::seeding:
+            {
+                if (isForced)
+                {
+                    state = State::UploadingForced;
+                }
+                else
+                {
+                    if (status.upload_payload_rate > 0)
+                    {
+                        state = State::Uploading;
+                    }
+                    else
+                    {
+                        state = State::UploadingStalled;
+                    }
+                }
+                break;
+            }
+
+            case lt::torrent_status::state_t::checking_resume_data:
+            {
+                state = State::CheckingResumeData;
+                break;
+            }
+
+            case lt::torrent_status::state_t::checking_files:
+            {
+                state = State::DownloadingChecking;
+                break;
+            }
+
+            case lt::torrent_status::state_t::downloading_metadata:
+            {
+                state = State::DownloadingMetadata;
+                break;
+            }
+
+            case lt::torrent_status::state_t::downloading:
+            {
+                if (isForced)
+                {
+                    state = State::DownloadingForced;
+                }
+                else
+                {
+                    if (status.download_payload_rate > 0)
+                    {
+                        state = State::Downloading;
+                    }
+                    else
+                    {
+                        state = State::DownloadingStalled;
+                    }
+                }
+                break;
+            }
+            }
+        }
+    }
+
+    return Torrent
+    {
+        status.info_hash,
+        TWS(status.name),
+        status.queue_position,
+        status.handle.torrent_file()->total_size(),
+        state,
+        status.progress,
+        std::chrono::seconds(eta),
+        status.download_payload_rate,
+        status.upload_payload_rate,
+        status.num_seeds,
+        status.list_seeds,
+        status.num_peers - status.num_seeds,
+        status.list_peers - status.list_seeds,
+        ratio,
+        isPaused,
+        TWS(status.save_path),
+        status.all_time_download,
+        status.all_time_upload,
+        status.num_pieces,
+        pieceLength,
+        piecesCount,
+        TWS(status.errc ? status.errc.message() : "")
+    };
 }

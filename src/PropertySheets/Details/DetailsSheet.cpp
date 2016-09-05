@@ -11,7 +11,7 @@ using PropertySheets::Details::DetailsSheet;
 
 DetailsSheet::DetailsSheet(const libtorrent::torrent_handle& th)
     : m_overview(std::make_unique<OverviewPage>(th)),
-    m_options(std::make_unique<OptionsPage>()),
+    m_options(std::make_unique<OptionsPage>(th)),
     m_files(std::make_unique<FilesPage>(th)),
     m_peers(std::make_unique<PeersPage>(th)),
     m_trackers(std::make_unique<TrackersPage>(th))

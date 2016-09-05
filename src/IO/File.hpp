@@ -1,7 +1,9 @@
 #pragma once
 
+#include <functional>
 #include <string>
 #include <vector>
+#include <windows.h>
 
 namespace IO
 {

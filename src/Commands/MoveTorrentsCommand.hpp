@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace Models { class Torrent; }
+namespace Models { struct Torrent; }
 
 namespace Commands
 {

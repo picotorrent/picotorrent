@@ -40,16 +40,20 @@ set(PICOTORRENT_SOURCES
     src/Log
     src/Main
     src/Scaler
+    src/SessionManager
     src/Translator
     src/VersionInformation
 
     src/Controllers/AddTorrentController
+    src/Controllers/NotifyIconController
+    src/Controllers/RemoveTorrentsController
     src/Controllers/TorrentDetailsController
     src/Controllers/ViewPreferencesController
 
     src/Core/Torrent
 
     src/Dialogs/AboutDialog
+    src/Dialogs/AddMagnetLinkDialog
     src/Dialogs/AddTorrentDialog
     src/Dialogs/AddTrackerDialog
     src/Dialogs/OpenFileDialog
@@ -80,6 +84,7 @@ set(PICOTORRENT_SOURCES
     src/UI/MainMenu
     src/UI/PeerListView
     src/UI/StatusBar
+    src/UI/Taskbar
     src/UI/TextBox
     src/UI/TorrentFileListView
     src/UI/TorrentListView

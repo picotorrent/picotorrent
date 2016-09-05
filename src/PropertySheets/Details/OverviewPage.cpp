@@ -68,27 +68,27 @@ LRESULT OverviewPage::OnTorrentUpdated(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void OverviewPage::Update()
 {
-    Models::Torrent t(m_torrent.info_hash(), m_torrent.status());
+    Models::Torrent t = Models::Torrent::Map(m_torrent.status());
 
     // Share ratio
     std::wstringstream ss;
-    ss << std::fixed << std::setprecision(3) << t.shareRatio();
+    ss << std::fixed << std::setprecision(3) << t.shareRatio;
     SetDlgItemText(ID_OVERVIEW_RATIO, ss.str().c_str());
 
     // Pieces
     TCHAR p_str[100];
     TCHAR p_bytes[100];
-    StrFormatByteSize64(t.pieceLength(), p_bytes, ARRAYSIZE(p_bytes));
-    StringCchPrintf(p_str, ARRAYSIZE(p_str), TEXT("%d x %s (have %d)"), t.piecesCount(), p_bytes, t.piecesHave());
+    StrFormatByteSize64(t.pieceLength, p_bytes, ARRAYSIZE(p_bytes));
+    StringCchPrintf(p_str, ARRAYSIZE(p_str), TEXT("%d x %s (have %d)"), t.piecesCount, p_bytes, t.piecesHave);
     SetDlgItemText(ID_OVERVIEW_PIECES, p_str);
 
     // DL
     TCHAR dl_str[100];
-    StrFormatByteSize64(t.downloadedBytes(), dl_str, ARRAYSIZE(dl_str));
+    StrFormatByteSize64(t.downloadedBytes, dl_str, ARRAYSIZE(dl_str));
     SetDlgItemText(ID_OVERVIEW_DOWNLOADED, dl_str);
 
     // UL
     TCHAR ul_str[100];
-    StrFormatByteSize64(t.uploadedBytes(), ul_str, ARRAYSIZE(ul_str));
+    StrFormatByteSize64(t.uploadedBytes, ul_str, ARRAYSIZE(ul_str));
     SetDlgItemText(ID_OVERVIEW_UPLOADED, ul_str);
 }

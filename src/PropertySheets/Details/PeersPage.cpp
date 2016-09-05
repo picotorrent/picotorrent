@@ -59,7 +59,7 @@ BOOL PeersPage::OnSetActive()
         ss << peer.ip;
         std::wstring endpoint = TWS(ss.str());
 
-        Models::Peer p(endpoint, peer);
+        Models::Peer p = Models::Peer::Map(peer);
         m_peerList->Add(p);
 
         // Add the peer to our state, setting the value to 'true'
@@ -98,7 +98,7 @@ LRESULT PeersPage::OnTorrentUpdated(UINT uMsg, WPARAM wParam, LPARAM lParam)
         ss << peer.ip;
         std::wstring endpoint = TWS(ss.str());
 
-        Models::Peer p(endpoint, peer);
+        Models::Peer p = Models::Peer::Map(peer);
 
         if (m_state.find(endpoint) == m_state.end())
         {
@@ -113,7 +113,7 @@ LRESULT PeersPage::OnTorrentUpdated(UINT uMsg, WPARAM wParam, LPARAM lParam)
         m_state.at(endpoint) = true;
     }
 
-    // Find all hashes which haven't been updated
+    // Find all peers which haven't been updated
     std::vector<std::wstring> rem;
     std::for_each(
         m_state.begin(),
@@ -122,7 +122,7 @@ LRESULT PeersPage::OnTorrentUpdated(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     for (auto& r : rem)
     {
-        Models::Peer p(r);
+        Models::Peer p = Models::Peer::Map(r);
 
         m_peerList->Remove(p);
         m_state.erase(r);
