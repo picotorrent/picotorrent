@@ -188,6 +188,9 @@
     <ProjectReference Include="..\PicoTorrent.Plugins.AutoAdd\PicoTorrent.Plugins.AutoAdd.csproj">
       <Project>{f87330a2-75dc-4136-a7c7-ec71c65cb9b1}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\PicoTorrent.Plugins.Blocklist\PicoTorrent.Plugins.Blocklist.csproj">
+      <Project>{435e7c74-fb99-45fa-93b5-61184b19c684}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\PicoTorrent.Plugins.Pushbullet\PicoTorrent.Plugins.Pushbullet.csproj">
       <Project>{42987f26-8d83-4ebc-87af-f0d0b4ad25bd}</Project>
     </ProjectReference>
