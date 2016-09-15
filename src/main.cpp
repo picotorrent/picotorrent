@@ -1,49 +1,67 @@
-// Enable visual styles
-#pragma comment(linker, "\"/manifestdependency:type='win32' \
-                        name='Microsoft.Windows.Common-Controls' \
-                        version='6.0.0.0' \
-                        processorArchitecture='*' \
-                        publicKeyToken='6595b64144ccf1df' \
-                        language='*'\"")
+#include "stdafx.h"
 
-#include <windows.h>
+#include "CMainFrame.hpp"
+#include "CommandLine.hpp"
+#include "UnhandledExceptionHandler.hpp"
 
-#include <picotorrent/client/application.hpp>
-#include <picotorrent/common/command_line.hpp>
-#include <picotorrent/server/application.hpp>
+#include <signal.h>
 
-using picotorrent::common::command_line;
+CAppModule _Module;
+
+int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
+{
+    CMessageLoop theLoop;
+    _Module.AddMessageLoop(&theLoop);
+
+    CMainFrame wndMain;
+
+    if (!wndMain.IsSingleInstance())
+    {
+        wndMain.ActivateOtherInstance(lpstrCmdLine);
+        return 0;
+    }
+
+    if (wndMain.CreateEx() == NULL)
+    {
+        ATLTRACE(_T("Main window creation failed!\n"));
+        return 0;
+    }
+
+    wndMain.Show(nCmdShow);
+
+    // Handle command line
+    CommandLine cmd = CommandLine::Parse(lpstrCmdLine);
+    wndMain.HandleCommandLine(cmd);
+
+    int nRet = theLoop.Run();
+
+    _Module.RemoveMessageLoop();
+    return nRet;
+}
 
 int WINAPI wWinMain(
     _In_ HINSTANCE     hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPTSTR        lpCmdLine,
+    _In_ LPTSTR        lpstrCmdLine,
     _In_ int           nCmdShow)
 {
-    command_line cmd = command_line::parse(lpCmdLine);
-    std::shared_ptr<picotorrent::common::application> app;
+    UnhandledExceptionHandler::Setup();
 
-    if (cmd.daemon())
-    {
-        auto server_app = std::make_shared<picotorrent::server::application>();
+    ::CoInitialize(NULL);
+    ::InitCommonControls();
 
-        if (cmd.alloc_console())
-        {
-            server_app->allocate_console();
-        }
+    INITCOMMONCONTROLSEX icc = { sizeof(INITCOMMONCONTROLSEX) };
+    icc.dwICC = ICC_BAR_CLASSES;
+    ::InitCommonControlsEx(&icc);
 
-        app = server_app;
-    }
-    else
-    {
-        picotorrent::client::application::wait_for_restart(cmd);
-        app = std::make_shared<picotorrent::client::application>();
-    }
+    ::SetProcessDPIAware();
 
-    if (!app->init())
-    {
-        return 1;
-    }
+    _Module.Init(NULL, hInstance);
 
-    return app->run(cmd);
+    int nRet = Run(lpstrCmdLine, nCmdShow);
+
+    _Module.Term();
+    ::CoUninitialize();
+
+    return nRet;
 }

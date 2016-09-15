@@ -16,7 +16,6 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 - The x86 executable is less than 1.5MB if compressed with UPX.
 - Native look-and-feel across Windows versions.
 - Support for magnet link pre-loading.
-- Extensible with plugins written in C++ or any .NET compliant language.
 
 
 ## Building PicoTorrent
@@ -34,7 +33,6 @@ To successfully build PicoTorrent, you need the following tools installed,
 Build PicoTorrent by running the following in a PowerShell prompt,
 
 ```
-PS> git submodule update --init
 PS> .\build.ps1
 ```
 

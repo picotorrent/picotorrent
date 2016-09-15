@@ -151,12 +151,6 @@ Task("Setup-Publish-Directory")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.exe"),
-        BuildDirectory + File("PicoTorrentClient.dll"),
-        BuildDirectory + File("PicoTorrentCommon.dll"),
-        BuildDirectory + File("PicoTorrentCore.dll"),
-        BuildDirectory + File("PicoTorrentExtensibility.dll"),
-        BuildDirectory + File("PicoTorrentServer.dll"),
-
         // 3rd party libraries
         LibraryDirectory + File(BoostRandom),
         LibraryDirectory + File(BoostSystem),
@@ -164,15 +158,6 @@ Task("Setup-Publish-Directory")
         LibraryDirectory + File("ssleay32.dll"),
         LibraryDirectory + File("torrent.dll")
     };
-
-    // Copy plugins
-    var pluginsPublishDirectory = PublishDirectory + Directory("plugins");
-    CreateDirectory(pluginsPublishDirectory);
-    CopyDirectory(PluginsDirectory, pluginsPublishDirectory);
-    // Delete all but the DLL files from plugins
-    var d = (string)pluginsPublishDirectory;
-    var f = GetFiles(d + "/**/*.*") - GetFiles(d + "/**/*.dll");
-    DeleteFiles(f);
 
     CreateDirectory(PublishDirectory);
     CopyFiles(files, PublishDirectory);
@@ -257,11 +242,7 @@ Task("Build-Symbols-Package")
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.pdb"),
-        BuildDirectory + File("PicoTorrentClient.pdb"),
-        BuildDirectory + File("PicoTorrentCommon.pdb"),
-        BuildDirectory + File("PicoTorrentCore.pdb"),
-        BuildDirectory + File("PicoTorrentServer.pdb")
+        BuildDirectory + File("PicoTorrent.pdb")
     };
 
     Zip(BuildDirectory, BuildDirectory + File(SymbolsPackage), files);
@@ -288,27 +269,6 @@ Task("Build-Chocolatey-Package")
     });
 
     System.IO.Directory.SetCurrentDirectory(currentDirectory.ToString());
-});
-
-Task("Build-NetFx-NuGet-Package")
-    .IsDependentOn("Build-NetFx-Plugins")
-    .Does(() =>
-{
-    NuGetPack(new NuGetPackSettings
-    {
-        Id = "PicoTorrent.Fx",
-        Version = Version,
-        Title = "PicoTorrent.Fx",
-        Authors = new [] { "PicoTorrent contributors" },
-        Owners = new [] { "Viktor Elofsson" },
-        Description = "Framework for writing PicoTorrent plugins.",
-        Files = new []
-        {
-            new NuSpecContent { Source = "PicoTorrent.Fx.dll", Target = "lib/net46" }
-        },
-        BasePath = "./plugins/netfx/src/PicoTorrent.Fx/bin/" + configuration,
-        OutputDirectory = BuildDirectory
-    });
 });
 
 Task("Sign")
@@ -355,13 +315,12 @@ Task("Sign-Installer-Bundle")
 
 Task("Default")
     .IsDependentOn("Build")
-    .IsDependentOn("Build-NetFx-Plugins")
     .IsDependentOn("Build-Installer")
     .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
     .IsDependentOn("Build-Symbols-Package")
-    .IsDependentOn("Build-NetFx-NuGet-Package");
+    ;
 
 Task("Publish")
     .IsDependentOn("Build")

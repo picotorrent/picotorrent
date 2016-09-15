@@ -40,10 +40,6 @@
                 <Directory Id="INSTALLDIR" Name="PicoTorrent">
                     <Directory Id="LANGDIR" Name="lang" />
 
-                    <Directory Id="PLUGINSDIR" Name="plugins">
-                      <Directory Id="PLUGINS_NETFX_DIR" Name="netfx" />
-                    </Directory>
-
                     <Component Id="C_PicoTorrent" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205">
                         <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" Source="$(var.PublishDirectory)\PicoTorrent.exe" KeyPath="yes" />
 
@@ -187,26 +183,6 @@
         </Directory>
 
         <ComponentGroup Id="CG_Libraries" Directory="INSTALLDIR">
-          <Component Id="C_PicoTorrentClient">
-            <File Name="PicoTorrentClient.dll" Source="$(var.PublishDirectory)\PicoTorrentClient.dll" />
-          </Component>
-
-          <Component Id="C_PicoTorrentCommon">
-            <File Name="PicoTorrentCommon.dll" Source="$(var.PublishDirectory)\PicoTorrentCommon.dll" />
-          </Component>
-
-          <Component Id="C_PicoTorrentCore">
-            <File Name="PicoTorrentCore.dll" Source="$(var.PublishDirectory)\PicoTorrentCore.dll" />
-          </Component>
-
-          <Component Id="C_PicoTorrentExtensibility">
-            <File Name="PicoTorrentExtensibility.dll" Source="$(var.PublishDirectory)\PicoTorrentExtensibility.dll" />
-          </Component>
-
-          <Component Id="C_PicoTorrentServer">
-            <File Name="PicoTorrentServer.dll" Source="$(var.PublishDirectory)\PicoTorrentServer.dll" />
-          </Component>
-
           <Component Id="C_BoostRandom">
             <File Name="$(var.BoostRandomFile)" Source="$(var.PublishDirectory)\$(var.BoostRandomFile)" />
           </Component>
@@ -270,28 +246,6 @@
           </Component>
         </ComponentGroup>
 
-        <ComponentGroup Id="CG_PluginsNetFx" Directory="PLUGINS_NETFX_DIR">
-          <Component Id="C_netfx_dll">
-            <File Name="netfx.dll" Source="$(var.PublishDirectory)\plugins\netfx\netfx.dll" />
-          </Component>
-
-          <Component Id="C_PicoTorrentFx_dll">
-            <File Name="PicoTorrent.Fx.dll" Source="$(var.PublishDirectory)\plugins\netfx\PicoTorrent.Fx.dll" />
-          </Component>
-
-          <Component Id="C_PicoTorrentPluginsAutoAdd_dll">
-            <File Name="PicoTorrent.Plugins.AutoAdd.dll" Source="$(var.PublishDirectory)\plugins\netfx\PicoTorrent.Plugins.AutoAdd.dll" />
-          </Component>
-
-          <Component Id="C_PicoTorrentPluginsPushbullet_dll">
-            <File Name="PicoTorrent.Plugins.Pushbullet.dll" Source="$(var.PublishDirectory)\plugins\netfx\PicoTorrent.Plugins.Pushbullet.dll" />
-          </Component>
-
-          <Component Id="C_PicoTorrentPluginsUpdateChecker_dll">
-            <File Name="PicoTorrent.Plugins.UpdateChecker.dll" Source="$(var.PublishDirectory)\plugins\netfx\PicoTorrent.Plugins.UpdateChecker.dll" />
-          </Component>
-        </ComponentGroup>
-
         <Feature Id="F_Complete"
                  Title="PicoTorrent"
                  Absent="disallow"
@@ -301,7 +255,6 @@
 
             <ComponentRef Id="C_PicoTorrent" />
             <ComponentGroupRef Id="CG_Libraries" />
-            <ComponentGroupRef Id="CG_PluginsNetFx" />
 
             <Feature Id="F_Lang"
                      Title="Language files"
