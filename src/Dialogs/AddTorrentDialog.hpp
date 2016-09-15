@@ -2,6 +2,7 @@
 
 #include "../stdafx.h"
 #include "../resources.h"
+#include "../UI/TextBox.hpp"
 
 #include <memory>
 #include <vector>
@@ -25,6 +26,7 @@ private:
     void OnEndDialog(UINT uNotifyCode, int nID, CWindow wndCtl);
     BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam);
     void OnTorrentSelected(UINT uNotifyCode, int nID, CWindow wndCtl);
+    void OnSavePathChanged(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnChangeStorageMode(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnChangeSavePath(UINT uNotifyCode, int nID, CWindow wndCtl);
     LRESULT OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -34,6 +36,7 @@ private:
         MSG_WM_INITDIALOG(OnInitDialog)
         MESSAGE_HANDLER_EX(PT_PRIORITIZEFILES, OnPrioritizeFiles)
         COMMAND_HANDLER_EX(ID_TORRENT, CBN_SELENDOK, OnTorrentSelected)
+        COMMAND_HANDLER_EX(ID_SAVE_PATH, EN_CHANGE, OnSavePathChanged)
         COMMAND_ID_HANDLER_EX(IDCANCEL, OnEndDialog)
         COMMAND_ID_HANDLER_EX(IDOK, OnEndDialog)
         COMMAND_ID_HANDLER_EX(ID_ADD_STORAGE_MODE_FULL, OnChangeStorageMode)
@@ -46,7 +49,7 @@ private:
 
     CComboBox m_torrents;
     CEdit m_size;
-    CEdit m_savePath;
+    UI::TextBox m_savePath;
     CButton m_storageFull;
     CButton m_storageSparse;
 };

@@ -137,6 +137,12 @@ LRESULT AddTorrentDialog::OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lPa
     return FALSE;
 }
 
+void AddTorrentDialog::OnSavePathChanged(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    std::shared_ptr<lt::add_torrent_params> prm = m_params.at(m_torrents.GetCurSel());
+    prm->save_path = m_savePath.GetValueA();
+}
+
 void AddTorrentDialog::OnTorrentSelected(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     ShowTorrent(m_torrents.GetCurSel());
