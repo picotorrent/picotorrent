@@ -2,6 +2,7 @@
 
 #include <libtorrent/session.hpp>
 
+#include "../Core/SessionSettings.hpp"
 #include "../PropertySheets/Preferences/PreferencesSheet.hpp"
 #include "../resources.h"
 
@@ -18,5 +19,6 @@ void ViewPreferencesController::Execute()
     PropertySheets::Preferences::PreferencesSheet sheet;
     sheet.DoModal();
 
-    // TODO: reload session settings
+    lt::settings_pack settings = Core::SessionSettings::Get();
+    m_session->apply_settings(settings);
 }

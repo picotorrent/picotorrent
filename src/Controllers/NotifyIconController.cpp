@@ -3,6 +3,7 @@
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
 
+#include "../Controllers/AddMagnetLinkController.hpp"
 #include "../Controllers/AddTorrentController.hpp"
 #include "../Dialogs/AddMagnetLinkDialog.hpp"
 #include "../resources.h"
@@ -45,20 +46,14 @@ void NotifyIconController::Execute(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
         case ID_NOTIFYICON_ADD:
         {
-            Controllers::AddTorrentController ctrl(m_session);
+            Controllers::AddTorrentController ctrl(m_hWnd, m_session);
             ctrl.Execute();
             break;
         }
         case ID_NOTIFYICON_ADD_MAGNET:
         {
-            Dialogs::AddMagnetLinkDialog dlg;
-            if (dlg.DoModal(m_hWnd) == IDOK)
-            {
-                std::vector<lt::torrent_info> ti = dlg.GetTorrentFiles();
-
-                Controllers::AddTorrentController atc(m_session);
-                atc.Execute(ti);
-            }
+            Controllers::AddMagnetLinkController amlc(m_hWnd, m_session);
+            amlc.Execute();
             break;
         }
         case ID_NOTIFYICON_EXIT:

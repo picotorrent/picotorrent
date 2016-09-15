@@ -12,6 +12,7 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 
+#include "CommandLine.hpp"
 #include "Commands/FindMetadataCommand.hpp"
 #include "Commands/MoveTorrentsCommand.hpp"
 #include "Commands/PauseTorrentsCommand.hpp"
@@ -20,13 +21,17 @@
 #include "Commands/ResumeTorrentsCommand.hpp"
 #include "Commands/ShowTorrentDetailsCommand.hpp"
 #include "Configuration.hpp"
+#include "Core/SessionLoader.hpp"
+#include "Core/SessionUnloader.hpp"
 #include "Core/Torrent.hpp"
+#include "Controllers/AddMagnetLinkController.hpp"
 #include "Controllers/AddTorrentController.hpp"
+#include "Controllers/ApplicationCloseController.hpp"
 #include "Controllers/NotifyIconController.hpp"
+#include "Controllers/RemoveTorrentsController.hpp"
 #include "Controllers/TorrentDetailsController.hpp"
 #include "Controllers/ViewPreferencesController.hpp"
 #include "Dialogs/AboutDialog.hpp"
-#include "Dialogs/AddMagnetLinkDialog.hpp"
 #include "Dialogs/OpenFileDialog.hpp"
 #include "Environment.hpp"
 #include "Log.hpp"
@@ -35,6 +40,7 @@
 #include "IO/Path.hpp"
 #include "Models/Torrent.hpp"
 #include "Scaler.hpp"
+#include "SleepManager.hpp"
 #include "StringUtils.hpp"
 #include "Translator.hpp"
 #include "UI/MainMenu.hpp"
@@ -42,23 +48,105 @@
 #include "UI/StatusBar.hpp"
 #include "UI/Taskbar.hpp"
 #include "UI/TorrentListView.hpp"
+#include "UIState.hpp"
 
 namespace lt = libtorrent;
 
 const UINT CMainFrame::TaskbarButtonCreated = RegisterWindowMessage(TEXT("TaskbarButtonCreated"));
 
 CMainFrame::CMainFrame()
-    :
-    m_metrics(lt::session_stats_metrics())
+    : m_metrics(lt::session_stats_metrics())
 {
+    m_mutex = CreateMutex(NULL, FALSE, TEXT("PicoTorrent/1.0"));
+    m_singleInstance = GetLastError() != ERROR_ALREADY_EXISTS;
 }
 
 CMainFrame::~CMainFrame()
 {
+    if (m_mutex) { CloseHandle(m_mutex); }
 }
 
-void CMainFrame::LoadState()
+void CMainFrame::ActivateOtherInstance(LPTSTR lpstrCmdLine)
 {
+    HWND hWndOther = FindWindow(TEXT("PicoTorrent/MainFrame"), NULL);
+
+    COPYDATASTRUCT cds;
+    std::wstring args = lpstrCmdLine;
+
+    if (!args.empty())
+    {
+        cds.cbData = (DWORD)(sizeof(wchar_t) * (args.size() + 1));
+        cds.dwData = 1;
+        cds.lpData = (PVOID)&args[0];
+    }
+
+    // Activate other window
+    ::SetForegroundWindow(hWndOther);
+    ::ShowWindow(hWndOther, SW_RESTORE);
+    ::SendMessage(hWndOther, WM_COPYDATA, NULL, (LPARAM)&cds);
+}
+
+bool CMainFrame::IsSingleInstance()
+{
+    return m_singleInstance;
+}
+
+void CMainFrame::HandleCommandLine(const CommandLine& cmd)
+{
+    if (!cmd.files.empty() && cmd.magnet_links.empty())
+    {
+        Controllers::AddTorrentController atc(m_hWnd, m_session);
+        atc.Execute(cmd.files);
+    }
+    else if (!cmd.magnet_links.empty() && cmd.files.empty())
+    {
+        Controllers::AddMagnetLinkController amlc(m_hWnd, m_session);
+        amlc.Execute(cmd.magnet_links);
+    }
+}
+
+BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
+{
+    return CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg);
+}
+
+void CMainFrame::Show(int nCmdShow)
+{
+    Configuration& cfg = Configuration::GetInstance();
+    UINT pos = nCmdShow;
+
+    switch (cfg.GetStartupPosition())
+    {
+    case Configuration::StartupPosition::Hidden:
+        pos = SW_HIDE;
+        break;
+    case Configuration::StartupPosition::Minimized:
+        pos = SW_SHOWMINIMIZED;
+        break;
+    }
+
+    auto state = UIState::GetInstance().GetWindowState("main");
+
+    if (state)
+    {
+        WINDOWPLACEMENT winplace = { sizeof(WINDOWPLACEMENT) };
+        winplace.flags = state->flags;
+        winplace.ptMaxPosition.x = state->max_x;
+        winplace.ptMaxPosition.y = state->max_y;
+        winplace.ptMinPosition.x = state->min_x;
+        winplace.ptMinPosition.y = state->min_y;
+        winplace.rcNormalPosition.bottom = state->pos_bottom;
+        winplace.rcNormalPosition.left = state->pos_left;
+        winplace.rcNormalPosition.right = state->pos_right;
+        winplace.rcNormalPosition.top = state->pos_top;
+        winplace.showCmd = pos;
+
+        SetWindowPlacement(&winplace);
+    }
+    else
+    {
+        ShowWindow(pos);
+    }
 }
 
 LRESULT CMainFrame::OnRegisterNotify(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -68,7 +156,6 @@ LRESULT CMainFrame::OnRegisterNotify(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     return FALSE;
 }
-
 
 LRESULT CMainFrame::OnUnregisterNotify(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -183,9 +270,19 @@ LRESULT CMainFrame::OnRemoveTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     auto rm = reinterpret_cast<Commands::RemoveTorrentsCommand*>(lParam);
 
-
+    Controllers::RemoveTorrentsController rem(m_hWnd, m_session, m_torrents);
+    rem.Execute(rm->torrents, rm->removeData);
 
     return FALSE;
+}
+
+void CMainFrame::OnRemoveTorrentsAccelerator(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    std::vector<Models::Torrent> selection = m_torrentList->GetSelectedTorrents();
+    bool removeData = nID == IDA_REMOVE_TORRENTS_DATA;
+
+    Controllers::RemoveTorrentsController rem(m_hWnd, m_session, m_torrents);
+    rem.Execute(selection, removeData);
 }
 
 LRESULT CMainFrame::OnResumeTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -235,116 +332,21 @@ LRESULT CMainFrame::OnTaskbarButtonCreated(UINT uMsg, WPARAM wParam, LPARAM lPar
     return FALSE;
 }
 
-void CMainFrame::LoadTorrents()
-{
-    
-}
-
-void CMainFrame::SaveState()
-{
-    
-}
-
-void CMainFrame::SaveTorrents()
-{
-    m_session->pause();
-
-    // Save each torrents resume data
-    int numOutstandingResumeData = 0;
-    int numPaused = 0;
-    int numFailed = 0;
-
-    std::vector<lt::torrent_status> temp;
-    m_session->get_torrent_status(&temp, [](const lt::torrent_status &st) { return true; }, 0);
-
-    for (lt::torrent_status &st : temp)
-    {
-        if (!st.handle.is_valid()
-            || !st.has_metadata
-            || !st.need_save_resume)
-        {
-            continue;
-        }
-
-        st.handle.save_resume_data();
-        ++numOutstandingResumeData;
-    }
-
-    LOG(Info) << "Saving resume data for " << numOutstandingResumeData << " torrent(s)";
-    std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
-
-    if (!IO::Directory::Exists(torrents_dir))
-    {
-        IO::Directory::Create(torrents_dir);
-    }
-
-    while (numOutstandingResumeData > 0)
-    {
-        const lt::alert *a = m_session->wait_for_alert(lt::seconds(10));
-        if (a == 0) { continue; }
-
-        std::vector<lt::alert*> alerts;
-        m_session->pop_alerts(&alerts);
-
-        for (lt::alert *a : alerts)
-        {
-            lt::torrent_paused_alert *tp = lt::alert_cast<lt::torrent_paused_alert>(a);
-
-            if (tp)
-            {
-                ++numPaused;
-                continue;
-            }
-
-            if (lt::alert_cast<lt::save_resume_data_failed_alert>(a))
-            {
-                ++numFailed;
-                --numOutstandingResumeData;
-                continue;
-            }
-
-            lt::save_resume_data_alert *rd = lt::alert_cast<lt::save_resume_data_alert>(a);
-            if (!rd) { continue; }
-            --numOutstandingResumeData;
-            if (!rd->resume_data) { continue; }
-
-            // PicoTorrent state
-            rd->resume_data->dict().insert({ "pT-queuePosition", rd->handle.status().queue_position });
-
-            std::vector<char> buf;
-            lt::bencode(std::back_inserter(buf), *rd->resume_data);
-
-            std::string info_hash = lt::to_hex(rd->handle.info_hash().to_string());
-            std::string file_name = info_hash + ".dat";
-            std::wstring dat_file = IO::Path::Combine(torrents_dir, TWS(file_name));
-
-            std::error_code ec;
-            IO::File::WriteAllBytes(dat_file, buf, ec);
-        }
-    }
-}
-
-void CMainFrame::OnAlertNotify()
-{
-    PostMessage(PT_ALERT);
-}
-
 void CMainFrame::OnFileAddTorrent(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    Controllers::AddTorrentController atc(m_session);
+    Controllers::AddTorrentController atc(m_hWnd, m_session);
     atc.Execute();
 }
 
 void CMainFrame::OnFileAddMagnetLink(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    Dialogs::AddMagnetLinkDialog dlg;
-    if (dlg.DoModal() == IDOK)
-    {
-        std::vector<lt::torrent_info> ti = dlg.GetTorrentFiles();
+    Controllers::AddMagnetLinkController amlc(m_hWnd, m_session);
+    amlc.Execute();
+}
 
-        Controllers::AddTorrentController atc(m_session);
-        atc.Execute(ti);
-    }
+void CMainFrame::OnFileExit(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    DestroyWindow();
 }
 
 void CMainFrame::OnViewPreferences(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -359,22 +361,39 @@ void CMainFrame::OnHelpAbout(UINT uNotifyCode, int nID, CWindow wndCtl)
     dlg.DoModal();
 }
 
+LRESULT CMainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+{
+    Controllers::ApplicationCloseController acc(m_hWnd);
+    bHandled = !acc.Execute();
+
+    return 0;
+}
+
+BOOL CMainFrame::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pCopyDataStruct)
+{
+    wchar_t *ptr = reinterpret_cast<wchar_t*>(pCopyDataStruct->lpData);
+    std::wstring cmd = ptr;
+
+    CommandLine cmdLine = CommandLine::Parse(cmd);
+    HandleCommandLine(cmdLine);
+    
+    return FALSE;
+}
+
 LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     // Create the UI
     ResizeClient(SX(800), SY(200));
-    SetIcon(LoadIcon(lpCreateStruct->hInstance, MAKEINTRESOURCE(IDI_APPICON)));
     SetMenu(UI::MainMenu::Create());
     SetWindowText(TEXT("PicoTorrent"));
 
     // NotifyIcon
     m_notifyIcon = std::make_shared<UI::NotifyIcon>(m_hWnd);
-    m_notifyIcon->Create();
+    m_notifyIcon->Show();
 
     // Torrent list view
     CListViewCtrl list;
     list.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | LVS_OWNERDATA | LVS_REPORT);
-
     m_torrentList = std::make_shared<UI::TorrentListView>(list);
     m_hWndClient = *m_torrentList;
 
@@ -382,42 +401,59 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_statusBar = std::make_shared<UI::StatusBar>();
     m_hWndStatusBar = m_statusBar->Create(m_hWnd, rcDefault);
 
-    // Create session
-    lt::settings_pack settings;
-    settings.set_int(lt::settings_pack::alert_mask, lt::alert::category_t::all_categories);
+    m_sleepManager = std::make_shared<SleepManager>();
 
-    m_session = std::make_shared<lt::session>(settings);
-    m_session->add_dht_router({ "router.bittorrent.com", 6881 });
-    m_session->add_dht_router({ "router.utorrent.com", 6881 });
-    m_session->add_dht_router({ "dht.transmissionbt.com", 6881 });
-    m_session->add_dht_router({ "dht.aelitis.com", 6881 }); // Vuze
-
-    LoadState();
-    LoadTorrents();
-
-    m_session->set_alert_notify(std::bind(&CMainFrame::OnAlertNotify, this));
+    // Load session
+    Core::SessionLoader::State state = Core::SessionLoader::Load();
+    m_muted_hashes = state.muted_hashes;
+    m_session = state.session;
+    m_session->set_alert_notify([this]() { PostMessage(PT_ALERT); });
 
     // Set the timer which updates every second
     SetTimer(6060, 1000);
+
+    CMessageLoop* pLoop = _Module.GetMessageLoop();
+    pLoop->AddMessageFilter(this);
 
     return 0;
 }
 
 void CMainFrame::OnDestroy()
 {
+    WINDOWPLACEMENT wndplace = { sizeof(WINDOWPLACEMENT) };
+    if (GetWindowPlacement(&wndplace))
+    {
+        UIState::WindowState ws;
+        ws.flags = wndplace.flags;
+        ws.max_x = wndplace.ptMaxPosition.x;
+        ws.max_y = wndplace.ptMaxPosition.y;
+        ws.min_x = wndplace.ptMinPosition.x;
+        ws.min_y = wndplace.ptMinPosition.y;
+        ws.pos_bottom = wndplace.rcNormalPosition.bottom;
+        ws.pos_left = wndplace.rcNormalPosition.left;
+        ws.pos_right = wndplace.rcNormalPosition.right;
+        ws.pos_top = wndplace.rcNormalPosition.top;
+        ws.show = wndplace.showCmd;
+
+        UIState::GetInstance().SetWindowState("main", ws);
+    }
+
+    CMessageLoop* pLoop = _Module.GetMessageLoop();
+    pLoop->RemoveMessageFilter(this);
+
     typedef boost::function<void()> notify_func_t;
     m_session->set_alert_notify(notify_func_t());
 
-    SaveState();
-    SaveTorrents();
-
-    // Destroy the notify icon
-    m_notifyIcon->Destroy();
-
+    Core::SessionUnloader::Unload(m_session);
     PostQuitMessage(0);
 }
 
-LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+void CMainFrame::OnSelectAll(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    m_torrentList->SelectAll();
+}
+
+LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     std::vector<lt::alert*> alerts;
     m_session->pop_alerts(&alerts);
@@ -478,6 +514,15 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
             Models::Torrent model = Models::Torrent::Map(ata->handle.status());
             m_torrentList->Add(model);
 
+            // Update status bar
+            m_statusBar->SetTorrentCount((int)m_torrents.size(), 0);
+
+            break;
+        }
+        case lt::dht_stats_alert::alert_type:
+        {
+            lt::dht_stats_alert* dsa = lt::alert_cast<lt::dht_stats_alert>(alert);
+            // dsa->
             break;
         }
         case lt::metadata_received_alert::alert_type:
@@ -530,7 +575,11 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
         case lt::session_stats_alert::alert_type:
         {
             lt::session_stats_alert* ssa = lt::alert_cast<lt::session_stats_alert>(alert);
-            // ssa->
+            
+            int dht_nodes_idx = lt::find_metric_idx("dht.dht_peers");
+            uint64_t dht_nodes = ssa->values[dht_nodes_idx];
+
+            // m_statusBar->SetDhtNodes((int)dht_nodes);
             break;
         }
         case lt::state_update_alert::alert_type:
@@ -539,8 +588,10 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
             if (sua->status.empty()) { break; }
 
             int dl_rate = 0;
-            int64_t dl_done = 0;
-            int64_t dl_wanted = 0;
+            int ul_rate = 0;
+            float dl_progress = 0;
+            int currently_downloading = 0;
+            bool has_error = false;
 
             for (lt::torrent_status& ts : sua->status)
             {
@@ -549,29 +600,59 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
                     continue;
                 }
 
-                dl_done += ts.total_wanted_done;
-                dl_wanted += ts.total_wanted;
-
                 Models::Torrent model = Models::Torrent::Map(ts);
                 m_torrentList->Update(model);
+
+                dl_rate += model.downloadRate;
+                ul_rate += model.uploadRate;
+
+                if (model.state == Models::Torrent::State::Error)
+                {
+                    has_error = true;
+                }
+
+                // These are the states we consider 'active' or 'currently downloading'
+                // which the taskbar progress value is updated against.
+                if (model.state == Models::Torrent::State::Downloading
+                    || model.state == Models::Torrent::State::DownloadingChecking
+                    || model.state == Models::Torrent::State::DownloadingForced
+                    || model.state == Models::Torrent::State::DownloadingStalled)
+                {
+                    currently_downloading += 1;
+                    dl_progress += ts.progress;
+                }
 
                 for (HWND hWndListener : m_listeners)
                 {
                     ::SendMessage(hWndListener, PT_TORRENT_UPDATED, NULL, (LPARAM)&ts.info_hash);
                 }
-
-                dl_rate += ts.download_payload_rate;
             }
 
-            // TODO:
-            // Instead of looping through each torrent,
-            // we should do something smart with the torrents
-            // we are already looping through.
             if (m_taskbar != nullptr)
             {
-                m_taskbar->SetProgressState(TBPF_NORMAL);
-                m_taskbar->SetProgressValue(dl_done, dl_wanted);
+                if (dl_progress > 0)
+                {
+                    m_taskbar->SetProgressState(has_error ? TBPF_ERROR : TBPF_NORMAL);
+                    m_taskbar->SetProgressValue(
+                        static_cast<uint64_t>(dl_progress * 1000),
+                        currently_downloading * 1000);
+                }
+                else
+                {
+                    m_taskbar->SetProgressState(TBPF_NOPROGRESS);
+                }
             }
+
+            if (currently_downloading > 0)
+            {
+                m_sleepManager->PreventSleep();
+            }
+            else
+            {
+                m_sleepManager->AllowSleep();
+            }
+
+            m_statusBar->SetTransferRates(dl_rate, ul_rate);
 
             std::pair<int, int> indices = m_torrentList->GetVisibleIndices();
             m_torrentList->RedrawItems(indices.first, indices.second);
@@ -591,9 +672,19 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 
             Models::Torrent t = Models::Torrent::Map(tra->info_hash);
             m_torrentList->Remove(t);
-
-            // Remove from m_torrents
             m_torrents.erase(tra->info_hash);
+
+            // Remove the torrent and dat file from the hard drive
+            std::wstring hash = TWS(lt::to_hex(tra->info_hash.to_string()));
+            std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
+            std::wstring torrent_file = IO::Path::Combine(torrents_dir, hash + L".torrent");
+            std::wstring torrent_dat = IO::Path::Combine(torrents_dir, hash + L".dat");
+
+            if (IO::File::Exists(torrent_file)) { IO::File::Delete(torrent_file); }
+            if (IO::File::Exists(torrent_dat)) { IO::File::Delete(torrent_dat); }
+
+            m_statusBar->SetTorrentCount((int)m_torrents.size(), 0);
+
             break;
         }
         }
@@ -604,6 +695,7 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 
 void CMainFrame::OnTimerElapsed(UINT_PTR nIDEvent)
 {
+    m_session->post_dht_stats();
     m_session->post_session_stats();
     m_session->post_torrent_updates();
 }

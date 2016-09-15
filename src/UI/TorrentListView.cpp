@@ -17,8 +17,8 @@
 #include "../Commands/ShowTorrentDetailsCommand.hpp"
 #include "../Configuration.hpp"
 #include "../Dialogs/OpenFileDialog.hpp"
-#include "../IO/Path.hpp"
 #include "../Models/Torrent.hpp"
+#include "../IO/Path.hpp"
 #include "../resources.h"
 #include "../Scaler.hpp"
 #include "../Translator.hpp"
@@ -39,6 +39,8 @@ namespace lt = libtorrent;
 using Models::Torrent;
 using UI::TorrentListView;
 
+typedef std::function<bool(const Torrent&, const Torrent&)> sort_func_t;
+
 TorrentListView::TorrentListView(
     HWND hWnd)
     : ListView::ListView(hWnd)
@@ -54,13 +56,52 @@ TorrentListView::TorrentListView(
     AddColumn(LV_COL_RATIO, TRW("ratio"), SX(80), UI::ListView::ColumnType::Number);
     AddColumn(LV_COL_SEEDS, TRW("seeds"), SX(80), UI::ListView::ColumnType::Number);
     AddColumn(LV_COL_PEERS, TRW("peers"), SX(80), UI::ListView::ColumnType::Number);
+
+    LoadState("torrents");
+
+    // Load status icons
+    m_icons = ImageList_Create(
+        SX(16),
+        SY(16),
+        ILC_MASK | ILC_COLOR24,
+        10,
+        10);
+
+    HBITMAP hbm = reinterpret_cast<HBITMAP>(LoadImage(
+        GetModuleHandle(NULL),
+        MAKEINTRESOURCE(IDB_STATUS_ICONS+SX(16)),
+        IMAGE_BITMAP,
+        0,
+        0,
+        0));
+
+    ImageList_Add(m_icons, hbm, NULL);
+    SetImageList(m_icons, LVSIL_SMALL);
+}
+
+TorrentListView::~TorrentListView()
+{
+    SaveState("torrents");
 }
 
 void TorrentListView::Add(const Torrent& model)
 {
     m_models.push_back(model);
     SetItemCount((int)m_models.size());
+}
 
+std::vector<Torrent> TorrentListView::GetSelectedTorrents()
+{
+    std::vector<Torrent> selection;
+
+    int pos = GetNextItem(-1, LVNI_SELECTED);
+    while (pos != -1)
+    {
+        selection.push_back(m_models.at(pos));
+        pos = GetNextItem(pos, LVNI_SELECTED);
+    }
+
+    return selection;
 }
 
 void TorrentListView::Remove(const Torrent& model)
@@ -81,6 +122,45 @@ void TorrentListView::Update(const Torrent& model)
         auto index = std::distance(m_models.begin(), f);
         m_models.at(index) = model;
     }
+}
+
+int TorrentListView::GetItemIconIndex(int itemIndex)
+{
+    switch (m_models.at(itemIndex).state)
+    {
+    case Torrent::State::CheckingResumeData:
+    case Torrent::State::DownloadingChecking:
+    case Torrent::State::UploadingChecking:
+        return 0;
+    case Torrent::State::Complete:
+        return 13;
+    case Torrent::State::Downloading:
+        return 1;
+    case Torrent::State::DownloadingForced:
+        return 2;
+    case Torrent::State::DownloadingMetadata:
+        return 3;
+    case Torrent::State::DownloadingPaused:
+        return 4;
+    case Torrent::State::DownloadingQueued:
+        return 5;
+    case Torrent::State::DownloadingStalled:
+        return 6;
+    case Torrent::State::Error:
+        return 7;
+    case Torrent::State::Uploading:
+        return 8;
+    case Torrent::State::UploadingForced:
+        return 9;
+    case Torrent::State::UploadingPaused:
+        return 10;
+    case Torrent::State::UploadingQueued:
+        return 11;
+    case Torrent::State::UploadingStalled:
+        return 12;
+    }
+
+    return -1;
 }
 
 float TorrentListView::GetItemProgress(int columnId, int itemIndex)
@@ -389,45 +469,117 @@ void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
 
 bool TorrentListView::Sort(int columnId, ListView::SortOrder order)
 {
-    /*bool isAscending = order == SortOrder::Ascending;
-    ViewModels::TorrentListViewModel& model = *m_model;
+    bool asc = order == SortOrder::Ascending;
+    sort_func_t sorter;
 
     switch (columnId)
     {
     case LV_COL_NAME:
-        TorrentListViewModel::Sort::ByName(model, isAscending);
-        return true;
+    {
+        sorter = [asc](const Torrent& t1, const Torrent& t2)
+        {
+            if (asc) return t1.name < t2.name;
+            return t1.name > t2.name;
+        };
+        break;
+    }
     case LV_COL_QUEUE_POSITION:
-        TorrentListViewModel::Sort::ByQueuePosition(model, isAscending);
-        return true;
+    {
+        sorter = [asc](const Torrent& t1, const Torrent& t2)
+        {
+            if (asc) return t1.queuePosition < t2.queuePosition;
+            return t1.queuePosition > t2.queuePosition;
+        };
+        break;
+    }
     case LV_COL_SIZE:
-        TorrentListViewModel::Sort::BySize(model, isAscending);
-        return true;
+    {
+        sorter = [asc](const Torrent& t1, const Torrent& t2)
+        {
+            if (asc) return t1.size < t2.size;
+            return t1.size > t2.size;
+        };
+        break;
+    }
     case LV_COL_STATUS:
-        TorrentListViewModel::Sort::ByStatus(model, isAscending);
-        return true;
+    {
+        sorter = [asc](const Torrent& t1, const Torrent& t2)
+        {
+            if (asc) return t1.state < t2.state;
+            return t1.state > t2.state;
+        };
+        break;
+    }
     case LV_COL_PROGRESS:
-        TorrentListViewModel::Sort::ByProgress(model, isAscending);
-        return true;
+    {
+        sorter = [asc](const Torrent& t1, const Torrent& t2)
+        {
+            if (asc) return t1.progress < t2.progress;
+            return t1.progress > t2.progress;
+        };
+        break;
+    }
     case LV_COL_ETA:
-        TorrentListViewModel::Sort::ByETA(model, isAscending);
-        return true;
+    {
+        sorter = [asc](const Torrent& t1, const Torrent& t2)
+        {
+            if (asc) return t1.eta < t2.eta;
+            return t1.eta > t2.eta;
+        };
+        break;
+    }
     case LV_COL_DL:
-        TorrentListViewModel::Sort::ByDownloadRate(model, isAscending);
-        return true;
+    {
+        sorter = [asc](const Torrent& t1, const Torrent& t2)
+        {
+            if (asc) return t1.downloadRate < t2.downloadRate;
+            return t1.downloadRate > t2.downloadRate;
+        };
+        break;
+    }
     case LV_COL_UL:
-        TorrentListViewModel::Sort::ByUploadRate(model, isAscending);
-        return true;
+    {
+        sorter = [asc](const Torrent& t1, const Torrent& t2)
+        {
+            if (asc) return t1.uploadRate < t2.uploadRate;
+            return t1.uploadRate > t2.uploadRate;
+        };
+        break;
+    }
     case LV_COL_SEEDS:
-        TorrentListViewModel::Sort::BySeeds(model, isAscending);
-        return true;
+    {
+        sorter = [asc](const Torrent& t1, const Torrent& t2)
+        {
+            if (asc) return t1.seedsConnected + t1.seedsTotal < t2.seedsConnected + t2.seedsTotal;
+            return t1.seedsConnected + t1.seedsTotal > t2.seedsConnected + t2.seedsTotal;
+        };
+        break;
+    }
     case LV_COL_PEERS:
-        TorrentListViewModel::Sort::ByPeers(model, isAscending);
-        return true;
+    {
+        sorter = [asc](const Torrent& t1, const Torrent& t2)
+        {
+            if (asc) return t1.peersConnected + t1.peersTotal < t2.peersConnected + t2.peersTotal;
+            return t1.peersConnected + t1.peersTotal > t2.peersConnected + t2.peersTotal;
+        };
+        break;
+    }
     case LV_COL_RATIO:
-        TorrentListViewModel::Sort::ByShareRatio(model, isAscending);
+    {
+        sorter = [asc](const Torrent& t1, const Torrent& t2)
+        {
+            if (asc) return t1.shareRatio < t2.shareRatio;
+            return t1.shareRatio > t2.shareRatio;
+        };
+        break;
+    }
+    }
+
+    if (sorter)
+    {
+        std::sort(m_models.begin(), m_models.end(), sorter);
         return true;
     }
-    */
+
     return false;
 }

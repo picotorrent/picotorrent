@@ -46,7 +46,7 @@ BOOL AboutDialog::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 
     HANDLE hImage = LoadImage(
         GetModuleHandle(NULL),
-        MAKEINTRESOURCE(IDI_APPICON),
+        MAKEINTRESOURCE(IDR_MAINFRAME),
         IMAGE_ICON,
         SX(128),
         SY(128),

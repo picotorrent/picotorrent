@@ -167,9 +167,9 @@ void GeneralPage::SelectComboBoxItemWithData(CComboBox& cb, int data)
 {
     for (int i = 0; i < cb.GetCount(); i++)
     {
-        LRESULT data = cb.GetItemData(i);
+        LRESULT d = cb.GetItemData(i);
 
-        if (data == data)
+        if (d == data)
         {
             cb.SetCurSel(i);
             break;

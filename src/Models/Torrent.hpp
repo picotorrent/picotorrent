@@ -15,6 +15,7 @@ namespace Models
         {
             Unknown = -1,
             CheckingResumeData,
+            Complete,
             Downloading,
             DownloadingChecking,
             DownloadingForced,

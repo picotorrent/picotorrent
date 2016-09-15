@@ -1,7 +1,10 @@
 #pragma once
 
 #include <string>
+
 #include <windows.h>
+#include <commctrl.h>
+#include <shellapi.h>
 
 namespace UI
 {
@@ -11,12 +14,13 @@ namespace UI
         NotifyIcon(HWND hWndParent);
         ~NotifyIcon();
 
-        void Create();
-        void Destroy();
+        void Hide();
+        void Show();
         void ShowPopup(const std::wstring& title, const std::wstring& message);
 
     private:
-        HWND m_hWndParent;
+        NOTIFYICONDATA m_iconData;
         HICON m_hIcon;
+        bool m_visible;
     };
 }

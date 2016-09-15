@@ -33,6 +33,7 @@ configure_file("${CMAKE_SOURCE_DIR}/src/VersionInformation.cpp.in" "${CMAKE_SOUR
 set(PICOTORRENT_SOURCES
     src/Clipboard
     src/CMainFrame
+    src/CommandLine
     src/Configuration
     src/Configuration_Section
     src/Configuration_SessionSection
@@ -40,17 +41,26 @@ set(PICOTORRENT_SOURCES
     src/Log
     src/Main
     src/Scaler
-    src/SessionManager
+    src/SleepManager
     src/Translator
+    src/UIState
+    src/UnhandledExceptionHandler
     src/VersionInformation
 
+    src/Controllers/AddMagnetLinkController
     src/Controllers/AddTorrentController
+    src/Controllers/ApplicationCloseController
     src/Controllers/NotifyIconController
     src/Controllers/RemoveTorrentsController
     src/Controllers/TorrentDetailsController
     src/Controllers/ViewPreferencesController
 
+    src/Core/SessionLoader
+    src/Core/SessionSettings
+    src/Core/SessionUnloader
     src/Core/Torrent
+
+    src/Diagnostics/StackTrace
 
     src/Dialogs/AboutDialog
     src/Dialogs/AddMagnetLinkDialog
@@ -90,58 +100,39 @@ set(PICOTORRENT_SOURCES
     src/UI/TorrentListView
     src/UI/TrackerListView
 
-    src/client/pico.rc
+    src/resources.rc
 )
 
-if(WIN32)
-    # Shared flags
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
+# Shared flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
 
-    # Debug flags
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
+# Debug flags
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
 
-    # Release flags
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
-    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
-    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+# Release flags
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
-    # Win32 libraries
-    link_directories(
-        ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/bin/${PICO_ARCH}/$(Configuration)
-    )
+link_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/bin/${PICO_ARCH}/$(Configuration)
+)
 
-    set(PICO_LIBS
-        dbghelp
-        iphlpapi
-        shlwapi
-        uxtheme
+set(PICO_LIBS
+    dbghelp
+    iphlpapi
+    shlwapi
+    uxtheme
 
-        # Rasterbar-libtorrent
-        torrent
+    # Rasterbar-libtorrent
+    torrent
 
-        # OpenSSL
-        libeay32
-        ssleay32
-    )
-else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
-    set(PICO_LIBS
-        # Boost
-        boost_chrono
-        boost_random
-        boost_system
-
-        # Pthread
-        pthread
-
-        # OpenSSL
-        ssl
-        crypto
-    )
-endif()
+    # OpenSSL
+    libeay32
+    ssleay32
+)
 
 include_directories(
     include/
@@ -150,43 +141,36 @@ include_directories(
 )
 
 add_definitions(
+    -D_SCL_SECURE_NO_WARNINGS
+    -D_UNICODE
+    -D_WIN32
+    -D_WIN32_WINNT=0x0600
     -DBOOST_ALL_NO_LIB
+    -DNOMINMAX
     -DPICOJSON_USE_INT64
     -DTORRENT_NO_DEPRECATE
     -DTORRENT_USE_OPENSSL
+    -DUNICODE
+    -DWIN32
+    -DWIN32_LEAN_AND_MEAN
 )
 
-# WIN32 definitions
-if(WIN32)
-    add_definitions(
-        -D_SCL_SECURE_NO_WARNINGS
-        -D_UNICODE
-        -D_WIN32
-        -D_WIN32_WINNT=0x0600
-        -DNOMINMAX
-        -DPICO_EXPORT_DLL
-        -DUNICODE
-        -DWIN32
-        -DWIN32_LEAN_AND_MEAN
-    )
+add_executable(
+    PicoTorrent
+    WIN32
+    ${PICOTORRENT_SOURCES}
+)
 
-    add_executable(
-        PicoTorrent
-        WIN32
-        ${PICOTORRENT_SOURCES}
-    )
+target_link_libraries(
+    PicoTorrent
 
-    target_link_libraries(
-        PicoTorrent
+    ${PICO_LIBS}
 
-        ${PICO_LIBS}
+    # Boost Random
+    debug boost_random-vc140-mt-gd-1_60
+    optimized boost_random-vc140-mt-1_60
 
-        # Boost Random
-        debug boost_random-vc140-mt-gd-1_60
-        optimized boost_random-vc140-mt-1_60
-
-        # Boost System
-        debug boost_system-vc140-mt-gd-1_60
-        optimized boost_system-vc140-mt-1_60
-    )
-endif()
+    # Boost System
+    debug boost_system-vc140-mt-gd-1_60
+    optimized boost_system-vc140-mt-1_60
+)

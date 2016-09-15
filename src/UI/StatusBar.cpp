@@ -1,5 +1,7 @@
 #include "StatusBar.hpp"
 
+#include <strsafe.h>
+
 using UI::StatusBar;
 
 HWND StatusBar::Create(HWND hWndParent, RECT rc)
@@ -10,17 +12,35 @@ HWND StatusBar::Create(HWND hWndParent, RECT rc)
         NULL,
         WS_CHILD | WS_VISIBLE);
 
-    RECT src;
-    m_status.GetClientRect(&src);
-
-    int parts[4] = {
-        -1,
-        src.right - 200,
-        src.right - 100,
-        src.right - 50
-    };
-    
-    m_status.SetParts(4, parts);
+    int parts[] = { 120, 300, -1 };
+    m_status.SetParts(ARRAYSIZE(parts), parts);
 
     return hWnd;
+}
+
+void StatusBar::SetDhtNodes(int nodes)
+{
+    TCHAR st[1024];
+    StringCchPrintf(st, ARRAYSIZE(st), TEXT("DHT: %d node(s)"), nodes);
+    m_status.SetText(2, st);
+}
+
+void StatusBar::SetTorrentCount(int total, int selected)
+{
+    TCHAR st[1024];
+    StringCchPrintf(st, ARRAYSIZE(st), TEXT("%d torrent(s)"), total);
+    m_status.SetText(0, st);
+}
+
+void StatusBar::SetTransferRates(int dl, int ul)
+{
+    TCHAR dl_str[1024];
+    StrFormatByteSize64(dl, dl_str, ARRAYSIZE(dl_str));
+    TCHAR ul_str[1024];
+    StrFormatByteSize64(ul, ul_str, ARRAYSIZE(ul_str));
+
+    TCHAR str[1024];
+    StringCchPrintf(str, ARRAYSIZE(str), TEXT("DL: %s/s, UL: %s/s"), dl_str, ul_str);
+
+    m_status.SetText(1, str);
 }

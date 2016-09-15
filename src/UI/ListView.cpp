@@ -2,6 +2,7 @@
 
 #include "../resources.h"
 #include "../Scaler.hpp"
+#include "../UIState.hpp"
 
 #include <strsafe.h>
 #include <uxtheme.h>
@@ -15,6 +16,7 @@ using UI::ListView;
 struct ListView::Column
 {
     int id;
+    int order;
     int position;
     std::wstring text;
     ColumnType type;
@@ -26,7 +28,7 @@ ListView::ListView(HWND hWndList)
     : CListViewCtrl(hWndList)
 {
     SetExtendedListViewStyle(
-        LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+        LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_HEADERDRAGDROP);
 
     SetWindowSubclass(
         GetParent(),
@@ -130,6 +132,11 @@ void ListView::SendCommand(UINT uMsg, LPARAM lParam)
     GetParent().SendMessage(uMsg, NULL, lParam);
 }
 
+void ListView::SelectAll()
+{
+    SetItemState(-1, LVIS_SELECTED, 2);
+}
+
 void ListView::SetSortOrder(int columnId, SortOrder order)
 {
     auto col = std::find_if(
@@ -167,6 +174,50 @@ void ListView::SetSortOrder(int columnId, SortOrder order)
     }
 
     GetHeader().SetItem(col->position, &hdrItem);
+}
+
+void ListView::LoadState(const std::string& key)
+{
+    UIState::ColumnStateMap m = UIState::GetInstance().GetListViewColumnState(key);
+    if (m.empty()) { return; }
+
+    // Order array
+    int* pOrder = new int[m.size()];
+
+    for (int i = 0; i < m_cols.size(); i++)
+    {
+        Column& col = m_cols.at(i);
+        if (m.find(col.id) == m.end()) { continue; }
+
+        UIState::ColumnState& state = m.at(col.id);
+
+        col.order = state.order;
+        col.visible = state.visible;
+        col.width = state.width;
+
+        pOrder[i] = state.order;
+        SetColumnWidth(i, col.visible ? col.width : 0);
+    }
+
+    SetColumnOrderArray((int)m.size(), pOrder);
+    delete[] pOrder;
+}
+
+void ListView::SaveState(const std::string& key)
+{
+    UIState::ColumnStateMap m;
+
+    for (Column& col : m_cols)
+    {
+        UIState::ColumnState s;
+        s.order = col.order;
+        s.visible = col.visible;
+        s.width = col.width;
+
+        m.insert({ col.id, s });
+    }
+
+    UIState::GetInstance().SetListViewColumnState(key, m);
 }
 
 bool ListView::IsPointInHeader(POINT p)
@@ -261,10 +312,45 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
     case WM_NOTIFY:
     {
         LPNMHDR nmhdr = reinterpret_cast<LPNMHDR>(lParam);
-        if (nmhdr->hwndFrom != lv->m_hWnd) { break; }
 
         switch (nmhdr->code)
         {
+        case HDN_ENDDRAG:
+        {
+            LPNMHEADER lpHeader = reinterpret_cast<LPNMHEADER>(nmhdr);
+            auto col = std::find_if(
+                lv->m_cols.begin(),
+                lv->m_cols.end(),
+                [lpHeader](const Column& c) { return c.position == lpHeader->iItem; });
+            if (col == lv->m_cols.end()) { break; }
+
+            col->order = lpHeader->pitem->iOrder;
+            break;
+        }
+        case HDN_DIVIDERDBLCLICK:
+        {
+            LPNMHEADER lpHeader = reinterpret_cast<LPNMHEADER>(nmhdr);
+            auto col = std::find_if(
+                lv->m_cols.begin(),
+                lv->m_cols.end(),
+                [lpHeader](const Column& c) { return c.position == lpHeader->iItem; });
+            if (col == lv->m_cols.end()) { break; }
+
+            col->width = lv->GetColumnWidth(lpHeader->iItem);
+            break;
+        }
+        case HDN_ENDTRACK:
+        {
+            LPNMHEADER lpHeader = reinterpret_cast<LPNMHEADER>(nmhdr);
+            auto col = std::find_if(
+                lv->m_cols.begin(),
+                lv->m_cols.end(),
+                [lpHeader](const Column& c) { return c.position == lpHeader->iItem; });
+            if (col == lv->m_cols.end()) { break; }
+
+            col->width = lpHeader->pitem->cxy;
+            break;
+        }
         case LVN_COLUMNCLICK:
         {
             LPNMLISTVIEW lpListView = reinterpret_cast<LPNMLISTVIEW>(nmhdr);
@@ -301,20 +387,31 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
         {
             NMLVDISPINFO* inf = reinterpret_cast<NMLVDISPINFO*>(nmhdr);
             
+            int position = inf->item.iSubItem;
+            auto col = std::find_if(
+                lv->m_cols.begin(),
+                lv->m_cols.end(),
+                [position](const Column& c) { return c.position == position; });
+
+            if (col == lv->m_cols.end())
+            {
+                break;
+            }
+
             if (inf->item.mask & LVIF_TEXT)
             {
-                int position = inf->item.iSubItem;
-                auto col = std::find_if(
-                    lv->m_cols.begin(),
-                    lv->m_cols.end(),
-                    [position](const Column& c) { return c.position == position; });
-
-                if (col != lv->m_cols.end()
-                    && (col->type == ColumnType::Text || col->type == ColumnType::Number))
+                if (col->type == ColumnType::Text || col->type == ColumnType::Number)
                 {
                     std::wstring value = lv->GetItemText(col->id, inf->item.iItem);
                     StringCchCopy(inf->item.pszText, inf->item.cchTextMax, value.c_str());
                 }
+            }
+
+            if (inf->item.mask & LVIF_IMAGE)
+            {
+                int idx = lv->GetItemIconIndex(inf->item.iItem);
+                if (idx < 0) { break; }
+                inf->item.iImage = idx;
             }
 
             break;
@@ -338,6 +435,7 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                     lv->m_cols.end(),
                     [position](const Column& c) { return c.position == position; });
 
+                if (col == lv->m_cols.end()) { break; }
                 if (col->type != ColumnType::Progress) { break; }
 
                 float progress = lv->GetItemProgress(col->id, (int)lpCustomDraw->nmcd.dwItemSpec);

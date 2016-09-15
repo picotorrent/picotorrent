@@ -14,3 +14,5 @@
 #include <atldlgs.h>
 #include <atlctrlw.h>
 #include <atlcrack.h>
+
+extern CAppModule _Module;

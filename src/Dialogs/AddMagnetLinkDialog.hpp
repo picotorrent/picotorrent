@@ -18,7 +18,7 @@ class AddMagnetLinkDialog : public CDialogImpl<AddMagnetLinkDialog>
 public:
     enum { IDD = IDD_ADD_MAGNET_LINK };
 
-    AddMagnetLinkDialog();
+    AddMagnetLinkDialog(const std::vector<std::wstring>& magnetLinks);
     ~AddMagnetLinkDialog();
 
     std::vector<libtorrent::torrent_info> GetTorrentFiles();
@@ -42,6 +42,7 @@ private:
     END_MSG_MAP()
 
     int m_waiting_for;
+    std::vector<std::wstring> m_links;
     std::vector<libtorrent::torrent_info> m_torrent_files;
 };
 }

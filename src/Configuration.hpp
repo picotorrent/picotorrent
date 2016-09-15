@@ -14,6 +14,13 @@ namespace picojson
 class Configuration
 {
 public:
+    enum CloseAction
+    {
+        Prompt,
+        Close,
+        Minimize
+    };
+
     enum ProxyType
     {
         None,
@@ -80,6 +87,9 @@ public:
 
     // Sections
     std::shared_ptr<SessionSection> Session();
+
+    CloseAction GetCloseAction();
+    void SetCloseAction(CloseAction action);
 
     int GetCurrentLanguageId();
     void SetCurrentLanguageId(int languageId);

@@ -5,7 +5,6 @@ using UI::Taskbar;
 Taskbar::Taskbar(HWND hWndParent)
     : m_hWndParent(hWndParent)
 {
-    CoInitialize(NULL);
     CoCreateInstance(
         CLSID_TaskbarList,
         NULL,
@@ -17,7 +16,6 @@ Taskbar::Taskbar(HWND hWndParent)
 Taskbar::~Taskbar()
 {
     m_taskbarList->Release();
-    CoUninitialize();
 }
 
 

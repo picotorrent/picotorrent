@@ -118,6 +118,9 @@ void ConnectionPage::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     switch (nID)
     {
+    case ID_LISTEN_INTERFACES:
+        if (uNotifyCode == EN_CHANGE) { SetModified(); }
+        break;
     case ID_PROXY_TYPE:
         if (uNotifyCode == CBN_SELENDOK) { SetModified(); }
         ChangeProxy(m_proxyType.GetSelectedItemData<Configuration::ProxyType>());

@@ -34,6 +34,16 @@ std::shared_ptr<Configuration::SessionSection> Configuration::Session()
     return std::shared_ptr<SessionSection>(new SessionSection(m_cfg));
 }
 
+Configuration::CloseAction Configuration::GetCloseAction()
+{
+    return (CloseAction)Get("close_action", (int64_t)CloseAction::Prompt);
+}
+
+void Configuration::SetCloseAction(Configuration::CloseAction action)
+{
+    Set("close_action", (int64_t)action);
+}
+
 int Configuration::GetCurrentLanguageId()
 {
     return Get("language_id", (int)GetUserDefaultLangID());

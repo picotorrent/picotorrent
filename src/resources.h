@@ -30,14 +30,16 @@
 #define PRIORITY_MAXIMUM 7
 
 // Keyboard accelerators
-#define IDR_PICO_ACCELERATORS 8000
 #define IDA_SELECT_ALL 8001
 #define IDA_REMOVE_TORRENTS 8002
 #define IDA_REMOVE_TORRENTS_DATA 8003
 
 // Application
-#define IDR_MAINMENU 101
-#define IDI_APPICON  201
+#define IDR_MAINFRAME 128
+
+// Bitmaps
+#define IDB_STATUS_ICONS 150
+#define IDB_STATUS_ICONS_16 166
 
 // Dialogs
 #define IDD_PREFERENCES 301

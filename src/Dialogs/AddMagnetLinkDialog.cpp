@@ -16,7 +16,8 @@
 namespace lt = libtorrent;
 using Dialogs::AddMagnetLinkDialog;
 
-AddMagnetLinkDialog::AddMagnetLinkDialog()
+AddMagnetLinkDialog::AddMagnetLinkDialog(const std::vector<std::wstring>& magnetLinks)
+    : m_links(magnetLinks)
 {
 }
 
@@ -40,12 +41,25 @@ std::vector<std::string> AddMagnetLinkDialog::GetLinks()
 
     while ((pos = l.find('\n', prev)) != std::string::npos)
     {
+        std::string link = l.substr(prev, pos - prev);
+        link.erase(link.find_last_not_of("\r") + 1);
+        link.erase(link.find_last_not_of("\n") + 1);
+
+        if (link.empty()) { continue; }
+
         result.push_back(l.substr(prev, pos - prev));
         prev = pos + 1;
     }
 
     // To get the last substring (or only, if delimiter is not found)
-    result.push_back(l.substr(prev));
+    std::string ll = l.substr(prev);
+    ll.erase(ll.find_last_not_of("\r") + 1);
+    ll.erase(ll.find_last_not_of("\n") + 1);
+
+    if (!ll.empty())
+    {
+        result.push_back(ll);
+    }
 
     return result;
 }
@@ -76,9 +90,6 @@ void AddMagnetLinkDialog::OnAddMagnetLinks(UINT uNotifyCode, int nID, CWindow wn
 
     for (auto& link : links)
     {
-        link.erase(link.find_last_not_of("\r") + 1);
-        if (link.empty()) { continue; }
-
         // If only info hash, append magnet link template
         if ((link.size() == 40 && !std::regex_match(link, std::regex("[^0-9A-Fa-f]")))
             || (link.size() == 32 && !std::regex_match(link, std::regex(""))))
@@ -118,6 +129,10 @@ BOOL AddMagnetLinkDialog::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
     SetWindowText(TRW("add_magnet_link_s"));
     SetDlgItemText(ID_MAGNET_LINKS_GROUP, TRW("magnet_link_s"));
     SetDlgItemText(ID_MAGNET_ADD_LINKS, TRW("add_link_s"));
+
+    std::wstringstream wss;
+    for (auto& l : m_links) { wss << l << std::endl; }
+    SetDlgItemText(ID_MAGNET_LINKS_TEXT, wss.str().c_str());
 
     return FALSE;
 }

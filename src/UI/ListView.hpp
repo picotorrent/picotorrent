@@ -2,6 +2,7 @@
 
 #include "../stdafx.h"
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -28,15 +29,18 @@ public:
     ~ListView();
 
     void AddColumn(int columnId, const std::wstring& title, int size, ColumnType type);
-
     SortOrder GetSortOrder(int columnId);
+    std::pair<int, int> GetVisibleIndices();
+    void SelectAll();
     void SetSortOrder(int columnId, SortOrder sort);
 
-    std::pair<int, int> GetVisibleIndices();
-
 protected:
+    void LoadState(const std::string& key);
+    void SaveState(const std::string& key);
+
     void SendCommand(UINT uMsg, LPARAM lParam);
 
+    virtual int GetItemIconIndex(int itemIndex) { return -1; }
     virtual float GetItemProgress(int columnId, int itemIndex) { return -1; }
     virtual std::wstring GetItemText(int columnId, int itemIndex) = 0;
     virtual void ShowContextMenu(POINT p, const std::vector<int>& selectedIndices) { };

@@ -4,6 +4,7 @@
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
 
+#include "../CommandLine.hpp"
 #include "../Configuration.hpp"
 #include "../Dialogs/AddTorrentDialog.hpp"
 #include "../Dialogs/OpenFileDialog.hpp"
@@ -16,9 +17,10 @@ const GUID DLG_SAVE = { 0x7D5FE367, 0xE148, 0x4A96,{ 0xB3, 0x26, 0x42, 0xEF, 0x2
 namespace lt = libtorrent;
 using Controllers::AddTorrentController;
 
-AddTorrentController::AddTorrentController(
+AddTorrentController::AddTorrentController(HWND hWndOwner,
     const std::shared_ptr<lt::session>& session)
-    : m_session(session)
+    : m_hWndOwner(hWndOwner),
+    m_session(session)
 {
 }
 
@@ -31,10 +33,15 @@ void AddTorrentController::Execute()
         return;
     }
 
+    Execute(res);
+}
+
+void AddTorrentController::Execute(const std::vector<std::wstring>& files)
+{
     Configuration& cfg = Configuration::GetInstance();
     std::vector<std::shared_ptr<lt::add_torrent_params>> params;
-    
-    for (auto& path : res)
+
+    for (auto& path : files)
     {
         std::error_code ec;
         std::vector<char> buf = IO::File::ReadAllBytes(path, ec);
@@ -70,7 +77,7 @@ void AddTorrentController::Execute()
 
     Dialogs::AddTorrentDialog dlg(params);
 
-    switch (dlg.DoModal())
+    switch (dlg.DoModal(m_hWndOwner))
     {
     case IDOK:
     {
@@ -99,7 +106,7 @@ void AddTorrentController::Execute(const std::vector<lt::torrent_info>& torrents
 
     Dialogs::AddTorrentDialog dlg(params);
 
-    switch (dlg.DoModal())
+    switch (dlg.DoModal(m_hWndOwner))
     {
     case IDOK:
     {

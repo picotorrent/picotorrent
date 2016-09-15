@@ -1,7 +1,5 @@
 #include "NotifyIcon.hpp"
 
-#include <commctrl.h>
-#include <shellapi.h>
 #include <strsafe.h>
 
 #include "../resources.h"
@@ -9,67 +7,54 @@
 using UI::NotifyIcon;
 
 NotifyIcon::NotifyIcon(HWND hWndParent)
-    : m_hWndParent(hWndParent)
 {
     LoadIconMetric(
         GetModuleHandle(NULL),
-        MAKEINTRESOURCE(IDI_APPICON),
+        MAKEINTRESOURCE(IDR_MAINFRAME),
         LIM_SMALL,
         &m_hIcon);
+
+    m_iconData = { 0 };
+    m_iconData.cbSize = sizeof(NOTIFYICONDATA);
+    m_iconData.hWnd = hWndParent;
+    m_iconData.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+    m_iconData.uID = 1337;
+    m_iconData.uCallbackMessage = PT_NOTIFYICON;
+    m_iconData.hIcon = m_hIcon;
+    m_iconData.uVersion = NOTIFYICON_VERSION_4;
+    m_iconData.dwInfoFlags = NIIF_USER;
+    m_iconData.hBalloonIcon = m_hIcon;
+
+    StringCchCopy(m_iconData.szTip, ARRAYSIZE(m_iconData.szTip), TEXT("PicoTorrent"));
 }
 
 NotifyIcon::~NotifyIcon()
 {
+    if (m_visible) { Hide(); }
     DestroyIcon(m_hIcon);
 }
 
-void NotifyIcon::Create()
+void NotifyIcon::Hide()
 {
-    NOTIFYICONDATA nid = { 0 };
-    nid.cbSize = sizeof(NOTIFYICONDATA);
-    nid.hWnd = m_hWndParent;
-    nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-    nid.uID = WM_USER + 1;
-    nid.uCallbackMessage = PT_NOTIFYICON;
-    nid.hIcon = m_hIcon;
-
-    // Set icon tooltip
-    StringCchCopy(nid.szTip, ARRAYSIZE(nid.szTip), TEXT("PicoTorrent"));
-
-    if (!Shell_NotifyIcon(NIM_ADD, &nid))
-    {
-        // LOG(error) << "Failed to add notify icon: " << GetLastError();
-    }
-
-    nid.uVersion = NOTIFYICON_VERSION_4;
-
-    if (!Shell_NotifyIcon(NIM_SETVERSION, &nid))
-    {
-        // LOG(error) << "Failed to set notify icon verion: " << GetLastError();
-    }
+    Shell_NotifyIcon(NIM_DELETE, &m_iconData);
+    m_visible = false;
 }
 
-void NotifyIcon::Destroy()
+void NotifyIcon::Show()
 {
-    NOTIFYICONDATA nid = { 0 };
-    nid.cbSize = sizeof(NOTIFYICONDATA);
-    nid.hWnd = m_hWndParent;
-    nid.uID = WM_USER + 1;
-
-    Shell_NotifyIcon(NIM_DELETE, &nid);
+    Shell_NotifyIcon(NIM_ADD, &m_iconData);
+    Shell_NotifyIcon(NIM_SETVERSION, &m_iconData);
+    m_visible = true;
 }
+
 
 void NotifyIcon::ShowPopup(const std::wstring& title, const std::wstring& message)
 {
-    NOTIFYICONDATA nid = { sizeof(NOTIFYICONDATA) };
-    nid.hWnd = m_hWndParent;
-    nid.uID = WM_USER + 1;
-    nid.uFlags = NIF_INFO;
-    nid.dwInfoFlags = NIIF_USER;
-    nid.hBalloonIcon = m_hIcon;
+    if (m_visible)
+    {
+        StringCchCopy(m_iconData.szInfoTitle, ARRAYSIZE(m_iconData.szInfoTitle), title.c_str());
+        StringCchCopy(m_iconData.szInfo, ARRAYSIZE(m_iconData.szInfo), message.c_str());
 
-    StringCchCopy(nid.szInfoTitle, ARRAYSIZE(nid.szInfoTitle), title.c_str());
-    StringCchCopy(nid.szInfo, ARRAYSIZE(nid.szInfo), message.c_str());
-
-    Shell_NotifyIcon(NIM_MODIFY, &nid);
+        Shell_NotifyIcon(NIM_MODIFY, &m_iconData);
+    }
 }

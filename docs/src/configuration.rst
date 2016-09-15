@@ -54,17 +54,6 @@ directly).
 
         // The max number of torrents to announce to their trackers.
         "active_tracker_limit": 1600
-     },
-
-     "websocket": {
-        // The access token to use when connecting to the WebSocket API.
-        "access_token": "random characters",
-
-        // The full path to an SSL certificate which secures the WebSocket API.
-        "certificate_file": "PicoTorrent_generated.pem",
-
-        // The password for the SSL certificate (or empty string if no password).
-        "certificate_password": "secret"
      }
    }
 

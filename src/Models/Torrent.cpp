@@ -100,6 +100,10 @@ Torrent Torrent::Map(const lt::torrent_status& status)
                 {
                     state = State::UploadingForced;
                 }
+                else if (isPaused)
+                {
+                    state = State::Complete;
+                }
                 else
                 {
                     if (status.upload_payload_rate > 0)

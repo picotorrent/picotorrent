@@ -10,8 +10,8 @@
 namespace libtorrent
 {
     class session;
-    struct stats_metric;
     class sha1_hash;
+    struct stats_metric;
     struct torrent_handle;
     struct torrent_status;
 }
@@ -24,25 +24,33 @@ namespace UI
     class TorrentListView;
 }
 
-class CMainFrame : public WTL::CFrameWindowImpl<CMainFrame>
+struct CommandLine;
+class SleepManager;
+
+class CMainFrame : public CFrameWindowImpl<CMainFrame>, public CMessageFilter
 {
 public:
+    DECLARE_FRAME_WND_CLASS(TEXT("PicoTorrent/MainFrame"), IDR_MAINFRAME)
+
     CMainFrame();
     ~CMainFrame();
 
-private:
-    void LoadState();
-    void LoadTorrents();
-    void SaveState();
-    void SaveTorrents();
+    void ActivateOtherInstance(LPTSTR lpstrCmdLine);
+    bool IsSingleInstance();
+    void HandleCommandLine(const CommandLine& cmdLine);
+    virtual BOOL PreTranslateMessage(MSG* pMsg);
+    void Show(int nCmdShow);
 
-    void OnAlertNotify();
+private:
     void OnFileAddTorrent(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnFileAddMagnetLink(UINT uNotifyCode, int nID, CWindow wndCtl);
+    void OnFileExit(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnHelpAbout(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnViewPreferences(UINT uNotifyCode, int nID, CWindow wndCtl);
     
     // Message handlers
+    LRESULT OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+    BOOL OnCopyData(CWindow wnd, PCOPYDATASTRUCT pCopyDataStruct);
     LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
     void OnDestroy();
     LRESULT OnRegisterNotify(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -52,24 +60,28 @@ private:
     LRESULT OnPauseTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnQueueTorrent(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnRemoveTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    void OnRemoveTorrentsAccelerator(UINT uNotifyCode, int nID, CWindow wndCtl);
     LRESULT OnResumeTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    LRESULT OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+    void OnSelectAll(UINT uNotifyCode, int nID, CWindow wndCtl);
+    LRESULT OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnShowTorrentDetails(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnNotifyIcon(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnTaskbarButtonCreated(UINT uMsg, WPARAM wParam, LPARAM lParam);
     void OnTimerElapsed(UINT_PTR nIDEvent);
 
-    BEGIN_MSG_MAP_EX(CMainFrame)
+    BEGIN_MSG_MAP(CMainFrame)
         MSG_WM_CREATE(OnCreate)
+        MESSAGE_HANDLER(WM_CLOSE, OnClose)
+        MSG_WM_COPYDATA(OnCopyData)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_TIMER(OnTimerElapsed)
 
         MESSAGE_HANDLER_EX(TaskbarButtonCreated, OnTaskbarButtonCreated)
 
         // Command handlers
+        MESSAGE_HANDLER_EX(PT_ALERT, OnSessionAlert)
         MESSAGE_HANDLER_EX(PT_REGISTERNOTIFY, OnRegisterNotify)
         MESSAGE_HANDLER_EX(PT_UNREGISTERNOTIFY, OnUnregisterNotify)
-
         MESSAGE_HANDLER_EX(PT_FINDMETADATA, OnFindMetadata)
         MESSAGE_HANDLER_EX(PT_MOVETORRENTS, OnMoveTorrents)
         MESSAGE_HANDLER_EX(PT_PAUSETORRENTS, OnPauseTorrents)
@@ -81,14 +93,22 @@ private:
 
         COMMAND_ID_HANDLER_EX(ID_FILE_ADD_TORRENT, OnFileAddTorrent)
         COMMAND_ID_HANDLER_EX(ID_FILE_ADD_MAGNET_LINK, OnFileAddMagnetLink)
+        COMMAND_ID_HANDLER_EX(ID_FILE_EXIT, OnFileExit)
         COMMAND_ID_HANDLER_EX(ID_HELP_ABOUT, OnHelpAbout)
         COMMAND_ID_HANDLER_EX(ID_VIEW_PREFERENCES, OnViewPreferences)
 
-        MESSAGE_HANDLER(PT_ALERT, OnSessionAlert)
+        // Accelerators
+        COMMAND_ID_HANDLER_EX(IDA_REMOVE_TORRENTS, OnRemoveTorrentsAccelerator)
+        COMMAND_ID_HANDLER_EX(IDA_REMOVE_TORRENTS_DATA, OnRemoveTorrentsAccelerator)
+        COMMAND_ID_HANDLER_EX(IDA_SELECT_ALL, OnSelectAll)
+
         CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
     END_MSG_MAP()
 
     static const UINT TaskbarButtonCreated;
+
+    HANDLE m_mutex;
+    bool m_singleInstance;
 
     std::vector<HWND> m_listeners;
     std::vector<libtorrent::stats_metric> m_metrics;
@@ -97,6 +117,7 @@ private:
     std::shared_ptr<libtorrent::session> m_session;
     std::map<libtorrent::sha1_hash, libtorrent::torrent_handle> m_torrents;
     std::shared_ptr<UI::NotifyIcon> m_notifyIcon;
+    std::shared_ptr<SleepManager> m_sleepManager;
     std::shared_ptr<UI::StatusBar> m_statusBar;
     std::shared_ptr<UI::Taskbar> m_taskbar;
     std::shared_ptr<UI::TorrentListView> m_torrentList;

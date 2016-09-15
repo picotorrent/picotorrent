@@ -14,8 +14,9 @@
 namespace lt = libtorrent;
 using Controllers::RemoveTorrentsController;
 
-RemoveTorrentsController::RemoveTorrentsController(const std::shared_ptr<lt::session>& session, const std::map<lt::sha1_hash, lt::torrent_handle>& torrents)
-    : m_session(session),
+RemoveTorrentsController::RemoveTorrentsController(HWND hWndParent, const std::shared_ptr<lt::session>& session, const std::map<lt::sha1_hash, lt::torrent_handle>& torrents)
+    : m_hWndParent(hWndParent),
+    m_session(session),
     m_torrents(torrents)
 {
 }
@@ -24,14 +25,13 @@ RemoveTorrentsController::~RemoveTorrentsController()
 {
 }
 
-void RemoveTorrentsController::Execute(HWND hWndParent, const Commands::RemoveTorrentsCommand& cmd)
+void RemoveTorrentsController::Execute(const std::vector<Models::Torrent>& torrents, bool removeData)
 {
     Configuration& cfg = Configuration::GetInstance();
 
     bool prompt = cfg.GetPromptForRemovingData();
-    bool shouldRemove = !prompt;
 
-    if (prompt)
+    if (prompt && removeData)
     {
         std::wstring content = TRW("confirm_remove_description");
         std::wstring mainInstruction = TRW("confirm_remove");
@@ -41,7 +41,7 @@ void RemoveTorrentsController::Execute(HWND hWndParent, const Commands::RemoveTo
         tdf.cbSize = sizeof(TASKDIALOGCONFIG);
         tdf.dwCommonButtons = TDCBF_OK_BUTTON | TDCBF_CANCEL_BUTTON;
         tdf.dwFlags = TDF_POSITION_RELATIVE_TO_WINDOW;
-        tdf.hwndParent = hWndParent;
+        tdf.hwndParent = m_hWndParent;
         tdf.pszContent = content.c_str();
         tdf.pszMainIcon = TD_WARNING_ICON;
         tdf.pszMainInstruction = mainInstruction.c_str();
@@ -66,18 +66,16 @@ void RemoveTorrentsController::Execute(HWND hWndParent, const Commands::RemoveTo
             {
                 cfg.SetPromptForRemovingData(false);
             }
-
-            shouldRemove = true;
             break;
         }
+        case IDCANCEL:
+            return;
         }
     }
 
-    if (!shouldRemove) { return; }
+    int flags = removeData ? lt::session::options_t::delete_files : 0;
 
-    int flags = cmd.removeData ? lt::session::options_t::delete_files : 0;
-
-    for (auto& t : cmd.torrents)
+    for (auto& t : torrents)
     {
         const lt::torrent_handle& th = m_torrents.at(t.infoHash);
         m_session->remove_torrent(th, flags);
