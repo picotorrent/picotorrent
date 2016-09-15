@@ -9,11 +9,9 @@
 <?endif ?>
 
 <?if $(var.Configuration) = "Debug" ?>
-    <?define BoostRandomFile = "boost_random-vc140-mt-gd-1_60.dll" ?>
-    <?define BoostSystemFile = "boost_system-vc140-mt-gd-1_60.dll" ?>
+    <?define BoostSystemFile = "boost_system-vc140-mt-gd-1_61.dll" ?>
 <?else ?>
-    <?define BoostRandomFile = "boost_random-vc140-mt-1_60.dll" ?>
-    <?define BoostSystemFile = "boost_system-vc140-mt-1_60.dll" ?>
+    <?define BoostSystemFile = "boost_system-vc140-mt-1_61.dll" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
@@ -183,10 +181,6 @@
         </Directory>
 
         <ComponentGroup Id="CG_Libraries" Directory="INSTALLDIR">
-          <Component Id="C_BoostRandom">
-            <File Name="$(var.BoostRandomFile)" Source="$(var.PublishDirectory)\$(var.BoostRandomFile)" />
-          </Component>
-
           <Component Id="C_BoostSystem">
             <File Name="$(var.BoostSystemFile)" Source="$(var.PublishDirectory)\$(var.BoostSystemFile)" />
           </Component>

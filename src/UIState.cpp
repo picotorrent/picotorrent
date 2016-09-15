@@ -49,7 +49,7 @@ UIState::ColumnStateMap UIState::GetListViewColumnState(const std::string& key)
         return ColumnStateMap();
     }
 
-    std::list<lt::entry> lv_entry_list = lv_entry.list();
+    std::vector<lt::entry> lv_entry_list = lv_entry.list();
     ColumnStateMap m;
 
     for (lt::entry& e : lv_entry_list)
@@ -85,7 +85,7 @@ void UIState::SetListViewColumnState(const std::string& key, const ColumnStateMa
     lt::entry& lv_entry = m_map.at("lv");
     if (lv_entry.type() != lt::entry::data_type::dictionary_t) { return; }
 
-    std::list<lt::entry> l;
+    std::vector<lt::entry> l;
 
     for (auto& p : map)
     {

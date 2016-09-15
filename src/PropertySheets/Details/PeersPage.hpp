@@ -3,15 +3,14 @@
 #include "../../resources.h"
 #include "../../stdafx.h"
 
-// #include <boost/asio/ip/tcp.hpp>
-
 #include <map>
 #include <memory>
 #include <string>
 
+#include <libtorrent/sha1_hash.hpp>
+
 namespace libtorrent
 {
-    class sha1_hash;
     struct torrent_handle;
 }
 

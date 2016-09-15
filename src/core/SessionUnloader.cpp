@@ -114,8 +114,9 @@ void SessionUnloader::Unload(const std::shared_ptr<lt::session>& session)
             std::vector<char> buf;
             lt::bencode(std::back_inserter(buf), *rd->resume_data);
 
-            std::string info_hash = lt::to_hex(rd->handle.info_hash().to_string());
-            std::string file_name = info_hash + ".dat";
+            std::stringstream hex;
+            hex << rd->handle.info_hash();
+            std::string file_name = hex.str() + ".dat";
             std::wstring dat_file = IO::Path::Combine(torrents_dir, TWS(file_name));
 
             std::error_code ec;

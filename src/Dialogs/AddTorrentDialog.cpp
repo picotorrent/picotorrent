@@ -157,7 +157,7 @@ void AddTorrentDialog::ShowTorrent(size_t torrentIndex)
     }
 
     std::shared_ptr<lt::add_torrent_params> prm = m_params.at(torrentIndex);
-    boost::shared_ptr<lt::torrent_info> ti = prm->ti;
+    std::shared_ptr<lt::torrent_info> ti = prm->ti;
 
     m_fileList->RemoveAll();
     m_savePath.SetWindowText(ToWideString(prm->save_path).c_str());

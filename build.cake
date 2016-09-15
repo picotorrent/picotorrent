@@ -32,8 +32,7 @@ var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Versio
 bool IsDebug() { return configuration.Equals("Debug"); }
 
 // Boost naming ickiness
-var BoostRandom = IsDebug() ? "boost_random-vc140-mt-gd-1_60.dll" : "boost_random-vc140-mt-1_60.dll";
-var BoostSystem = IsDebug() ? "boost_system-vc140-mt-gd-1_60.dll" : "boost_system-vc140-mt-1_60.dll";
+var BoostSystem = IsDebug() ? "boost_system-vc140-mt-gd-1_61.dll" : "boost_system-vc140-mt-1_61.dll";
 
 public void SignTool(FilePath file)
 {
@@ -133,7 +132,6 @@ Task("Setup-Library-Files")
     var files = new FilePath[]
     {
         // 3rd party libraries
-        LibraryDirectory + File(BoostRandom),
         LibraryDirectory + File(BoostSystem),
         LibraryDirectory + File("libeay32.dll"),
         LibraryDirectory + File("ssleay32.dll"),
@@ -152,7 +150,6 @@ Task("Setup-Publish-Directory")
     {
         BuildDirectory + File("PicoTorrent.exe"),
         // 3rd party libraries
-        LibraryDirectory + File(BoostRandom),
         LibraryDirectory + File(BoostSystem),
         LibraryDirectory + File("libeay32.dll"),
         LibraryDirectory + File("ssleay32.dll"),

@@ -64,7 +64,7 @@ void AddTorrentController::Execute(const std::vector<std::wstring>& files)
 
         auto p = std::make_shared<lt::add_torrent_params>();
         p->save_path = cfg.GetDefaultSavePath();
-        p->ti = boost::make_shared<lt::torrent_info>(node, ltec);
+        p->ti = std::make_shared<lt::torrent_info>(node, ltec);
 
         if (ltec)
         {
@@ -99,7 +99,7 @@ void AddTorrentController::Execute(const std::vector<lt::torrent_info>& torrents
     {
         auto p = std::make_shared<lt::add_torrent_params>();
         p->save_path = cfg.GetDefaultSavePath();
-        p->ti = boost::make_shared<lt::torrent_info>(ti);
+        p->ti = std::make_shared<lt::torrent_info>(ti);
 
         params.push_back(p);
     }

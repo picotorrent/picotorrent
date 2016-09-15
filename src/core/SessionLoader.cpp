@@ -128,9 +128,9 @@ SessionLoader::State SessionLoader::Load()
                 continue;
             }
 
-            item.magnet_uri = node.dict_find_string_value("pT-magnetUri");
-            item.save_path = node.dict_find_string_value("pT-savePath", cfg.GetDefaultSavePath().c_str());
-            item.url = node.dict_find_string_value("pT-url");
+            item.magnet_uri = node.dict_find_string_value("pT-magnetUri").to_string();
+            item.save_path = node.dict_find_string_value("pT-savePath", cfg.GetDefaultSavePath().c_str()).to_string();
+            item.url = node.dict_find_string_value("pT-url").to_string();
 
             int64_t queuePosition = node.dict_find_int_value("pT-queuePosition", maxPosition);
             if (queuePosition < 0) { queuePosition = maxPosition; }
@@ -194,7 +194,7 @@ SessionLoader::State SessionLoader::Load()
                     continue;
                 }
 
-                params.ti = boost::make_shared<lt::torrent_info>(node);
+                params.ti = std::make_shared<lt::torrent_info>(node);
                 state.muted_hashes.push_back(params.ti->info_hash());
             }
 

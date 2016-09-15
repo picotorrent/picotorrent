@@ -1,6 +1,7 @@
 #include "AddMagnetLinkDialog.hpp"
 
 #include <regex>
+#include <sstream>
 
 #include <shellapi.h>
 #include <strsafe.h>
