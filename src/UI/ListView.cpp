@@ -184,7 +184,7 @@ void ListView::LoadState(const std::string& key)
     // Order array
     int* pOrder = new int[m.size()];
 
-    for (int i = 0; i < m_cols.size(); i++)
+    for (int i = 0; i < (int)m_cols.size(); i++)
     {
         Column& col = m_cols.at(i);
         if (m.find(col.id) == m.end()) { continue; }

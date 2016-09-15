@@ -34,7 +34,7 @@ StackTrace StackTrace::Capture(int depth, void* context)
         RtlCaptureContext(&context_record);
     }
 
-    int size = 0;
+    size_t size = 0;
     std::array<void*, 50> stack;
 
     STACKFRAME64 stack_frame;
@@ -81,7 +81,7 @@ StackTrace StackTrace::Capture(int depth, void* context)
 
     SymRefreshModuleList(p);
 
-    for (int i = 0; i < size; i++)
+    for (size_t i = 0; i < size; i++)
     {
         DWORD_PTR frame_ptr = reinterpret_cast<DWORD_PTR>(stack[i]);
 

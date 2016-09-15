@@ -116,9 +116,9 @@ LRESULT AddTorrentDialog::OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lPa
     auto prm = m_params.at(current);
     auto files = prm->ti->files();
 
-    for (auto idx : cmd->indices)
+    for (int idx : cmd->indices)
     {
-        if (prm->file_priorities.size() <= idx)
+        if (prm->file_priorities.size() <= (size_t)idx)
         {
             prm->file_priorities.resize(idx + 1, PRIORITY_NORMAL);
         }
@@ -142,7 +142,7 @@ void AddTorrentDialog::OnTorrentSelected(UINT uNotifyCode, int nID, CWindow wndC
     ShowTorrent(m_torrents.GetCurSel());
 }
 
-void AddTorrentDialog::ShowTorrent(int torrentIndex)
+void AddTorrentDialog::ShowTorrent(size_t torrentIndex)
 {
     if (torrentIndex >= m_params.size())
     {
@@ -181,7 +181,7 @@ void AddTorrentDialog::ShowTorrent(int torrentIndex)
         {
             Models::TorrentFile tf{ i };
             tf.name = TWS(files.file_path(i));
-            tf.priority = prm->file_priorities.size() > i
+            tf.priority = prm->file_priorities.size() > (size_t)i
                 ? prm->file_priorities.at(i)
                 : PRIORITY_NORMAL;
             tf.size = files.file_size(i);

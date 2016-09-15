@@ -28,7 +28,7 @@ private:
     void OnChangeStorageMode(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnChangeSavePath(UINT uNotifyCode, int nID, CWindow wndCtl);
     LRESULT OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    void ShowTorrent(int torrentIndex);
+    void ShowTorrent(size_t torrentIndex);
 
     BEGIN_MSG_MAP_EX(AddTorrentDialog)
         MSG_WM_INITDIALOG(OnInitDialog)
