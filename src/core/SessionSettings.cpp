@@ -1,5 +1,7 @@
 #include "SessionSettings.hpp"
 
+#include <iomanip>
+
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/settings_pack.hpp>
 #include <semver.hpp>

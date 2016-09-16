@@ -196,8 +196,9 @@ LRESULT CMainFrame::OnFindMetadata(UINT uMsg, WPARAM wParam, LPARAM lParam)
     GetTempPath(ARRAYSIZE(temp), temp);
 
     // Set a temporary save path
-    std::string ih = lt::to_hex(p.info_hash.to_string());
-    p.save_path = TS(IO::Path::Combine(temp, TWS(ih)));
+    std::stringstream hex;
+    hex << p.info_hash;
+    p.save_path = TS(IO::Path::Combine(temp, TWS(hex.str())));
 
     // Add the info hash to our list of currently requested metadata files.
     m_find_metadata.push_back({ p.info_hash });
@@ -441,7 +442,7 @@ void CMainFrame::OnDestroy()
     CMessageLoop* pLoop = _Module.GetMessageLoop();
     pLoop->RemoveMessageFilter(this);
 
-    typedef boost::function<void()> notify_func_t;
+    typedef std::function<void()> notify_func_t;
     m_session->set_alert_notify(notify_func_t());
 
     Core::SessionUnloader::Unload(m_session);
@@ -563,8 +564,9 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
             if (!IO::Directory::Exists(torrents_dir)) { IO::Directory::Create(torrents_dir); }
 
-            std::string hash = lt::to_hex(srda->handle.info_hash().to_string());
-            std::string file_name = hash + ".dat";
+            std::stringstream hex;
+            hex << srda->handle.info_hash();
+            std::string file_name = hex.str() + ".dat";
 
             std::wstring dat_file = IO::Path::Combine(torrents_dir, TWS(file_name));
             std::error_code ec;
@@ -675,7 +677,10 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             m_torrents.erase(tra->info_hash);
 
             // Remove the torrent and dat file from the hard drive
-            std::wstring hash = TWS(lt::to_hex(tra->info_hash.to_string()));
+            std::stringstream hex;
+            hex << tra->info_hash;
+
+            std::wstring hash = TWS(hex.str());
             std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
             std::wstring torrent_file = IO::Path::Combine(torrents_dir, hash + L".torrent");
             std::wstring torrent_dat = IO::Path::Combine(torrents_dir, hash + L".dat");

@@ -1,5 +1,7 @@
 #include "OverviewPage.hpp"
 
+#include <iomanip>
+
 #include <libtorrent/sha1_hash.hpp>
 #include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/torrent_status.hpp>

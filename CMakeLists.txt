@@ -166,11 +166,7 @@ target_link_libraries(
 
     ${PICO_LIBS}
 
-    # Boost Random
-    debug boost_random-vc140-mt-gd-1_60
-    optimized boost_random-vc140-mt-1_60
-
     # Boost System
-    debug boost_system-vc140-mt-gd-1_60
-    optimized boost_system-vc140-mt-1_60
+    debug boost_system-vc140-mt-gd-1_61
+    optimized boost_system-vc140-mt-1_61
 )

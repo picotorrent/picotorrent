@@ -1,5 +1,7 @@
 #include "TorrentListView.hpp"
 
+#include <iomanip>
+
 #include <libtorrent/sha1_hash.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_handle.hpp>
@@ -440,14 +442,14 @@ void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
     }
     case TORRENT_CONTEXT_MENU_COPY_SHA:
     {
-        std::wstringstream ss;
+        std::stringstream ss;
         std::for_each(sel.begin(), sel.end(),
             [this, &ss](int i)
         {
-            ss << L"," << TWS(lt::to_hex(m_models[i].infoHash.to_string()));
+            ss << "," << m_models[i].infoHash;
         });
 
-        Clipboard::Set(ss.str().substr(1));
+        Clipboard::Set(TWS(ss.str().substr(1)));
         break;
     }
     case TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER:

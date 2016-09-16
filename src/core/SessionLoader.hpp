@@ -3,10 +3,11 @@
 #include <memory>
 #include <vector>
 
+#include <libtorrent/sha1_hash.hpp>
+
 namespace libtorrent
 {
     class session;
-    class sha1_hash;
 }
 
 namespace Core
