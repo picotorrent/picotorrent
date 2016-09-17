@@ -14,6 +14,7 @@
 
 #include "CommandLine.hpp"
 #include "Commands/FindMetadataCommand.hpp"
+#include "Commands/InvokeCommand.hpp"
 #include "Commands/MoveTorrentsCommand.hpp"
 #include "Commands/PauseTorrentsCommand.hpp"
 #include "Commands/QueueTorrentCommand.hpp"
@@ -49,13 +50,17 @@
 #include "UI/Taskbar.hpp"
 #include "UI/TorrentListView.hpp"
 #include "UIState.hpp"
+#include "VersionInformation.hpp"
+
+#define EXT_MENUITEM_ID_START 10000
 
 namespace lt = libtorrent;
 
 const UINT CMainFrame::TaskbarButtonCreated = RegisterWindowMessage(TEXT("TaskbarButtonCreated"));
 
 CMainFrame::CMainFrame()
-    : m_metrics(lt::session_stats_metrics())
+    : m_metrics(lt::session_stats_metrics()),
+    m_threadId(std::this_thread::get_id())
 {
     m_mutex = CreateMutex(NULL, FALSE, TEXT("PicoTorrent/1.0"));
     m_singleInstance = GetLastError() != ERROR_ALREADY_EXISTS;
@@ -64,6 +69,37 @@ CMainFrame::CMainFrame()
 CMainFrame::~CMainFrame()
 {
     if (m_mutex) { CloseHandle(m_mutex); }
+}
+
+void CMainFrame::AddMenuItem(IMenuItem* menuItem)
+{
+    CMenu menu = GetMenu();
+    CMenuHandle ext_menu = menu.GetSubMenu(2);
+
+    int id = EXT_MENUITEM_ID_START + (int)m_extensionMenuItems.size();
+    ext_menu.AppendMenu(MF_STRING, id, TRW(menuItem->GetText()));
+
+    m_extensionMenuItems.insert({ id, menuItem });
+}
+
+std::string CMainFrame::GetCurrentVersion()
+{
+    return VersionInformation::GetCurrentVersion();
+}
+
+void CMainFrame::ShowDialog(TASKDIALOGCONFIG* tdcfg)
+{
+    if (std::this_thread::get_id() != m_threadId)
+    {
+        // Invoke
+        Commands::InvokeCommand cmd;
+        cmd.callback = [this, &tdcfg]() { ShowDialog(tdcfg); };
+        SendMessage(PT_INVOKE, NULL, reinterpret_cast<LPARAM>(&cmd));
+        return;
+    }
+
+    tdcfg->hwndParent = m_hWnd;
+    TaskDialogIndirect(tdcfg, NULL, NULL, NULL);
 }
 
 void CMainFrame::ActivateOtherInstance(LPTSTR lpstrCmdLine)
@@ -327,6 +363,14 @@ LRESULT CMainFrame::OnNotifyIcon(UINT uMsg, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
+LRESULT CMainFrame::OnInvoke(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    auto cmd = reinterpret_cast<Commands::InvokeCommand*>(lParam);
+    cmd->callback();
+
+    return FALSE;
+}
+
 LRESULT CMainFrame::OnTaskbarButtonCreated(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     m_taskbar = std::make_shared<UI::Taskbar>(m_hWnd);
@@ -409,6 +453,31 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_muted_hashes = state.muted_hashes;
     m_session = state.session;
     m_session->set_alert_notify([this]() { PostMessage(PT_ALERT); });
+
+    // Load plugins
+    std::wstring app_dir = Environment::GetApplicationPath();
+    for (std::wstring dll : IO::Directory::GetFiles(app_dir, TEXT("*.dll")))
+    {
+        typedef bool(*init_fn)(int, IPicoTorrent*);
+        // Find the "pico_init_plugin" export of each DLL
+        HMODULE hPluginModule = LoadLibrary(dll.c_str());
+        if (hPluginModule == NULL) { continue; }
+
+        init_fn init = reinterpret_cast<init_fn>(GetProcAddress(hPluginModule, "pico_init_plugin"));
+
+        if (init == nullptr || init == NULL)
+        {
+            FreeLibrary(hPluginModule);
+            continue;
+        }
+
+        if (!init(PICOTORRENT_API_VERSION, this))
+        {
+            FreeLibrary(hPluginModule);
+            continue;
+        }
+    }
+    // ------------
 
     // Set the timer which updates every second
     SetTimer(6060, 1000);
@@ -703,4 +772,12 @@ void CMainFrame::OnTimerElapsed(UINT_PTR nIDEvent)
     m_session->post_dht_stats();
     m_session->post_session_stats();
     m_session->post_torrent_updates();
+}
+
+void CMainFrame::OnUnhandledCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    if (m_extensionMenuItems.find(nID) != m_extensionMenuItems.end())
+    {
+        m_extensionMenuItems.at(nID)->OnClick();
+    }
 }
