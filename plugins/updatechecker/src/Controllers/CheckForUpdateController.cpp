@@ -5,6 +5,7 @@
 #include <semver.hpp>
 
 #include "../Dialogs/NoUpdateAvailableDialog.hpp"
+#include "../Dialogs/UpdateAvailableDialog.hpp"
 #include "../Net/HttpClient.hpp"
 #include "../Net/HttpResponse.hpp"
 
@@ -59,7 +60,8 @@ void CheckForUpdateController::OnHttpResponse(Net::HttpResponse httpResponse, bo
 
     if (parsedVersion > currentVersion)
     {
-        //
+        Dialogs::UpdateAvailableDialog dlg(m_pico);
+        dlg.Show();
     }
     else if (forced)
     {
