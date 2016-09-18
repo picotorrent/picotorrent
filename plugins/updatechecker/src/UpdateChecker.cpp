@@ -4,22 +4,7 @@
 
 Controllers::CheckForUpdateController* g_controller;
 
-class MenuItem : public IMenuItem
-{
-public:
-    std::string GetText()
-    {
-        return "Check for updates";
-    }
-
-    void OnClick()
-    {
-        g_controller->Execute();
-    }
-};
-
-
-extern "C" bool __declspec(dllexport) pico_init_plugin(int version, IPicoTorrent* pico)
+extern "C" bool __declspec(dllexport) pico_init_plugin(int version, std::shared_ptr<IPicoTorrent> pico)
 {
     if (version != PICOTORRENT_API_VERSION)
     {
@@ -29,7 +14,11 @@ extern "C" bool __declspec(dllexport) pico_init_plugin(int version, IPicoTorrent
     g_controller = new Controllers::CheckForUpdateController(pico);
     g_controller->Execute();
 
-    pico->AddMenuItem(new MenuItem());
+    MenuItem mi;
+    mi.onClick = []() { g_controller->Execute(true); };
+    mi.text = pico->GetTranslator()->Translate("amp_check_for_update");
+
+    pico->AddMenuItem(mi);
 
     return true;
 }

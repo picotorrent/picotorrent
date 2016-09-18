@@ -47,6 +47,9 @@ set(PICOTORRENT_SOURCES
     src/UnhandledExceptionHandler
     src/VersionInformation
 
+    src/API/PicoTorrent
+    src/API/TranslatorProxy
+
     src/Controllers/AddMagnetLinkController
     src/Controllers/AddTorrentController
     src/Controllers/ApplicationCloseController

@@ -4,13 +4,14 @@
 #include <picotorrent/api.hpp>
 #include <semver.hpp>
 
+#include "../Dialogs/NoUpdateAvailableDialog.hpp"
 #include "../Net/HttpClient.hpp"
 #include "../Net/HttpResponse.hpp"
 
 namespace pj = picojson;
 using Controllers::CheckForUpdateController;
 
-CheckForUpdateController::CheckForUpdateController(IPicoTorrent* pico)
+CheckForUpdateController::CheckForUpdateController(std::shared_ptr<IPicoTorrent> pico)
     : m_httpClient(std::make_unique<Net::HttpClient>()),
     m_pico(pico)
 {
@@ -62,17 +63,7 @@ void CheckForUpdateController::OnHttpResponse(Net::HttpResponse httpResponse, bo
     }
     else if (forced)
     {
-        //
+        Dialogs::NoUpdateAvailableDialog dlg(m_pico);
+        dlg.Show();
     }
-
-    TASKDIALOGCONFIG tdf = { sizeof(TASKDIALOGCONFIG) };
-    tdf.dwCommonButtons = TDCBF_OK_BUTTON;
-    tdf.dwFlags = TDF_POSITION_RELATIVE_TO_WINDOW;
-    tdf.lpCallbackData = reinterpret_cast<LONG_PTR>(this);
-    tdf.pszMainIcon = TD_INFORMATION_ICON;
-    tdf.pszMainInstruction = TEXT("UPdate available");
-    tdf.pszWindowTitle = TEXT("PicoTorrent");
-    // tdf.pfCallback = &MenuItem::DialogCallback;
-
-    m_pico->ShowDialog(&tdf);
 }

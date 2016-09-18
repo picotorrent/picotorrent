@@ -15,13 +15,13 @@ namespace Controllers
     class CheckForUpdateController
     {
     public:
-        CheckForUpdateController(IPicoTorrent* pico);
+        CheckForUpdateController(std::shared_ptr<IPicoTorrent> pico);
         void Execute(bool forced = false);
 
     private:
         void OnHttpResponse(Net::HttpResponse httpResponse, bool forced);
 
         std::unique_ptr<Net::HttpClient> m_httpClient;
-        IPicoTorrent* m_pico;
+        std::shared_ptr<IPicoTorrent> m_pico;
     };
 }

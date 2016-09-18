@@ -12,6 +12,7 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 
+#include "API/PicoTorrent.hpp"
 #include "CommandLine.hpp"
 #include "Commands/FindMetadataCommand.hpp"
 #include "Commands/InvokeCommand.hpp"
@@ -52,8 +53,6 @@
 #include "UIState.hpp"
 #include "VersionInformation.hpp"
 
-#define EXT_MENUITEM_ID_START 10000
-
 namespace lt = libtorrent;
 
 const UINT CMainFrame::TaskbarButtonCreated = RegisterWindowMessage(TEXT("TaskbarButtonCreated"));
@@ -69,37 +68,6 @@ CMainFrame::CMainFrame()
 CMainFrame::~CMainFrame()
 {
     if (m_mutex) { CloseHandle(m_mutex); }
-}
-
-void CMainFrame::AddMenuItem(IMenuItem* menuItem)
-{
-    CMenu menu = GetMenu();
-    CMenuHandle ext_menu = menu.GetSubMenu(2);
-
-    int id = EXT_MENUITEM_ID_START + (int)m_extensionMenuItems.size();
-    ext_menu.AppendMenu(MF_STRING, id, TRW(menuItem->GetText()));
-
-    m_extensionMenuItems.insert({ id, menuItem });
-}
-
-std::string CMainFrame::GetCurrentVersion()
-{
-    return VersionInformation::GetCurrentVersion();
-}
-
-void CMainFrame::ShowDialog(TASKDIALOGCONFIG* tdcfg)
-{
-    if (std::this_thread::get_id() != m_threadId)
-    {
-        // Invoke
-        Commands::InvokeCommand cmd;
-        cmd.callback = [this, &tdcfg]() { ShowDialog(tdcfg); };
-        SendMessage(PT_INVOKE, NULL, reinterpret_cast<LPARAM>(&cmd));
-        return;
-    }
-
-    tdcfg->hwndParent = m_hWnd;
-    TaskDialogIndirect(tdcfg, NULL, NULL, NULL);
 }
 
 void CMainFrame::ActivateOtherInstance(LPTSTR lpstrCmdLine)
@@ -455,10 +423,12 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_session->set_alert_notify([this]() { PostMessage(PT_ALERT); });
 
     // Load plugins
+    m_api = std::make_shared<API::PicoTorrent>(m_hWnd);
+
     std::wstring app_dir = Environment::GetApplicationPath();
     for (std::wstring dll : IO::Directory::GetFiles(app_dir, TEXT("*.dll")))
     {
-        typedef bool(*init_fn)(int, IPicoTorrent*);
+        typedef bool(*init_fn)(int, std::shared_ptr<IPicoTorrent>);
         // Find the "pico_init_plugin" export of each DLL
         HMODULE hPluginModule = LoadLibrary(dll.c_str());
         if (hPluginModule == NULL) { continue; }
@@ -471,7 +441,7 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
             continue;
         }
 
-        if (!init(PICOTORRENT_API_VERSION, this))
+        if (!init(PICOTORRENT_API_VERSION, m_api))
         {
             FreeLibrary(hPluginModule);
             continue;
@@ -776,8 +746,8 @@ void CMainFrame::OnTimerElapsed(UINT_PTR nIDEvent)
 
 void CMainFrame::OnUnhandledCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    if (m_extensionMenuItems.find(nID) != m_extensionMenuItems.end())
+    /*if (m_extensionMenuItems.find(nID) != m_extensionMenuItems.end())
     {
         m_extensionMenuItems.at(nID)->OnClick();
-    }
+    }*/
 }

@@ -9,7 +9,8 @@
 #include <vector>
 
 #include <libtorrent/sha1_hash.hpp>
-#include <picotorrent/api.hpp>
+
+class IPicoTorrent;
 
 namespace libtorrent
 {
@@ -30,18 +31,13 @@ namespace UI
 struct CommandLine;
 class SleepManager;
 
-class CMainFrame : public CFrameWindowImpl<CMainFrame>, public CMessageFilter, public IPicoTorrent
+class CMainFrame : public CFrameWindowImpl<CMainFrame>, public CMessageFilter
 {
 public:
     DECLARE_FRAME_WND_CLASS(TEXT("PicoTorrent/MainFrame"), IDR_MAINFRAME)
 
     CMainFrame();
     ~CMainFrame();
-
-    // IPluginMembers
-    void AddMenuItem(IMenuItem* menuItem);
-    std::string GetCurrentVersion();
-    void ShowDialog(TASKDIALOGCONFIG* tdcfg);
 
     void ActivateOtherInstance(LPTSTR lpstrCmdLine);
     bool IsSingleInstance();
@@ -123,7 +119,8 @@ private:
     HANDLE m_mutex;
     bool m_singleInstance;
 
-    std::map<int, IMenuItem*> m_extensionMenuItems;
+    std::shared_ptr<IPicoTorrent> m_api;
+//     std::map<int, IMenuItem*> m_extensionMenuItems;
     std::thread::id m_threadId;
 
     std::vector<HWND> m_listeners;

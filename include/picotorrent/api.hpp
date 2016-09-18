@@ -2,22 +2,30 @@
 
 #define PICOTORRENT_API_VERSION 1
 
+#include <functional>
+#include <memory>
 #include <string>
 
 #include <windows.h>
 #include <commctrl.h>
 
-class IMenuItem
+struct MenuItem
+{
+    std::wstring text;
+    std::function<void()> onClick;
+};
+
+class ITranslator
 {
 public:
-    virtual std::string GetText() = 0;
-    virtual void OnClick() = 0;
+    virtual std::wstring Translate(const std::string& key) = 0;
 };
 
 class IPicoTorrent
 {
 public:
-    virtual void AddMenuItem(IMenuItem* menuItem) = 0;
+    virtual void AddMenuItem(MenuItem const& menuItem) = 0;
     virtual std::string GetCurrentVersion() = 0;
-    virtual void ShowDialog(TASKDIALOGCONFIG* tdcfg) = 0;
+    virtual std::shared_ptr<ITranslator> GetTranslator() = 0;
+    virtual void ShowTaskDialog(TASKDIALOGCONFIG* tdcfg) = 0;
 };
