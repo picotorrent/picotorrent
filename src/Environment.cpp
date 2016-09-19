@@ -36,7 +36,6 @@ std::wstring Environment::GetKnownFolderPath(const KNOWNFOLDERID& rfid)
     return res;
 }
 
-
 bool Environment::IsInstalled()
 {
     HKEY hKey = NULL;

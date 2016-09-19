@@ -5,9 +5,12 @@
 
 #include <map>
 #include <memory>
+#include <thread>
 #include <vector>
 
 #include <libtorrent/sha1_hash.hpp>
+
+class IPicoTorrent;
 
 namespace libtorrent
 {
@@ -67,8 +70,10 @@ private:
     LRESULT OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnShowTorrentDetails(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnNotifyIcon(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    LRESULT OnInvoke(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnTaskbarButtonCreated(UINT uMsg, WPARAM wParam, LPARAM lParam);
     void OnTimerElapsed(UINT_PTR nIDEvent);
+    void OnUnhandledCommand(UINT uNotifyCode, int nID, CWindow wndCtl);
 
     BEGIN_MSG_MAP(CMainFrame)
         MSG_WM_CREATE(OnCreate)
@@ -91,12 +96,15 @@ private:
         MESSAGE_HANDLER_EX(PT_RESUMETORRENTS, OnResumeTorrents)
         MESSAGE_HANDLER_EX(PT_SHOWTORRENTDETAILS, OnShowTorrentDetails)
         MESSAGE_HANDLER_EX(PT_NOTIFYICON, OnNotifyIcon)
+        MESSAGE_HANDLER_EX(PT_INVOKE, OnInvoke)
 
         COMMAND_ID_HANDLER_EX(ID_FILE_ADD_TORRENT, OnFileAddTorrent)
         COMMAND_ID_HANDLER_EX(ID_FILE_ADD_MAGNET_LINK, OnFileAddMagnetLink)
         COMMAND_ID_HANDLER_EX(ID_FILE_EXIT, OnFileExit)
         COMMAND_ID_HANDLER_EX(ID_HELP_ABOUT, OnHelpAbout)
         COMMAND_ID_HANDLER_EX(ID_VIEW_PREFERENCES, OnViewPreferences)
+
+        MSG_WM_COMMAND(OnUnhandledCommand)
 
         // Accelerators
         COMMAND_ID_HANDLER_EX(IDA_REMOVE_TORRENTS, OnRemoveTorrentsAccelerator)
@@ -110,6 +118,10 @@ private:
 
     HANDLE m_mutex;
     bool m_singleInstance;
+
+    std::shared_ptr<IPicoTorrent> m_api;
+//     std::map<int, IMenuItem*> m_extensionMenuItems;
+    std::thread::id m_threadId;
 
     std::vector<HWND> m_listeners;
     std::vector<libtorrent::stats_metric> m_metrics;

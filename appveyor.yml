@@ -1,5 +1,7 @@
 # AppVeyor build configuration
 
+os: Visual Studio 2015
+
 branches:
   except:
   - master
@@ -8,9 +10,6 @@ environment:
   matrix:
    - platform: x86
    - platform: x64
-
-install:
-  - git submodule update --init
 
 # Build script
 build_script:

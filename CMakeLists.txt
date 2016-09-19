@@ -47,6 +47,10 @@ set(PICOTORRENT_SOURCES
     src/UnhandledExceptionHandler
     src/VersionInformation
 
+    src/API/LoggerProxy
+    src/API/PicoTorrent
+    src/API/TranslatorProxy
+
     src/Controllers/AddMagnetLinkController
     src/Controllers/AddTorrentController
     src/Controllers/ApplicationCloseController
@@ -135,8 +139,8 @@ set(PICO_LIBS
 )
 
 include_directories(
+    c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/atlmfc/include
     include/
-    libs/websocketpp
     tools/PicoTorrent.Libs/include
 )
 
@@ -170,3 +174,6 @@ target_link_libraries(
     debug boost_system-vc140-mt-gd-1_61
     optimized boost_system-vc140-mt-1_61
 )
+
+# Include plugins
+include(plugins/updatechecker/CMakeLists.txt)

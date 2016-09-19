@@ -149,6 +149,8 @@ Task("Setup-Publish-Directory")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.exe"),
+        // Plugins
+        BuildDirectory + File("UpdateChecker.dll"),
         // 3rd party libraries
         LibraryDirectory + File(BoostSystem),
         LibraryDirectory + File("libeay32.dll"),
@@ -239,7 +241,8 @@ Task("Build-Symbols-Package")
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.pdb")
+        BuildDirectory + File("PicoTorrent.pdb"),
+        BuildDirectory + File("UpdateChecker.pdb")
     };
 
     Zip(BuildDirectory, BuildDirectory + File(SymbolsPackage), files);

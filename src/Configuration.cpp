@@ -29,6 +29,11 @@ Configuration& Configuration::GetInstance()
     return instance;
 }
 
+std::shared_ptr<pj::object> Configuration::GetRawObject()
+{
+    return m_cfg;
+}
+
 std::shared_ptr<Configuration::SessionSection> Configuration::Session()
 {
     return std::shared_ptr<SessionSection>(new SessionSection(m_cfg));
