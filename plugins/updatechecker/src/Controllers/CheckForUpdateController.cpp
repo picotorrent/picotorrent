@@ -2,8 +2,10 @@
 
 #include <picojson.hpp>
 #include <picotorrent/api.hpp>
+#include <picotorrent/utils.hpp>
 #include <semver.hpp>
 
+#include "../Config/UpdateCheckerConfig.hpp"
 #include "../Dialogs/NoUpdateAvailableDialog.hpp"
 #include "../Dialogs/UpdateAvailableDialog.hpp"
 #include "../Net/HttpClient.hpp"
@@ -20,8 +22,12 @@ CheckForUpdateController::CheckForUpdateController(std::shared_ptr<IPicoTorrent>
 
 void CheckForUpdateController::Execute(bool forced)
 {
-    const std::wstring url = L"https://api.github.com/repos/picotorrent/picotorrent/releases/latest";
-    m_httpClient->GetAsync(url, std::bind(&CheckForUpdateController::OnHttpResponse, this, std::placeholders::_1, forced));
+    LOG_TRACE(m_pico->GetLogger()) << "Checking for updates. forced=" << forced;
+
+    Config::UpdateCheckerConfig cfg(m_pico->GetConfiguration());
+    const std::string url = cfg.GetUpdateUrl();
+
+    m_httpClient->GetAsync(TWS(url), std::bind(&CheckForUpdateController::OnHttpResponse, this, std::placeholders::_1, forced));
 }
 
 void CheckForUpdateController::OnHttpResponse(Net::HttpResponse httpResponse, bool forced)
@@ -29,7 +35,7 @@ void CheckForUpdateController::OnHttpResponse(Net::HttpResponse httpResponse, bo
     if (httpResponse.statusCode != 200
         && httpResponse.statusCode != 202)
     {
-        // LOG
+        LOG_TRACE(m_pico->GetLogger()) << "GitHub did not return success status, " << httpResponse.statusCode;
         return;
     }
 
@@ -38,7 +44,7 @@ void CheckForUpdateController::OnHttpResponse(Net::HttpResponse httpResponse, bo
 
     if (!err.empty())
     {
-        // LOG
+        LOG_ERROR(m_pico->GetLogger()) << "Failed to parse JSON: " << err;
         return;
     }
 
@@ -49,8 +55,10 @@ void CheckForUpdateController::OnHttpResponse(Net::HttpResponse httpResponse, bo
     // If we haven't forced an update (via the menu item)
     // and the version is the same as the stored ignored version,
     // just return silently.
+    Config::UpdateCheckerConfig cfg(m_pico->GetConfiguration());
+    const std::string ignoredVersion = cfg.GetIgnoredVersion();
 
-    if (version == "ignored version" && !forced)
+    if (version == ignoredVersion && !forced)
     {
         return;
     }
@@ -61,7 +69,7 @@ void CheckForUpdateController::OnHttpResponse(Net::HttpResponse httpResponse, bo
     if (parsedVersion > currentVersion)
     {
         Dialogs::UpdateAvailableDialog dlg(m_pico);
-        dlg.Show();
+        dlg.Show(TWS(version), TWS(obj["html_url"].get<std::string>()));
     }
     else if (forced)
     {

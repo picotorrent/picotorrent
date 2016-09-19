@@ -26,7 +26,7 @@ std::ostream& Log::Record::GetStream()
     return m_stream;
 }
 
-Log::Record Log::CreateRecord(Log::Level level, std::thread::id threadId, const char* function)
+std::unique_ptr<Log::Record> Log::CreateRecord(Log::Level level, std::thread::id threadId, const char* function)
 {
     SYSTEMTIME st;
     GetLocalTime(&st);
@@ -45,7 +45,7 @@ Log::Record Log::CreateRecord(Log::Level level, std::thread::id threadId, const 
         << " - "
         ;
 
-    return Record(*m_stream);
+    return std::make_unique<Record>(*m_stream);
 }
 
 Log& Log::GetInstance()

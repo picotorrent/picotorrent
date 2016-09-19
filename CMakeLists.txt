@@ -47,6 +47,7 @@ set(PICOTORRENT_SOURCES
     src/UnhandledExceptionHandler
     src/VersionInformation
 
+    src/API/LoggerProxy
     src/API/PicoTorrent
     src/API/TranslatorProxy
 

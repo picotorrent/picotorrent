@@ -1,6 +1,8 @@
 #include "PicoTorrent.hpp"
 
 #include "../Commands/InvokeCommand.hpp"
+#include "../Configuration.hpp"
+#include "LoggerProxy.hpp"
 #include "../resources.h"
 #include "TranslatorProxy.hpp"
 #include "../VersionInformation.hpp"
@@ -31,9 +33,19 @@ void PicoTorrent::AddMenuItem(MenuItem const& item)
     m_menuItems.insert({ id, item });
 }
 
+std::shared_ptr<picojson::object> PicoTorrent::GetConfiguration()
+{
+    return Configuration::GetInstance().GetRawObject();
+}
+
 std::string PicoTorrent::GetCurrentVersion()
 {
     return VersionInformation::GetCurrentVersion();
+}
+
+std::shared_ptr<ILogger> PicoTorrent::GetLogger()
+{
+    return std::make_shared<API::LoggerProxy>();
 }
 
 std::shared_ptr<ITranslator> PicoTorrent::GetTranslator()
@@ -41,19 +53,34 @@ std::shared_ptr<ITranslator> PicoTorrent::GetTranslator()
     return std::make_shared<TranslatorProxy>();
 }
 
-void PicoTorrent::ShowTaskDialog(TASKDIALOGCONFIG* tdcfg)
+std::unique_ptr<TaskDialogResult> PicoTorrent::ShowTaskDialog(TASKDIALOGCONFIG* tdcfg)
 {
     if (std::this_thread::get_id() != m_threadId)
     {
         // Invoke
         Commands::InvokeCommand cmd;
-        cmd.callback = [this, &tdcfg]() { ShowTaskDialog(tdcfg); };
+        std::unique_ptr<TaskDialogResult> result;
+        cmd.callback = [this, &result, &tdcfg]() { result = ShowTaskDialog(tdcfg); };
+
         SendMessage(m_hWndOwner, PT_INVOKE, NULL, reinterpret_cast<LPARAM>(&cmd));
-        return;
+
+        return std::move(result);
     }
 
     tdcfg->hwndParent = m_hWndOwner;
-    TaskDialogIndirect(tdcfg, NULL, NULL, NULL);
+
+    int pnButton = -1;
+    int pnRadioButton = -1;
+    BOOL pfVerificationFlagChecked = FALSE;
+
+    TaskDialogIndirect(tdcfg, &pnButton, &pnRadioButton, &pfVerificationFlagChecked);
+
+    auto result = std::make_unique<TaskDialogResult>();
+    result->button = pnButton;
+    result->radioButton = pnRadioButton;
+    result->verificationChecked = pfVerificationFlagChecked == TRUE;
+
+    return std::move(result);
 }
 
 LRESULT PicoTorrent::SubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)

@@ -5,7 +5,7 @@
 #include <thread>
 
 #define LOG(level) \
-    ::Log::GetInstance().CreateRecord(Log::Level::level, std::this_thread::get_id(), __FUNCTION__).GetStream()
+    ::Log::GetInstance().CreateRecord(Log::Level::level, std::this_thread::get_id(), __FUNCTION__)->GetStream()
 
 class Log
 {
@@ -30,7 +30,7 @@ public:
         std::ostream& m_stream;
     };
 
-    Record CreateRecord(Level level, std::thread::id threadId, const char* function);
+    std::unique_ptr<Record> CreateRecord(Level level, std::thread::id threadId, const char* function);
     static Log& GetInstance();
 
 private:

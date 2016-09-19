@@ -84,6 +84,7 @@ public:
     };
 
     static Configuration& GetInstance();
+    std::shared_ptr<picojson::object> GetRawObject();
 
     // Sections
     std::shared_ptr<SessionSection> Session();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 class IPicoTorrent;
 
@@ -10,7 +11,7 @@ namespace Dialogs
     {
     public:
         UpdateAvailableDialog(std::shared_ptr<IPicoTorrent> pico);
-        void Show();
+        void Show(std::wstring const& version, std::wstring const& url);
 
     private:
         std::shared_ptr<IPicoTorrent> m_pico;

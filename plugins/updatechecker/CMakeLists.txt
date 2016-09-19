@@ -2,6 +2,7 @@
 add_library(
     UpdateChecker
     SHARED
+    ${CMAKE_CURRENT_LIST_DIR}/src/Config/UpdateCheckerConfig
     ${CMAKE_CURRENT_LIST_DIR}/src/Controllers/CheckForUpdateController
     ${CMAKE_CURRENT_LIST_DIR}/src/Dialogs/NoUpdateAvailableDialog
     ${CMAKE_CURRENT_LIST_DIR}/src/Dialogs/UpdateAvailableDialog

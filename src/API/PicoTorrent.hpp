@@ -13,9 +13,11 @@ namespace API
         PicoTorrent(HWND hWndOwner);
 
         void AddMenuItem(MenuItem const& item);
+        std::shared_ptr<picojson::object> GetConfiguration();
         std::string GetCurrentVersion();
+        std::shared_ptr<ILogger> GetLogger();
         std::shared_ptr<ITranslator> GetTranslator();
-        void ShowTaskDialog(TASKDIALOGCONFIG* tdcfg);
+        std::unique_ptr<TaskDialogResult> ShowTaskDialog(TASKDIALOGCONFIG* tdcfg);
 
     private:
         static LRESULT CALLBACK SubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
