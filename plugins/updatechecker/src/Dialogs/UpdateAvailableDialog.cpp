@@ -5,6 +5,7 @@
 #include <strsafe.h>
 
 #include <picotorrent/api.hpp>
+#include <picotorrent/utils.hpp>
 
 #include "../Config/UpdateCheckerConfig.hpp"
 
@@ -33,8 +34,10 @@ void UpdateAvailableDialog::Show(std::wstring const& version, std::wstring const
     };
 
     TASKDIALOGCONFIG tdf = { sizeof(TASKDIALOGCONFIG) };
+    tdf.cButtons = ARRAYSIZE(pButtons);
     tdf.dwCommonButtons = TDCBF_CLOSE_BUTTON;
-    tdf.dwFlags = TDF_POSITION_RELATIVE_TO_WINDOW;
+    tdf.dwFlags = TDF_POSITION_RELATIVE_TO_WINDOW | TDF_USE_COMMAND_LINKS;
+    tdf.pButtons = pButtons;
     tdf.pszMainIcon = TD_INFORMATION_ICON;
     tdf.pszMainInstruction = mainFormatted;
     tdf.pszVerificationText = verification.c_str();
@@ -56,6 +59,6 @@ void UpdateAvailableDialog::Show(std::wstring const& version, std::wstring const
     if (result->verificationChecked)
     {
         Config::UpdateCheckerConfig cfg(m_pico->GetConfiguration());
-        cfg.SetIgnoredVersion("");
+        cfg.SetIgnoredVersion(TS(version));
     }
 }
