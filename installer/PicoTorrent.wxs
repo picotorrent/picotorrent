@@ -198,6 +198,12 @@
           </Component>
         </ComponentGroup>
 
+        <ComponentGroup Id="CG_Plugins" Directory="INSTALLDIR">
+          <Component Id="C_UpdateChecker">
+            <File Name="UpdateChecker.dll" Source="$(var.PublishDirectory)\UpdateChecker.dll" />
+          </Component>
+        </ComponentGroup>
+
         <ComponentGroup Id="CG_Languages" Directory="LANGDIR">
           <Component Id="C_Lang_1027">
             <File Name="1027.json" Source="$(var.PublishDirectory)\lang\1027.json" />
@@ -249,6 +255,7 @@
 
             <ComponentRef Id="C_PicoTorrent" />
             <ComponentGroupRef Id="CG_Libraries" />
+            <ComponentGroupRef Id="CG_Plugins" />
 
             <Feature Id="F_Lang"
                      Title="Language files"
