@@ -12,7 +12,7 @@
 
     <Properties>
         <DisplayName>PicoTorrent</DisplayName>
-        <PublisherDisplayName>Reserved</PublisherDisplayName>
+        <PublisherDisplayName>NullReferenceException AB</PublisherDisplayName>
         <Description>A tiny BitTorrent client with low memory usage and high performance.</Description>
         <Logo>logo.png</Logo>
     </Properties>
