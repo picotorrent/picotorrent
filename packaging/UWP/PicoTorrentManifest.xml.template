@@ -7,7 +7,7 @@
 
     <Identity Name="PicoTorrent.App"
         ProcessorArchitecture="%{Platform}"
-        Publisher="CN=Dev"
+        Publisher="CN=NullReferenceException AB, O=NullReferenceException AB, L=Stockholm, S=Stockholms Lan, C=SE"
         Version="%{Version}" />
 
     <Properties>
@@ -42,7 +42,7 @@
             Id="PicoTorrentApp"
             Executable="PicoTorrent.exe"
             EntryPoint="Windows.FullTrustApplication">
-            
+
             <uap:VisualElements
                 BackgroundColor="#464646"
                 DisplayName="PicoTorrent"
