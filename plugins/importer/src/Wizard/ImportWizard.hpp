@@ -8,9 +8,8 @@
 
 namespace Wizard
 {
-    class PreviewPage;
-    class QBittorrentPage;
-    class UTorrentPage;
+	class ConfigurePage;
+	class PreviewPage;
     class WelcomePage;
 
     class ImportWizard : public CPropertySheetImpl<ImportWizard>
@@ -24,9 +23,8 @@ namespace Wizard
             CHAIN_MSG_MAP(__super)
         END_MSG_MAP()
 
-        std::unique_ptr<PreviewPage> m_preview;
-        std::unique_ptr<QBittorrentPage> m_qbittorrent;
-        std::unique_ptr<UTorrentPage> m_utorrent;
+		std::unique_ptr<ConfigurePage> m_configure;
+		std::unique_ptr<PreviewPage> m_preview;
         std::unique_ptr<WelcomePage> m_welcome;
     };
 }

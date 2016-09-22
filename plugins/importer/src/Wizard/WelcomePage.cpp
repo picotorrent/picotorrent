@@ -19,7 +19,7 @@ LRESULT WelcomePage::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*
 
 void WelcomePage::OnQBittorrentImport(UINT /*nofityCode*/, int /*commandId*/, HWND /*handle*/)
 {
-    GetPropertySheet().SetActivePageByID(IDD_WIZARD_QBITTORRENT);
+    GetPropertySheet().SetActivePageByID(IDD_WIZARD_CONFIGURE);
 }
 
 BOOL WelcomePage::OnSetActive()
