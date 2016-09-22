@@ -5,6 +5,7 @@
 "%{PublishDirectory}/ssleay32.dll"                    "ssleay32.dll"
 "%{PublishDirectory}/torrent.dll"                     "torrent.dll"
 "%{ResourceDirectory}/app.png"                        "logo.png"
+"%{PackagingDirectory}/appx.dummy"                "appx.dummy"
 "%{PackagingDirectory}/PicoTorrentManifest.xml"       "AppxManifest.xml"
 
 "%{VCDir}/msvcp140.dll"                               "msvcp140.dll"
