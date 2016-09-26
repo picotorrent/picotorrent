@@ -2,6 +2,7 @@
 
 #include "../Commands/InvokeCommand.hpp"
 #include "../Configuration.hpp"
+#include "IO/FileSystem.hpp"
 #include "LoggerProxy.hpp"
 #include "../resources.h"
 #include "TranslatorProxy.hpp"
@@ -41,6 +42,11 @@ std::shared_ptr<picojson::object> PicoTorrent::GetConfiguration()
 std::string PicoTorrent::GetCurrentVersion()
 {
     return VersionInformation::GetCurrentVersion();
+}
+
+std::shared_ptr<IFileSystem> PicoTorrent::GetFileSystem()
+{
+    return std::make_shared<IO::FileSystem>();
 }
 
 std::shared_ptr<ILogger> PicoTorrent::GetLogger()

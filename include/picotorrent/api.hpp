@@ -34,6 +34,87 @@ struct TaskDialogResult
     bool verificationChecked;
 };
 
+class DirectoryPath
+{
+public:
+    DirectoryPath(wchar_t const* path)
+        : m_path(path)
+    {
+    }
+
+    DirectoryPath(std::wstring const& path)
+        : m_path(path)
+    {
+    }
+
+    operator LPCTSTR() const
+    {
+        return m_path.c_str();
+    }
+
+private:
+    std::wstring m_path;
+};
+
+class FilePath
+{
+public:
+    FilePath(wchar_t const* path)
+        : m_path(path)
+    {
+    }
+
+    FilePath(std::wstring const& path)
+        : m_path(path)
+    {
+    }
+
+    operator LPCTSTR() const
+    {
+        return m_path.c_str();
+    }
+
+private:
+    std::wstring m_path;
+};
+
+class IFileSystemInfo
+{
+public:
+    virtual bool Exists() = 0;
+};
+
+typedef std::vector<char> ByteBuffer;
+
+class IFile;
+typedef std::shared_ptr<IFile> FileHandle;
+
+class IFile : public IFileSystemInfo
+{
+public:
+    virtual FileHandle ChangeExtension(std::wstring const& extension) = 0;
+    virtual void Delete() = 0;
+    virtual size_t Length() = 0;
+    virtual std::vector<char> ReadAllBytes(std::error_code& ec) = 0;
+};
+
+typedef std::vector<FileHandle> FileHandleCollection;
+
+class IDirectory : public IFileSystemInfo
+{
+public:
+    virtual FileHandleCollection GetFiles(std::wstring const& filter) = 0;
+};
+
+typedef std::shared_ptr<IDirectory> DirectoryHandle;
+
+class IFileSystem
+{
+public:
+    virtual DirectoryHandle GetDirectory(DirectoryPath const& path) = 0;
+    virtual FileHandle GetFile(FilePath const& path) = 0;
+};
+
 class ILogger
 {
 public:
@@ -58,6 +139,7 @@ public:
     virtual void AddMenuItem(MenuItem const& menuItem) = 0;
     virtual std::shared_ptr<picojson::object> GetConfiguration() = 0;
     virtual std::string GetCurrentVersion() = 0;
+    virtual std::shared_ptr<IFileSystem> GetFileSystem() = 0;
     virtual std::shared_ptr<ILogger> GetLogger() = 0;
     virtual std::shared_ptr<ITranslator> GetTranslator() = 0;
     virtual std::unique_ptr<TaskDialogResult> ShowTaskDialog(TASKDIALOGCONFIG* tdcfg) = 0;

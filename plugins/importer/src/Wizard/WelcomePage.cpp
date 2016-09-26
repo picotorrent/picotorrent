@@ -1,25 +1,27 @@
 #include "WelcomePage.hpp"
 
 #include <memory>
+#include <picotorrent/api.hpp>
 
 #include <atlctrls.h>
 
+#include "../Sources/qBittorrentSource.hpp"
+#include "WizardState.hpp"
+
 using Wizard::WelcomePage;
 
-WelcomePage::WelcomePage()
+WelcomePage::WelcomePage(std::shared_ptr<IPicoTorrent> pico, std::shared_ptr<Wizard::WizardState> state)
+    : m_pico(pico),
+    m_state(state)
 {
     m_title = L"Select application to import torrents from";
     SetHeaderTitle(m_title.c_str());
 }
 
-LRESULT WelcomePage::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-    return TRUE;
-}
-
 void WelcomePage::OnQBittorrentImport(UINT /*nofityCode*/, int /*commandId*/, HWND /*handle*/)
 {
-    GetPropertySheet().SetActivePageByID(IDD_WIZARD_CONFIGURE);
+    m_state->source = std::make_shared<Sources::qBittorrentSource>(m_pico->GetFileSystem());
+    GetPropertySheet().PressButton(PSBTN_NEXT);
 }
 
 BOOL WelcomePage::OnSetActive()

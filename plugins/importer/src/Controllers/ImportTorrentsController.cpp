@@ -14,6 +14,6 @@ ImportTorrentsController::ImportTorrentsController(std::shared_ptr<IPicoTorrent>
 
 void ImportTorrentsController::Execute()
 {
-    Wizard::ImportWizard wiz;
+    Wizard::ImportWizard wiz(m_pico);
     wiz.DoModal();
 }

@@ -4,12 +4,13 @@
 
 #include <atlctrls.h>
 
-#include "../Sources/qBittorrentSource.hpp"
+#include "../Sources/Source.hpp"
+#include "WizardState.hpp"
 
 using Wizard::ConfigurePage;
 
-ConfigurePage::ConfigurePage()
-	: m_source(std::make_unique<Sources::qBittorrentSource>())
+ConfigurePage::ConfigurePage(std::shared_ptr<Wizard::WizardState> state)
+	: m_state(state)
 {
     m_title = L"Configure";
     SetHeaderTitle(m_title.c_str());
@@ -21,26 +22,24 @@ ConfigurePage::~ConfigurePage()
 
 LRESULT ConfigurePage::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-    /*PWSTR buf;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &buf) != S_OK)
-    {
-        return TRUE;
-    }
-
-    TCHAR qb[MAX_PATH];
-    PathCombine(qb, buf, TEXT("qBittorrent"));
-    PathCombine(qb, qb, TEXT("BT_backup"));
-
-    SetDlgItemText(1313, qb);
-
-    CoTaskMemFree(buf);
-*/
     return TRUE;
 }
 
 BOOL ConfigurePage::OnSetActive()
 {
-	HWND hWnd = m_source->GetWindowHandle(ModuleHelper::GetResourceInstance(), m_hWnd);
+    PropSheet_ShowWizButtons(
+        m_hWnd,
+        PSWIZB_CANCEL | PSWIZB_NEXT | PSWIZB_FINISH,
+        PSWIZB_CANCEL | PSWIZB_NEXT);
+
+    PropSheet_EnableWizButtons(
+        m_hWnd,
+        PSWIZB_CANCEL | PSWIZB_NEXT,
+        PSWIZB_CANCEL | PSWIZB_NEXT);
+
+    PropSheet_SetButtonText(m_hWnd, PSWIZB_NEXT, TEXT("Preview"));
+
+	HWND hWnd = m_state->source->GetWindowHandle(ModuleHelper::GetResourceInstance(), m_hWnd);
 	::ShowWindow(hWnd, SW_SHOW);
 
     return TRUE;

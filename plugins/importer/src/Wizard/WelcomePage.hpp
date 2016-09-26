@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include <atlbase.h>
@@ -9,8 +10,12 @@
 
 #include "../resources.h"
 
+class IPicoTorrent;
+
 namespace Wizard
 {
+    struct WizardState;
+
     class WelcomePage : public CPropertyPageImpl<WelcomePage>
     {
         friend class CPropertyPageImpl<WelcomePage>;
@@ -18,21 +23,19 @@ namespace Wizard
     public:
         enum { IDD = IDD_WIZARD_WELCOME };
 
-        WelcomePage();
+        WelcomePage(std::shared_ptr<IPicoTorrent> pico, std::shared_ptr<WizardState> state);
 
     private:
-        LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/);
         void OnQBittorrentImport(UINT /*nofityCode*/, int /*commandId*/, HWND /*handle*/);
         BOOL OnSetActive();
 
         BEGIN_MSG_MAP(WelcomePage)
-            MESSAGE_HANDLER_EX(WM_INITDIALOG, OnInitDialog)
-
             COMMAND_HANDLER_EX(ID_BTN_QBITTORRENT, BN_CLICKED, OnQBittorrentImport);
-
             CHAIN_MSG_MAP(__super)
         END_MSG_MAP()
 
         std::wstring m_title;
+        std::shared_ptr<IPicoTorrent> m_pico;
+        std::shared_ptr<WizardState> m_state;
     };
 }

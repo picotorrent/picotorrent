@@ -15,4 +15,8 @@ add_library(
 target_link_libraries(
     Importer
     Comctl32
+
+    debug boost_system-vc140-mt-gd-1_61
+    optimized boost_system-vc140-mt-1_61
+    torrent
 )

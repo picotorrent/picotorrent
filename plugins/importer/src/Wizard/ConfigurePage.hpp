@@ -10,13 +10,10 @@
 
 #include "../resources.h"
 
-namespace Sources
-{
-	struct Source;
-}
-
 namespace Wizard
 {
+    struct WizardState;
+
     class ConfigurePage : public CPropertyPageImpl<ConfigurePage>
     {
         friend class CPropertyPageImpl<ConfigurePage>;
@@ -24,7 +21,7 @@ namespace Wizard
     public:
         enum { IDD = IDD_WIZARD_CONFIGURE };
 
-        ConfigurePage();
+        ConfigurePage(std::shared_ptr<WizardState> state);
 		~ConfigurePage();
 
     private:
@@ -37,6 +34,6 @@ namespace Wizard
         END_MSG_MAP()
 
         std::wstring m_title;
-		std::unique_ptr<Sources::Source> m_source;
+        std::shared_ptr<WizardState> m_state;
     };
 }
