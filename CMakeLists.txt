@@ -47,6 +47,9 @@ set(PICOTORRENT_SOURCES
     src/UnhandledExceptionHandler
     src/VersionInformation
 
+    src/API/IO/Directory
+    src/API/IO/File
+    src/API/IO/FileSystem
     src/API/LoggerProxy
     src/API/PicoTorrent
     src/API/TranslatorProxy
@@ -176,4 +179,5 @@ target_link_libraries(
 )
 
 # Include plugins
+include(plugins/importer/CMakeLists.txt)
 include(plugins/updatechecker/CMakeLists.txt)
