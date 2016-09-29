@@ -5,20 +5,26 @@
 
 #include <windows.h>
 
+namespace libtorrent
+{
+    class torrent_info;
+}
+
 namespace Sources
 {
     struct Source
     {
-        struct PreviewItem
+        struct AddTorrentRequest
         {
-            std::wstring name;
-            std::wstring savePath;
-            int64_t size;
+            std::vector<uint8_t> filePriorities;
+            std::string savePath;
+            std::shared_ptr<libtorrent::torrent_info> ti;
         };
 
+        virtual ~Source() {}
+
         virtual HWND GetWindowHandle(HINSTANCE hInstance, HWND hWndParent) = 0;
-        virtual std::vector<PreviewItem> GetPreview() = 0;
+        virtual std::vector<AddTorrentRequest> GetRequests() = 0;
         virtual std::wstring GetName() = 0;
-        virtual void Import() = 0;
     };
 }

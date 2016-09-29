@@ -423,7 +423,7 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_session->set_alert_notify([this]() { PostMessage(PT_ALERT); });
 
     // Load plugins
-    m_api = std::make_shared<API::PicoTorrent>(m_hWnd);
+    m_api = std::make_shared<API::PicoTorrent>(m_hWnd, m_session);
 
     std::wstring app_dir = Environment::GetApplicationPath();
     for (std::wstring dll : IO::Directory::GetFiles(app_dir, TEXT("*.dll")))

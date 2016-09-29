@@ -1,7 +1,10 @@
 #include "qBittorrentSource.hpp"
 
-#include <libtorrent/bdecode.hpp>
+#include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/read_resume_data.hpp>
+#include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
+
 #include <picotorrent/api.hpp>
 #include <picotorrent/utils.hpp>
 
@@ -25,26 +28,25 @@ qBittorrentSource::qBittorrentSource(std::shared_ptr<IFileSystem> fileSystem)
 {
 }
 
-std::vector<Sources::Source::PreviewItem> qBittorrentSource::GetPreview()
+std::vector<Sources::Source::AddTorrentRequest> qBittorrentSource::GetRequests()
 {
     CEdit path = GetDlgItem(m_hWnd, ID_QB_APPLICATIONDATA);
     TCHAR p[MAX_PATH];
     path.GetWindowText(p, ARRAYSIZE(p));
 
     DirectoryHandle dir = m_fileSystem->GetDirectory(p);
-    std::vector<PreviewItem> result;
+    std::vector<AddTorrentRequest> result;
 
     if (!dir->Exists())
     {
-        return std::vector<PreviewItem>();
+        return std::vector<AddTorrentRequest>();
     }
 
-    for (FileHandle file : dir->GetFiles(L"*.torrent"))
+    for (FileHandle file : dir->GetFiles(L"*.fastresume"))
     {
-        // also get the .fastresume file
-        FileHandle fastResume = file->ChangeExtension(L".fastresume");
+        FileHandle torrent = file->ChangeExtension(L".torrent");
 
-        if (!fastResume->Exists())
+        if (!file->Exists() || !torrent->Exists())
         {
             continue;
         }
@@ -57,36 +59,34 @@ std::vector<Sources::Source::PreviewItem> qBittorrentSource::GetPreview()
             continue;
         }
 
-        lt::bdecode_node node;
         lt::error_code ltec;
-        lt::bdecode(&buf[0], &buf[0] + buf.size(), node, ltec);
+        lt::add_torrent_params params = lt::read_resume_data(&buf[0], (int)buf.size(), ltec);
 
         if (ltec)
         {
             continue;
         }
 
-        lt::torrent_info ti(node);
-
-        // decode .fastresume file
-        buf = fastResume->ReadAllBytes(ec);
+        buf = torrent->ReadAllBytes(ec);
 
         if (ec)
         {
             continue;
         }
 
-        lt::bdecode(&buf[0], &buf[0] + buf.size(), node, ltec);
+        params.ti = std::make_shared<lt::torrent_info>(&buf[0], (int)buf.size(), ltec);
 
         if (ltec)
         {
             continue;
         }
 
-        std::string savePath = node.dict_find_string_value("save_path").to_string();
+        AddTorrentRequest req;
+        req.filePriorities = params.file_priorities;
+        req.savePath = params.save_path;
+        req.ti = params.ti;
 
-        PreviewItem item{ TWS(ti.name()), TWS(savePath), ti.total_size() };
-        result.push_back(item);
+        result.push_back(req);
     }
 
     return result;
@@ -94,25 +94,20 @@ std::vector<Sources::Source::PreviewItem> qBittorrentSource::GetPreview()
 
 HWND qBittorrentSource::GetWindowHandle(HINSTANCE hInstance, HWND hWndParent)
 {
-	return CreateDialogParam(
-		hInstance,
-		MAKEINTRESOURCE(IDD_CONFIG_QBITTORRENT),
-		hWndParent,
-		&qBittorrentSource::DialogProc,
-		reinterpret_cast<LPARAM>(this));
-}
-
-void qBittorrentSource::Import()
-{
-
+    return CreateDialogParam(
+        hInstance,
+        MAKEINTRESOURCE(IDD_CONFIG_QBITTORRENT),
+        hWndParent,
+        &qBittorrentSource::DialogProc,
+        reinterpret_cast<LPARAM>(this));
 }
 
 INT_PTR qBittorrentSource::DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     qBittorrentSource* qbs = reinterpret_cast<qBittorrentSource*>(lParam);
 
-	switch (uMsg)
-	{
+    switch (uMsg)
+    {
     case WM_COMMAND:
     {
         switch (HIWORD(wParam))
@@ -161,7 +156,7 @@ INT_PTR qBittorrentSource::DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARA
         }
         break;
     }
-	case WM_INITDIALOG:
+    case WM_INITDIALOG:
     {
         qbs->m_hWnd = hDlg;
 
@@ -181,7 +176,7 @@ INT_PTR qBittorrentSource::DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARA
 
         return TRUE;
     }
-	}
+    }
 
-	return FALSE;
+    return FALSE;
 }

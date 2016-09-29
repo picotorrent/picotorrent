@@ -1,5 +1,7 @@
 #include "PicoTorrent.hpp"
 
+#include <libtorrent/session.hpp>
+
 #include "../Commands/InvokeCommand.hpp"
 #include "../Configuration.hpp"
 #include "IO/FileSystem.hpp"
@@ -12,8 +14,9 @@
 
 using API::PicoTorrent;
 
-PicoTorrent::PicoTorrent(HWND hWndOwner)
+PicoTorrent::PicoTorrent(HWND hWndOwner, std::shared_ptr<libtorrent::session> session)
     : m_hWndOwner(hWndOwner),
+    m_session(session),
     m_threadId(std::this_thread::get_id())
 {
     SetWindowSubclass(
@@ -52,6 +55,11 @@ std::shared_ptr<IFileSystem> PicoTorrent::GetFileSystem()
 std::shared_ptr<ILogger> PicoTorrent::GetLogger()
 {
     return std::make_shared<API::LoggerProxy>();
+}
+
+std::shared_ptr<libtorrent::session> PicoTorrent::GetSession()
+{
+    return m_session;
 }
 
 std::shared_ptr<ITranslator> PicoTorrent::GetTranslator()

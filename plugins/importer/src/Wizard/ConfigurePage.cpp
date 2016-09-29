@@ -39,8 +39,14 @@ BOOL ConfigurePage::OnSetActive()
 
     PropSheet_SetButtonText(m_hWnd, PSWIZB_NEXT, TEXT("Preview"));
 
-	HWND hWnd = m_state->source->GetWindowHandle(ModuleHelper::GetResourceInstance(), m_hWnd);
-	::ShowWindow(hWnd, SW_SHOW);
+    if (m_hWndConfig != NULL)
+    {
+        ::ShowWindow(m_hWndConfig, SW_HIDE);
+        ::DestroyWindow(m_hWndConfig);
+    }
+
+	m_hWndConfig = m_state->source->GetWindowHandle(ModuleHelper::GetResourceInstance(), m_hWnd);
+	::ShowWindow(m_hWndConfig, SW_SHOW);
 
     return TRUE;
 }

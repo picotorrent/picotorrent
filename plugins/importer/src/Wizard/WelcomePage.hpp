@@ -27,10 +27,12 @@ namespace Wizard
 
     private:
         void OnQBittorrentImport(UINT /*nofityCode*/, int /*commandId*/, HWND /*handle*/);
+        void OnUTorrentImport(UINT /*nofityCode*/, int /*commandId*/, HWND /*handle*/);
         BOOL OnSetActive();
 
         BEGIN_MSG_MAP(WelcomePage)
-            COMMAND_HANDLER_EX(ID_BTN_QBITTORRENT, BN_CLICKED, OnQBittorrentImport);
+            COMMAND_HANDLER_EX(ID_BTN_QBITTORRENT, BN_CLICKED, OnQBittorrentImport)
+            COMMAND_HANDLER_EX(ID_BTN_UTORRENT, BN_CLICKED, OnUTorrentImport)
             CHAIN_MSG_MAP(__super)
         END_MSG_MAP()
 

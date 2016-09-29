@@ -1,6 +1,7 @@
 #include "FileSystem.hpp"
 
 #include "Directory.hpp"
+#include "File.hpp"
 
 using API::IO::FileSystem;
 
@@ -11,5 +12,5 @@ DirectoryHandle FileSystem::GetDirectory(DirectoryPath const& path)
 
 FileHandle FileSystem::GetFile(FilePath const& path)
 {
-    return nullptr;
+    return std::make_shared<File>(path);
 }

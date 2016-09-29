@@ -6,6 +6,7 @@
 #include <atlctrls.h>
 
 #include "../Sources/qBittorrentSource.hpp"
+#include "../Sources/uTorrentSource.hpp"
 #include "WizardState.hpp"
 
 using Wizard::WelcomePage;
@@ -21,6 +22,12 @@ WelcomePage::WelcomePage(std::shared_ptr<IPicoTorrent> pico, std::shared_ptr<Wiz
 void WelcomePage::OnQBittorrentImport(UINT /*nofityCode*/, int /*commandId*/, HWND /*handle*/)
 {
     m_state->source = std::make_shared<Sources::qBittorrentSource>(m_pico->GetFileSystem());
+    GetPropertySheet().PressButton(PSBTN_NEXT);
+}
+
+void WelcomePage::OnUTorrentImport(UINT /*nofityCode*/, int /*commandId*/, HWND /*handle*/)
+{
+    m_state->source = std::make_shared<Sources::uTorrentSource>(m_pico->GetFileSystem());
     GetPropertySheet().PressButton(PSBTN_NEXT);
 }
 

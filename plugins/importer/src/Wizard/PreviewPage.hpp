@@ -10,6 +10,11 @@
 
 #include "../resources.h"
 
+namespace libtorrent
+{
+    class session;
+}
+
 namespace Wizard
 {
     struct WizardState;
@@ -21,11 +26,12 @@ namespace Wizard
     public:
         enum { IDD = IDD_WIZARD_PREVIEW };
 
-        PreviewPage(std::shared_ptr<WizardState> state);
+        PreviewPage(std::shared_ptr<libtorrent::session> session, std::shared_ptr<WizardState> state);
 
     private:
         LRESULT OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam);
         BOOL OnSetActive();
+        BOOL OnWizardFinish();
 
         BEGIN_MSG_MAP(PreviewPage)
             MESSAGE_HANDLER_EX(WM_INITDIALOG, OnInitDialog)
@@ -34,5 +40,6 @@ namespace Wizard
 
         std::wstring m_title;
         std::shared_ptr<WizardState> m_state;
+        std::shared_ptr<libtorrent::session> m_session;
     };
 }

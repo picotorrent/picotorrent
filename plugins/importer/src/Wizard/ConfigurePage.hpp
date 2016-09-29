@@ -35,5 +35,6 @@ namespace Wizard
 
         std::wstring m_title;
         std::shared_ptr<WizardState> m_state;
+        HWND m_hWndConfig;
     };
 }

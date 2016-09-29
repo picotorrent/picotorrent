@@ -11,6 +11,7 @@
 
 #include <windows.h>
 #include <commctrl.h>
+#include <shlwapi.h>
 
 #define LOG_TRACE(logger) LOG_L("TRACE", logger)
 #define LOG_DEBUG(logger) LOG_L("DEBUG", logger)
@@ -20,6 +21,11 @@
 
 #define LOG_L(level, logger) \
     logger->OpenRecord( level, std::this_thread::get_id(), __FUNCTION__)->GetStream()
+
+namespace libtorrent
+{
+    class session;
+}
 
 struct MenuItem
 {
@@ -33,6 +39,8 @@ struct TaskDialogResult
     int radioButton;
     bool verificationChecked;
 };
+
+class FilePath;
 
 class DirectoryPath
 {
@@ -77,6 +85,13 @@ public:
 private:
     std::wstring m_path;
 };
+
+static FilePath operator+(DirectoryPath const& dir, FilePath const& file)
+{
+    TCHAR t[MAX_PATH];
+    PathCombine(t, dir, file);
+    return FilePath(t);
+}
 
 class IFileSystemInfo
 {
@@ -141,6 +156,7 @@ public:
     virtual std::string GetCurrentVersion() = 0;
     virtual std::shared_ptr<IFileSystem> GetFileSystem() = 0;
     virtual std::shared_ptr<ILogger> GetLogger() = 0;
+    virtual std::shared_ptr<libtorrent::session> GetSession() = 0;
     virtual std::shared_ptr<ITranslator> GetTranslator() = 0;
     virtual std::unique_ptr<TaskDialogResult> ShowTaskDialog(TASKDIALOGCONFIG* tdcfg) = 0;
 };

@@ -12,7 +12,7 @@ using Wizard::ImportWizard;
 ImportWizard::ImportWizard(std::shared_ptr<IPicoTorrent> pico)
     : CPropertySheetImpl<ImportWizard>(TEXT("Import torrents")),
     m_state(std::make_shared<WizardState>()),
-    m_preview(std::make_unique<PreviewPage>(m_state)),
+    m_preview(std::make_unique<PreviewPage>(pico->GetSession(), m_state)),
     m_configure(std::make_unique<ConfigurePage>(m_state)),
     m_welcome(std::make_unique<WelcomePage>(pico, m_state))
 {
