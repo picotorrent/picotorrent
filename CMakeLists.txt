@@ -93,6 +93,7 @@ set(PICOTORRENT_SOURCES
     src/PropertySheets/Preferences/DownloadsPage
     src/PropertySheets/Preferences/GeneralPage
     src/PropertySheets/Preferences/PreferencesSheet
+    src/PropertySheets/Preferences/PrivacyPage
 
     src/UI/CheckBox
     src/UI/ComboBox

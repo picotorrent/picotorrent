@@ -11,6 +11,7 @@ namespace Preferences
     class ConnectionPage;
     class DownloadsPage;
     class GeneralPage;
+    class PrivacyPage;
 
     class PreferencesSheet : public CPropertySheetImpl<PreferencesSheet>
     {
@@ -31,6 +32,7 @@ namespace Preferences
         std::unique_ptr<ConnectionPage> m_connection;
         std::unique_ptr<DownloadsPage> m_downloads;
         std::unique_ptr<GeneralPage> m_general;
+        std::unique_ptr<PrivacyPage> m_privacy;
     };
 }
 }

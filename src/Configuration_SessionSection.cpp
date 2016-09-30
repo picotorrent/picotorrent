@@ -56,6 +56,26 @@ void Configuration::SessionSection::SetDownloadRateLimit(int limit)
     Set("session", "download_rate_limit", limit);
 }
 
+bool Configuration::SessionSection::GetRequireIncomingEncryption()
+{
+    return Get("session", "require_incoming_encryption", false);
+}
+
+void Configuration::SessionSection::SetRequireIncomingEncryption(bool value)
+{
+    Set("session", "require_incoming_encryption", value);
+}
+
+bool Configuration::SessionSection::GetRequireOutgoingEncryption()
+{
+    return Get("session", "require_outgoing_encryption", false);
+}
+
+void Configuration::SessionSection::SetRequireOutgoingEncryption(bool value)
+{
+    Set("session", "require_outgoing_encryption", value);
+}
+
 int Configuration::SessionSection::GetStopTrackerTimeout()
 {
     return Get("session", "stop_tracker_timeout", 1);
