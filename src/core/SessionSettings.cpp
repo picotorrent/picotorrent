@@ -35,11 +35,22 @@ lt::settings_pack SessionSettings::Get()
     settings.set_int(lt::settings_pack::active_seeds, cfg.Session()->GetActiveSeeds());
     settings.set_int(lt::settings_pack::active_tracker_limit, cfg.Session()->GetActiveTrackerLimit());
 
+    // Encryption
+    lt::settings_pack::enc_policy in_policy = cfg.Session()->GetRequireIncomingEncryption()
+        ? lt::settings_pack::enc_policy::pe_forced
+        : lt::settings_pack::enc_policy::pe_enabled;
+
+    lt::settings_pack::enc_policy out_policy = cfg.Session()->GetRequireOutgoingEncryption()
+        ? lt::settings_pack::enc_policy::pe_forced
+        : lt::settings_pack::enc_policy::pe_enabled;
+
+    settings.set_int(lt::settings_pack::int_types::in_enc_policy, in_policy);
+    settings.set_int(lt::settings_pack::int_types::out_enc_policy, out_policy);
+
     // Various
     settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
     settings.set_int(lt::settings_pack::download_rate_limit, cfg.Session()->GetDownloadRateLimit());
     settings.set_bool(lt::settings_pack::enable_dht, true);
-    // listen interfaces
     settings.set_int(lt::settings_pack::stop_tracker_timeout, cfg.Session()->GetStopTrackerTimeout());
     settings.set_int(lt::settings_pack::upload_rate_limit, cfg.Session()->GetUploadRateLimit());
 

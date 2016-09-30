@@ -71,6 +71,11 @@ public:
         int GetActiveSeeds();
         int GetActiveTrackerLimit();
 
+        bool GetRequireIncomingEncryption();
+        void SetRequireIncomingEncryption(bool value);
+        bool GetRequireOutgoingEncryption();
+        void SetRequireOutgoingEncryption(bool value);
+
         int GetDownloadRateLimit();
         void SetDownloadRateLimit(int limit);
 
