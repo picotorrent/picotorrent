@@ -178,6 +178,8 @@
         "privacy": "Privacy",
         "encryption": "Encryption",
         "require_encryption_incoming": "Require for incoming connections",
-        "require_encryption_outgoing": "Require for outgoing connections"        
+        "require_encryption_outgoing": "Require for outgoing connections" ,
+        "move_completed_downloads": "Move completed downloads",
+        "only_move_from_default_save_path": "Only move from default save path"
     }
 }

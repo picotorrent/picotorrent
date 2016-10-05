@@ -700,6 +700,34 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             break;
         }
+        case lt::torrent_finished_alert::alert_type:
+        {
+            lt::torrent_finished_alert* tfa = lt::alert_cast<lt::torrent_finished_alert>(alert);
+            const lt::torrent_status& ts = tfa->handle.status();
+
+            // Only do this if we have downloaded any payload bytes
+            if (ts.total_payload_download <= 0)
+            {
+                break;
+            }
+
+            Configuration& cfg = Configuration::GetInstance();
+            bool shouldMove = cfg.GetMoveCompletedDownloads();
+            bool onlyFromDefault = cfg.GetMoveCompletedDownloadsFromDefaultOnly();
+            std::string targetPath = cfg.GetMoveCompletedDownloadsPath();
+
+            if (shouldMove)
+            {
+                if (onlyFromDefault && ts.save_path != cfg.GetDefaultSavePath())
+                {
+                    break;
+                }
+
+                tfa->handle.move_storage(targetPath);
+            }
+
+            break;
+        }
         case lt::torrent_removed_alert::alert_type:
         {
             lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
