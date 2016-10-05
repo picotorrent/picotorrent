@@ -103,6 +103,15 @@ public:
     std::string GetDefaultSavePath();
     void SetDefaultSavePath(const std::string& path);
 
+    bool GetMoveCompletedDownloads();
+    void SetMoveCompletedDownloads(bool value);
+
+    std::string GetMoveCompletedDownloadsPath();
+    void SetMoveCompletedDownloadsPath(const std::string& path);
+
+    bool GetMoveCompletedDownloadsFromDefaultOnly();
+    void SetMoveCompletedDownloadsFromDefaultOnly(bool value);
+
     std::vector<std::pair<std::string, int>> GetListenInterfaces();
     void SetListenInterfaces(const std::vector<std::pair<std::string, int>>& interfaces);
 

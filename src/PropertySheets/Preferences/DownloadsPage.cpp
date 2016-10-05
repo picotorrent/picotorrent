@@ -23,6 +23,13 @@ BOOL DownloadsPage::OnApply()
     m_savePath.GetWindowText(path, ARRAYSIZE(path));
     cfg.SetDefaultSavePath(ToString(path));
 
+    // Move completed
+    cfg.SetMoveCompletedDownloads(m_moveCompleted.GetCheck() == BST_CHECKED);
+    cfg.SetMoveCompletedDownloadsFromDefaultOnly(m_onlyMoveFromDefault.GetCheck() == BST_CHECKED);
+
+    m_movePath.GetWindowText(path, ARRAYSIZE(path));
+    cfg.SetMoveCompletedDownloadsPath(ToString(path));
+
     // Rates
     TCHAR dl[1024];
     int res = m_dl.GetWindowText(dl, ARRAYSIZE(dl));
@@ -43,8 +50,12 @@ BOOL DownloadsPage::OnApply()
     return TRUE;
 }
 
-void DownloadsPage::OnChangeSavePath(UINT uNotifyCode, int nID, CWindow wndCtl)
+void DownloadsPage::OnBrowse(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+    int target = (nID == ID_PREFS_DEFSAVEPATH_BROWSE)
+        ? ID_PREFS_DEFSAVEPATH
+        : ID_PREFS_MOVEPATH;
+
     Dialogs::OpenFileDialog dlg;
     dlg.SetGuid(DLG_BROWSE);
     dlg.SetOptions(dlg.GetOptions() | FOS_PICKFOLDERS | FOS_PATHMUSTEXIST);
@@ -53,7 +64,7 @@ void DownloadsPage::OnChangeSavePath(UINT uNotifyCode, int nID, CWindow wndCtl)
     // If we have a save path in the textbox,
     // use that.
     TCHAR path[MAX_PATH];
-    int res = m_savePath.GetWindowText(path, ARRAYSIZE(path));
+    int res = GetDlgItemText(target, path, ARRAYSIZE(path));
     if (res > 0) { dlg.SetFolder(path); }
 
     dlg.Show();
@@ -61,7 +72,7 @@ void DownloadsPage::OnChangeSavePath(UINT uNotifyCode, int nID, CWindow wndCtl)
 
     if (paths.size() > 0)
     {
-        m_savePath.SetWindowText(paths[0].c_str());
+        SetDlgItemText(target, paths[0].c_str());
         SetModified();
     }
 }
@@ -75,6 +86,12 @@ void DownloadsPage::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
     case ID_PREFS_DEFSAVEPATH:
         if (uNotifyCode == EN_CHANGE) { SetModified(); }
         break;
+    case ID_PREFS_MOVECOMPLETEDDOWNLOADS:
+    {
+        UpdateMoveState(m_moveCompleted.GetCheck() == BST_CHECKED);
+        SetModified();
+        break;
+    }
     }
 }
 
@@ -88,14 +105,24 @@ BOOL DownloadsPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
     SetDlgItemText(ID_PREFS_GLOBAL_DL_LIMIT_HELP, TRW("dl_limit_help"));
     SetDlgItemText(ID_PREFS_GLOBAL_UL_LIMIT_TEXT, TRW("ul_limit"));
     SetDlgItemText(ID_PREFS_GLOBAL_UL_LIMIT_HELP, TRW("ul_limit_help"));
+    SetDlgItemText(ID_PREFS_MOVECOMPLETEDDOWNLOADS, TRW("move_completed_downloads"));
+    SetDlgItemText(ID_PREFS_MOVEPATH_BROWSE, TRW("browse"));
+    SetDlgItemText(ID_PREFS_ONLYMOVEFROMDEFAULT, TRW("only_move_from_default_save_path"));
 
     m_savePath = GetDlgItem(ID_PREFS_DEFSAVEPATH);
+    m_moveCompleted = GetDlgItem(ID_PREFS_MOVECOMPLETEDDOWNLOADS);
+    m_movePath = GetDlgItem(ID_PREFS_MOVEPATH);
+    m_movePathBrowse = GetDlgItem(ID_PREFS_MOVEPATH_BROWSE);
+    m_onlyMoveFromDefault = GetDlgItem(ID_PREFS_ONLYMOVEFROMDEFAULT);
     m_dl = GetDlgItem(ID_PREFS_GLOBAL_DL_LIMIT);
     m_ul = GetDlgItem(ID_PREFS_GLOBAL_UL_LIMIT);
 
     Configuration& cfg = Configuration::GetInstance();
     m_savePath.SetWindowText(ToWideString(cfg.GetDefaultSavePath()).c_str());
-    // prompt
+    
+    m_moveCompleted.SetCheck(cfg.GetMoveCompletedDownloads() ? BST_CHECKED : BST_UNCHECKED);
+    m_movePath.SetWindowText(TWS(cfg.GetMoveCompletedDownloadsPath()));
+    m_onlyMoveFromDefault.SetCheck(cfg.GetMoveCompletedDownloadsFromDefaultOnly() ? BST_CHECKED : BST_UNCHECKED);
 
     // Rate limits
     int dl_rate = cfg.Session()->GetDownloadRateLimit();
@@ -108,5 +135,14 @@ BOOL DownloadsPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
     m_dl.SetWindowText(std::to_wstring(dl_rate).c_str());
     m_ul.SetWindowText(std::to_wstring(ul_rate).c_str());
 
+    UpdateMoveState(m_moveCompleted.GetCheck() == BST_CHECKED);
+
     return FALSE;
+}
+
+void DownloadsPage::UpdateMoveState(bool checked)
+{
+    m_movePath.EnableWindow(checked ? TRUE : FALSE);
+    m_movePathBrowse.EnableWindow(checked ? TRUE : FALSE);
+    m_onlyMoveFromDefault.EnableWindow(checked ? TRUE : FALSE);
 }
