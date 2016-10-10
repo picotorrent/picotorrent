@@ -25,6 +25,10 @@ lt::settings_pack SessionSettings::Get()
         ifaces << "," << p.first << ":" << p.second;
     }
 
+    // Features
+    settings.set_bool(lt::settings_pack::enable_dht, cfg.Session()->GetEnableDht());
+    settings.set_bool(lt::settings_pack::enable_lsd, cfg.Session()->GetEnableLsd());
+
     // Limits
     settings.set_int(lt::settings_pack::active_checking, cfg.Session()->GetActiveChecking());
     settings.set_int(lt::settings_pack::active_dht_limit, cfg.Session()->GetActiveDhtLimit());

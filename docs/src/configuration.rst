@@ -55,6 +55,12 @@ directly).
         // The max number of torrents to announce to their trackers.
         "active_tracker_limit": 1600,
 
+        // Set to `true` to enable DHT.
+        "enable_dht": true,
+
+        // Set to `true` to enable LSD (Local Service Discovery).
+        "enable_lsd": true,
+
         // Set to `true` to require encryption for incoming connections.
         "require_incoming_encryption": false,
 
