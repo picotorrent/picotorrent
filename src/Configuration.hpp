@@ -71,6 +71,11 @@ public:
         int GetActiveSeeds();
         int GetActiveTrackerLimit();
 
+        bool GetEnableDht();
+        void SetEnableDht(bool value);
+        bool GetEnableLsd();
+        void SetEnableLsd(bool value);
+
         bool GetRequireIncomingEncryption();
         void SetRequireIncomingEncryption(bool value);
         bool GetRequireOutgoingEncryption();
