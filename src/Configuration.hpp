@@ -88,11 +88,27 @@ public:
         using Section::Section;
     };
 
+    struct UISection : public Section
+    {
+        friend class Configuration;
+
+        bool GetShowInNotificationArea();
+        void SetShowInNotificationArea(bool value);
+        bool GetCloseToNotificationArea();
+        void SetCloseToNotificationArea(bool value);
+        bool GetMinimizeToNotificationArea();
+        void SetMinimizeToNotificationArea(bool value);
+
+    protected:
+        using Section::Section;
+    };
+
     static Configuration& GetInstance();
     std::shared_ptr<picojson::object> GetRawObject();
 
     // Sections
     std::shared_ptr<SessionSection> Session();
+    std::shared_ptr<UISection> UI();
 
     CloseAction GetCloseAction();
     void SetCloseAction(CloseAction action);

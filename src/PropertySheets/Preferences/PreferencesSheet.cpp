@@ -9,11 +9,11 @@
 
 using PropertySheets::Preferences::PreferencesSheet;
 
-PreferencesSheet::PreferencesSheet()
+PreferencesSheet::PreferencesSheet(const std::shared_ptr<UI::NotifyIcon>& notifyIcon)
     :
     m_connection(std::make_unique<ConnectionPage>()),
     m_downloads(std::make_unique<DownloadsPage>()),
-    m_general(std::make_unique<GeneralPage>()),
+    m_general(std::make_unique<GeneralPage>(notifyIcon)),
     m_privacy(std::make_unique<PrivacyPage>())
 {
     AddPage(*m_general);

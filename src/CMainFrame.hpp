@@ -53,7 +53,7 @@ private:
     void OnViewPreferences(UINT uNotifyCode, int nID, CWindow wndCtl);
     
     // Message handlers
-    LRESULT OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+    void OnClose();
     BOOL OnCopyData(CWindow wnd, PCOPYDATASTRUCT pCopyDataStruct);
     LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
     void OnDestroy();
@@ -71,13 +71,15 @@ private:
     LRESULT OnShowTorrentDetails(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnNotifyIcon(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnInvoke(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    void OnSysCommand(UINT nID, CPoint point);
     LRESULT OnTaskbarButtonCreated(UINT uMsg, WPARAM wParam, LPARAM lParam);
     void OnTimerElapsed(UINT_PTR nIDEvent);
     void OnUnhandledCommand(UINT uNotifyCode, int nID, CWindow wndCtl);
 
     BEGIN_MSG_MAP(CMainFrame)
+        MSG_WM_SYSCOMMAND(OnSysCommand)
         MSG_WM_CREATE(OnCreate)
-        MESSAGE_HANDLER(WM_CLOSE, OnClose)
+        MSG_WM_CLOSE(OnClose)
         MSG_WM_COPYDATA(OnCopyData)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_TIMER(OnTimerElapsed)
