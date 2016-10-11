@@ -4,6 +4,11 @@
 
 #include <memory>
 
+namespace UI
+{
+    class NotifyIcon;
+}
+
 namespace PropertySheets
 {
 namespace Preferences
@@ -18,7 +23,7 @@ namespace Preferences
         friend class CPropertySheetImpl<PreferencesSheet>;
 
     public:
-        PreferencesSheet();
+        PreferencesSheet(const std::shared_ptr<UI::NotifyIcon>& notifyIcon);
         ~PreferencesSheet();
 
     protected:

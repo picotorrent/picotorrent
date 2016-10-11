@@ -39,6 +39,11 @@ std::shared_ptr<Configuration::SessionSection> Configuration::Session()
     return std::shared_ptr<SessionSection>(new SessionSection(m_cfg));
 }
 
+std::shared_ptr<Configuration::UISection> Configuration::UI()
+{
+    return std::shared_ptr<UISection>(new UISection(m_cfg));
+}
+
 Configuration::CloseAction Configuration::GetCloseAction()
 {
     return (CloseAction)Get("close_action", (int64_t)CloseAction::Prompt);

@@ -17,5 +17,6 @@
 #include <atldlgs.h>
 #include <atlctrlw.h>
 #include <atlcrack.h>
+#include <atlmisc.h>
 
 extern CAppModule _Module;

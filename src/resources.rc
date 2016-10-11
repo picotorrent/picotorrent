@@ -98,6 +98,11 @@ FONT 9, "MS Shell Dlg"
     CHECKBOX "", ID_AUTOSTART_PICO, 15, 68, 160, 11
     LTEXT "", ID_START_POSITION_TEXT, 15, 83, 120, 11
     COMBOBOX ID_START_POSITION, 75, 83, 80, 10, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+
+    GROUPBOX "Notification area", IDC_STATIC, 5, 115, 240, 60
+    AUTOCHECKBOX "Show PicoTorrent in notification area", ID_SHOW_IN_NOTIFICATION_AREA, 15, 128, 200, 10
+    AUTOCHECKBOX "Minimize to notification area", ID_MINIMIZE_TO_NOTIFICATION_AREA, 25, 143, 200, 10
+    AUTOCHECKBOX "Close to notification area", ID_CLOSE_TO_NOTIFICATION_AREA, 25, 158, 200, 10
 }
 
 // Preferences - Downloads

@@ -37,6 +37,7 @@ set(PICOTORRENT_SOURCES
     src/Configuration
     src/Configuration_Section
     src/Configuration_SessionSection
+    src/Configuration_UISection
     src/Environment
     src/Log
     src/Main
@@ -56,7 +57,6 @@ set(PICOTORRENT_SOURCES
 
     src/Controllers/AddMagnetLinkController
     src/Controllers/AddTorrentController
-    src/Controllers/ApplicationCloseController
     src/Controllers/NotifyIconController
     src/Controllers/RemoveTorrentsController
     src/Controllers/TorrentDetailsController

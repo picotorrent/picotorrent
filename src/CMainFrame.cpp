@@ -28,7 +28,6 @@
 #include "Core/Torrent.hpp"
 #include "Controllers/AddMagnetLinkController.hpp"
 #include "Controllers/AddTorrentController.hpp"
-#include "Controllers/ApplicationCloseController.hpp"
 #include "Controllers/NotifyIconController.hpp"
 #include "Controllers/RemoveTorrentsController.hpp"
 #include "Controllers/TorrentDetailsController.hpp"
@@ -339,6 +338,28 @@ LRESULT CMainFrame::OnInvoke(UINT uMsg, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
+void CMainFrame::OnSysCommand(UINT nID, CPoint point)
+{
+    switch (nID)
+    {
+    case SC_MINIMIZE:
+    {
+        Configuration& cfg = Configuration::GetInstance();
+
+        if (cfg.UI()->GetShowInNotificationArea()
+            && cfg.UI()->GetMinimizeToNotificationArea())
+        {
+            ShowWindow(SW_HIDE);
+            return;
+        }
+
+        break;
+    }
+    }
+
+    SetMsgHandled(FALSE);
+}
+
 LRESULT CMainFrame::OnTaskbarButtonCreated(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     m_taskbar = std::make_shared<UI::Taskbar>(m_hWnd);
@@ -364,7 +385,7 @@ void CMainFrame::OnFileExit(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 void CMainFrame::OnViewPreferences(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    Controllers::ViewPreferencesController ctrl(m_session);
+    Controllers::ViewPreferencesController ctrl(m_notifyIcon, m_session);
     ctrl.Execute();
 }
 
@@ -374,12 +395,19 @@ void CMainFrame::OnHelpAbout(UINT uNotifyCode, int nID, CWindow wndCtl)
     dlg.DoModal();
 }
 
-LRESULT CMainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+void CMainFrame::OnClose()
 {
-    Controllers::ApplicationCloseController acc(m_hWnd);
-    bHandled = !acc.Execute();
+    Configuration& cfg = Configuration::GetInstance();
 
-    return 0;
+    if (cfg.UI()->GetShowInNotificationArea()
+        && cfg.UI()->GetCloseToNotificationArea())
+    {
+        ShowWindow(SW_HIDE);
+    }
+    else
+    {
+        SetMsgHandled(FALSE);
+    }
 }
 
 BOOL CMainFrame::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pCopyDataStruct)
@@ -400,9 +428,15 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     SetMenu(UI::MainMenu::Create());
     SetWindowText(TEXT("PicoTorrent"));
 
+    Configuration& cfg = Configuration::GetInstance();
+
     // NotifyIcon
     m_notifyIcon = std::make_shared<UI::NotifyIcon>(m_hWnd);
-    m_notifyIcon->Show();
+
+    if (cfg.UI()->GetShowInNotificationArea())
+    {
+        m_notifyIcon->Show();
+    }
 
     // Torrent list view
     CListViewCtrl list;

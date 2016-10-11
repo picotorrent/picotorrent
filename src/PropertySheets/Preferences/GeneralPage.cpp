@@ -5,6 +5,7 @@
 #include "../../resources.h"
 #include "../../Configuration.hpp"
 #include "../../Translator.hpp"
+#include "../../UI/NotifyIcon.hpp"
 
 using PropertySheets::Preferences::GeneralPage;
 
@@ -78,7 +79,8 @@ private:
     HKEY m_key;
 };
 
-GeneralPage::GeneralPage()
+GeneralPage::GeneralPage(const std::shared_ptr<UI::NotifyIcon>& notifyIcon)
+    : m_notifyIcon(notifyIcon)
 {
     m_title = TRW("general");
     SetTitle(m_title.c_str());
@@ -103,6 +105,19 @@ BOOL GeneralPage::OnApply()
         key.Create();
     }
 
+    cfg.UI()->SetShowInNotificationArea(m_showNotificationIcon.IsChecked());
+    cfg.UI()->SetCloseToNotificationArea(m_closeToTray.IsChecked());
+    cfg.UI()->SetMinimizeToNotificationArea(m_minimizeToTray.IsChecked());
+
+    if (cfg.UI()->GetShowInNotificationArea())
+    {
+        m_notifyIcon->Show();
+    }
+    else
+    {
+        m_notifyIcon->Hide();
+    }
+
     return TRUE;
 }
 
@@ -118,9 +133,17 @@ void GeneralPage::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
         }
         break;
     case ID_AUTOSTART_PICO:
+    {
         bool isChecked = m_autoStart.GetCheck() == BST_CHECKED;
         m_autoStart.SetCheck(isChecked ? BST_UNCHECKED : BST_CHECKED);
 
+        SetModified();
+        break;
+    }
+    case ID_SHOW_IN_NOTIFICATION_AREA:
+    case ID_CLOSE_TO_NOTIFICATION_AREA:
+    case ID_MINIMIZE_TO_NOTIFICATION_AREA:
+        UpdateNotificationState(m_showNotificationIcon.IsChecked());
         SetModified();
         break;
     }
@@ -139,6 +162,9 @@ BOOL GeneralPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
     m_languages = GetDlgItem(ID_LANGUAGE);
     m_startPosition = GetDlgItem(ID_START_POSITION);
     m_autoStart = GetDlgItem(ID_AUTOSTART_PICO);
+    m_showNotificationIcon = GetDlgItem(ID_SHOW_IN_NOTIFICATION_AREA);
+    m_minimizeToTray = GetDlgItem(ID_MINIMIZE_TO_NOTIFICATION_AREA);
+    m_closeToTray = GetDlgItem(ID_CLOSE_TO_NOTIFICATION_AREA);
 
     for (const Translator::Language &lang : Translator::GetInstance().GetAvailableLanguages())
     {
@@ -160,6 +186,10 @@ BOOL GeneralPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
         m_autoStart.SetCheck(BST_CHECKED);
     }
 
+    m_showNotificationIcon.SetCheck(cfg.UI()->GetShowInNotificationArea() ? BST_CHECKED : BST_UNCHECKED);
+    m_closeToTray.SetCheck(cfg.UI()->GetCloseToNotificationArea() ? BST_CHECKED : BST_UNCHECKED);
+    m_minimizeToTray.SetCheck(cfg.UI()->GetMinimizeToNotificationArea() ? BST_CHECKED : BST_UNCHECKED);
+
     return TRUE;
 }
 
@@ -175,4 +205,10 @@ void GeneralPage::SelectComboBoxItemWithData(CComboBox& cb, int data)
             break;
         }
     }
+}
+
+void GeneralPage::UpdateNotificationState(bool checked)
+{
+    m_closeToTray.EnableWindow(checked ? TRUE : FALSE);
+    m_minimizeToTray.EnableWindow(checked ? TRUE : FALSE);
 }
