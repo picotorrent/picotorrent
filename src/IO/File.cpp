@@ -85,11 +85,13 @@ void File::WriteAllBytes(const std::wstring& path, const std::vector<char>& buf,
         return;
     }
 
+    DWORD lpBytesWritten = 0;
+
     if (!WriteFile(
         handle.get(),
         &buf[0],
         (DWORD)buf.size(),
-        NULL,
+        &lpBytesWritten,
         NULL))
     {
         ec.assign(GetLastError(), std::system_category());
