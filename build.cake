@@ -297,9 +297,8 @@ Task("Sign-Installer-Bundle")
 {
     var bundle = BuildDirectory + File(InstallerBundle);
     var insignia = Directory("tools")
-                   + Directory("WiX.Toolset")
+                   + Directory("WiX")
                    + Directory("tools")
-                   + Directory("wix")
                    + File("insignia.exe");
 
     // Detach Burn engine
