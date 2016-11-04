@@ -46,6 +46,26 @@ int Configuration::SessionSection::GetActiveTrackerLimit()
     return Get("session", "active_tracker_limit", 1600);
 }
 
+bool Configuration::SessionSection::GetEnableDht()
+{
+    return Get("session", "enable_dht", true);
+}
+
+void Configuration::SessionSection::SetEnableDht(bool value)
+{
+    Set("session", "enable_dht", value);
+}
+
+bool Configuration::SessionSection::GetEnableLsd()
+{
+    return Get("session", "enable_lsd", true);
+}
+
+void Configuration::SessionSection::SetEnableLsd(bool value)
+{
+    Set("session", "enable_lsd", value);
+}
+
 int Configuration::SessionSection::GetDownloadRateLimit()
 {
     return Get("session", "download_rate_limit", 0);
@@ -54,6 +74,26 @@ int Configuration::SessionSection::GetDownloadRateLimit()
 void Configuration::SessionSection::SetDownloadRateLimit(int limit)
 {
     Set("session", "download_rate_limit", limit);
+}
+
+bool Configuration::SessionSection::GetRequireIncomingEncryption()
+{
+    return Get("session", "require_incoming_encryption", false);
+}
+
+void Configuration::SessionSection::SetRequireIncomingEncryption(bool value)
+{
+    Set("session", "require_incoming_encryption", value);
+}
+
+bool Configuration::SessionSection::GetRequireOutgoingEncryption()
+{
+    return Get("session", "require_outgoing_encryption", false);
+}
+
+void Configuration::SessionSection::SetRequireOutgoingEncryption(bool value)
+{
+    Set("session", "require_outgoing_encryption", value);
 }
 
 int Configuration::SessionSection::GetStopTrackerTimeout()

@@ -37,6 +37,7 @@ set(PICOTORRENT_SOURCES
     src/Configuration
     src/Configuration_Section
     src/Configuration_SessionSection
+    src/Configuration_UISection
     src/Environment
     src/Log
     src/Main
@@ -47,13 +48,15 @@ set(PICOTORRENT_SOURCES
     src/UnhandledExceptionHandler
     src/VersionInformation
 
+    src/API/IO/Directory
+    src/API/IO/File
+    src/API/IO/FileSystem
     src/API/LoggerProxy
     src/API/PicoTorrent
     src/API/TranslatorProxy
 
     src/Controllers/AddMagnetLinkController
     src/Controllers/AddTorrentController
-    src/Controllers/ApplicationCloseController
     src/Controllers/NotifyIconController
     src/Controllers/RemoveTorrentsController
     src/Controllers/TorrentDetailsController
@@ -90,6 +93,7 @@ set(PICOTORRENT_SOURCES
     src/PropertySheets/Preferences/DownloadsPage
     src/PropertySheets/Preferences/GeneralPage
     src/PropertySheets/Preferences/PreferencesSheet
+    src/PropertySheets/Preferences/PrivacyPage
 
     src/UI/CheckBox
     src/UI/ComboBox
@@ -176,4 +180,5 @@ target_link_libraries(
 )
 
 # Include plugins
+include(plugins/importer/CMakeLists.txt)
 include(plugins/updatechecker/CMakeLists.txt)

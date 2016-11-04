@@ -199,6 +199,10 @@
         </ComponentGroup>
 
         <ComponentGroup Id="CG_Plugins" Directory="INSTALLDIR">
+          <Component Id="C_Importer">
+            <File Name="Importer.dll" Source="$(var.PublishDirectory)\Importer.dll" />
+          </Component>
+
           <Component Id="C_UpdateChecker">
             <File Name="UpdateChecker.dll" Source="$(var.PublishDirectory)\UpdateChecker.dll" />
           </Component>

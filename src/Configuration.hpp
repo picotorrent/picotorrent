@@ -71,6 +71,16 @@ public:
         int GetActiveSeeds();
         int GetActiveTrackerLimit();
 
+        bool GetEnableDht();
+        void SetEnableDht(bool value);
+        bool GetEnableLsd();
+        void SetEnableLsd(bool value);
+
+        bool GetRequireIncomingEncryption();
+        void SetRequireIncomingEncryption(bool value);
+        bool GetRequireOutgoingEncryption();
+        void SetRequireOutgoingEncryption(bool value);
+
         int GetDownloadRateLimit();
         void SetDownloadRateLimit(int limit);
 
@@ -83,11 +93,27 @@ public:
         using Section::Section;
     };
 
+    struct UISection : public Section
+    {
+        friend class Configuration;
+
+        bool GetShowInNotificationArea();
+        void SetShowInNotificationArea(bool value);
+        bool GetCloseToNotificationArea();
+        void SetCloseToNotificationArea(bool value);
+        bool GetMinimizeToNotificationArea();
+        void SetMinimizeToNotificationArea(bool value);
+
+    protected:
+        using Section::Section;
+    };
+
     static Configuration& GetInstance();
     std::shared_ptr<picojson::object> GetRawObject();
 
     // Sections
     std::shared_ptr<SessionSection> Session();
+    std::shared_ptr<UISection> UI();
 
     CloseAction GetCloseAction();
     void SetCloseAction(CloseAction action);
@@ -97,6 +123,15 @@ public:
 
     std::string GetDefaultSavePath();
     void SetDefaultSavePath(const std::string& path);
+
+    bool GetMoveCompletedDownloads();
+    void SetMoveCompletedDownloads(bool value);
+
+    std::string GetMoveCompletedDownloadsPath();
+    void SetMoveCompletedDownloadsPath(const std::string& path);
+
+    bool GetMoveCompletedDownloadsFromDefaultOnly();
+    void SetMoveCompletedDownloadsFromDefaultOnly(bool value);
 
     std::vector<std::pair<std::string, int>> GetListenInterfaces();
     void SetListenInterfaces(const std::vector<std::pair<std::string, int>>& interfaces);

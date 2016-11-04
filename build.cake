@@ -122,6 +122,7 @@ Task("Setup-Publish-Directory")
     {
         BuildDirectory + File("PicoTorrent.exe"),
         // Plugins
+        BuildDirectory + File("Importer.dll"),
         BuildDirectory + File("UpdateChecker.dll"),
         // 3rd party libraries
         LibraryDirectory + File(BoostSystem),
@@ -214,6 +215,7 @@ Task("Build-Symbols-Package")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.pdb"),
+        BuildDirectory + File("Importer.pdb"),
         BuildDirectory + File("UpdateChecker.pdb")
     };
 

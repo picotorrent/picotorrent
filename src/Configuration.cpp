@@ -39,6 +39,11 @@ std::shared_ptr<Configuration::SessionSection> Configuration::Session()
     return std::shared_ptr<SessionSection>(new SessionSection(m_cfg));
 }
 
+std::shared_ptr<Configuration::UISection> Configuration::UI()
+{
+    return std::shared_ptr<UISection>(new UISection(m_cfg));
+}
+
 Configuration::CloseAction Configuration::GetCloseAction()
 {
     return (CloseAction)Get("close_action", (int64_t)CloseAction::Prompt);
@@ -68,6 +73,36 @@ std::string Configuration::GetDefaultSavePath()
 void Configuration::SetDefaultSavePath(const std::string& path)
 {
     Set("default_save_path", path);
+}
+
+bool Configuration::GetMoveCompletedDownloads()
+{
+    return Get("move_completed_downloads", false);
+}
+
+void Configuration::SetMoveCompletedDownloads(bool value)
+{
+    Set("move_completed_downloads", value);
+}
+
+std::string Configuration::GetMoveCompletedDownloadsPath()
+{
+    return Get<std::string>("move_completed_downloads_path", "");
+}
+
+void Configuration::SetMoveCompletedDownloadsPath(const std::string& path)
+{
+    Set("move_completed_downloads_path", path);
+}
+
+bool Configuration::GetMoveCompletedDownloadsFromDefaultOnly()
+{
+    return Get("move_completed_downloads_from_default_only", false);
+}
+
+void Configuration::SetMoveCompletedDownloadsFromDefaultOnly(bool value)
+{
+    Set("move_completed_downloads_from_default_only", value);
 }
 
 std::vector<std::pair<std::string, int>> Configuration::GetListenInterfaces()
