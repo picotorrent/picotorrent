@@ -3,6 +3,8 @@
 #include <windows.h>
 #include <shlwapi.h>
 
+#include "IO/Path.hpp"
+
 std::wstring Environment::GetApplicationPath()
 {
     TCHAR buf[MAX_PATH];
@@ -15,7 +17,9 @@ std::wstring Environment::GetDataPath()
 {
     if (IsInstalled())
     {
-        return GetKnownFolderPath(FOLDERID_LocalAppData);
+        return IO::Path::Combine(
+			GetKnownFolderPath(FOLDERID_LocalAppData),
+			TEXT("PicoTorrent"));
     }
 
     return GetApplicationPath();
