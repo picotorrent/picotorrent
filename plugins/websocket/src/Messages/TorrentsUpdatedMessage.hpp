@@ -7,12 +7,12 @@
 
 namespace Messages
 {
-    struct PicoStateMessage
+    struct TorrentsUpdatedMessage
     {
-        PicoStateMessage(std::map<std::string, Torrent> const& torrents);
+        TorrentsUpdatedMessage(std::vector<Torrent> const& torrents);
         std::string Serialize();
 
     private:
-        std::map<std::string, Torrent> m_torrents;
+        std::vector<Torrent> m_torrents;
     };
 }

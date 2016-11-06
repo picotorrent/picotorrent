@@ -704,6 +704,7 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 Torrent model = Mapping::TorrentMapper::Map(ts);
                 m_torrentList->Update(model);
+                updatedTorrents.push_back(model);
 
                 dl_rate += model.downloadRate;
                 ul_rate += model.uploadRate;
@@ -758,6 +759,9 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             std::pair<int, int> indices = m_torrentList->GetVisibleIndices();
             m_torrentList->RedrawItems(indices.first, indices.second);
+
+            // Emit to API
+            m_api->EmitTorrentUpdated(updatedTorrents);
 
             break;
         }

@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <thread>
 
 #pragma warning(push)
@@ -20,17 +21,20 @@ class TorrentEventSink : public ITorrentEventSink
 public:
     TorrentEventSink();
 
-    void OnTorrentAdded(std::shared_ptr<Torrent> torrent);
+    void OnTorrentAdded(Torrent torrent);
     void OnTorrentRemoved(std::string const& infoHash);
-	void OnTorrentUpdated(std::shared_ptr<Torrent> torrent);
+	void OnTorrentUpdated(std::vector<Torrent> torrents);
 
 private:
-    void OnOpenConnection(websocketpp::connection_hdl connection);
+	void Broadcast(std::string const& data);
+	void OnCloseConnection(websocketpp::connection_hdl connection);
+	void OnOpenConnection(websocketpp::connection_hdl connection);
     void Run();
 
-    std::map<std::string, std::shared_ptr<Torrent>> m_torrents;
+    std::map<std::string, Torrent> m_torrents;
 
     boost::asio::io_service m_io;
+	std::set<websocketpp::connection_hdl, std::owner_less<websocketpp::connection_hdl>> m_connections;
     std::shared_ptr<websocketpp_server> m_wss;
     std::thread m_worker;
 };

@@ -3,6 +3,7 @@ add_library(
     WebSocket
     SHARED
     ${CMAKE_CURRENT_LIST_DIR}/src/Messages/PicoStateMessage
+    ${CMAKE_CURRENT_LIST_DIR}/src/Messages/TorrentsUpdatedMessage
     ${CMAKE_CURRENT_LIST_DIR}/src/Serialization/TorrentSerializer
     ${CMAKE_CURRENT_LIST_DIR}/src/TorrentEventSink
     ${CMAKE_CURRENT_LIST_DIR}/src/WebSocket

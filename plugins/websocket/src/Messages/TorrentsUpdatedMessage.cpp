@@ -1,27 +1,27 @@
-#include "PicoStateMessage.hpp"
+#include "TorrentsUpdatedMessage.hpp"
 
 #include <picojson.hpp>
 
 #include "../Serialization/TorrentSerializer.hpp"
 
 namespace pj = picojson;
-using Messages::PicoStateMessage;
+using Messages::TorrentsUpdatedMessage;
 
-PicoStateMessage::PicoStateMessage(std::map<std::string, Torrent> const& torrents)
+TorrentsUpdatedMessage::TorrentsUpdatedMessage(std::vector<Torrent> const& torrents)
     : m_torrents(torrents)
 {
 }
 
-std::string PicoStateMessage::Serialize()
+std::string TorrentsUpdatedMessage::Serialize()
 {
     pj::object obj;
-    obj["type"] = pj::value("pico_state");
+    obj["type"] = pj::value("torrents_updated");
 
     pj::array torrents;
 
     for (auto &torrent : m_torrents)
     {
-        pj::object t = Serialization::TorrentSerializer::Serialize(torrent.second);
+        pj::object t = Serialization::TorrentSerializer::Serialize(torrent);
         torrents.push_back(pj::value(t));
     }
 

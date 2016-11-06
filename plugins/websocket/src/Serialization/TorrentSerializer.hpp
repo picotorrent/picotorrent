@@ -8,6 +8,6 @@ namespace Serialization
     class TorrentSerializer
     {
     public:
-        static picojson::object Serialize(std::shared_ptr<Torrent> torrent);
+        static picojson::object Serialize(Torrent const& torrent);
     };
 }
