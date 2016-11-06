@@ -22,6 +22,7 @@ public:
 
     void OnTorrentAdded(std::shared_ptr<Torrent> torrent);
     void OnTorrentRemoved(std::string const& infoHash);
+	void OnTorrentUpdated(std::shared_ptr<Torrent> torrent);
 
 private:
     void OnOpenConnection(websocketpp::connection_hdl connection);

@@ -1,27 +1,21 @@
-#include "Torrent.hpp"
+#include "TorrentMapper.hpp"
 
 #include <libtorrent/sha1_hash.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
-
-#include "../StringUtils.hpp"
+#include <picotorrent/api.hpp>
 
 namespace lt = libtorrent;
-using Models::Torrent;
+using Mapping::TorrentMapper;
 
-Torrent Torrent::Map(const lt::sha1_hash& hash)
-{
-    return Torrent{ hash };
-}
-
-Torrent Torrent::Map(const lt::torrent_status& status)
+Torrent TorrentMapper::Map(libtorrent::torrent_status const& status)
 {
     bool isPaused = status.paused && !status.auto_managed;
     float ratio = 0;
     int eta = -1;
     int pieceLength = -1;
     int piecesCount = -1;
-    State state = State::Unknown;
+    Torrent::State state = Torrent::State::Unknown;
 
     if (status.all_time_download > 0)
     {
@@ -62,17 +56,17 @@ Torrent Torrent::Map(const lt::torrent_status& status)
     {
         if (hasError)
         {
-            state = State::Error;
+            state = Torrent::State::Error;
         }
         else
         {
             if (isSeeding)
             {
-                state = State::UploadingPaused;
+                state = Torrent::State::UploadingPaused;
             }
             else
             {
-                state = State::DownloadingPaused;
+                state = Torrent::State::DownloadingPaused;
             }
         }
     }
@@ -82,11 +76,11 @@ Torrent Torrent::Map(const lt::torrent_status& status)
         {
             if (isSeeding)
             {
-                state = State::UploadingQueued;
+                state = Torrent::State::UploadingQueued;
             }
             else
             {
-                state = State::DownloadingQueued;
+                state = Torrent::State::DownloadingQueued;
             }
         }
         else
@@ -98,21 +92,21 @@ Torrent Torrent::Map(const lt::torrent_status& status)
             {
                 if (isForced)
                 {
-                    state = State::UploadingForced;
+                    state = Torrent::State::UploadingForced;
                 }
                 else if (isPaused)
                 {
-                    state = State::Complete;
+                    state = Torrent::State::Complete;
                 }
                 else
                 {
                     if (status.upload_payload_rate > 0)
                     {
-                        state = State::Uploading;
+                        state = Torrent::State::Uploading;
                     }
                     else
                     {
-                        state = State::UploadingStalled;
+                        state = Torrent::State::UploadingStalled;
                     }
                 }
                 break;
@@ -120,19 +114,19 @@ Torrent Torrent::Map(const lt::torrent_status& status)
 
             case lt::torrent_status::state_t::checking_resume_data:
             {
-                state = State::CheckingResumeData;
+                state = Torrent::State::CheckingResumeData;
                 break;
             }
 
             case lt::torrent_status::state_t::checking_files:
             {
-                state = State::DownloadingChecking;
+                state = Torrent::State::DownloadingChecking;
                 break;
             }
 
             case lt::torrent_status::state_t::downloading_metadata:
             {
-                state = State::DownloadingMetadata;
+                state = Torrent::State::DownloadingMetadata;
                 break;
             }
 
@@ -140,17 +134,17 @@ Torrent Torrent::Map(const lt::torrent_status& status)
             {
                 if (isForced)
                 {
-                    state = State::DownloadingForced;
+                    state = Torrent::State::DownloadingForced;
                 }
                 else
                 {
                     if (status.download_payload_rate > 0)
                     {
-                        state = State::Downloading;
+                        state = Torrent::State::Downloading;
                     }
                     else
                     {
-                        state = State::DownloadingStalled;
+                        state = Torrent::State::DownloadingStalled;
                     }
                 }
                 break;
@@ -159,10 +153,13 @@ Torrent Torrent::Map(const lt::torrent_status& status)
         }
     }
 
+	std::stringstream ss;
+	ss << status.info_hash;
+
     return Torrent
     {
-        status.info_hash,
-        TWS(status.name),
+        ss.str(),
+        status.name,
         status.queue_position,
         status.handle.torrent_file()->total_size(),
         state,
@@ -176,12 +173,12 @@ Torrent Torrent::Map(const lt::torrent_status& status)
         status.list_peers - status.list_seeds,
         ratio,
         isPaused,
-        TWS(status.save_path),
+        status.save_path,
         status.all_time_download,
         status.all_time_upload,
         status.num_pieces,
         pieceLength,
         piecesCount,
-        TWS(status.errc ? status.errc.message() : "")
+        status.errc ? status.errc.message() : ""
     };
 }

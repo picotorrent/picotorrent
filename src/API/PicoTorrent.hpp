@@ -7,11 +7,6 @@
 #include <thread>
 #include <vector>
 
-namespace libtorrent
-{
-    struct torrent_status;
-}
-
 namespace API
 {
     class PicoTorrent : public IPicoTorrent
@@ -19,8 +14,9 @@ namespace API
     public:
         PicoTorrent(HWND hWndOwner, std::shared_ptr<libtorrent::session> session);
 
-        void EmitTorrentAdded(libtorrent::torrent_status& status);
+        void EmitTorrentAdded(Torrent const& torrent);
         void EmitTorrentRemoved(libtorrent::sha1_hash const& infoHash);
+		void EmitTorrentUpdated(std::vector<Torrent> const& torrents);
 
         void AddMenuItem(MenuItem const& item);
         std::shared_ptr<picojson::object> GetConfiguration();

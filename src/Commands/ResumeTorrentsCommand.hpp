@@ -2,13 +2,13 @@
 
 #include <vector>
 
-namespace Models { struct Torrent; }
+#include <picotorrent/api.hpp>
 
 namespace Commands
 {
     struct ResumeTorrentsCommand
     {
         bool force;
-        std::vector<Models::Torrent> torrents;
+        std::vector<Torrent> torrents;
     };
 }

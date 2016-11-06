@@ -79,8 +79,9 @@ set(PICOTORRENT_SOURCES
     src/IO/File
     src/IO/Path
 
+    src/Mapping/TorrentMapper
+
     src/Models/Peer
-    src/Models/Torrent
 
     src/PropertySheets/Details/DetailsSheet
     src/PropertySheets/Details/FilesPage

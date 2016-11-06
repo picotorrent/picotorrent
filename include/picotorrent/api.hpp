@@ -150,31 +150,71 @@ public:
 
 struct Torrent
 {
+	enum State
+	{
+		Unknown = -1,
+		CheckingResumeData,
+		Complete,
+		Downloading,
+		DownloadingChecking,
+		DownloadingForced,
+		DownloadingMetadata,
+		DownloadingPaused,
+		DownloadingQueued,
+		DownloadingStalled,
+		Error,
+		Uploading,
+		UploadingChecking,
+		UploadingForced,
+		UploadingPaused,
+		UploadingQueued,
+		UploadingStalled
+	};
+
+	bool operator==(const Torrent& other)
+    {
+        return infoHash == other.infoHash;
+    }
+
+    bool operator!=(const Torrent& other)
+    {
+        return !(*this == other);
+    }
+
     std::string infoHash;
     std::string name;
     int queuePosition;
     int64_t size;
+    State state;
     float progress;
-    // state
-    //eta
+    std::chrono::seconds eta;
     int downloadRate;
     int uploadRate;
     int seedsConnected;
     int seedsTotal;
-    int nonseedsConnected;
-    int nonseedsTotal;
+    int peersConnected;
+    int peersTotal;
+    float shareRatio;
+    bool isPaused;
+    std::string savePath;
+    int64_t downloadedBytes;
+    int64_t uploadedBytes;
+    int piecesHave;
+    int pieceLength;
+    int piecesCount;
+    std::string errorMessage;
 };
 
 struct ITorrentEventSink
 {
-    virtual void OnTorrentAdded(std::shared_ptr<Torrent> torrent) {};
+    virtual void OnTorrentAdded(Torrent torrent) {};
     virtual void OnTorrentError(std::shared_ptr<Torrent> torrent) {};
     virtual void OnTorrentFinished(std::shared_ptr<Torrent> torrent) {};
     virtual void OnTorrentMoved(std::shared_ptr<Torrent> torrent) {};
     virtual void OnTorrentPaused(std::shared_ptr<Torrent> torrent) {};
     virtual void OnTorrentResumed(std::shared_ptr<Torrent> torrent) {};
     virtual void OnTorrentRemoved(std::string const& infoHash) {};
-    virtual void OnTorrentUpdated(std::vector<std::shared_ptr<Torrent>> torrents) {};
+    virtual void OnTorrentUpdated(std::vector<Torrent> torrents) {};
 };
 
 class IPicoTorrent

@@ -2,12 +2,12 @@
 
 #include <vector>
 
-namespace Models { struct Torrent; }
+#include <picotorrent/api.hpp>
 
 namespace Commands
 {
     struct PauseTorrentsCommand
     {
-        std::vector<Models::Torrent> torrents;
+        std::vector<Torrent> torrents;
     };
 }

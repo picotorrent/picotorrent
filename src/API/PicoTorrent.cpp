@@ -30,32 +30,11 @@ PicoTorrent::PicoTorrent(HWND hWndOwner, std::shared_ptr<libtorrent::session> se
         reinterpret_cast<DWORD_PTR>(this));
 }
 
-void PicoTorrent::EmitTorrentAdded(libtorrent::torrent_status& status)
+void PicoTorrent::EmitTorrentAdded(Torrent const& torrent)
 {
-    std::stringstream ss;
-    ss << status.info_hash;
-
-    auto t = std::make_shared<Torrent>();
-    t->downloadRate = status.download_payload_rate;
-    t->infoHash = ss.str();
-    t->name = status.name;
-    t->nonseedsConnected = status.num_peers - status.num_seeds;
-    t->nonseedsTotal = status.list_peers - status.list_seeds;
-    t->progress = status.progress;
-    t->queuePosition = status.queue_position;
-    t->seedsConnected = status.num_seeds;
-    t->seedsTotal = status.list_seeds;
-    t->size = -1;
-    t->uploadRate = status.upload_payload_rate;
-
-    if (auto ti = status.torrent_file.lock())
-    {
-        t->size = ti->total_size();
-    }
-
     for (auto& sink : m_torrentSinks)
     {
-        sink->OnTorrentAdded(t);
+        sink->OnTorrentAdded(torrent);
     }
 }
 
@@ -69,6 +48,14 @@ void PicoTorrent::EmitTorrentRemoved(libtorrent::sha1_hash const& infoHash)
     {
         sink->OnTorrentRemoved(hash);
     }
+}
+
+void PicoTorrent::EmitTorrentUpdated(std::vector<Torrent> const& torrents)
+{
+	for (auto& sink : m_torrentSinks)
+	{
+		sink->OnTorrentUpdated(torrents);
+	}
 }
 
 void PicoTorrent::AddMenuItem(MenuItem const& item)

@@ -22,6 +22,11 @@ void TorrentEventSink::OnTorrentRemoved(std::string const& infoHash)
     m_torrents.erase(infoHash);
 }
 
+void TorrentEventSink::OnTorrentUpdated(std::shared_ptr<Torrent> torrent)
+{
+	m_torrents.at(torrent->infoHash) = torrent;
+}
+
 void TorrentEventSink::OnOpenConnection(websocketpp::connection_hdl connection)
 {
     Messages::PicoStateMessage msg(m_torrents);
