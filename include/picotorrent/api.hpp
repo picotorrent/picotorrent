@@ -148,6 +148,35 @@ public:
     virtual std::wstring Translate(const std::string& key) = 0;
 };
 
+struct Torrent
+{
+    std::string infoHash;
+    std::string name;
+    int queuePosition;
+    int64_t size;
+    float progress;
+    // state
+    //eta
+    int downloadRate;
+    int uploadRate;
+    int seedsConnected;
+    int seedsTotal;
+    int nonseedsConnected;
+    int nonseedsTotal;
+};
+
+struct ITorrentEventSink
+{
+    virtual void OnTorrentAdded(std::shared_ptr<Torrent> torrent) {};
+    virtual void OnTorrentError(std::shared_ptr<Torrent> torrent) {};
+    virtual void OnTorrentFinished(std::shared_ptr<Torrent> torrent) {};
+    virtual void OnTorrentMoved(std::shared_ptr<Torrent> torrent) {};
+    virtual void OnTorrentPaused(std::shared_ptr<Torrent> torrent) {};
+    virtual void OnTorrentResumed(std::shared_ptr<Torrent> torrent) {};
+    virtual void OnTorrentRemoved(std::string const& infoHash) {};
+    virtual void OnTorrentUpdated(std::vector<std::shared_ptr<Torrent>> torrents) {};
+};
+
 class IPicoTorrent
 {
 public:
@@ -158,5 +187,6 @@ public:
     virtual std::shared_ptr<ILogger> GetLogger() = 0;
     virtual std::shared_ptr<libtorrent::session> GetSession() = 0;
     virtual std::shared_ptr<ITranslator> GetTranslator() = 0;
+    virtual void RegisterEventSink(std::shared_ptr<ITorrentEventSink> sink) = 0;
     virtual std::unique_ptr<TaskDialogResult> ShowTaskDialog(TASKDIALOGCONFIG* tdcfg) = 0;
 };

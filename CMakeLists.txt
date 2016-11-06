@@ -182,3 +182,4 @@ target_link_libraries(
 # Include plugins
 include(plugins/importer/CMakeLists.txt)
 include(plugins/updatechecker/CMakeLists.txt)
+include(plugins/websocket/CMakeLists.txt)

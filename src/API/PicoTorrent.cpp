@@ -1,12 +1,16 @@
 #include "PicoTorrent.hpp"
 
 #include <libtorrent/session.hpp>
+#include <libtorrent/torrent_info.hpp>
+#include <libtorrent/torrent_handle.hpp>
+#include <libtorrent/torrent_status.hpp>
 
 #include "../Commands/InvokeCommand.hpp"
 #include "../Configuration.hpp"
 #include "IO/FileSystem.hpp"
 #include "LoggerProxy.hpp"
 #include "../resources.h"
+#include "../StringUtils.hpp"
 #include "TranslatorProxy.hpp"
 #include "../VersionInformation.hpp"
 
@@ -24,6 +28,47 @@ PicoTorrent::PicoTorrent(HWND hWndOwner, std::shared_ptr<libtorrent::session> se
         &PicoTorrent::SubclassProc,
         1338,
         reinterpret_cast<DWORD_PTR>(this));
+}
+
+void PicoTorrent::EmitTorrentAdded(libtorrent::torrent_status& status)
+{
+    std::stringstream ss;
+    ss << status.info_hash;
+
+    auto t = std::make_shared<Torrent>();
+    t->downloadRate = status.download_payload_rate;
+    t->infoHash = ss.str();
+    t->name = status.name;
+    t->nonseedsConnected = status.num_peers - status.num_seeds;
+    t->nonseedsTotal = status.list_peers - status.list_seeds;
+    t->progress = status.progress;
+    t->queuePosition = status.queue_position;
+    t->seedsConnected = status.num_seeds;
+    t->seedsTotal = status.list_seeds;
+    t->size = -1;
+    t->uploadRate = status.upload_payload_rate;
+
+    if (auto ti = status.torrent_file.lock())
+    {
+        t->size = ti->total_size();
+    }
+
+    for (auto& sink : m_torrentSinks)
+    {
+        sink->OnTorrentAdded(t);
+    }
+}
+
+void PicoTorrent::EmitTorrentRemoved(libtorrent::sha1_hash const& infoHash)
+{
+    std::stringstream ss;
+    ss << infoHash;
+    std::string hash = ss.str();
+
+    for (auto& sink : m_torrentSinks)
+    {
+        sink->OnTorrentRemoved(hash);
+    }
 }
 
 void PicoTorrent::AddMenuItem(MenuItem const& item)
@@ -65,6 +110,11 @@ std::shared_ptr<libtorrent::session> PicoTorrent::GetSession()
 std::shared_ptr<ITranslator> PicoTorrent::GetTranslator()
 {
     return std::make_shared<TranslatorProxy>();
+}
+
+void PicoTorrent::RegisterEventSink(std::shared_ptr<ITorrentEventSink> sink)
+{
+    m_torrentSinks.push_back(sink);
 }
 
 std::unique_ptr<TaskDialogResult> PicoTorrent::ShowTaskDialog(TASKDIALOGCONFIG* tdcfg)

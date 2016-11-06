@@ -591,6 +591,8 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             // Update status bar
             m_statusBar->SetTorrentCount((int)m_torrents.size(), 0);
 
+            m_api->EmitTorrentAdded(ata->handle.status());
+
             break;
         }
         case lt::dht_stats_alert::alert_type:
@@ -789,6 +791,7 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (IO::File::Exists(torrent_file)) { IO::File::Delete(torrent_file); }
             if (IO::File::Exists(torrent_dat)) { IO::File::Delete(torrent_dat); }
 
+            m_api->EmitTorrentRemoved(tra->info_hash);
             m_statusBar->SetTorrentCount((int)m_torrents.size(), 0);
 
             break;
