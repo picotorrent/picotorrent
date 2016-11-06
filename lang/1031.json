@@ -25,6 +25,7 @@
         "amp_add_torrent": "&Torrent hinzufügen",
         "amp_exit": "&Schließen",
         "amp_view": "&Anzeige",
+        "amp_extensions": "&Erweiterungen",
         "amp_preferences": "&Einstellungen",
         "amp_help": "&Hilfe",
         "amp_check_for_update": "&Nach Updates suchen",
@@ -172,6 +173,13 @@
         "show_qr_code": "<a href=\"#\">QR Code anzeigen</a>",
         "invalid_download_rate_limit": "Ungültiges DL Limit",
         "invalid_upload_rate_limit": "Ungültiges UL Limit",
-        "error_when_loading_torrent": "Fehler beim Laden des Torrents"
+        "error_when_loading_torrent": "Fehler beim Laden des Torrents",
+        "plugins": "Plugins",
+        "privacy": "Privatsphäre",
+        "encryption": "Verschlüsselung",
+        "require_encryption_incoming": "Für eingehende Verbindungen gefordert",
+        "require_encryption_outgoing": "Für ausgehende Verbindungen gefordert" ,
+        "move_completed_downloads": "Fertige Downloads verschieben",
+        "only_move_from_default_save_path": "Nur vom Standardspeicherpfad verschieben"
     }
 }
