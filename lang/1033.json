@@ -25,6 +25,7 @@
         "amp_add_torrent": "&Add torrent",
         "amp_exit": "&Exit",
         "amp_view": "&View",
+        "amp_extensions": "&Extensions",
         "amp_preferences": "&Preferences",
         "amp_help": "&Help",
         "amp_check_for_update": "&Check for update",
@@ -168,6 +169,17 @@
         "uploaded": "Uploaded",
         "storage_mode": "Storage mode",
         "sparse": "Sparse",
-        "full": "Full"
+        "full": "Full",
+        "show_qr_code": "<a href=\"#\">Show QR code</a>",
+        "invalid_download_rate_limit": "Invalid download rate limit.",
+        "invalid_upload_rate_limit": "Invalid upload rate limit.",
+        "error_when_loading_torrent": "Error when loading torrent",
+        "plugins": "Plugins",
+        "privacy": "Privacy",
+        "encryption": "Encryption",
+        "require_encryption_incoming": "Require for incoming connections",
+        "require_encryption_outgoing": "Require for outgoing connections" ,
+        "move_completed_downloads": "Move completed downloads",
+        "only_move_from_default_save_path": "Only move from default save path"
     }
 }

@@ -5,23 +5,23 @@
     <?define UpgradeCode = "58903cac-fb00-4335-8149-0e1177cc8cba" ?>
 
     <?define FindVCRedistKey = "Software\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" ?>
-    <?define VCRedistDescription = "Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.23506" ?>
-    <?define VCRedistHash = "9a19a51d1f40cd5cd5ecb6e4e4f978f18da8212a" ?>
+    <?define VCRedistDescription = "Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.24123" ?>
+    <?define VCRedistHash = "ff15c4f5da3c54f88676e6b44f3314b173835c28" ?>
     <?define VCRedistName = "VC_redist.x64.exe" ?>
-    <?define VCRedistSize = "14773216" ?>
-    <?define VCRedistUrl = "https://download.microsoft.com/download/C/E/5/CE514EAE-78A8-4381-86E8-29108D78DBD4/VC_redist.x64.exe" ?>
-    <?define VCRedistVersion = "14.0.23506.0" ?>
+    <?define VCRedistSize = "14990824" ?>
+    <?define VCRedistUrl = "https://download.microsoft.com/download/0/6/4/064F84EA-D1DB-4EAA-9A5C-CC2F0FF6A638/vc_redist.x64.exe" ?>
+    <?define VCRedistVersion = "14.0.24123.0" ?>
 <?else ?>
     <?define InstallFolder = "[ProgramFilesFolder]PicoTorrent" ?>
     <?define UpgradeCode = "08b52a3a-63eb-47c0-8a75-1df052a99042" ?>
 
     <?define FindVCRedistKey = "Software\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" ?>
-    <?define VCRedistDescription = "Microsoft Visual C++ 2015 Redistributable (x86) - 14.0.23506" ?>
-    <?define VCRedistHash = "17b381d3adb22f00e4ab47cbd91ce0a5b1ccbc70" ?>
+    <?define VCRedistDescription = "Microsoft Visual C++ 2015 Redistributable (x86) - 14.0.24123" ?>
+    <?define VCRedistHash = "e99e5b17b0ad882833bbdc8cf798dc56f9947a5e" ?>
     <?define VCRedistName = "VC_redist.x86.exe" ?>
-    <?define VCRedistSize = "13977352" ?>
-    <?define VCRedistUrl = "https://download.microsoft.com/download/C/E/5/CE514EAE-78A8-4381-86E8-29108D78DBD4/VC_redist.x86.exe" ?>
-    <?define VCRedistVersion = "14.0.23506.0" ?>
+    <?define VCRedistSize = "14157672" ?>
+    <?define VCRedistUrl = "https://download.microsoft.com/download/0/6/4/064F84EA-D1DB-4EAA-9A5C-CC2F0FF6A638/vc_redist.x86.exe" ?>
+    <?define VCRedistVersion = "14.0.24123.0" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"

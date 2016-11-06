@@ -9,11 +9,9 @@
 <?endif ?>
 
 <?if $(var.Configuration) = "Debug" ?>
-    <?define BoostRandomFile = "boost_random-vc140-mt-gd-1_60.dll" ?>
-    <?define BoostSystemFile = "boost_system-vc140-mt-gd-1_60.dll" ?>
+    <?define BoostSystemFile = "boost_system-vc140-mt-gd-1_61.dll" ?>
 <?else ?>
-    <?define BoostRandomFile = "boost_random-vc140-mt-1_60.dll" ?>
-    <?define BoostSystemFile = "boost_system-vc140-mt-1_60.dll" ?>
+    <?define BoostSystemFile = "boost_system-vc140-mt-1_61.dll" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
@@ -183,14 +181,6 @@
         </Directory>
 
         <ComponentGroup Id="CG_Libraries" Directory="INSTALLDIR">
-          <Component Id="C_PicoTorrentCore">
-            <File Name="PicoTorrentCore.dll" Source="$(var.PublishDirectory)\PicoTorrentCore.dll" />
-          </Component>
-
-          <Component Id="C_BoostRandom">
-            <File Name="$(var.BoostRandomFile)" Source="$(var.PublishDirectory)\$(var.BoostRandomFile)" />
-          </Component>
-
           <Component Id="C_BoostSystem">
             <File Name="$(var.BoostSystemFile)" Source="$(var.PublishDirectory)\$(var.BoostSystemFile)" />
           </Component>
@@ -205,6 +195,16 @@
 
           <Component Id="C_torrent">
             <File Name="torrent.dll" Source="$(var.PublishDirectory)\torrent.dll" />
+          </Component>
+        </ComponentGroup>
+
+        <ComponentGroup Id="CG_Plugins" Directory="INSTALLDIR">
+          <Component Id="C_Importer">
+            <File Name="Importer.dll" Source="$(var.PublishDirectory)\Importer.dll" />
+          </Component>
+
+          <Component Id="C_UpdateChecker">
+            <File Name="UpdateChecker.dll" Source="$(var.PublishDirectory)\UpdateChecker.dll" />
           </Component>
         </ComponentGroup>
 
@@ -259,6 +259,7 @@
 
             <ComponentRef Id="C_PicoTorrent" />
             <ComponentGroupRef Id="CG_Libraries" />
+            <ComponentGroupRef Id="CG_Plugins" />
 
             <Feature Id="F_Lang"
                      Title="Language files"

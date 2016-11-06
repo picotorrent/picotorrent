@@ -53,18 +53,19 @@ directly).
         "active_seeds": 5,
 
         // The max number of torrents to announce to their trackers.
-        "active_tracker_limit": 1600
-     },
+        "active_tracker_limit": 1600,
 
-     "websocket": {
-        // The access token to use when connecting to the WebSocket API.
-        "access_token": "random characters",
+        // Set to `true` to enable DHT.
+        "enable_dht": true,
 
-        // The full path to an SSL certificate which secures the WebSocket API.
-        "certificate_file": "PicoTorrent_generated.pem",
+        // Set to `true` to enable LSD (Local Service Discovery).
+        "enable_lsd": true,
 
-        // The password for the SSL certificate (or empty string if no password).
-        "certificate_password": "secret"
+        // Set to `true` to require encryption for incoming connections.
+        "require_incoming_encryption": false,
+
+        // Set to `true` to require encryption for outgoing connections.
+        "require_outgoing_encryption": false
      }
    }
 

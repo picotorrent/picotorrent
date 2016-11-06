@@ -13,6 +13,7 @@ var OutputDirectory    = Directory("./build-" + platform);
 var BuildDirectory     = OutputDirectory + Directory(configuration);
 var PublishDirectory   = BuildDirectory + Directory("publish");
 var ResourceDirectory  = Directory("./res");
+var PluginsDirectory   = BuildDirectory + Directory("plugins");
 
 var LibraryDirectory   = Directory("./tools")
                        + Directory("PicoTorrent.Libs")
@@ -31,8 +32,7 @@ var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Versio
 bool IsDebug() { return configuration.Equals("Debug"); }
 
 // Boost naming ickiness
-var BoostRandom = IsDebug() ? "boost_random-vc140-mt-gd-1_60.dll" : "boost_random-vc140-mt-1_60.dll";
-var BoostSystem = IsDebug() ? "boost_system-vc140-mt-gd-1_60.dll" : "boost_system-vc140-mt-1_60.dll";
+var BoostSystem = IsDebug() ? "boost_system-vc140-mt-gd-1_61.dll" : "boost_system-vc140-mt-1_61.dll";
 
 public void SignTool(FilePath file)
 {
@@ -106,13 +106,32 @@ Task("Build")
     MSBuild(OutputDirectory + File("PicoTorrent.sln"), settings);
 });
 
+Task("Build-NetFx-Plugins")
+    .IsDependentOn("Build")
+    .Does(() =>
+{
+    var settings = new MSBuildSettings()
+                        .SetConfiguration(configuration)
+                        .WithProperty("Platform", platform);
+
+    if(platform == "x86")
+    {
+        settings.SetPlatformTarget(PlatformTarget.x86);
+    }
+    else
+    {
+        settings.SetPlatformTarget(PlatformTarget.x64);
+    }
+
+    MSBuild("./plugins/netfx/src/netfx.sln", settings);
+});
+
 Task("Setup-Library-Files")
     .Does(() =>
 {
     var files = new FilePath[]
     {
         // 3rd party libraries
-        LibraryDirectory + File(BoostRandom),
         LibraryDirectory + File(BoostSystem),
         LibraryDirectory + File("libeay32.dll"),
         LibraryDirectory + File("ssleay32.dll"),
@@ -130,10 +149,10 @@ Task("Setup-Publish-Directory")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.exe"),
-        BuildDirectory + File("PicoTorrentCore.dll"),
-
+        // Plugins
+        BuildDirectory + File("Importer.dll"),
+        BuildDirectory + File("UpdateChecker.dll"),
         // 3rd party libraries
-        LibraryDirectory + File(BoostRandom),
         LibraryDirectory + File(BoostSystem),
         LibraryDirectory + File("libeay32.dll"),
         LibraryDirectory + File("ssleay32.dll"),
@@ -192,7 +211,7 @@ Task("Build-Installer-Bundle")
     WiXCandle("./installer/PicoTorrentBundle.wxs", new CandleSettings
     {
         Architecture = arch,
-        Extensions = new [] { "WixBalExtension", "WixUtilExtension" },
+        Extensions = new [] { "WixBalExtension", "WixNetFxExtension", "WixUtilExtension" },
         Defines = new Dictionary<string, string>
         {
             { "PicoTorrentInstaller", BuildDirectory + File(Installer) },
@@ -204,7 +223,7 @@ Task("Build-Installer-Bundle")
 
     WiXLight(BuildDirectory + File("PicoTorrentBundle.wixobj"), new LightSettings
     {
-        Extensions = new [] { "WixBalExtension", "WixUtilExtension" },
+        Extensions = new [] { "WixBalExtension", "WixNetFxExtension", "WixUtilExtension" },
         OutputFile = BuildDirectory + File(InstallerBundle)
     });
 });
@@ -224,7 +243,8 @@ Task("Build-Symbols-Package")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.pdb"),
-        BuildDirectory + File("PicoTorrentCore.pdb")
+        BuildDirectory + File("Importer.pdb"),
+        BuildDirectory + File("UpdateChecker.pdb")
     };
 
     Zip(BuildDirectory, BuildDirectory + File(SymbolsPackage), files);
@@ -277,9 +297,8 @@ Task("Sign-Installer-Bundle")
 {
     var bundle = BuildDirectory + File(InstallerBundle);
     var insignia = Directory("tools")
-                   + Directory("WiX.Toolset")
+                   + Directory("WiX")
                    + Directory("tools")
-                   + Directory("wix")
                    + File("insignia.exe");
 
     // Detach Burn engine
@@ -296,11 +315,13 @@ Task("Sign-Installer-Bundle")
 //////////////////////////////////////////////////////////////////////
 
 Task("Default")
+    .IsDependentOn("Build")
     .IsDependentOn("Build-Installer")
     .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
-    .IsDependentOn("Build-Symbols-Package");
+    .IsDependentOn("Build-Symbols-Package")
+    ;
 
 Task("Publish")
     .IsDependentOn("Build")

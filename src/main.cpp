@@ -1,34 +1,67 @@
-// Enable visual styles
-#pragma comment(linker, "\"/manifestdependency:type='win32' \
-                        name='Microsoft.Windows.Common-Controls' \
-                        version='6.0.0.0' \
-                        processorArchitecture='*' \
-                        publicKeyToken='6595b64144ccf1df' \
-                        language='*'\"")
+#include "stdafx.h"
 
-#include <windows.h>
+#include "CMainFrame.hpp"
+#include "CommandLine.hpp"
+#include "UnhandledExceptionHandler.hpp"
 
-#include <picotorrent/client/application.hpp>
+#include <signal.h>
+
+CAppModule _Module;
+
+int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
+{
+    CMessageLoop theLoop;
+    _Module.AddMessageLoop(&theLoop);
+
+    CMainFrame wndMain;
+
+    if (!wndMain.IsSingleInstance())
+    {
+        wndMain.ActivateOtherInstance(lpstrCmdLine);
+        return 0;
+    }
+
+    if (wndMain.CreateEx() == NULL)
+    {
+        ATLTRACE(_T("Main window creation failed!\n"));
+        return 0;
+    }
+
+    wndMain.Show(nCmdShow);
+
+    // Handle command line
+    CommandLine cmd = CommandLine::Parse(lpstrCmdLine);
+    wndMain.HandleCommandLine(cmd);
+
+    int nRet = theLoop.Run();
+
+    _Module.RemoveMessageLoop();
+    return nRet;
+}
 
 int WINAPI wWinMain(
     _In_ HINSTANCE     hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPTSTR        lpCmdLine,
+    _In_ LPTSTR        lpstrCmdLine,
     _In_ int           nCmdShow)
 {
-    picotorrent::client::application::wait_for_restart(lpCmdLine);
-    picotorrent::client::application app;
+    UnhandledExceptionHandler::Setup();
 
-    if (!app.is_single_instance())
-    {
-        app.activate_other_instance(lpCmdLine);
-        return -33;
-    }
+    ::CoInitialize(NULL);
+    ::InitCommonControls();
 
-    if (!app.init())
-    {
-        return 0;
-    }
+    INITCOMMONCONTROLSEX icc = { sizeof(INITCOMMONCONTROLSEX) };
+    icc.dwICC = ICC_BAR_CLASSES;
+    ::InitCommonControlsEx(&icc);
 
-    return app.run(lpCmdLine);
+    ::SetProcessDPIAware();
+
+    _Module.Init(NULL, hInstance);
+
+    int nRet = Run(lpstrCmdLine, nCmdShow);
+
+    _Module.Term();
+    ::CoUninitialize();
+
+    return nRet;
 }
