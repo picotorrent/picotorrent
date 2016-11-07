@@ -46,6 +46,11 @@ int Configuration::SessionSection::GetActiveTrackerLimit()
     return Get("session", "active_tracker_limit", 1600);
 }
 
+bool Configuration::SessionSection::GetEnableAnonymousMode()
+{
+    return Get("session", "anonymous_mode", false);
+}
+
 bool Configuration::SessionSection::GetEnableDht()
 {
     return Get("session", "enable_dht", true);

@@ -71,6 +71,7 @@ public:
         int GetActiveSeeds();
         int GetActiveTrackerLimit();
 
+        bool GetEnableAnonymousMode();
         bool GetEnableDht();
         void SetEnableDht(bool value);
         bool GetEnableLsd();
