@@ -143,7 +143,7 @@ set(PICO_LIBS
 )
 
 include_directories(
-    c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/atlmfc/include
+    "c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/atlmfc/include"
     include/
     tools/PicoTorrent.Libs/include
 )

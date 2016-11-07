@@ -12,8 +12,8 @@ var platform      = Argument("platform", "x64");
 var OutputDirectory    = Directory("./build-" + platform);
 var BuildDirectory     = OutputDirectory + Directory(configuration);
 var PublishDirectory   = BuildDirectory + Directory("publish");
+var PackagesDirectory  = BuildDirectory + Directory("packages");
 var ResourceDirectory  = Directory("./res");
-var PluginsDirectory   = BuildDirectory + Directory("plugins");
 
 var LibraryDirectory   = Directory("./tools")
                        + Directory("PicoTorrent.Libs")
@@ -23,38 +23,29 @@ var LibraryDirectory   = Directory("./tools")
 
 var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
+
 var Version            = System.IO.File.ReadAllText("VERSION").Trim();
 var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version, platform);
 var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version, platform);
 var PortablePackage    = string.Format("PicoTorrent-{0}-{1}.zip", Version, platform);
 var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Version, platform);
+var AppXPackage        = string.Format("PicoTorrent-{0}-{1}.appx", Version, platform);
 
 bool IsDebug() { return configuration.Equals("Debug"); }
 
 // Boost naming ickiness
 var BoostSystem = IsDebug() ? "boost_system-vc140-mt-gd-1_61.dll" : "boost_system-vc140-mt-1_61.dll";
 
-public void SignTool(FilePath file)
+void SignFile(FilePath file, string description = "")
 {
-    var signTool = "C:\\Program Files (x86)\\Windows Kits\\8.1\\bin\\x64\\signtool.exe";
-    var argsBuilder = new ProcessArgumentBuilder();
-
-    argsBuilder.Append("sign");
-    argsBuilder.Append("/d {0}", "PicoTorrent");
-    argsBuilder.Append("/f {0}", SigningCertificate);
-    argsBuilder.AppendSecret("/p {0}", SigningPassword);
-    argsBuilder.Append("/t http://timestamp.digicert.com");
-    argsBuilder.AppendQuoted("{0}", file);
-
-    int exitCode = StartProcess(signTool, new ProcessSettings
-    {
-        Arguments = argsBuilder
-    });
-
-    if(exitCode != 0)
-    {
-        throw new CakeException("SignTool exited with error: " + exitCode);
-    }
+    Sign(file,
+        new SignToolSignSettings
+        {
+            Description = description,
+            CertPath = SigningCertificate,
+            Password = SigningPassword,
+            TimeStampUri = new Uri("http://timestamp.digicert.com")
+        });
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -106,26 +97,6 @@ Task("Build")
     MSBuild(OutputDirectory + File("PicoTorrent.sln"), settings);
 });
 
-Task("Build-NetFx-Plugins")
-    .IsDependentOn("Build")
-    .Does(() =>
-{
-    var settings = new MSBuildSettings()
-                        .SetConfiguration(configuration)
-                        .WithProperty("Platform", platform);
-
-    if(platform == "x86")
-    {
-        settings.SetPlatformTarget(PlatformTarget.x86);
-    }
-    else
-    {
-        settings.SetPlatformTarget(PlatformTarget.x64);
-    }
-
-    MSBuild("./plugins/netfx/src/netfx.sln", settings);
-});
-
 Task("Setup-Library-Files")
     .Does(() =>
 {
@@ -146,6 +117,7 @@ Task("Setup-Publish-Directory")
     .IsDependentOn("Setup-Library-Files")
     .Does(() =>
 {
+
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.exe"),
@@ -177,7 +149,7 @@ Task("Build-Installer")
         arch = Architecture.X86;
     }
 
-    WiXCandle("./installer/PicoTorrent.wxs", new CandleSettings
+    WiXCandle("./packaging/WiX/PicoTorrent.wxs", new CandleSettings
     {
         Architecture = arch,
         Defines = new Dictionary<string, string>
@@ -208,7 +180,7 @@ Task("Build-Installer-Bundle")
         arch = Architecture.X86;
     }
 
-    WiXCandle("./installer/PicoTorrentBundle.wxs", new CandleSettings
+    WiXCandle("./packaging/WiX/PicoTorrentBundle.wxs", new CandleSettings
     {
         Architecture = arch,
         Extensions = new [] { "WixBalExtension", "WixNetFxExtension", "WixUtilExtension" },
@@ -224,7 +196,7 @@ Task("Build-Installer-Bundle")
     WiXLight(BuildDirectory + File("PicoTorrentBundle.wixobj"), new LightSettings
     {
         Extensions = new [] { "WixBalExtension", "WixNetFxExtension", "WixUtilExtension" },
-        OutputFile = BuildDirectory + File(InstallerBundle)
+        OutputFile = PackagesDirectory + File(InstallerBundle)
     });
 });
 
@@ -233,7 +205,7 @@ Task("Build-Portable-Package")
     .IsDependentOn("Setup-Publish-Directory")
     .Does(() =>
 {
-    Zip(PublishDirectory, BuildDirectory + File(PortablePackage));
+    Zip(PublishDirectory, PackagesDirectory + File(PortablePackage));
 });
 
 Task("Build-Symbols-Package")
@@ -247,21 +219,21 @@ Task("Build-Symbols-Package")
         BuildDirectory + File("UpdateChecker.pdb")
     };
 
-    Zip(BuildDirectory, BuildDirectory + File(SymbolsPackage), files);
+    Zip(BuildDirectory, PackagesDirectory + File(SymbolsPackage), files);
 });
 
 Task("Build-Chocolatey-Package")
     .IsDependentOn("Build-Installer")
     .Does(() =>
 {
-    TransformTextFile("./chocolatey/tools/chocolateyinstall.ps1.template", "%{", "}")
+    TransformTextFile("./packaging/Chocolatey/tools/chocolateyinstall.ps1.template", "%{", "}")
         .WithToken("Installer", InstallerBundle)
         .WithToken("Version", Version)
-        .Save("./chocolatey/tools/chocolateyinstall.ps1");
+        .Save("./packaging/Chocolatey/tools/chocolateyinstall.ps1");
 
     var currentDirectory = MakeAbsolute(Directory("."));
-    var cd = MakeAbsolute(BuildDirectory);
-    var nuspec = MakeAbsolute(File("./chocolatey/picotorrent.nuspec"));
+    var cd = MakeAbsolute(PackagesDirectory);
+    var nuspec = MakeAbsolute(File("./packaging/Chocolatey/picotorrent.nuspec"));
 
     System.IO.Directory.SetCurrentDirectory(cd.ToString());
 
@@ -273,41 +245,105 @@ Task("Build-Chocolatey-Package")
     System.IO.Directory.SetCurrentDirectory(currentDirectory.ToString());
 });
 
-Task("Sign")
+Task("Build-AppX-Package")
     .IsDependentOn("Build")
-    .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
+    .IsDependentOn("Setup-Publish-Directory")
     .Does(() =>
 {
-    SignTool(BuildDirectory + File("PicoTorrent.exe"));
+    var VCRedist = Directory("C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\redist");
+    var VCDir = VCRedist + Directory(platform) + Directory("Microsoft.VC140.CRT");
+
+    var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs");
+    var CRTDir = CRTRedist + Directory(platform);
+
+    TransformTextFile("./packaging/UWP/PicoTorrent.mapping.template", "%{", "}")
+        .WithToken("VCDir", VCDir)
+        .WithToken("CRTDir", CRTDir)
+        .WithToken("PublishDirectory", MakeAbsolute(PublishDirectory))
+        .WithToken("ResourceDirectory", MakeAbsolute(ResourceDirectory))
+        .WithToken("PackagingDirectory", MakeAbsolute(Directory("./packaging/UWP")))
+        .Save("./packaging/UWP/PicoTorrent.mapping");
+
+    TransformTextFile("./packaging/UWP/PicoTorrentManifest.xml.template", "%{", "}")
+        .WithToken("Platform", platform)
+        .WithToken("Version", Version + ".0")
+        .Save("./packaging/UWP/PicoTorrentManifest.xml");
+
+    var argsBuilder = new ProcessArgumentBuilder();
+
+    argsBuilder.Append("pack");
+    argsBuilder.Append("/f {0}", MakeAbsolute(File("./packaging/UWP/PicoTorrent.mapping")));
+    argsBuilder.Append("/p {0}", MakeAbsolute(PackagesDirectory + File(AppXPackage)));
+
+    var makeAppXTool = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\x86\\makeappx.exe";
+    int exitCode = StartProcess(makeAppXTool, new ProcessSettings
+    {
+        Arguments = argsBuilder
+    });
+
+    if(exitCode != 0)
+    {
+        throw new CakeException("makeappx.exe exited with error: " + exitCode);
+    }
+});
+
+Task("Sign")
+    .IsDependentOn("Build")
+    .WithCriteria(() => SigningCertificate != null)
+    .Does(() =>
+{
+    SignFile(BuildDirectory + File("PicoTorrent.exe"));
+});
+
+Task("Sign-AppX-Package")
+    .IsDependentOn("Build-AppX-Package")
+    .Does(() =>
+{
+    var signTool = "C:/Program Files (x86)/Windows Kits/10/bin/x86/signtool.exe";
+    var args = new ProcessArgumentBuilder();
+    args.Append("sign");
+    args.Append("/fd SHA256");
+    args.Append("/a");
+    args.AppendSecret("/f {0}", SigningCertificate);
+    args.AppendSecret("/p {0}", SigningPassword);
+    args.Append("/tr http://timestamp.digicert.com");
+    args.Append(PackagesDirectory + File(AppXPackage));
+
+    int exitCode = StartProcess(signTool, new ProcessSettings { Arguments = args });
+
+    if (exitCode != 0)
+    {
+        throw new CakeException("Failed to run signtool.exe, exit code " + exitCode);
+    }
 });
 
 Task("Sign-Installer")
     .IsDependentOn("Build-Installer")
-    .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
+    .WithCriteria(() => SigningCertificate != null)
     .Does(() =>
 {
-    var file = BuildDirectory + File(Installer);
-    SignTool(file);
+    SignFile(BuildDirectory + File(Installer), "PicoTorrent");
 });
 
 Task("Sign-Installer-Bundle")
     .IsDependentOn("Build-Installer-Bundle")
-    .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
+    .WithCriteria(() => SigningCertificate != null)
     .Does(() =>
 {
-    var bundle = BuildDirectory + File(InstallerBundle);
+    var bundle = PackagesDirectory + File(InstallerBundle);
     var insignia = Directory("tools")
                    + Directory("WiX")
                    + Directory("tools")
                    + File("insignia.exe");
+    var burnEngine = Directory("build-" + platform) + File("BurnEngine.exe");
 
     // Detach Burn engine
-    StartProcess(insignia, "-ib \"" + bundle + "\" -o build/BurnEngine.exe");
-    SignTool("build/BurnEngine.exe");
-    StartProcess(insignia, "-ab build/BurnEngine.exe \"" + bundle + "\" -o \"" + bundle + "\"");
+    StartProcess(insignia, "-ib \"" + bundle + "\" -o " + burnEngine);
+    SignFile(burnEngine);
+    StartProcess(insignia, "-ab " + burnEngine + " \"" + bundle + "\" -o \"" + bundle + "\"");
 
     // Sign the bundle
-    SignTool(bundle);
+    SignFile(bundle, "PicoTorrent");
 });
 
 //////////////////////////////////////////////////////////////////////
@@ -320,6 +356,7 @@ Task("Default")
     .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
+    .IsDependentOn("Build-AppX-Package")
     .IsDependentOn("Build-Symbols-Package")
     ;
 
@@ -332,6 +369,8 @@ Task("Publish")
     .IsDependentOn("Sign-Installer-Bundle")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
+    .IsDependentOn("Build-AppX-Package")
+    .IsDependentOn("Sign-AppX-Package")
     .IsDependentOn("Build-Symbols-Package");
 
 //////////////////////////////////////////////////////////////////////
