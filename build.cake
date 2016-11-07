@@ -152,6 +152,7 @@ Task("Setup-Publish-Directory")
         // Plugins
         BuildDirectory + File("Importer.dll"),
         BuildDirectory + File("UpdateChecker.dll"),
+        BuildDirectory + File("WebSocket.dll"),
         // 3rd party libraries
         LibraryDirectory + File(BoostSystem),
         LibraryDirectory + File("libeay32.dll"),
@@ -244,7 +245,8 @@ Task("Build-Symbols-Package")
     {
         BuildDirectory + File("PicoTorrent.pdb"),
         BuildDirectory + File("Importer.pdb"),
-        BuildDirectory + File("UpdateChecker.pdb")
+        BuildDirectory + File("UpdateChecker.pdb"),
+        BuildDirectory + File("WebSocket.pdb")
     };
 
     Zip(BuildDirectory, BuildDirectory + File(SymbolsPackage), files);

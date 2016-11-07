@@ -5,10 +5,10 @@
 #include <libtorrent/session.hpp>
 #include <libtorrent/sha1_hash.hpp>
 #include <libtorrent/torrent_handle.hpp>
+#include <picotorrent/api.hpp>
 
 #include "../Commands/RemoveTorrentsCommand.hpp"
 #include "../Configuration.hpp"
-#include "../Models/Torrent.hpp"
 #include "../Translator.hpp"
 
 namespace lt = libtorrent;
@@ -25,7 +25,7 @@ RemoveTorrentsController::~RemoveTorrentsController()
 {
 }
 
-void RemoveTorrentsController::Execute(const std::vector<Models::Torrent>& torrents, bool removeData)
+void RemoveTorrentsController::Execute(const std::vector<Torrent>& torrents, bool removeData)
 {
     Configuration& cfg = Configuration::GetInstance();
 
@@ -77,7 +77,11 @@ void RemoveTorrentsController::Execute(const std::vector<Models::Torrent>& torre
 
     for (auto& t : torrents)
     {
-        const lt::torrent_handle& th = m_torrents.at(t.infoHash);
+		libtorrent::sha1_hash hash;
+		std::stringstream ss(t.infoHash);
+		ss >> hash;
+
+		const lt::torrent_handle& th = m_torrents.at(hash);
         m_session->remove_torrent(th, flags);
     }
 }

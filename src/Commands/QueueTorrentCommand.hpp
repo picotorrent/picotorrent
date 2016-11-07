@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Models/Torrent.hpp"
+#include <picotorrent/api.hpp>
 
 namespace Commands
 {
@@ -15,6 +15,6 @@ namespace Commands
         };
 
         Direction direction;
-        Models::Torrent torrent;
+        Torrent torrent;
     };
 }

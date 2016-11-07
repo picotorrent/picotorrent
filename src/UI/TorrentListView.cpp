@@ -6,6 +6,7 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/torrent_status.hpp>
+#include <picotorrent/api.hpp>
 
 #include <commctrl.h>
 #include <strsafe.h>
@@ -19,7 +20,6 @@
 #include "../Commands/ShowTorrentDetailsCommand.hpp"
 #include "../Configuration.hpp"
 #include "../Dialogs/OpenFileDialog.hpp"
-#include "../Models/Torrent.hpp"
 #include "../IO/Path.hpp"
 #include "../resources.h"
 #include "../Scaler.hpp"
@@ -38,7 +38,6 @@
 #define LV_COL_RATIO 11
 
 namespace lt = libtorrent;
-using Models::Torrent;
 using UI::TorrentListView;
 
 typedef std::function<bool(const Torrent&, const Torrent&)> sort_func_t;
@@ -106,9 +105,16 @@ std::vector<Torrent> TorrentListView::GetSelectedTorrents()
     return selection;
 }
 
-void TorrentListView::Remove(const Torrent& model)
+void TorrentListView::Remove(const std::string& infoHash)
 {
-    auto f = std::find(m_models.begin(), m_models.end(), model);
+	auto f = std::find_if(
+		m_models.begin(),
+		m_models.end(),
+		[&infoHash](Torrent& t)
+	{
+		return t.infoHash == infoHash;
+	});
+
     if (f == m_models.end()) { return; }
 
     m_models.erase(f);
@@ -181,7 +187,7 @@ std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
     switch (columnId)
     {
     case LV_COL_NAME:
-        return m_models.at(itemIndex).name;
+        return TWS(m_models.at(itemIndex).name);
     case LV_COL_QUEUE_POSITION:
     {
         int qp = m_models.at(itemIndex).queuePosition;
@@ -454,8 +460,8 @@ void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
     }
     case TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER:
     {
-        std::wstring savePath = m_models.at(sel[0]).savePath;
-        std::wstring path = IO::Path::Combine(savePath, m_models.at(sel[0]).name);
+        std::wstring savePath = TWS(m_models.at(sel[0]).savePath);
+        std::wstring path = IO::Path::Combine(savePath, TWS(m_models.at(sel[0]).name));
 
         LPITEMIDLIST il = ILCreateFromPath(path.c_str());
         SHOpenFolderAndSelectItems(il, 0, 0, 0);

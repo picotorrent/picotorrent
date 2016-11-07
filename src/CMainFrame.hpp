@@ -10,14 +10,17 @@
 
 #include <libtorrent/sha1_hash.hpp>
 
-class IPicoTorrent;
-
 namespace libtorrent
 {
     class session;
     struct stats_metric;
     struct torrent_handle;
     struct torrent_status;
+}
+
+namespace API
+{
+    class PicoTorrent;
 }
 
 namespace UI
@@ -121,8 +124,7 @@ private:
     HANDLE m_mutex;
     bool m_singleInstance;
 
-    std::shared_ptr<IPicoTorrent> m_api;
-//     std::map<int, IMenuItem*> m_extensionMenuItems;
+    std::shared_ptr<API::PicoTorrent> m_api;
     std::thread::id m_threadId;
 
     std::vector<HWND> m_listeners;

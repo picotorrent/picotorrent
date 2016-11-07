@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace Models { struct Torrent; }
+struct Torrent;
 
 namespace UI
 {
@@ -16,10 +16,10 @@ namespace UI
         TorrentListView(HWND hWndList);
         ~TorrentListView();
 
-        void Add(const Models::Torrent& model);
-        std::vector<Models::Torrent> GetSelectedTorrents();
-        void Remove(const Models::Torrent& model);
-        void Update(const Models::Torrent& model);
+        void Add(const Torrent& model);
+        std::vector<Torrent> GetSelectedTorrents();
+        void Remove(const std::string& infoHash);
+        void Update(const Torrent& model);
 
     protected:
         int GetItemIconIndex(int itemIndex);
@@ -31,6 +31,6 @@ namespace UI
     private:
         HIMAGELIST m_icons;
         std::map<int, int> m_icon_map;
-        std::vector<Models::Torrent> m_models;
+        std::vector<Torrent> m_models;
     };
 }

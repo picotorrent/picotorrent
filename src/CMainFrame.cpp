@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <strsafe.h>
 
+#include <libtorrent/hex.hpp>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/magnet_uri.hpp>
@@ -39,7 +40,7 @@
 #include "IO/Directory.hpp"
 #include "IO/File.hpp"
 #include "IO/Path.hpp"
-#include "Models/Torrent.hpp"
+#include "Mapping/TorrentMapper.hpp"
 #include "Scaler.hpp"
 #include "SleepManager.hpp"
 #include "StringUtils.hpp"
@@ -224,7 +225,11 @@ LRESULT CMainFrame::OnMoveTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     for (auto&t : mv->torrents)
     {
-        const lt::torrent_handle& th = m_torrents.at(t.infoHash);
+        libtorrent::sha1_hash hash;
+        std::stringstream ss(t.infoHash);
+        ss >> hash;
+
+        const lt::torrent_handle& th = m_torrents.at(hash);
         th.move_storage(ToString(paths[0]));
     }
 
@@ -237,7 +242,11 @@ LRESULT CMainFrame::OnPauseTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     for (auto& t : ptc->torrents)
     {
-        const lt::torrent_handle& th = m_torrents.at(t.infoHash);
+		libtorrent::sha1_hash hash;
+        std::stringstream ss(t.infoHash);
+        ss >> hash;
+
+        const lt::torrent_handle& th = m_torrents.at(hash);
 
         th.auto_managed(false);
         th.pause();
@@ -249,7 +258,12 @@ LRESULT CMainFrame::OnPauseTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 LRESULT CMainFrame::OnQueueTorrent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     auto qtc = reinterpret_cast<Commands::QueueTorrentCommand*>(lParam);
-    const lt::torrent_handle& th = m_torrents.at(qtc->torrent.infoHash);
+
+    libtorrent::sha1_hash hash;
+    std::stringstream ss(qtc->torrent.infoHash);
+    ss >> hash;
+
+    const lt::torrent_handle& th = m_torrents.at(hash);
 
     switch (qtc->direction)
     {
@@ -282,7 +296,7 @@ LRESULT CMainFrame::OnRemoveTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void CMainFrame::OnRemoveTorrentsAccelerator(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    std::vector<Models::Torrent> selection = m_torrentList->GetSelectedTorrents();
+    std::vector<Torrent> selection = m_torrentList->GetSelectedTorrents();
     bool removeData = nID == IDA_REMOVE_TORRENTS_DATA;
 
     Controllers::RemoveTorrentsController rem(m_hWnd, m_session, m_torrents);
@@ -295,7 +309,11 @@ LRESULT CMainFrame::OnResumeTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     for (auto& t : res->torrents)
     {
-        const lt::torrent_handle& th = m_torrents.at(t.infoHash);
+		libtorrent::sha1_hash hash;
+        std::stringstream ss(t.infoHash);
+        ss >> hash;
+
+        const lt::torrent_handle& th = m_torrents.at(hash);
         const lt::torrent_status& ts = th.status();
 
         if (ts.paused && ts.errc)
@@ -314,7 +332,12 @@ LRESULT CMainFrame::OnResumeTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 LRESULT CMainFrame::OnShowTorrentDetails(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     auto show = reinterpret_cast<Commands::ShowTorrentDetailsCommand*>(lParam);
-    const lt::torrent_handle& th = m_torrents.at(show->torrent.infoHash);
+
+	libtorrent::sha1_hash hash;
+	std::stringstream ss(show->torrent.infoHash);
+	ss >> hash;
+
+    const lt::torrent_handle& th = m_torrents.at(hash);
 
     Controllers::TorrentDetailsController controller(m_hWnd, th);
     controller.Execute();
@@ -585,11 +608,13 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             m_torrents.insert({ ata->handle.info_hash(), ata->handle });
 
             // Add a model to our torrent list
-            Models::Torrent model = Models::Torrent::Map(ata->handle.status());
+            Torrent model = Mapping::TorrentMapper::Map(ata->handle.status());
             m_torrentList->Add(model);
 
             // Update status bar
             m_statusBar->SetTorrentCount((int)m_torrents.size(), 0);
+
+            m_api->EmitTorrentAdded(model);
 
             break;
         }
@@ -668,6 +693,8 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             int currently_downloading = 0;
             bool has_error = false;
 
+			std::vector<Torrent> updatedTorrents;
+
             for (lt::torrent_status& ts : sua->status)
             {
                 if (std::find(m_find_metadata.begin(), m_find_metadata.end(), ts.info_hash) != m_find_metadata.end())
@@ -675,23 +702,24 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     continue;
                 }
 
-                Models::Torrent model = Models::Torrent::Map(ts);
+                Torrent model = Mapping::TorrentMapper::Map(ts);
                 m_torrentList->Update(model);
+                updatedTorrents.push_back(model);
 
                 dl_rate += model.downloadRate;
                 ul_rate += model.uploadRate;
 
-                if (model.state == Models::Torrent::State::Error)
+                if (model.state == Torrent::State::Error)
                 {
                     has_error = true;
                 }
 
                 // These are the states we consider 'active' or 'currently downloading'
                 // which the taskbar progress value is updated against.
-                if (model.state == Models::Torrent::State::Downloading
-                    || model.state == Models::Torrent::State::DownloadingChecking
-                    || model.state == Models::Torrent::State::DownloadingForced
-                    || model.state == Models::Torrent::State::DownloadingStalled)
+                if (model.state == Torrent::State::Downloading
+                    || model.state == Torrent::State::DownloadingChecking
+                    || model.state == Torrent::State::DownloadingForced
+                    || model.state == Torrent::State::DownloadingStalled)
                 {
                     currently_downloading += 1;
                     dl_progress += ts.progress;
@@ -732,6 +760,9 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             std::pair<int, int> indices = m_torrentList->GetVisibleIndices();
             m_torrentList->RedrawItems(indices.first, indices.second);
 
+            // Emit to API
+            m_api->EmitTorrentUpdated(updatedTorrents);
+
             break;
         }
         case lt::torrent_finished_alert::alert_type:
@@ -760,6 +791,9 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 tfa->handle.move_storage(targetPath);
             }
 
+            // Emit API event
+            m_api->EmitTorrentFinished(Mapping::TorrentMapper::Map(ts));
+
             break;
         }
         case lt::torrent_removed_alert::alert_type:
@@ -773,14 +807,13 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 break;
             }
 
-            Models::Torrent t = Models::Torrent::Map(tra->info_hash);
-            m_torrentList->Remove(t);
+			std::stringstream hex;
+			hex << tra->info_hash;
+
+            m_torrentList->Remove(hex.str());
             m_torrents.erase(tra->info_hash);
 
             // Remove the torrent and dat file from the hard drive
-            std::stringstream hex;
-            hex << tra->info_hash;
-
             std::wstring hash = TWS(hex.str());
             std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
             std::wstring torrent_file = IO::Path::Combine(torrents_dir, hash + L".torrent");
@@ -789,6 +822,7 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (IO::File::Exists(torrent_file)) { IO::File::Delete(torrent_file); }
             if (IO::File::Exists(torrent_dat)) { IO::File::Delete(torrent_dat); }
 
+            m_api->EmitTorrentRemoved(tra->info_hash);
             m_statusBar->SetTorrentCount((int)m_torrents.size(), 0);
 
             break;

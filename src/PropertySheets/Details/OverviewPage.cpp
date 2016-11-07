@@ -5,11 +5,12 @@
 #include <libtorrent/sha1_hash.hpp>
 #include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/torrent_status.hpp>
+#include <picotorrent/api.hpp>
 
 #include <strsafe.h>
 
 #include "../../Configuration.hpp"
-#include "../../Models/Torrent.hpp"
+#include "../../Mapping/TorrentMapper.hpp"
 #include "../../resources.h"
 #include "../../Translator.hpp"
 
@@ -70,7 +71,7 @@ LRESULT OverviewPage::OnTorrentUpdated(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void OverviewPage::Update()
 {
-    Models::Torrent t = Models::Torrent::Map(m_torrent.status());
+    Torrent t = Mapping::TorrentMapper::Map(m_torrent.status());
 
     // Share ratio
     std::wstringstream ss;

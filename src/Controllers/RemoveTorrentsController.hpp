@@ -14,10 +14,7 @@ namespace libtorrent
     struct torrent_handle;
 }
 
-namespace Models
-{
-    struct Torrent;
-}
+struct Torrent;
 
 namespace Controllers
 {
@@ -27,7 +24,7 @@ namespace Controllers
         RemoveTorrentsController(HWND hWndParent, const std::shared_ptr<libtorrent::session>& session, const std::map<libtorrent::sha1_hash, libtorrent::torrent_handle>& torrents);
         ~RemoveTorrentsController();
         
-        void Execute(const std::vector<Models::Torrent>& torrents, bool removeData = false);
+        void Execute(const std::vector<Torrent>& torrents, bool removeData = false);
 
     private:
         HWND m_hWndParent;

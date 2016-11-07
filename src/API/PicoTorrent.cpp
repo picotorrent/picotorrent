@@ -1,12 +1,16 @@
 #include "PicoTorrent.hpp"
 
 #include <libtorrent/session.hpp>
+#include <libtorrent/torrent_info.hpp>
+#include <libtorrent/torrent_handle.hpp>
+#include <libtorrent/torrent_status.hpp>
 
 #include "../Commands/InvokeCommand.hpp"
 #include "../Configuration.hpp"
 #include "IO/FileSystem.hpp"
 #include "LoggerProxy.hpp"
 #include "../resources.h"
+#include "../StringUtils.hpp"
 #include "TranslatorProxy.hpp"
 #include "../VersionInformation.hpp"
 
@@ -24,6 +28,42 @@ PicoTorrent::PicoTorrent(HWND hWndOwner, std::shared_ptr<libtorrent::session> se
         &PicoTorrent::SubclassProc,
         1338,
         reinterpret_cast<DWORD_PTR>(this));
+}
+
+void PicoTorrent::EmitTorrentAdded(Torrent const& torrent)
+{
+    for (auto& sink : m_torrentSinks)
+    {
+        sink->OnTorrentAdded(torrent);
+    }
+}
+
+void PicoTorrent::EmitTorrentFinished(Torrent const& torrent)
+{
+    for (auto& sink : m_torrentSinks)
+    {
+        sink->OnTorrentFinished(torrent);
+    }
+}
+
+void PicoTorrent::EmitTorrentRemoved(libtorrent::sha1_hash const& infoHash)
+{
+    std::stringstream ss;
+    ss << infoHash;
+    std::string hash = ss.str();
+
+    for (auto& sink : m_torrentSinks)
+    {
+        sink->OnTorrentRemoved(hash);
+    }
+}
+
+void PicoTorrent::EmitTorrentUpdated(std::vector<Torrent> const& torrents)
+{
+	for (auto& sink : m_torrentSinks)
+	{
+		sink->OnTorrentUpdated(torrents);
+	}
 }
 
 void PicoTorrent::AddMenuItem(MenuItem const& item)
@@ -65,6 +105,11 @@ std::shared_ptr<libtorrent::session> PicoTorrent::GetSession()
 std::shared_ptr<ITranslator> PicoTorrent::GetTranslator()
 {
     return std::make_shared<TranslatorProxy>();
+}
+
+void PicoTorrent::RegisterEventSink(std::shared_ptr<ITorrentEventSink> sink)
+{
+    m_torrentSinks.push_back(sink);
 }
 
 std::unique_ptr<TaskDialogResult> PicoTorrent::ShowTaskDialog(TASKDIALOGCONFIG* tdcfg)

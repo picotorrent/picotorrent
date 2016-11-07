@@ -206,6 +206,10 @@
           <Component Id="C_UpdateChecker">
             <File Name="UpdateChecker.dll" Source="$(var.PublishDirectory)\UpdateChecker.dll" />
           </Component>
+
+          <Component Id="C_WebSocket">
+            <File Name="WebSocket.dll" Source="$(var.PublishDirectory)\WebSocket.dll" />
+          </Component>
         </ComponentGroup>
 
         <ComponentGroup Id="CG_Languages" Directory="LANGDIR">

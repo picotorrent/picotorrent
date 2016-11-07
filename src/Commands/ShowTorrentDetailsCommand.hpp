@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../Models/Torrent.hpp"
+#include <picotorrent/api.hpp>
 
 namespace Commands
 {
     struct ShowTorrentDetailsCommand
     {
-        Models::Torrent torrent;
+        Torrent torrent;
     };
 }
