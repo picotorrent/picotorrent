@@ -15,7 +15,7 @@ TorrentsUpdatedMessage::TorrentsUpdatedMessage(std::vector<Torrent> const& torre
 std::string TorrentsUpdatedMessage::Serialize()
 {
     pj::object obj;
-    obj["type"] = pj::value("torrents_updated");
+    obj["type"] = pj::value("torrent_updated");
 
     pj::array torrents;
 

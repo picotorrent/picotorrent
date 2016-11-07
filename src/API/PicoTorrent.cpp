@@ -38,6 +38,14 @@ void PicoTorrent::EmitTorrentAdded(Torrent const& torrent)
     }
 }
 
+void PicoTorrent::EmitTorrentFinished(Torrent const& torrent)
+{
+    for (auto& sink : m_torrentSinks)
+    {
+        sink->OnTorrentFinished(torrent);
+    }
+}
+
 void PicoTorrent::EmitTorrentRemoved(libtorrent::sha1_hash const& infoHash)
 {
     std::stringstream ss;

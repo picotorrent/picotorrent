@@ -19,9 +19,11 @@ typedef websocketpp_server::message_ptr message_ptr;
 class TorrentEventSink : public ITorrentEventSink
 {
 public:
-    TorrentEventSink();
+    TorrentEventSink(int listenPort);
+    virtual ~TorrentEventSink();
 
     void OnTorrentAdded(Torrent torrent);
+    void OnTorrentFinished(Torrent torrent);
     void OnTorrentRemoved(std::string const& infoHash);
 	void OnTorrentUpdated(std::vector<Torrent> torrents);
 
@@ -37,4 +39,5 @@ private:
 	std::set<websocketpp::connection_hdl, std::owner_less<websocketpp::connection_hdl>> m_connections;
     std::shared_ptr<websocketpp_server> m_wss;
     std::thread m_worker;
+    int m_listenPort;
 };

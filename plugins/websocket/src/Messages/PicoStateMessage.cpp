@@ -17,6 +17,9 @@ std::string PicoStateMessage::Serialize()
     pj::object obj;
     obj["type"] = pj::value("pico_state");
 
+    pj::object vi;
+    vi["api_version"] = pj::value(static_cast<int64_t>(1));
+
     pj::array torrents;
 
     for (auto &torrent : m_torrents)
@@ -26,6 +29,7 @@ std::string PicoStateMessage::Serialize()
     }
 
     obj["torrents"] = pj::value(torrents);
+    obj["version_info"] = pj::value(vi);
 
     return pj::value(obj).serialize();
 }

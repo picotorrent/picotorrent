@@ -791,6 +791,9 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 tfa->handle.move_storage(targetPath);
             }
 
+            // Emit API event
+            m_api->EmitTorrentFinished(Mapping::TorrentMapper::Map(ts));
+
             break;
         }
         case lt::torrent_removed_alert::alert_type:

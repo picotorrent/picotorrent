@@ -207,9 +207,11 @@ struct Torrent
 
 struct ITorrentEventSink
 {
+    virtual ~ITorrentEventSink() {};
+
     virtual void OnTorrentAdded(Torrent torrent) {};
     virtual void OnTorrentError(std::shared_ptr<Torrent> torrent) {};
-    virtual void OnTorrentFinished(std::shared_ptr<Torrent> torrent) {};
+    virtual void OnTorrentFinished(Torrent torrent) {};
     virtual void OnTorrentMoved(std::shared_ptr<Torrent> torrent) {};
     virtual void OnTorrentPaused(std::shared_ptr<Torrent> torrent) {};
     virtual void OnTorrentResumed(std::shared_ptr<Torrent> torrent) {};

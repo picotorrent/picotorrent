@@ -15,6 +15,7 @@ namespace API
         PicoTorrent(HWND hWndOwner, std::shared_ptr<libtorrent::session> session);
 
         void EmitTorrentAdded(Torrent const& torrent);
+        void EmitTorrentFinished(Torrent const& torrent);
         void EmitTorrentRemoved(libtorrent::sha1_hash const& infoHash);
 		void EmitTorrentUpdated(std::vector<Torrent> const& torrents);
 
