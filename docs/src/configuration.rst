@@ -52,6 +52,9 @@ directly).
         // The max number of active seeds.
         "active_seeds": 5,
 
+        // Set to `true` to enable anonymous mode
+        "anonymous_mode": false,
+
         // The max number of torrents to announce to their trackers.
         "active_tracker_limit": 1600,
 
