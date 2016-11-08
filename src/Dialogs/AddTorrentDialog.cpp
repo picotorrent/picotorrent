@@ -41,7 +41,7 @@ void AddTorrentDialog::OnEndDialog(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 BOOL AddTorrentDialog::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 {
-    CenterWindow();
+    DlgResize_Init();
 
     // Hook up controls
     m_torrents = GetDlgItem(ID_TORRENT);
