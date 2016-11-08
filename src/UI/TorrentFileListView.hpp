@@ -23,9 +23,11 @@ namespace UI
         void Update(const Models::TorrentFile& model);
 
     protected:
+        bool GetItemIsChecked(int itemIndex);
         float GetItemProgress(int columnId, int itemIndex);
         std::wstring GetItemText(int columnId, int itemIndex);
         void ShowContextMenu(POINT p, const std::vector<int>& selectedIndices);
+        void ToggleItemState(const std::vector<int>& selectedIndices);
 
     private:
         bool m_showProgress;

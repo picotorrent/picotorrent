@@ -26,6 +26,9 @@ TorrentFileListView::TorrentFileListView(HWND hWnd, bool showProgress)
     }
 
     AddColumn(LV_COL_PRIO, TRW("priority"), SX(120), ColumnType::Text);
+
+    // Enable checkboxes
+    SetExtendedListViewStyle(GetExtendedListViewStyle() | LVS_EX_CHECKBOXES);
 }
 
 TorrentFileListView::~TorrentFileListView()
@@ -51,6 +54,16 @@ void TorrentFileListView::Update(const Models::TorrentFile& model)
         auto index = std::distance(m_models.begin(), f);
         m_models.at(index) = model;
     }
+}
+
+bool TorrentFileListView::GetItemIsChecked(int itemIndex)
+{
+    if (m_models.at(itemIndex).priority == PRIORITY_DO_NOT_DOWNLOAD)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 float TorrentFileListView::GetItemProgress(int columnId, int itemIndex)
@@ -92,8 +105,6 @@ void TorrentFileListView::ShowContextMenu(POINT p, const std::vector<int>& selec
     AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_MAX, TRW("maximum"));
     AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_HIGH, TRW("high"));
     AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_NORMAL, TRW("normal"));
-    AppendMenu(prioMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(prioMenu, MF_STRING, TORRENT_FILE_PRIO_SKIP, TRW("do_not_download"));
 
     HMENU menu = CreatePopupMenu();
     AppendMenu(menu, MF_POPUP, (UINT_PTR)prioMenu, TRW("priority"));
@@ -154,7 +165,25 @@ void TorrentFileListView::ShowContextMenu(POINT p, const std::vector<int>& selec
         break;
     }
 
-    SendCommand(PT_PRIORITIZEFILES, (LPARAM)&prio);
+    SendCommand(PT_PRIORITIZEFILES, reinterpret_cast<LPARAM>(&prio));
+
+    auto idxLo = std::min_element(selectedIndices.begin(), selectedIndices.end());
+    auto idxHi = std::max_element(selectedIndices.begin(), selectedIndices.end());
+
+    RedrawItems(*idxLo, *idxHi);
+}
+
+void TorrentFileListView::ToggleItemState(const std::vector<int>& selectedIndices)
+{
+    int lastItem = selectedIndices.at(selectedIndices.size() - 1);
+
+    Commands::PrioritizeFilesCommand prio;
+    prio.indices = selectedIndices;
+    prio.priority = m_models.at(lastItem).priority == PRIORITY_DO_NOT_DOWNLOAD
+        ? PRIORITY_NORMAL
+        : PRIORITY_DO_NOT_DOWNLOAD;
+
+    SendCommand(PT_PRIORITIZEFILES, reinterpret_cast<LPARAM>(&prio));
 
     auto idxLo = std::min_element(selectedIndices.begin(), selectedIndices.end());
     auto idxHi = std::max_element(selectedIndices.begin(), selectedIndices.end());
