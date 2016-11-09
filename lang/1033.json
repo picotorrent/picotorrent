@@ -180,6 +180,16 @@
         "require_encryption_incoming": "Require for incoming connections",
         "require_encryption_outgoing": "Require for outgoing connections" ,
         "move_completed_downloads": "Move completed downloads",
-        "only_move_from_default_save_path": "Only move from default save path"
+        "only_move_from_default_save_path": "Only move from default save path",
+        "include": "Include",
+        "exclude": "Exclude",
+        "audio_files": "Audio files",
+        "image_files": "Image files",
+        "text_files": "Text files",
+        "video_files": "Video files",
+        "regular_expression": "Regular expression",
+        "all": "All",
+        "file_types": "File types",
+        "custom": "Custom"
     }
 }
