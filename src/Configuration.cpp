@@ -75,6 +75,47 @@ void Configuration::SetDefaultSavePath(const std::string& path)
     Set("default_save_path", path);
 }
 
+std::vector<std::pair<std::string, std::string>> Configuration::GetFileFilters()
+{
+    if (m_cfg->find("file_filters") == m_cfg->end()
+        && !m_cfg->at("file_filters").is<pj::array>())
+    {
+        return std::vector<std::pair<std::string, std::string>>();
+    }
+
+    pj::array& arr = m_cfg->at("file_filters").get<pj::array>();
+    std::vector<std::pair<std::string, std::string>> filters;
+
+    for (pj::value& val : arr)
+    {
+        if (!val.is<pj::object>())
+        {
+            continue;
+        }
+
+        pj::object& obj = val.get<pj::object>();
+        
+        if (obj.find("name") == obj.end()
+            && obj.find("pattern") == obj.end())
+        {
+            continue;
+        }
+
+        if (!obj.at("name").is<std::string>()
+            || !obj.at("pattern").is<std::string>())
+        {
+            continue;
+        }
+
+        std::string name = obj.at("name").get<std::string>();
+        std::string pattern = obj.at("pattern").get<std::string>();
+
+        filters.push_back({ name, pattern });
+    }
+
+    return filters;
+}
+
 bool Configuration::GetMoveCompletedDownloads()
 {
     return Get("move_completed_downloads", false);

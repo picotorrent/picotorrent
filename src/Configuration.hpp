@@ -125,6 +125,8 @@ public:
     std::string GetDefaultSavePath();
     void SetDefaultSavePath(const std::string& path);
 
+    std::vector<std::pair<std::string, std::string>> GetFileFilters();
+
     bool GetMoveCompletedDownloads();
     void SetMoveCompletedDownloads(bool value);
 

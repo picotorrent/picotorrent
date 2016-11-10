@@ -383,6 +383,33 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 
             break;
         }
+        case NM_CLICK:
+        {
+            LPNMITEMACTIVATE lpItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(nmhdr);
+
+            UINT flags = 0;
+            int item = lv->HitTest(lpItemActivate->ptAction, &flags);
+
+            if ((flags & LVHT_ONITEM) != LVHT_ONITEM
+                && (flags & LVHT_ONITEMSTATEICON) == LVHT_ONITEMSTATEICON)
+            {
+                std::vector<int> selectedIndices{ lpItemActivate->iItem };
+
+                int pos = lv->GetNextItem(-1, LVNI_SELECTED);
+                while (pos != -1)
+                {
+                    if (pos != lpItemActivate->iItem)
+                    {
+                        selectedIndices.push_back(pos);
+                    }
+                    pos = lv->GetNextItem(pos, LVNI_SELECTED);
+                }
+
+                lv->ToggleItemState(selectedIndices);
+            }
+
+            break;
+        }
         case LVN_GETDISPINFO:
         {
             NMLVDISPINFO* inf = reinterpret_cast<NMLVDISPINFO*>(nmhdr);
@@ -410,8 +437,24 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
             if (inf->item.mask & LVIF_IMAGE)
             {
                 int idx = lv->GetItemIconIndex(inf->item.iItem);
-                if (idx < 0) { break; }
-                inf->item.iImage = idx;
+                if (idx >= 0)
+                {
+                    inf->item.iImage = idx;
+                }
+            }
+
+            if (inf->item.mask & LVIF_STATE)
+            {
+                inf->item.stateMask = LVIS_STATEIMAGEMASK;
+
+                if (lv->GetItemIsChecked(inf->item.iItem))
+                {
+                    inf->item.state = INDEXTOSTATEIMAGEMASK(2);
+                }
+                else
+                {
+                    inf->item.state = INDEXTOSTATEIMAGEMASK(1);
+                }
             }
 
             break;

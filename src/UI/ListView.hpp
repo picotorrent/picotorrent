@@ -40,9 +40,11 @@ protected:
 
     void SendCommand(UINT uMsg, LPARAM lParam);
 
+    virtual bool GetItemIsChecked(int itemIndex) { return false; }
     virtual int GetItemIconIndex(int itemIndex) { return -1; }
     virtual float GetItemProgress(int columnId, int itemIndex) { return -1; }
     virtual std::wstring GetItemText(int columnId, int itemIndex) = 0;
+    virtual void ToggleItemState(const std::vector<int>& selectedIndices) { }
     virtual void ShowContextMenu(POINT p, const std::vector<int>& selectedIndices) { };
     virtual bool Sort(int columnId, SortOrder order) { return false; }
 
