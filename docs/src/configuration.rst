@@ -9,6 +9,28 @@ PicoTorrent was installed or not the file will reside at different locations.
 * If not installed, the file will be placed next to :file:`PicoTorrent.exe`.
 
 
+File filters
+------------
+
+.. image:: static/file_filters.png
+
+File filters are used in the *Add torrent* dialog and allows a user to store
+custom include/exclude filters.
+
+Each filter contains a `name` and a `pattern`. The name is visible in the
+include/exclude context menus, and the pattern is a regular expression which
+is matched on each file name.
+
+.. code-block:: javascript
+   :linenos:
+
+   {
+     "file_filters": [
+       { "name": "Everything", "pattern": ".*" }
+     ]
+   }
+
+
 Advanced settings
 -----------------
 

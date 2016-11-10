@@ -190,6 +190,8 @@
         "regular_expression": "Regular expression",
         "all": "All",
         "file_types": "File types",
-        "custom": "Custom"
+        "custom": "Custom",
+        "regex": "Regular expression",
+        "apply": "Apply"
     }
 }

@@ -74,6 +74,7 @@ set(PICOTORRENT_SOURCES
     src/Dialogs/AddTorrentDialog
     src/Dialogs/AddTrackerDialog
     src/Dialogs/OpenFileDialog
+    src/Dialogs/TextInputDialog
 
     src/IO/Directory
     src/IO/File

@@ -4,10 +4,13 @@
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
 
+#include <regex>
 #include <strsafe.h>
 
 #include "../Commands/PrioritizeFilesCommand.hpp"
+#include "../Configuration.hpp"
 #include "../Dialogs/OpenFileDialog.hpp"
+#include "../Dialogs/TextInputDialog.hpp"
 #include "../Models/TorrentFile.hpp"
 #include "../resources.h"
 #include "../Scaler.hpp"
@@ -24,6 +27,7 @@
 #define FILTER_VIDEO_FILES 103
 #define FILTER_REGULAR_EXPRESSION 104
 #define FILTER_ALL 105
+#define FILTER_CUSTOM 1000
 
 const GUID DLG_SAVE = { 0x7D5FE367, 0xE148, 0x4A96,{ 0xB3, 0x26, 0x42, 0xEF, 0x23, 0x7A, 0x36, 0x61 } };
 
@@ -58,6 +62,9 @@ void AddTorrentDialog::OnShowFileFilter(UINT uNotifyCode, int nID, CWindow wndCt
 {
     bool include = nID == ID_INCLUDE_FILE_FILTER;
 
+    Configuration& cfg = Configuration::GetInstance();
+    std::vector<std::pair<std::string, std::string>> customFilters = cfg.GetFileFilters();
+
     CButton btn = GetDlgItem(nID);
     RECT rc;
     btn.GetWindowRect(&rc);
@@ -70,6 +77,18 @@ void AddTorrentDialog::OnShowFileFilter(UINT uNotifyCode, int nID, CWindow wndCt
 
     HMENU custom = CreateMenu();
     AppendMenu(custom, MF_STRING, FILTER_REGULAR_EXPRESSION, TRW("regular_expression"));
+
+    if (!customFilters.empty())
+    {
+        AppendMenu(custom, MF_SEPARATOR, -1, NULL);
+        int id = FILTER_CUSTOM;
+
+        for (auto& p : customFilters)
+        {
+            AppendMenu(custom, MF_STRING, id, TWS(p.first));
+            id += 1;
+        }
+    }
 
     HMENU filter = CreatePopupMenu();
     AppendMenu(filter, MF_STRING, FILTER_ALL, TRW("all"));
@@ -111,6 +130,36 @@ void AddTorrentDialog::OnShowFileFilter(UINT uNotifyCode, int nID, CWindow wndCt
     case FILTER_ALL:
     {
         func = [](Models::TorrentFile const& file) { return true; };
+        break;
+    }
+    case FILTER_REGULAR_EXPRESSION:
+    {
+        Dialogs::TextInputDialog dlg;
+        dlg.SetOkText(TRW("apply"));
+        dlg.SetTitle(TRW("regex"));
+
+        if (dlg.DoModal() == IDOK)
+        {
+            std::wstring regex = dlg.GetInput();
+            func = [regex](Models::TorrentFile const& file)
+            {
+                std::wregex re(regex, std::regex_constants::icase);
+                return std::regex_match(file.name, re);
+            };
+        }
+
+        break;
+    }
+    default:
+    {
+        if (res >= FILTER_CUSTOM)
+        {
+            func = [res, customFilters](Models::TorrentFile const& file)
+            {
+                std::regex re(customFilters.at(res - FILTER_CUSTOM).second);
+                return std::regex_match(TS(file.name), re);
+            };
+        }
         break;
     }
     }

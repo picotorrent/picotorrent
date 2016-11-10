@@ -59,6 +59,7 @@
 #define IDD_PREFERENCES_REMOTE 318
 #define IDD_PREFERENCES_PLUGINS 319
 #define IDD_PREFERENCES_PRIVACY 320
+#define IDD_TEXTINPUT 350
 
 #define IDD_DETAILS_OPTIONS 330
 #define IDD_REMOTE_QR 340
@@ -96,6 +97,9 @@
 
 // Add tracker dialog
 #define ID_ADD_TRACKER_URL 101
+
+// Text input dialog
+#define ID_TEXTINPUT_FIELD 101
 
 // General preferences dialog
 #define ID_UI_GROUP 101
