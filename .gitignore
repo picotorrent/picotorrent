@@ -1,6 +1,8 @@
 build-x64/
 build-x86/
 docs/build
+packaging/AppX/PicoTorrent.mapping
+packaging/AppX/PicoTorrentManifest.xml
 packaging/Chocolatey/tools/chocolateyinstall.ps1
 src/VersionInformation.cpp
 src/core/version_info.cpp
