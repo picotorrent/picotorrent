@@ -21,8 +21,10 @@ var LibraryDirectory   = Directory("./tools")
                        + Directory(platform)
                        + Directory(configuration);
 
-var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE").Trim();
-var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD").Trim();
+var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
+var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
+var SigningPublisher   = EnvironmentVariable("PICO_SIGNING_PUBLISHER");
+
 var Version            = System.IO.File.ReadAllText("VERSION").Trim();
 var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version, platform);
 var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version, platform);
@@ -158,6 +160,7 @@ Task("Build-AppX-Package")
 
     TransformTextFile("./packaging/AppX/PicoTorrentManifest.xml.template", "%{", "}")
         .WithToken("Platform", platform)
+        .WithToken("Publisher", SigningPublisher)
         .WithToken("Version", Version + ".0")
         .Save("./packaging/AppX/PicoTorrentManifest.xml");
 

@@ -7,7 +7,7 @@
 
     <Identity Name="PicoTorrent.App"
         ProcessorArchitecture="%{Platform}"
-        Publisher="CN=PicoTorrent TESTING"
+        Publisher="%{Publisher}"
         Version="%{Version}" />
 
     <Properties>
