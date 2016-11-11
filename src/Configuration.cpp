@@ -78,7 +78,7 @@ void Configuration::SetDefaultSavePath(const std::string& path)
 std::vector<std::pair<std::string, std::string>> Configuration::GetFileFilters()
 {
     if (m_cfg->find("file_filters") == m_cfg->end()
-        && !m_cfg->at("file_filters").is<pj::array>())
+        || !m_cfg->at("file_filters").is<pj::array>())
     {
         return std::vector<std::pair<std::string, std::string>>();
     }
