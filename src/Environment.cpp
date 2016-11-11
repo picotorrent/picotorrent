@@ -15,11 +15,11 @@ std::wstring Environment::GetApplicationPath()
 
 std::wstring Environment::GetDataPath()
 {
-    if (IsInstalled())
+    if (IsInstalled() || IsAppContainerProcess())
     {
         return IO::Path::Combine(
-			GetKnownFolderPath(FOLDERID_LocalAppData),
-			TEXT("PicoTorrent"));
+            GetKnownFolderPath(FOLDERID_LocalAppData),
+            TEXT("PicoTorrent"));
     }
 
     return GetApplicationPath();
@@ -38,6 +38,17 @@ std::wstring Environment::GetKnownFolderPath(const KNOWNFOLDERID& rfid)
     CoTaskMemFree(buf);
 
     return res;
+}
+
+bool Environment::IsAppContainerProcess()
+{
+    TCHAR path[MAX_PATH];
+    GetModuleFileName(NULL, path, ARRAYSIZE(path));
+    PathRemoveFileSpec(path);
+    PathCombine(path, path, TEXT("appx.dummy"));
+    DWORD dwAttr = GetFileAttributes(path);
+
+    return (dwAttr != INVALID_FILE_ATTRIBUTES && !(dwAttr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
 bool Environment::IsInstalled()
