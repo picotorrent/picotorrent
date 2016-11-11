@@ -1,7 +1,7 @@
 build-x64/
 build-x86/
-chocolatey/tools/chocolateyinstall.ps1
 docs/build
+packaging/Chocolatey/tools/chocolateyinstall.ps1
 src/VersionInformation.cpp
 src/core/version_info.cpp
 tools/Cake

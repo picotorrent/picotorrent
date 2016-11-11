@@ -11,9 +11,9 @@ var platform      = Argument("platform", "x64");
 // Parameters
 var OutputDirectory    = Directory("./build-" + platform);
 var BuildDirectory     = OutputDirectory + Directory(configuration);
+var PackagesDirectory  = BuildDirectory + Directory("packages");
 var PublishDirectory   = BuildDirectory + Directory("publish");
 var ResourceDirectory  = Directory("./res");
-var PluginsDirectory   = BuildDirectory + Directory("plugins");
 
 var LibraryDirectory   = Directory("./tools")
                        + Directory("PicoTorrent.Libs")
@@ -158,7 +158,7 @@ Task("Build-Installer")
         arch = Architecture.X86;
     }
 
-    WiXCandle("./installer/PicoTorrent.wxs", new CandleSettings
+    WiXCandle("./packaging/WiX/PicoTorrent.wxs", new CandleSettings
     {
         Architecture = arch,
         Defines = new Dictionary<string, string>
@@ -174,7 +174,7 @@ Task("Build-Installer")
 
     WiXLight(BuildDirectory + File("PicoTorrent.wixobj"), new LightSettings
     {
-        OutputFile = BuildDirectory + File(Installer)
+        OutputFile = PackagesDirectory + File(Installer)
     });
 });
 
@@ -189,13 +189,13 @@ Task("Build-Installer-Bundle")
         arch = Architecture.X86;
     }
 
-    WiXCandle("./installer/PicoTorrentBundle.wxs", new CandleSettings
+    WiXCandle("./packaging/WiX/PicoTorrentBundle.wxs", new CandleSettings
     {
         Architecture = arch,
         Extensions = new [] { "WixBalExtension", "WixNetFxExtension", "WixUtilExtension" },
         Defines = new Dictionary<string, string>
         {
-            { "PicoTorrentInstaller", BuildDirectory + File(Installer) },
+            { "PicoTorrentInstaller", PackagesDirectory + File(Installer) },
             { "Platform", platform },
             { "Version", Version }
         },
@@ -205,7 +205,7 @@ Task("Build-Installer-Bundle")
     WiXLight(BuildDirectory + File("PicoTorrentBundle.wixobj"), new LightSettings
     {
         Extensions = new [] { "WixBalExtension", "WixNetFxExtension", "WixUtilExtension" },
-        OutputFile = BuildDirectory + File(InstallerBundle)
+        OutputFile = PackagesDirectory + File(InstallerBundle)
     });
 });
 
@@ -214,7 +214,7 @@ Task("Build-Portable-Package")
     .IsDependentOn("Setup-Publish-Directory")
     .Does(() =>
 {
-    Zip(PublishDirectory, BuildDirectory + File(PortablePackage));
+    Zip(PublishDirectory, PackagesDirectory + File(PortablePackage));
 });
 
 Task("Build-Symbols-Package")
@@ -229,21 +229,21 @@ Task("Build-Symbols-Package")
         BuildDirectory + File("WebSocket.pdb")
     };
 
-    Zip(BuildDirectory, BuildDirectory + File(SymbolsPackage), files);
+    Zip(BuildDirectory, PackagesDirectory + File(SymbolsPackage), files);
 });
 
 Task("Build-Chocolatey-Package")
     .IsDependentOn("Build-Installer")
     .Does(() =>
 {
-    TransformTextFile("./chocolatey/tools/chocolateyinstall.ps1.template", "%{", "}")
+    TransformTextFile("./packaging/Chocolatey/tools/chocolateyinstall.ps1.template", "%{", "}")
         .WithToken("Installer", InstallerBundle)
         .WithToken("Version", Version)
-        .Save("./chocolatey/tools/chocolateyinstall.ps1");
+        .Save("./packaging/Chocolatey/tools/chocolateyinstall.ps1");
 
     var currentDirectory = MakeAbsolute(Directory("."));
-    var cd = MakeAbsolute(BuildDirectory);
-    var nuspec = MakeAbsolute(File("./chocolatey/picotorrent.nuspec"));
+    var cd = MakeAbsolute(PackagesDirectory);
+    var nuspec = MakeAbsolute(File("./packaging/Chocolatey/picotorrent.nuspec"));
 
     System.IO.Directory.SetCurrentDirectory(cd.ToString());
 
@@ -260,7 +260,7 @@ Task("Sign")
     .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
     .Does(() =>
 {
-    SignTool(BuildDirectory + File("PicoTorrent.exe"));
+    SignTool(PackagesDirectory + File("PicoTorrent.exe"));
 });
 
 Task("Sign-Installer")
@@ -268,7 +268,7 @@ Task("Sign-Installer")
     .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
     .Does(() =>
 {
-    var file = BuildDirectory + File(Installer);
+    var file = PackagesDirectory + File(Installer);
     SignTool(file);
 });
 
@@ -277,7 +277,7 @@ Task("Sign-Installer-Bundle")
     .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
     .Does(() =>
 {
-    var bundle = BuildDirectory + File(InstallerBundle);
+    var bundle = PackagesDirectory + File(InstallerBundle);
     var insignia = Directory("tools")
                    + Directory("WiX")
                    + Directory("tools")
