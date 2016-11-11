@@ -14,7 +14,7 @@
         <DisplayName>PicoTorrent</DisplayName>
         <PublisherDisplayName>NullReferenceException AB</PublisherDisplayName>
         <Description>A tiny BitTorrent client with low memory usage and high performance.</Description>
-        <Logo>logo.png</Logo>
+        <Logo>logo150.png</Logo>
     </Properties>
 
     <Resources>
@@ -46,8 +46,8 @@
             <uap:VisualElements
                 BackgroundColor="#464646"
                 DisplayName="PicoTorrent"
-                Square150x150Logo="logo.png"
-                Square44x44Logo="logo.png"
+                Square150x150Logo="logo150.png"
+                Square44x44Logo="logo44.png"
                 Description="A tiny BitTorrent client with low memory usage and high performance." />
         </Application>
     </Applications>
