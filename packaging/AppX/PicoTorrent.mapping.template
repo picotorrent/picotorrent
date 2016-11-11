@@ -1,5 +1,5 @@
 [Files]
-"%{PublishDirectory}/boost_system-vc140-mt-1_61.dll"  "boost_system-vc140-mt-1_61.dll"
+"%{PublishDirectory}/%{BoostSystem}"                  "%{BoostSystem}"
 "%{PublishDirectory}/libeay32.dll"                    "libeay32.dll"
 "%{PublishDirectory}/PicoTorrent.exe"                 "PicoTorrent.exe"
 "%{PublishDirectory}/ssleay32.dll"                    "ssleay32.dll"
