@@ -23,7 +23,7 @@ var LibraryDirectory   = Directory("./tools")
 
 var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
-var SigningPublisher   = EnvironmentVariable("PICO_SIGNING_PUBLISHER");
+var SigningPublisher   = EnvironmentVariable("PICO_SIGNING_PUBLISHER") ?? "CN=PicoTorrent TESTING";
 
 var Version            = System.IO.File.ReadAllText("VERSION").Trim();
 var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version, platform);
