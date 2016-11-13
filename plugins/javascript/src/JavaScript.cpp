@@ -11,8 +11,8 @@ extern "C" bool __declspec(dllexport) pico_init_plugin(int version, std::shared_
         return false;
     }
 
-	g_jsEngine = new Engine::JavaScriptEngine();
-	g_jsEngine->Load();
+    g_jsEngine = new Engine::JavaScriptEngine(pico);
+    g_jsEngine->Load();
 
     return true;
 }
