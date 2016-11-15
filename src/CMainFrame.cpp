@@ -506,6 +506,15 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
     // ------------
 
+    // Hide the extensions menu item if it does not contain any items
+    HMENU hMenu = ::GetMenu(m_hWnd);
+    HMENU ext = ::GetSubMenu(hMenu, 2);
+
+    if (GetMenuItemCount(ext) == 0)
+    {
+        RemoveMenu(hMenu, 2, MF_BYPOSITION);
+    }
+
     // Set the timer which updates every second
     SetTimer(6060, 1000);
 
