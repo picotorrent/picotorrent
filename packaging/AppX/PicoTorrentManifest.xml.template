@@ -26,11 +26,6 @@
             Name="Windows.Desktop"
             MinVersion="10.0.14257.0"
             MaxVersionTested="10.0.14257.0" />
-
-        <!--<PackageDependency
-            Name="Microsoft.VCLibs.140.00.UWPDesktop"
-            MinVersion="14.0.24217.0"
-            Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />-->
     </Dependencies>
 
     <Capabilities>
@@ -43,8 +38,27 @@
             Executable="PicoTorrent.exe"
             EntryPoint="Windows.FullTrustApplication">
 
+            <Extensions>
+                <uap:Extension Category="windows.fileTypeAssociation">
+                    <uap:FileTypeAssociation Name="torrent">
+                        <uap:DisplayName>PicoTorrent metadata file</uap:DisplayName>
+                        <uap:Logo>logo150.png</uap:Logo>
+                        <uap:SupportedFileTypes>
+                            <uap:FileType>.torrent</uap:FileType>
+                        </uap:SupportedFileTypes>
+                    </uap:FileTypeAssociation>
+                </uap:Extension>
+
+                <uap:Extension Category="windows.protocol">
+                    <uap:Protocol Name="magnet">
+                        <uap:Logo>logo150.png</uap:Logo>
+                        <uap:DisplayName>PicoTorrent magnet link</uap:DisplayName>
+                    </uap:Protocol>
+                </uap:Extension>
+            </Extensions>
+
             <uap:VisualElements
-                BackgroundColor="#464646"
+                BackgroundColor="white"
                 DisplayName="PicoTorrent"
                 Square150x150Logo="logo150.png"
                 Square44x44Logo="logo44.png"
