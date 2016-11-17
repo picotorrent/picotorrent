@@ -72,9 +72,11 @@ lt::settings_pack SessionSettings::Get()
     settings.set_str(lt::settings_pack::peer_fingerprint, peer_id.str());
 
     // Proxy settings
-    settings.set_int(lt::settings_pack::proxy_type, (int)cfg.GetProxyType());
+    settings.set_int(lt::settings_pack::proxy_type, static_cast<lt::settings_pack::proxy_type_t>(cfg.GetProxyType()));
     settings.set_str(lt::settings_pack::proxy_hostname, cfg.GetProxyHost());
     settings.set_int(lt::settings_pack::proxy_port, cfg.GetProxyPort());
+    settings.set_str(lt::settings_pack::proxy_username, cfg.GetProxyUsername());
+    settings.set_str(lt::settings_pack::proxy_password, cfg.GetProxyPassword());
     settings.set_bool(lt::settings_pack::force_proxy, cfg.GetProxyForce());
     settings.set_bool(lt::settings_pack::proxy_hostnames, cfg.GetProxyHostnames());
     settings.set_bool(lt::settings_pack::proxy_peer_connections, cfg.GetProxyPeers());
