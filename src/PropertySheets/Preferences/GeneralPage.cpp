@@ -175,6 +175,7 @@ BOOL GeneralPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
     m_startPosition.SetItemData(m_startPosition.AddString(TRW("normal")), Configuration::StartupPosition::Normal);
     m_startPosition.SetItemData(m_startPosition.AddString(TRW("minimized")), Configuration::StartupPosition::Minimized);
     m_startPosition.SetItemData(m_startPosition.AddString(TRW("hidden")), Configuration::StartupPosition::Hidden);
+    m_startPosition.SetItemData(m_startPosition.AddString(TRW("maximized")), Configuration::StartupPosition::Maximized);
 
     Configuration& cfg = Configuration::GetInstance();
     SelectComboBoxItemWithData(m_languages, cfg.GetCurrentLanguageId());
