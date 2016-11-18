@@ -36,7 +36,8 @@ public:
     {
         Normal,
         Minimized,
-        Hidden
+        Hidden,
+        Maximized
     };
 
     class Section

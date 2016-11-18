@@ -127,6 +127,9 @@ void CMainFrame::Show(int nCmdShow)
     case Configuration::StartupPosition::Minimized:
         pos = SW_SHOWMINIMIZED;
         break;
+    case Configuration::StartupPosition::Maximized:
+        pos = SW_SHOWMAXIMIZED;
+        break;
     }
 
     auto state = UIState::GetInstance().GetWindowState("main");
