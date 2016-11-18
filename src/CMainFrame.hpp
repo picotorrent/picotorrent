@@ -109,12 +109,12 @@ private:
         COMMAND_ID_HANDLER_EX(ID_HELP_ABOUT, OnHelpAbout)
         COMMAND_ID_HANDLER_EX(ID_VIEW_PREFERENCES, OnViewPreferences)
 
-        MSG_WM_COMMAND(OnUnhandledCommand)
-
         // Accelerators
         COMMAND_ID_HANDLER_EX(IDA_REMOVE_TORRENTS, OnRemoveTorrentsAccelerator)
         COMMAND_ID_HANDLER_EX(IDA_REMOVE_TORRENTS_DATA, OnRemoveTorrentsAccelerator)
         COMMAND_ID_HANDLER_EX(IDA_SELECT_ALL, OnSelectAll)
+
+        MSG_WM_COMMAND(OnUnhandledCommand)
 
         CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
     END_MSG_MAP()
