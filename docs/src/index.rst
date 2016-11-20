@@ -15,4 +15,7 @@ Rasterbar-libtorrent and the raw Win32 API.
    :maxdepth: 2
 
    configuration
+   how-to
+   keyboard-shortcuts
    plugins
+   privacy
