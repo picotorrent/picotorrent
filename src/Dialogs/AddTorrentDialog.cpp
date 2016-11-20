@@ -243,7 +243,24 @@ BOOL AddTorrentDialog::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 
     for (auto p : m_params)
     {
-        m_torrents.AddString(ToWideString(p->ti->name()).c_str());
+        if (!p->name.empty())
+        {
+            m_torrents.AddString(TWS(p->name));
+        }
+        else if (p->ti && !p->ti->name().empty())
+        {
+            m_torrents.AddString(TWS(p->ti->name()));
+        }
+        else if (!p->info_hash.is_all_zeros())
+        {
+            std::stringstream hash;
+            hash << p->info_hash;
+            m_torrents.AddString(TWS(hash.str()));
+        }
+        else
+        {
+            m_torrents.AddString(TWS("<unknown name>"));
+        }
     }
 
     m_torrents.SetCurSel(0);
@@ -341,7 +358,12 @@ void AddTorrentDialog::ShowTorrent(size_t torrentIndex)
     std::shared_ptr<lt::add_torrent_params> prm = m_params.at(torrentIndex);
     std::shared_ptr<lt::torrent_info> ti = prm->ti;
 
+    m_fileList->EnableWindow(FALSE);
     m_fileList->RemoveAll();
+    m_fileList->SetItemCount(0);
+    m_includeFilter.EnableWindow(FALSE);
+    m_excludeFilter.EnableWindow(FALSE);
+
     m_savePath.SetWindowText(ToWideString(prm->save_path).c_str());
     m_storageFull.SetCheck(BST_UNCHECKED);
     m_storageSparse.SetCheck(BST_UNCHECKED);
@@ -362,6 +384,10 @@ void AddTorrentDialog::ShowTorrent(size_t torrentIndex)
         StrFormatByteSize64(ti->total_size(), s, ARRAYSIZE(s));
         m_size.SetWindowText(s);
 
+        m_fileList->EnableWindow(TRUE);
+        m_includeFilter.EnableWindow(TRUE);
+        m_excludeFilter.EnableWindow(TRUE);
+
         // Add model to list
         const lt::file_storage& files = ti->files();
 
@@ -378,9 +404,5 @@ void AddTorrentDialog::ShowTorrent(size_t torrentIndex)
         }
 
         m_fileList->SetItemCount(ti->num_files());
-    }
-    else
-    {
-        m_fileList->SetItemCount(0);
     }
 }

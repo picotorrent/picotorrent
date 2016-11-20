@@ -17,6 +17,8 @@
 namespace lt = libtorrent;
 using Dialogs::AddMagnetLinkDialog;
 
+static std::string magnet_prefix = "magnet:?xt=urn:btih:";
+
 AddMagnetLinkDialog::AddMagnetLinkDialog(const std::vector<std::wstring>& magnetLinks)
     : m_links(magnetLinks)
 {
@@ -29,6 +31,17 @@ AddMagnetLinkDialog::~AddMagnetLinkDialog()
 std::vector<lt::torrent_info> AddMagnetLinkDialog::GetTorrentFiles()
 {
     return m_torrent_files;
+}
+
+bool AddMagnetLinkDialog::IsInfoHash(std::string const& link)
+{
+    return (link.size() == 40 && !std::regex_match(link, std::regex("[^0-9A-Fa-f]")))
+        || (link.size() == 32 && !std::regex_match(link, std::regex("")));
+}
+
+bool AddMagnetLinkDialog::IsMagnetLink(std::string const& link)
+{
+    return link.substr(0, magnet_prefix.size()) == magnet_prefix;
 }
 
 std::vector<std::string> AddMagnetLinkDialog::GetLinks()
@@ -46,9 +59,18 @@ std::vector<std::string> AddMagnetLinkDialog::GetLinks()
         link.erase(link.find_last_not_of("\r") + 1);
         link.erase(link.find_last_not_of("\n") + 1);
 
-        if (link.empty()) { continue; }
+        // If only info hash, append magnet link template
+        if (IsInfoHash(link))
+        {
+            link = magnet_prefix + link;
+        }
 
-        result.push_back(l.substr(prev, pos - prev));
+        // Check if link starts with "magnet:?xt=urn:btih:"
+        if (IsMagnetLink(link))
+        {
+            result.push_back(l.substr(prev, pos - prev));
+        }
+
         prev = pos + 1;
     }
 
@@ -57,7 +79,12 @@ std::vector<std::string> AddMagnetLinkDialog::GetLinks()
     ll.erase(ll.find_last_not_of("\r") + 1);
     ll.erase(ll.find_last_not_of("\n") + 1);
 
-    if (!ll.empty())
+    if (IsInfoHash(ll))
+    {
+        ll = magnet_prefix + ll;
+    }
+
+    if (IsMagnetLink(ll))
     {
         result.push_back(ll);
     }
@@ -67,16 +94,25 @@ std::vector<std::string> AddMagnetLinkDialog::GetLinks()
 
 void AddMagnetLinkDialog::OnAddMagnetLinks(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    // Subscribe to notifications
-    GetParent().SendMessage(PT_REGISTERNOTIFY, NULL, reinterpret_cast<LPARAM>(m_hWnd));
-
     auto links = GetLinks();
     m_waiting_for = (int)links.size();
 
     if (links.empty())
     {
-        // Show error dialog
+        TaskDialog(
+            m_hWnd,
+            NULL,
+            TEXT("PicoTorrent"),
+            TRW("no_magnet_links_found"),
+            NULL,
+            TDCBF_OK_BUTTON,
+            TD_WARNING_ICON,
+            NULL);
+        return;
     }
+
+    // Subscribe to notifications
+    GetParent().SendMessage(PT_REGISTERNOTIFY, NULL, reinterpret_cast<LPARAM>(m_hWnd));
 
     // Disable textbox and button
     CButton addButton = GetDlgItem(ID_MAGNET_ADD_LINKS);
@@ -87,23 +123,8 @@ void AddMagnetLinkDialog::OnAddMagnetLinks(UINT uNotifyCode, int nID, CWindow wn
     progress.SetMarquee(TRUE);
     magnetLinks.EnableWindow(FALSE);
 
-    std::string magnet_prefix = "magnet:?xt=urn:btih:";
-
     for (auto& link : links)
     {
-        // If only info hash, append magnet link template
-        if ((link.size() == 40 && !std::regex_match(link, std::regex("[^0-9A-Fa-f]")))
-            || (link.size() == 32 && !std::regex_match(link, std::regex(""))))
-        {
-            link = magnet_prefix + link;
-        }
-
-        // Check if link starts with "magnet:?xt=urn:btih:"
-        if (link.substr(0, magnet_prefix.size()) != magnet_prefix)
-        {
-            continue;
-        }
-
         // Send a command to find magnet links
         Commands::FindMetadataCommand cmd{ link };
         GetParent().SendMessage(PT_FINDMETADATA, NULL, reinterpret_cast<LPARAM>(&cmd));

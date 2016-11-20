@@ -1,6 +1,7 @@
 #include "SessionLoader.hpp"
 
 #include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/sha1_hash.hpp>
@@ -29,9 +30,8 @@ struct SessionLoadItem
     std::wstring path;
 
     std::vector<char> resume_data;
-    std::string magnet_uri;
-    std::string save_path;
-    std::string url;
+    std::string magnet_save_path;
+    std::string magnet_url;
 };
 
 SessionLoader::State SessionLoader::Load()
@@ -128,9 +128,8 @@ SessionLoader::State SessionLoader::Load()
                 continue;
             }
 
-            item.magnet_uri = node.dict_find_string_value("pT-magnetUri").to_string();
-            item.save_path = node.dict_find_string_value("pT-savePath", cfg.GetDefaultSavePath().c_str()).to_string();
-            item.url = node.dict_find_string_value("pT-url").to_string();
+            item.magnet_save_path = node.dict_find_string_value("pT-magnet-savePath").to_string();
+            item.magnet_url = node.dict_find_string_value("pT-magnet-url").to_string();
 
             int64_t queuePosition = node.dict_find_int_value("pT-queuePosition", maxPosition);
             if (queuePosition < 0) { queuePosition = maxPosition; }
@@ -146,7 +145,7 @@ SessionLoader::State SessionLoader::Load()
             std::wstring torrent_file = IO::Path::ReplaceExtension(item.path, TEXT(".torrent"));
 
             if (!IO::File::Exists(torrent_file)
-                && item.magnet_uri.empty())
+                && item.magnet_url.empty())
             {
                 LOG(Warning) << "Dat file did not have a corresponding torrent file, deleting.";
                 IO::File::Delete(torrent_file);
@@ -198,18 +197,11 @@ SessionLoader::State SessionLoader::Load()
                 state.muted_hashes.push_back(params.ti->info_hash());
             }
 
-            if (params.save_path.empty())
+            if (!item.magnet_url.empty())
             {
-                params.save_path = item.save_path;
-            }
-
-            if (item.url.empty())
-            {
-                params.url = item.magnet_uri;
-            }
-            else
-            {
-                params.url = item.url;
+                lt::error_code ec;
+                lt::parse_magnet_uri(item.magnet_url, params, ec);
+                params.save_path = item.magnet_save_path;
             }
 
             state.session->async_add_torrent(params);
