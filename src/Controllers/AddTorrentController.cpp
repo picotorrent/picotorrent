@@ -1,6 +1,7 @@
 #include "AddTorrentController.hpp"
 
 #include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
 
@@ -102,6 +103,44 @@ void AddTorrentController::Execute(const std::vector<lt::torrent_info>& torrents
         p->ti = std::make_shared<lt::torrent_info>(ti);
 
         params.push_back(p);
+    }
+
+    Dialogs::AddTorrentDialog dlg(params);
+
+    switch (dlg.DoModal(m_hWndOwner))
+    {
+    case IDOK:
+    {
+        for (auto& p : dlg.GetParams())
+        {
+            m_session->async_add_torrent(*p);
+        }
+        break;
+    }
+    }
+}
+
+void AddTorrentController::ExecuteMagnets(const std::vector<std::wstring>& magnetLinks)
+{
+    Configuration& cfg = Configuration::GetInstance();
+    std::vector<std::shared_ptr<lt::add_torrent_params>> params;
+
+    for (auto& link : magnetLinks)
+    {
+        libtorrent::error_code ec;
+        lt::add_torrent_params p;
+        lt::parse_magnet_uri(TS(link), p, ec);
+
+        if (ec)
+        {
+            // LOG
+            continue;
+        }
+
+        p.save_path = cfg.GetDefaultSavePath();
+        p.url = TS(link);
+
+        params.push_back(std::make_shared<lt::add_torrent_params>(p));
     }
 
     Dialogs::AddTorrentDialog dlg(params);

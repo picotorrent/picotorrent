@@ -196,6 +196,11 @@ std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
     }
     case LV_COL_SIZE:
     {
+        if (m_models.at(itemIndex).size < 0)
+        {
+            return L"-";
+        }
+
         TCHAR s[100];
         StrFormatByteSize64(m_models.at(itemIndex).size, s, ARRAYSIZE(s));
         return s;

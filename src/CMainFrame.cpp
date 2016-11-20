@@ -97,15 +97,15 @@ bool CMainFrame::IsSingleInstance()
 
 void CMainFrame::HandleCommandLine(const CommandLine& cmd)
 {
+    Controllers::AddTorrentController atc(m_hWnd, m_session);
+
     if (!cmd.files.empty() && cmd.magnet_links.empty())
     {
-        Controllers::AddTorrentController atc(m_hWnd, m_session);
         atc.Execute(cmd.files);
     }
     else if (!cmd.magnet_links.empty() && cmd.files.empty())
     {
-        Controllers::AddMagnetLinkController amlc(m_hWnd, m_session);
-        amlc.Execute(cmd.magnet_links);
+        atc.ExecuteMagnets(cmd.magnet_links);
     }
 }
 
@@ -594,26 +594,37 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 m_muted_hashes.end(),
                 ata->handle.info_hash());
 
-            if (h == m_muted_hashes.end())
+            if (h != m_muted_hashes.end())
             {
-                if (ata->handle.torrent_file())
-                {
-                    std::error_code ec;
-                    Core::Torrent::Save(ata->handle.torrent_file(), ec);
+                m_muted_hashes.erase(h);
+            }
 
-                    // Post the torrent resume data so we can save it as well.
-                    // Since we load each torrent by the .dat file and not .torrent
-                    // file, we need this here.
-                    ata->handle.save_resume_data();
-                }
-                else
-                {
-                    // Save metadata resume info
-                }
+            if (ata->handle.torrent_file())
+            {
+                std::error_code ec;
+                Core::Torrent::Save(ata->handle.torrent_file(), ec);
+                ata->handle.save_resume_data();
             }
             else
             {
-                m_muted_hashes.erase(h);
+                lt::entry::dictionary_type e;
+                e.insert({ "pT-magnet-savePath", ata->handle.status().save_path });
+                e.insert({ "pT-magnet-url", lt::make_magnet_uri(ata->handle) });
+
+                std::vector<char> buf;
+                lt::bencode(std::back_inserter(buf), e);
+
+                std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
+                if (!IO::Directory::Exists(torrents_dir)) { IO::Directory::Create(torrents_dir); }
+
+                std::stringstream hash;
+                hash << ata->handle.info_hash();
+
+                std::string file_name = hash.str() + ".dat";
+                std::wstring dat_file = IO::Path::Combine(torrents_dir, TWS(file_name));
+
+                std::error_code ec;
+                IO::File::WriteAllBytes(dat_file, buf, ec);
             }
 
             // Our torrent handle
@@ -656,6 +667,9 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             std::error_code ec;
             Core::Torrent::Save(mra->handle.torrent_file(), ec);
 
+            Torrent model = Mapping::TorrentMapper::Map(mra->handle.status());
+            m_torrentList->Update(model);
+
             mra->handle.save_resume_data();
             break;
         }
@@ -663,10 +677,13 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             // Save resume data to the .dat file
             lt::save_resume_data_alert* srda = lt::alert_cast<lt::save_resume_data_alert>(alert);
-            
+
+            std::stringstream hex;
+            hex << srda->handle.info_hash();
+
             // Insert PicoTorrent-specific data
             srda->resume_data->dict().insert({ "pT-queuePosition", srda->handle.status().queue_position });
-            // ... and more
+            // ... more
 
             std::vector<char> buf;
             lt::bencode(std::back_inserter(buf), *srda->resume_data);
@@ -674,8 +691,6 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
             if (!IO::Directory::Exists(torrents_dir)) { IO::Directory::Create(torrents_dir); }
 
-            std::stringstream hex;
-            hex << srda->handle.info_hash();
             std::string file_name = hex.str() + ".dat";
 
             std::wstring dat_file = IO::Path::Combine(torrents_dir, TWS(file_name));

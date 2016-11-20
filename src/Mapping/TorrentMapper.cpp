@@ -156,12 +156,19 @@ Torrent TorrentMapper::Map(libtorrent::torrent_status const& status)
 	std::stringstream ss;
 	ss << status.info_hash;
 
+    int64_t totalSize = -1;
+
+    if (status.handle.torrent_file())
+    {
+        totalSize = status.handle.torrent_file()->total_size();
+    }
+
     return Torrent
     {
         ss.str(),
-        status.name,
+        status.name.empty() ? ss.str() : status.name,
         status.queue_position,
-        status.handle.torrent_file()->total_size(),
+        totalSize,
         state,
         status.progress,
         std::chrono::seconds(eta),

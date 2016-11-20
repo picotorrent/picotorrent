@@ -2,6 +2,9 @@
 
 #include "../stdafx.h"
 
+#include <libtorrent/sha1_hash.hpp>
+
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,6 +21,7 @@ public:
     void Execute();
     void Execute(const std::vector<std::wstring>& files);
     void Execute(const std::vector<libtorrent::torrent_info>& torrents);
+    void ExecuteMagnets(const std::vector<std::wstring>& magnetLinks);
 
 private:
     std::vector<std::wstring> OpenFiles();
