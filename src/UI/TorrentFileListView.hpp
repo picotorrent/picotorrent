@@ -18,7 +18,6 @@ namespace UI
         ~TorrentFileListView();
 
         void Add(const Models::TorrentFile& model);
-        void Remove(const Models::TorrentFile& model);
         void RemoveAll();
         void Update(const Models::TorrentFile& model);
 
@@ -27,6 +26,7 @@ namespace UI
         float GetItemProgress(int columnId, int itemIndex);
         std::wstring GetItemText(int columnId, int itemIndex);
         void ShowContextMenu(POINT p, const std::vector<int>& selectedIndices);
+        bool Sort(int columnId, ListView::SortOrder order);
         void ToggleItemState(const std::vector<int>& selectedIndices);
 
     private:

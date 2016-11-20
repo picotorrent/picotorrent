@@ -1,5 +1,7 @@
 #include "TorrentFileListView.hpp"
 
+#include <functional>
+
 #include "../Commands/PrioritizeFilesCommand.hpp"
 #include "../Models/TorrentFile.hpp"
 #include "../resources.h"
@@ -11,7 +13,10 @@
 #define LV_COL_PROGRESS 2
 #define LV_COL_PRIO 3
 
+using Models::TorrentFile;
 using UI::TorrentFileListView;
+
+typedef std::function<bool(const TorrentFile&, const TorrentFile&)> sort_func_t;
 
 TorrentFileListView::TorrentFileListView(HWND hWnd, bool showProgress)
     : ListView::ListView(hWnd),
@@ -171,6 +176,60 @@ void TorrentFileListView::ShowContextMenu(POINT p, const std::vector<int>& selec
     auto idxHi = std::max_element(selectedIndices.begin(), selectedIndices.end());
 
     RedrawItems(*idxLo, *idxHi);
+}
+
+bool TorrentFileListView::Sort(int columnId, ListView::SortOrder order)
+{
+    bool asc = order == SortOrder::Ascending;
+    sort_func_t sorter;
+
+    switch (columnId)
+    {
+    case LV_COL_NAME:
+    {
+        sorter = [asc](const TorrentFile& t1, const TorrentFile& t2)
+        {
+            if (asc) return t1.name < t2.name;
+            return t1.name > t2.name;
+        };
+        break;
+    }
+    case LV_COL_PRIO:
+    {
+        sorter = [asc](const TorrentFile& t1, const TorrentFile& t2)
+        {
+            if (asc) return t1.priority < t2.priority;
+            return t1.priority > t2.priority;
+        };
+        break;
+    }
+    case LV_COL_PROGRESS:
+    {
+        sorter = [asc](const TorrentFile& t1, const TorrentFile& t2)
+        {
+            if (asc) return t1.progress < t2.progress;
+            return t1.progress > t2.progress;
+        };
+        break;
+    }
+    case LV_COL_SIZE:
+    {
+        sorter = [asc](const TorrentFile& t1, const TorrentFile& t2)
+        {
+            if (asc) return t1.size < t2.size;
+            return t1.size > t2.size;
+        };
+        break;
+    }
+    }
+
+    if (sorter)
+    {
+        std::sort(m_models.begin(), m_models.end(), sorter);
+        return true;
+    }
+
+    return false;
 }
 
 void TorrentFileListView::ToggleItemState(const std::vector<int>& selectedIndices)
