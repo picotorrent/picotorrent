@@ -26,6 +26,9 @@ public:
 private:
     std::vector<std::string> GetLinks();
 
+    bool IsInfoHash(std::string const& link);
+    bool IsMagnetLink(std::string const& link);
+
     void OnAddMagnetLinks(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnDestroy();
     void OnEndDialog(UINT uNotifyCode, int nID, CWindow wndCtl);

@@ -193,6 +193,7 @@
         "custom": "Custom",
         "regex": "Regular expression",
         "apply": "Apply",
-        "maximized": "Maximized"
+        "maximized": "Maximized",
+        "no_magnet_links_found": "No magnet links found"
     }
 }
