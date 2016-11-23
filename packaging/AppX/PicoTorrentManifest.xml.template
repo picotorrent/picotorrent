@@ -5,7 +5,7 @@
     xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
     xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
 
-    <Identity Name="PicoTorrent.App"
+    <Identity Name="NullReferenceExceptionAB.PicoTorrent"
         ProcessorArchitecture="%{Platform}"
         Publisher="%{Publisher}"
         Version="%{Version}" />

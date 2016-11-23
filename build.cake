@@ -299,28 +299,6 @@ Task("Sign")
     SignFile(BuildDirectory + File("PicoTorrent.exe"), "PicoTorrent");
 });
 
-Task("Sign-AppX-Package")
-    .IsDependentOn("Build-AppX-Package")
-    .Does(() =>
-{
-    var signTool = "C:/Program Files (x86)/Windows Kits/10/bin/x86/signtool.exe";
-    var args = new ProcessArgumentBuilder();
-    args.Append("sign");
-    args.Append("/fd SHA256");
-    args.Append("/a");
-    args.AppendSecret("/f {0}", SigningCertificate);
-    args.AppendSecret("/p {0}", SigningPassword);
-    args.Append("/tr http://timestamp.digicert.com");
-    args.Append(PackagesDirectory + File(AppXPackage));
-
-    int exitCode = StartProcess(signTool, new ProcessSettings { Arguments = args });
-
-    if (exitCode != 0)
-    {
-        throw new CakeException("Failed to run signtool.exe, exit code " + exitCode);
-    }
-});
-
 Task("Sign-Installer")
     .IsDependentOn("Build-Installer")
     .WithCriteria(() => SigningCertificate != null && SigningPassword != null)
@@ -372,7 +350,6 @@ Task("Publish")
     .IsDependentOn("Sign-Installer")
     .IsDependentOn("Sign-Installer-Bundle")
     .IsDependentOn("Build-AppX-Package")
-    .IsDependentOn("Sign-AppX-Package")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
     .IsDependentOn("Build-Symbols-Package");
