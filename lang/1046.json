@@ -169,7 +169,7 @@
         "uploaded": "Enviado",
         "storage_mode": "Modo de armazenamento",
         "sparse": "Esparso",
-        "full": "Cheio"
+        "full": "Cheio",
         "show_qr_code": "<a href=\"#\">Mostrar QR code</a>",
         "invalid_download_rate_limit": "Limite de taxa de download inválido",
         "invalid_upload_rate_limit": "Limite de taxa de upload inválido.",
