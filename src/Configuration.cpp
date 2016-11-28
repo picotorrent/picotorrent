@@ -56,7 +56,7 @@ void Configuration::SetCloseAction(Configuration::CloseAction action)
 
 int Configuration::GetCurrentLanguageId()
 {
-    return Get("language_id", (int)GetUserDefaultLangID());
+    return Get("language_id", (int)GetUserDefaultUILanguage());
 }
 
 void Configuration::SetCurrentLanguageId(int languageId)
