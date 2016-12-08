@@ -28,110 +28,130 @@ else(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PICO_ARCH "x86")
 endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
-configure_file("${CMAKE_SOURCE_DIR}/src/core/version_info.cpp.in" "${CMAKE_SOURCE_DIR}/src/core/version_info.cpp" @ONLY)
-
-set(BOOST_ROOT      $ENV{BOOST_ROOT})
-set(LIBTORRENT_ROOT $ENV{LIBTORRENT_ROOT})
-set(OPENSSL_ROOT    $ENV{OPENSSL_ROOT})
-
-set(PICOTORRENTCORE_SOURCES
-    # File system components
-    src/core/filesystem/directory
-    src/core/filesystem/file
-    src/core/filesystem/path
-
-    # Misc
-    src/core/environment
-    src/core/string_operations
-    src/core/version_info
-
-    # Logging components
-    src/core/logging/log
-    src/core/logging/log_record
-
-    # BitTorrent components
-    src/core/add_request
-    src/core/configuration
-    src/core/is_valid_torrent_file
-    src/core/hash
-    src/core/peer
-    src/core/session
-    src/core/session_metrics
-    src/core/torrent
-    src/core/torrent_info
-    src/core/torrent_state
-    src/core/tracker
-)
+configure_file("${CMAKE_SOURCE_DIR}/src/VersionInformation.cpp.in" "${CMAKE_SOURCE_DIR}/src/VersionInformation.cpp" @ONLY)
 
 set(PICOTORRENT_SOURCES
-    src/client/application
-    src/client/command_line
-    src/client/message_loop
-    src/client/controllers/add_magnet_link_controller
-    src/client/controllers/add_torrent_controller
-    src/client/controllers/application_close_controller
-    src/client/controllers/application_update_controller
-    src/client/controllers/move_torrent_controller
-    src/client/controllers/notifyicon_context_menu_controller
-    src/client/controllers/remove_torrent_controller
-    src/client/controllers/torrent_details_controller
-    src/client/controllers/torrent_context_menu_controller
-    src/client/controllers/unhandled_exception_controller
-    src/client/controllers/view_preferences_controller
-    src/client/i18n/translator
-    src/client/net/http_client
-    src/client/net/http_response
-    src/client/net/uri
-    src/client/ui/controls/control_base
-    src/client/ui/controls/list_view
-    src/client/ui/controls/menu
-    src/client/ui/dialogs/dialog_base
-    src/client/ui/dialogs/about_dialog
-    src/client/ui/dialogs/add_torrent_dialog
-    src/client/ui/dialogs/add_tracker_dialog
-    src/client/ui/dialogs/magnet_link_dialog
-    src/client/ui/property_sheets/property_sheet_page
-    src/client/ui/property_sheets/details/files_page
-    src/client/ui/property_sheets/details/overview_page
-    src/client/ui/property_sheets/details/peers_page
-    src/client/ui/property_sheets/details/trackers_page
-    src/client/ui/property_sheets/preferences/advanced_page
-    src/client/ui/property_sheets/preferences/connection_page
-    src/client/ui/property_sheets/preferences/downloads_page
-    src/client/ui/property_sheets/preferences/general_page
-    src/client/ui/file_dialog_callback
-    src/client/ui/main_window
-    src/client/ui/notify_icon
-    src/client/ui/notifyicon_context_menu
-    src/client/ui/open_file_dialog
-    src/client/ui/open_torrent_dialog
-    src/client/ui/scaler
-    src/client/ui/sleep_manager
-    src/client/ui/status_bar
-    src/client/ui/task_dialog
-    src/client/ui/taskbar_list
-    src/client/ui/torrent_context_menu
-    src/client/ui/torrent_drop_target
+    src/Clipboard
+    src/CMainFrame
+    src/CommandLine
+    src/Configuration
+    src/Configuration_Section
+    src/Configuration_SessionSection
+    src/Configuration_UISection
+    src/Environment
+    src/Log
+    src/Main
+    src/Scaler
+    src/SleepManager
+    src/Translator
+    src/UIState
+    src/UnhandledExceptionHandler
+    src/VersionInformation
+
+    src/API/IO/Directory
+    src/API/IO/File
+    src/API/IO/FileSystem
+    src/API/LoggerProxy
+    src/API/PicoTorrent
+    src/API/TranslatorProxy
+
+    src/Controllers/AddMagnetLinkController
+    src/Controllers/AddTorrentController
+    src/Controllers/NotifyIconController
+    src/Controllers/RemoveTorrentsController
+    src/Controllers/TorrentDetailsController
+    src/Controllers/ViewPreferencesController
+
+    src/Core/SessionLoader
+    src/Core/SessionSettings
+    src/Core/SessionUnloader
+    src/Core/Torrent
+
+    src/Diagnostics/StackTrace
+
+    src/Dialogs/AboutDialog
+    src/Dialogs/AddMagnetLinkDialog
+    src/Dialogs/AddTorrentDialog
+    src/Dialogs/AddTrackerDialog
+    src/Dialogs/OpenFileDialog
+    src/Dialogs/TextInputDialog
+
+    src/IO/Directory
+    src/IO/File
+    src/IO/Path
+
+    src/Mapping/TorrentMapper
+
+    src/Models/Peer
+
+    src/PropertySheets/Details/DetailsSheet
+    src/PropertySheets/Details/FilesPage
+    src/PropertySheets/Details/OptionsPage
+    src/PropertySheets/Details/OverviewPage
+    src/PropertySheets/Details/PeersPage
+    src/PropertySheets/Details/TrackersPage
+
+    src/PropertySheets/Preferences/ConnectionPage
+    src/PropertySheets/Preferences/DownloadsPage
+    src/PropertySheets/Preferences/GeneralPage
+    src/PropertySheets/Preferences/PreferencesSheet
+    src/PropertySheets/Preferences/PrivacyPage
+
+    src/UI/CheckBox
+    src/UI/ComboBox
+    src/UI/ListView
+    src/UI/NotifyIcon
+    src/UI/MainMenu
+    src/UI/PeerListView
+    src/UI/StatusBar
+    src/UI/Taskbar
+    src/UI/TextBox
+    src/UI/TorrentFileListView
+    src/UI/TorrentListView
+    src/UI/TrackerListView
+
+    src/resources.rc
 )
 
+# Shared flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
 
+# Debug flags
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
+
+# Release flags
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
+link_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/bin/${PICO_ARCH}/$(Configuration)
+)
+
+set(PICO_LIBS
+    dbghelp
+    iphlpapi
+    shlwapi
+    uxtheme
+
+    # Rasterbar-libtorrent
+    torrent
+
+    # OpenSSL
+    libeay32
+    ssleay32
+)
+
 include_directories(
+    c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/atlmfc/include
     include/
     tools/PicoTorrent.Libs/include
 )
 
-link_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/bin/${PICO_ARCH}
-)
-
 add_definitions(
+    -D_SCL_SECURE_NO_WARNINGS
     -D_UNICODE
     -D_WIN32
     -D_WIN32_WINNT=0x0600
@@ -145,53 +165,23 @@ add_definitions(
     -DWIN32_LEAN_AND_MEAN
 )
 
-add_library(
-    PicoTorrentCore
-    SHARED
-    ${PICOTORRENTCORE_SOURCES}
-)
-
 add_executable(
     PicoTorrent
     WIN32
     ${PICOTORRENT_SOURCES}
-    src/main
-
-    # The resources belong to the application itself
-    # to avoid linker issues.
-    src/client/pico.rc
-)
-
-target_link_libraries(
-    PicoTorrentCore
-
-    dbghelp
-    iphlpapi
-    shlwapi
-
-    # Boost.Random
-    debug     libboost_random-vc140-mt-gd-1_60
-    optimized libboost_random-vc140-mt-1_60
-
-    # Boost.System
-    debug     libboost_system-vc140-mt-gd-1_60
-    optimized libboost_system-vc140-mt-1_60
-
-    # OpenSSL
-    libeay32
-    ssleay32
-
-    # Rasterbar-libtorrent
-    debug     libtorrent-vc140-mt-gd
-    optimized libtorrent-vc140-mt
 )
 
 target_link_libraries(
     PicoTorrent
 
-    PicoTorrentCore
+    ${PICO_LIBS}
 
-    comctl32
-    UxTheme
-    winhttp
+    # Boost System
+    debug boost_system-vc140-mt-gd-1_61
+    optimized boost_system-vc140-mt-1_61
 )
+
+# Include plugins
+include(plugins/importer/CMakeLists.txt)
+include(plugins/updatechecker/CMakeLists.txt)
+include(plugins/websocket/CMakeLists.txt)
