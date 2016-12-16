@@ -9,6 +9,28 @@ PicoTorrent was installed or not the file will reside at different locations.
 * If not installed, the file will be placed next to :file:`PicoTorrent.exe`.
 
 
+File filters
+------------
+
+.. image:: static/file_filters.png
+
+File filters are used in the *Add torrent* dialog and allows a user to store
+custom include/exclude filters.
+
+Each filter contains a `name` and a `pattern`. The name is visible in the
+include/exclude context menus, and the pattern is a regular expression which
+is matched on each file name.
+
+.. code-block:: javascript
+   :linenos:
+
+   {
+     "file_filters": [
+       { "name": "Everything", "pattern": ".*" }
+     ]
+   }
+
+
 Advanced settings
 -----------------
 
@@ -52,19 +74,23 @@ directly).
         // The max number of active seeds.
         "active_seeds": 5,
 
+        // Set to `true` to enable anonymous mode
+        "anonymous_mode": false,
+
         // The max number of torrents to announce to their trackers.
-        "active_tracker_limit": 1600
-     },
+        "active_tracker_limit": 1600,
 
-     "websocket": {
-        // The access token to use when connecting to the WebSocket API.
-        "access_token": "random characters",
+        // Set to `true` to enable DHT.
+        "enable_dht": true,
 
-        // The full path to an SSL certificate which secures the WebSocket API.
-        "certificate_file": "PicoTorrent_generated.pem",
+        // Set to `true` to enable LSD (Local Service Discovery).
+        "enable_lsd": true,
 
-        // The password for the SSL certificate (or empty string if no password).
-        "certificate_password": "secret"
+        // Set to `true` to require encryption for incoming connections.
+        "require_incoming_encryption": false,
+
+        // Set to `true` to require encryption for outgoing connections.
+        "require_outgoing_encryption": false
      }
    }
 

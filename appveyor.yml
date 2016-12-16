@@ -1,5 +1,7 @@
 # AppVeyor build configuration
 
+os: Visual Studio 2015
+
 branches:
   except:
   - master
@@ -9,16 +11,15 @@ environment:
    - platform: x86
    - platform: x64
 
-install:
-  - git submodule update --init
-
 # Build script
 build_script:
+- git submodule update --init
 - powershell -NoProfile -ExecutionPolicy unrestricted -Command .\build.ps1 -Platform %platform%
 
-# Publish artifacts (installer and portable zip)
+# Publish artifacts
 artifacts:
- - path: build-*/Release/PicoTorrent-*-*.exe
- - path: build-*/Release/PicoTorrent-*-*.zip
+ - path: build-*/Release/packages/PicoTorrent-*-*.appx
+ - path: build-*/Release/packages/PicoTorrent-*-*.exe
+ - path: build-*/Release/packages/PicoTorrent-*-*.zip
 
 test: off

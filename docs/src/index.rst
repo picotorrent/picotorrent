@@ -15,5 +15,7 @@ Rasterbar-libtorrent and the raw Win32 API.
    :maxdepth: 2
 
    configuration
-   websocket-api/index
-   windows-service
+   how-to
+   keyboard-shortcuts
+   plugins
+   privacy
