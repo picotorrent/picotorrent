@@ -180,6 +180,20 @@
         "require_encryption_incoming": "Шифровать входящие соединения",
         "require_encryption_outgoing": "Шифровать исходящие соединения" ,
         "move_completed_downloads": "Перемещать завершённые торренты в папку",
-        "only_move_from_default_save_path": "Перемещать только из папки по-умолчанию"
+        "only_move_from_default_save_path": "Перемещать только из папки по-умолчанию",
+        "include": "Включить",
+        "exclude": "Исключить",
+        "audio_files": "Аудиофайлы",
+        "image_files": "Изображения",
+        "text_files": "Текстовые файлы",
+        "video_files": "Видеофайлы",
+        "regular_expression": "Регулярное выражение",
+        "all": "Все",
+        "file_types": "Типы файлов",
+        "custom": "Собственный",
+        "regex": "Регулярное выражения",
+        "apply": "Применить",
+        "maximized": "На весь экран",
+        "no_magnet_links_found": "Magnet-ссылки не найдены"
     }
 }
