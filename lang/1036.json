@@ -1,4 +1,4 @@
-{
+﻿{
     "lang_id": 1036,
     "lang_name": "French (France)",
     "strings":
@@ -10,7 +10,7 @@
         "progress": "Progression",
         "eta": "Estimé",
         "dl": "Réception",
-        "ul": "Emission",
+        "ul": "Émission",
         "torrent_finished": "Torrent terminé",
         "pause": "Suspendre",
         "resume": "Démarrer",
@@ -29,9 +29,9 @@
         "amp_preferences": "&Préférences",
         "amp_help": "&Aide",
         "amp_check_for_update": "&Vérifier les mises à jour",
-        "amp_about": "&A propos",
+        "amp_about": "&À propos",
         "maximum": "Maximale",
-        "high": "Elevé",
+        "high": "Élevé",
         "normal": "Normale",
         "do_not_download": "Ne pas télécharger",
         "priority": "Priorité",
@@ -43,13 +43,9 @@
         "browse": "...",
         "add_torrent_s": "Ajouter torrent(s)",
         "storage": "Stockage",
-        "about_picotorrent": "A propos de PicoTorrent",
+        "about_picotorrent": "À propos de PicoTorrent",
         "picotorrent_v_format": "PicoTorrent v%s",
-<<<<<<< HEAD
         "build_info_format": "Branche : %s\nSHA1: %s",
-=======
-        "build_info_format": "Branche: %s\nSHA1: %s",
->>>>>>> refs/remotes/picotorrent/develop
         "picotorrent_description": "Conçu avec amour, à l'aide de Boost, Rasterbar-libtorrent et OpenSSL.",
         "github_link": "<a href=\"https://github.com/picotorrent/picotorrent\">PicoTorrent sur GitHub</a>",
         "downloads": "Réception",
@@ -67,11 +63,7 @@
         "force_proxy": "Forcer un proxy",
         "proxy_hostnames": "Noms d'hôtes",
         "proxy_peer_connections": "Connexions pair à pair",
-<<<<<<< HEAD
         "proxy_tracker_connections": "Connexions au tracker",
-=======
-        "proxy_tracker_connections": "Connexion au tracker",
->>>>>>> refs/remotes/picotorrent/develop
         "connection": "Connexion",
         "the_transfers_path_cannot_be_empty": "Le chemin d'enregistrement ne peut être vide.",
         "none": "Aucun",
@@ -182,11 +174,7 @@
         "invalid_download_rate_limit": "Limite de téléchargement invalide.", 
         "invalid_upload_rate_limit": "Limite d'émission invalide.", 
         "error_when_loading_torrent": "Erreur de chargement du torrent",
-<<<<<<< HEAD
         "plugins": "Greffons",
-=======
-        "plugins": "Plugins",
->>>>>>> refs/remotes/picotorrent/develop
         "privacy": "Vie privée",
         "encryption": "Cryptage",
         "require_encryption_incoming": "Requis pour les connexions entrantes",
@@ -206,10 +194,6 @@
         "regex": "Expression régulière",
         "apply": "Appliquer",
         "maximized": "Agrandir",
-<<<<<<< HEAD
         "no_magnet_links_found": "Pas de lien(s) magnétique(s) trouvé"
-=======
-        "no_magnet_links_found": "Pas de lien magnet trouvé"
->>>>>>> refs/remotes/picotorrent/develop
     }
 }
