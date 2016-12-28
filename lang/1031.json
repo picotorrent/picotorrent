@@ -180,6 +180,20 @@
         "require_encryption_incoming": "Für eingehende Verbindungen gefordert",
         "require_encryption_outgoing": "Für ausgehende Verbindungen gefordert" ,
         "move_completed_downloads": "Fertige Downloads verschieben",
-        "only_move_from_default_save_path": "Nur vom Standardspeicherpfad verschieben"
+        "only_move_from_default_save_path": "Nur vom Standardspeicherpfad verschieben",
+        "include" : "Einschließn",
+        "exclude" : "Ausschließen",
+        "audio_files" : "Audiodateien",
+        "image_files" : "Bilddateien",
+        "text_files" : "Textdateien",
+        "video_files" : "Videodateien",
+        "regular_expression" : "Regulärer Ausdruck",
+        "all" : "Alle",
+        "file_types" : "Dateitypen",
+        "custom" : "Eigene",
+        "regex" : "Regulärer Ausdruck",
+        "apply" : "Anwenden",
+        "maximized" : "Maximiert",
+        "no_magnet_links_found" : "Keine magnet-Links gefunden"
     }
 }
