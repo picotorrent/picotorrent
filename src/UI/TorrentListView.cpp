@@ -349,12 +349,10 @@ void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
     AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_TOP, TRW("top"));
     AppendMenu(queue, MF_STRING, TORRENT_CONTEXT_MENU_QUEUE_BOTTOM, TRW("bottom"));
 
-    HMENU remove = CreateMenu();
-    AppendMenu(remove, MF_STRING, TORRENT_CONTEXT_MENU_REMOVE, TRW("remove_torrent"));
-    AppendMenu(remove, MF_STRING, TORRENT_CONTEXT_MENU_REMOVE_DATA, TRW("remove_torrent_and_files"));
-
     AppendMenu(menu, MF_POPUP, (UINT_PTR)queue, TRW("queuing"));
-    AppendMenu(menu, MF_POPUP, (UINT_PTR)remove, TRW("remove"));
+    AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_REMOVE, TRW("remove_torrent"));
+    AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_REMOVE_DATA, TRW("remove_torrent_and_files"));
     AppendMenu(menu, MF_SEPARATOR, 0, NULL);
     AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_COPY_SHA, TRW("copy_info_hash"));
     AppendMenu(menu, MF_STRING, TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER, TRW("open_in_explorer"));
