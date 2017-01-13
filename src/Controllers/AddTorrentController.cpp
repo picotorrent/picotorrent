@@ -10,6 +10,7 @@
 #include "../Dialogs/AddTorrentDialog.hpp"
 #include "../Dialogs/OpenFileDialog.hpp"
 #include "../IO/File.hpp"
+#include "../Log.hpp"
 #include "../Translator.hpp"
 
 const GUID DLG_OPEN = { 0x7D5FE367, 0xE148, 0x4A96,{ 0xB3, 0x26, 0x42, 0xEF, 0x23, 0x7A, 0x36, 0x60 } };
@@ -39,8 +40,7 @@ void AddTorrentController::Execute()
 
 void AddTorrentController::Execute(const std::vector<std::wstring>& files)
 {
-    Configuration& cfg = Configuration::GetInstance();
-    std::vector<std::shared_ptr<lt::add_torrent_params>> params;
+    std::vector<lt::torrent_info> torrents;
 
     for (auto& path : files)
     {
@@ -63,32 +63,17 @@ void AddTorrentController::Execute(const std::vector<std::wstring>& files)
             continue;
         }
 
-        auto p = std::make_shared<lt::add_torrent_params>();
-        p->save_path = cfg.GetDefaultSavePath();
-        p->ti = std::make_shared<lt::torrent_info>(node, ltec);
+        lt::torrent_info info(node, ltec);
 
         if (ltec)
         {
-            // LOG
             continue;
         }
 
-        params.push_back(p);
+        torrents.push_back(info);
     }
 
-    Dialogs::AddTorrentDialog dlg(params);
-
-    switch (dlg.DoModal(m_hWndOwner))
-    {
-    case IDOK:
-    {
-        for (auto& p : dlg.GetParams())
-        {
-            m_session->async_add_torrent(*p);
-        }
-        break;
-    }
-    }
+    Execute(torrents);
 }
 
 void AddTorrentController::Execute(const std::vector<lt::torrent_info>& torrents)
@@ -98,11 +83,33 @@ void AddTorrentController::Execute(const std::vector<lt::torrent_info>& torrents
 
     for (auto& ti : torrents)
     {
+        lt::torrent_handle th = m_session->find_torrent(ti.info_hash());
+
+        if (th.is_valid())
+        {
+            LOG(Warning) << "Torrent " << ti.name() << " already in session.";
+            TaskDialog(
+                m_hWndOwner,
+                NULL,
+                TEXT("PicoTorrent"),
+                TRW("torrent_s_already_in_session"),
+                TWS(ti.name()),
+                TDCBF_OK_BUTTON,
+                TD_WARNING_ICON,
+                NULL);
+            continue;
+        }
+
         auto p = std::make_shared<lt::add_torrent_params>();
         p->save_path = cfg.GetDefaultSavePath();
         p->ti = std::make_shared<lt::torrent_info>(ti);
 
         params.push_back(p);
+    }
+
+    if (params.empty())
+    {
+        return;
     }
 
     Dialogs::AddTorrentDialog dlg(params);
