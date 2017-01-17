@@ -29,3 +29,8 @@ void Configuration::UISection::SetMinimizeToNotificationArea(bool value)
 {
     Set("ui", "minimize_to_notification_area", value);
 }
+
+bool Configuration::UISection::GetShowAddTorrentDialog()
+{
+    return Get("ui", "show_add_torrent_dialog", true);
+}

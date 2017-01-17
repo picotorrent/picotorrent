@@ -31,7 +31,9 @@ private:
     void OnChangeSavePath(UINT uNotifyCode, int nID, CWindow wndCtl);
     LRESULT OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lParam);
     void OnShowFileFilter(UINT uNotifyCode, int nID, CWindow wndCtl);
+    LRESULT OnShowFileFilterNotify(LPNMHDR lpnmHdr);
     void ShowTorrent(size_t torrentIndex);
+    void FilterFiles(bool include);
 
     BEGIN_MSG_MAP_EX(AddTorrentDialog)
         MSG_WM_INITDIALOG(OnInitDialog)
@@ -45,6 +47,8 @@ private:
         COMMAND_ID_HANDLER_EX(ID_BROWSE, OnChangeSavePath)
         COMMAND_ID_HANDLER_EX(ID_INCLUDE_FILE_FILTER, OnShowFileFilter)
         COMMAND_ID_HANDLER_EX(ID_EXCLUDE_FILE_FILTER, OnShowFileFilter)
+        NOTIFY_HANDLER_EX(ID_INCLUDE_FILE_FILTER, BCN_DROPDOWN, OnShowFileFilterNotify)
+        NOTIFY_HANDLER_EX(ID_EXCLUDE_FILE_FILTER, BCN_DROPDOWN, OnShowFileFilterNotify)
         CHAIN_MSG_MAP(CDialogResize<AddTorrentDialog>)
     END_MSG_MAP()
 

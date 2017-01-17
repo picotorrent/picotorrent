@@ -61,140 +61,14 @@ std::vector<std::shared_ptr<libtorrent::add_torrent_params>>& AddTorrentDialog::
 void AddTorrentDialog::OnShowFileFilter(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     bool include = nID == ID_INCLUDE_FILE_FILTER;
+    FilterFiles(include);
+}
 
-    Configuration& cfg = Configuration::GetInstance();
-    std::vector<std::pair<std::string, std::string>> customFilters = cfg.GetFileFilters();
-
-    CButton btn = GetDlgItem(nID);
-    RECT rc;
-    btn.GetWindowRect(&rc);
-
-    HMENU fileTypes = CreateMenu();
-    AppendMenu(fileTypes, MF_STRING, FILTER_AUDIO_FILES, TRW("audio_files"));
-    AppendMenu(fileTypes, MF_STRING, FILTER_IMAGE_FILES, TRW("image_files"));
-    AppendMenu(fileTypes, MF_STRING, FILTER_TEXT_FILES, TRW("text_files"));
-    AppendMenu(fileTypes, MF_STRING, FILTER_VIDEO_FILES, TRW("video_files"));
-
-    HMENU custom = CreateMenu();
-    AppendMenu(custom, MF_STRING, FILTER_REGULAR_EXPRESSION, TRW("regular_expression"));
-
-    if (!customFilters.empty())
-    {
-        AppendMenu(custom, MF_SEPARATOR, -1, NULL);
-        int id = FILTER_CUSTOM;
-
-        for (auto& p : customFilters)
-        {
-            AppendMenu(custom, MF_STRING, id, TWS(p.first));
-            id += 1;
-        }
-    }
-
-    HMENU filter = CreatePopupMenu();
-    AppendMenu(filter, MF_STRING, FILTER_ALL, TRW("all"));
-    AppendMenu(filter, MF_SEPARATOR, -1, NULL);
-    AppendMenu(filter, MF_POPUP, reinterpret_cast<UINT_PTR>(fileTypes), TRW("file_types"));
-    AppendMenu(filter, MF_POPUP, reinterpret_cast<UINT_PTR>(custom), TRW("custom"));
-
-    int res = TrackPopupMenu(
-        filter,
-        TPM_NONOTIFY | TPM_RETURNCMD,
-        rc.left,
-        rc.bottom,
-        0,
-        m_hWnd,
-        NULL);
-
-    std::function<bool(Models::TorrentFile const&)> func;
-
-    switch (res)
-    {
-    case FILTER_AUDIO_FILES:
-    case FILTER_IMAGE_FILES:
-    case FILTER_TEXT_FILES:
-    case FILTER_VIDEO_FILES:
-    {
-        func = [res](Models::TorrentFile const& file)
-        {
-            if (FilterMap.find(res) == FilterMap.end())
-            {
-                return false;
-            }
-
-            std::wstring ext = file.name.substr(file.name.find_last_of('.'));
-            auto find = std::find(FilterMap.at(res).begin(), FilterMap.at(res).end(), ext);
-            return find != FilterMap.at(res).end();
-        };
-        break;
-    }
-    case FILTER_ALL:
-    {
-        func = [](Models::TorrentFile const& file) { return true; };
-        break;
-    }
-    case FILTER_REGULAR_EXPRESSION:
-    {
-        Dialogs::TextInputDialog dlg;
-        dlg.SetOkText(TRW("apply"));
-        dlg.SetTitle(TRW("regex"));
-
-        if (dlg.DoModal() == IDOK)
-        {
-            std::wstring regex = dlg.GetInput();
-            func = [regex](Models::TorrentFile const& file)
-            {
-                std::wregex re(regex, std::regex_constants::icase);
-                return std::regex_match(file.name, re);
-            };
-        }
-
-        break;
-    }
-    default:
-    {
-        if (res >= FILTER_CUSTOM)
-        {
-            func = [res, customFilters](Models::TorrentFile const& file)
-            {
-                std::regex re(customFilters.at(res - FILTER_CUSTOM).second);
-                return std::regex_match(TS(file.name), re);
-            };
-        }
-        break;
-    }
-    }
-
-    if (!func)
-    {
-        return;
-    }
-
-    std::shared_ptr<lt::add_torrent_params> prm = m_params.at(m_torrents.GetCurSel());
-    const lt::file_storage& files = prm->ti->files();
-    std::vector<int> indices;
-
-    for (int i = 0; i < files.num_files(); i++)
-    {
-        Models::TorrentFile tf{ i };
-        tf.name = TWS(files.file_path(i));
-        tf.size = files.file_size(i);
-
-        if (func(tf))
-        {
-            indices.push_back(i);
-        }
-    }
-
-    if (indices.empty())
-    {
-        return;
-    }
-
-    Commands::PrioritizeFilesCommand cmd;
-    cmd.indices = indices;
-    cmd.priority = include ? PRIORITY_NORMAL : PRIORITY_DO_NOT_DOWNLOAD;
-
-    OnPrioritizeFiles(PT_PRIORITIZEFILES, NULL, reinterpret_cast<LPARAM>(&cmd));
+LRESULT AddTorrentDialog::OnShowFileFilterNotify(LPNMHDR lpnmHdr)
+{
+    bool include = lpnmHdr->idFrom == ID_INCLUDE_FILE_FILTER;
+    FilterFiles(include);
+    return FALSE;
 }
 
 void AddTorrentDialog::OnEndDialog(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -405,4 +279,141 @@ void AddTorrentDialog::ShowTorrent(size_t torrentIndex)
 
         m_fileList->SetItemCount(ti->num_files());
     }
+}
+
+void AddTorrentDialog::FilterFiles(bool include)
+{
+    Configuration& cfg = Configuration::GetInstance();
+    std::vector<std::pair<std::string, std::string>> customFilters = cfg.GetFileFilters();
+
+    CButton btn = GetDlgItem(include ? ID_INCLUDE_FILE_FILTER : ID_EXCLUDE_FILE_FILTER);
+    RECT rc;
+    btn.GetWindowRect(&rc);
+
+    HMENU fileTypes = CreateMenu();
+    AppendMenu(fileTypes, MF_STRING, FILTER_AUDIO_FILES, TRW("audio_files"));
+    AppendMenu(fileTypes, MF_STRING, FILTER_IMAGE_FILES, TRW("image_files"));
+    AppendMenu(fileTypes, MF_STRING, FILTER_TEXT_FILES, TRW("text_files"));
+    AppendMenu(fileTypes, MF_STRING, FILTER_VIDEO_FILES, TRW("video_files"));
+
+    HMENU custom = CreateMenu();
+    AppendMenu(custom, MF_STRING, FILTER_REGULAR_EXPRESSION, TRW("regular_expression"));
+
+    if (!customFilters.empty())
+    {
+        AppendMenu(custom, MF_SEPARATOR, -1, NULL);
+        int id = FILTER_CUSTOM;
+
+        for (auto& p : customFilters)
+        {
+            AppendMenu(custom, MF_STRING, id, TWS(p.first));
+            id += 1;
+        }
+    }
+
+    HMENU filter = CreatePopupMenu();
+    AppendMenu(filter, MF_STRING, FILTER_ALL, TRW("all"));
+    AppendMenu(filter, MF_SEPARATOR, -1, NULL);
+    AppendMenu(filter, MF_POPUP, reinterpret_cast<UINT_PTR>(fileTypes), TRW("file_types"));
+    AppendMenu(filter, MF_POPUP, reinterpret_cast<UINT_PTR>(custom), TRW("custom"));
+
+    int res = TrackPopupMenu(
+        filter,
+        TPM_NONOTIFY | TPM_RETURNCMD,
+        rc.left,
+        rc.bottom,
+        0,
+        m_hWnd,
+        NULL);
+
+    std::function<bool(Models::TorrentFile const&)> func;
+
+    switch (res)
+    {
+    case FILTER_AUDIO_FILES:
+    case FILTER_IMAGE_FILES:
+    case FILTER_TEXT_FILES:
+    case FILTER_VIDEO_FILES:
+    {
+        func = [res](Models::TorrentFile const& file)
+        {
+            if (FilterMap.find(res) == FilterMap.end())
+            {
+                return false;
+            }
+
+            std::wstring ext = file.name.substr(file.name.find_last_of('.'));
+            auto find = std::find(FilterMap.at(res).begin(), FilterMap.at(res).end(), ext);
+            return find != FilterMap.at(res).end();
+        };
+        break;
+    }
+    case FILTER_ALL:
+    {
+        func = [](Models::TorrentFile const& file) { return true; };
+        break;
+    }
+    case FILTER_REGULAR_EXPRESSION:
+    {
+        Dialogs::TextInputDialog dlg;
+        dlg.SetOkText(TRW("apply"));
+        dlg.SetTitle(TRW("regex"));
+
+        if (dlg.DoModal() == IDOK)
+        {
+            std::wstring regex = dlg.GetInput();
+            func = [regex](Models::TorrentFile const& file)
+            {
+                std::wregex re(regex, std::regex_constants::icase);
+                return std::regex_match(file.name, re);
+            };
+        }
+
+        break;
+    }
+    default:
+    {
+        if (res >= FILTER_CUSTOM)
+        {
+            func = [res, customFilters](Models::TorrentFile const& file)
+            {
+                std::regex re(customFilters.at(res - FILTER_CUSTOM).second);
+                return std::regex_match(TS(file.name), re);
+            };
+        }
+        break;
+    }
+    }
+
+    if (!func)
+    {
+        return;
+    }
+
+    std::shared_ptr<lt::add_torrent_params> prm = m_params.at(m_torrents.GetCurSel());
+    const lt::file_storage& files = prm->ti->files();
+    std::vector<int> indices;
+
+    for (int i = 0; i < files.num_files(); i++)
+    {
+        Models::TorrentFile tf{ i };
+        tf.name = TWS(files.file_path(i));
+        tf.size = files.file_size(i);
+
+        if (func(tf))
+        {
+            indices.push_back(i);
+        }
+    }
+
+    if (indices.empty())
+    {
+        return;
+    }
+
+    Commands::PrioritizeFilesCommand cmd;
+    cmd.indices = indices;
+    cmd.priority = include ? PRIORITY_NORMAL : PRIORITY_DO_NOT_DOWNLOAD;
+
+    OnPrioritizeFiles(PT_PRIORITIZEFILES, NULL, reinterpret_cast<LPARAM>(&cmd));
 }

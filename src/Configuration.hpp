@@ -105,6 +105,7 @@ public:
         void SetCloseToNotificationArea(bool value);
         bool GetMinimizeToNotificationArea();
         void SetMinimizeToNotificationArea(bool value);
+        bool GetShowAddTorrentDialog();
 
     protected:
         using Section::Section;
