@@ -194,6 +194,10 @@
         "regex": "Regular expression",
         "apply": "Apply",
         "maximized": "Maximized",
-        "no_magnet_links_found": "No magnet links found"
+        "no_magnet_links_found": "No magnet links found",
+        "notification_area": "Notification area",
+        "show_picotorrent_in_notification_area": "Show PicoTorrent in notification area",
+        "minimize_to_notification_area": "Minimize to notification area",
+        "close_to_notification_area": "Close to notification area"
     }
 }

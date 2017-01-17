@@ -157,6 +157,10 @@ BOOL GeneralPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
     SetDlgItemText(ID_MISC_GROUP, TRW("miscellaneous"));
     SetDlgItemText(ID_AUTOSTART_PICO, TRW("start_with_windows"));
     SetDlgItemText(ID_START_POSITION_TEXT, TRW("start_position"));
+    SetDlgItemText(ID_NOTIFICATION_AREA_GROUP, TRW("notification_area"));
+    SetDlgItemText(ID_SHOW_IN_NOTIFICATION_AREA, TRW("show_picotorrent_in_notification_area"));
+    SetDlgItemText(ID_MINIMIZE_TO_NOTIFICATION_AREA, TRW("minimize_to_notification_area"));
+    SetDlgItemText(ID_CLOSE_TO_NOTIFICATION_AREA, TRW("close_to_notification_area"));
 
     // Set up controls
     m_languages = GetDlgItem(ID_LANGUAGE);
