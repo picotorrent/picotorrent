@@ -55,7 +55,6 @@ lt::settings_pack SessionSettings::Get()
     settings.set_bool(lt::settings_pack::anonymous_mode, cfg.Session()->GetEnableAnonymousMode());
     settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
     settings.set_int(lt::settings_pack::download_rate_limit, cfg.Session()->GetDownloadRateLimit());
-    settings.set_bool(lt::settings_pack::enable_dht, true);
     settings.set_int(lt::settings_pack::stop_tracker_timeout, cfg.Session()->GetStopTrackerTimeout());
     settings.set_int(lt::settings_pack::upload_rate_limit, cfg.Session()->GetUploadRateLimit());
 
