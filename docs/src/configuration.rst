@@ -91,6 +91,11 @@ directly).
 
         // Set to `true` to require encryption for outgoing connections.
         "require_outgoing_encryption": false
+     },
+
+     "ui": {
+        // Set to `false` to skip the Add Torrent dialog
+        "show_add_torrent_dialog": true
      }
    }
 

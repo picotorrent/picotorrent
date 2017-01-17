@@ -112,18 +112,20 @@ void AddTorrentController::Execute(const std::vector<lt::torrent_info>& torrents
         return;
     }
 
+    bool shouldAddFiles = true;
     Dialogs::AddTorrentDialog dlg(params);
 
-    switch (dlg.DoModal(m_hWndOwner))
+    if (cfg.UI()->GetShowAddTorrentDialog())
     {
-    case IDOK:
+        shouldAddFiles = (dlg.DoModal(m_hWndOwner) == IDOK);
+    }
+
+    if (shouldAddFiles)
     {
         for (auto& p : dlg.GetParams())
         {
             m_session->async_add_torrent(*p);
         }
-        break;
-    }
     }
 }
 
@@ -150,18 +152,20 @@ void AddTorrentController::ExecuteMagnets(const std::vector<std::wstring>& magne
         params.push_back(std::make_shared<lt::add_torrent_params>(p));
     }
 
+    bool shouldAddMagnets = true;
     Dialogs::AddTorrentDialog dlg(params);
 
-    switch (dlg.DoModal(m_hWndOwner))
+    if (cfg.UI()->GetShowAddTorrentDialog())
     {
-    case IDOK:
+        shouldAddMagnets = (dlg.DoModal(m_hWndOwner) == IDOK);
+    }
+
+    if (shouldAddMagnets)
     {
         for (auto& p : dlg.GetParams())
         {
             m_session->async_add_torrent(*p);
         }
-        break;
-    }
     }
 }
 
