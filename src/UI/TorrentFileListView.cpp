@@ -152,7 +152,13 @@ void TorrentFileListView::ShowContextMenu(POINT p, const std::vector<int>& selec
     }
 
     Commands::PrioritizeFilesCommand prio;
-    prio.indices = selectedIndices;
+
+    // Translate from selected indices to actual file indices
+    for (int i : selectedIndices)
+    {
+        int fileIndex = m_models.at(i).index;
+        prio.indices.push_back(fileIndex);
+    }
 
     switch (res)
     {
@@ -237,7 +243,14 @@ void TorrentFileListView::ToggleItemState(const std::vector<int>& selectedIndice
     int lastItem = selectedIndices.at(selectedIndices.size() - 1);
 
     Commands::PrioritizeFilesCommand prio;
-    prio.indices = selectedIndices;
+
+    // Translate from selected indices to actual file indices
+    for (int i : selectedIndices)
+    {
+        int fileIndex = m_models.at(i).index;
+        prio.indices.push_back(fileIndex);
+    }
+
     prio.priority = m_models.at(lastItem).priority == PRIORITY_DO_NOT_DOWNLOAD
         ? PRIORITY_NORMAL
         : PRIORITY_DO_NOT_DOWNLOAD;
