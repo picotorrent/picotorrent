@@ -25,6 +25,7 @@ namespace UI
         int GetItemIconIndex(int itemIndex);
         float GetItemProgress(int columnId, int itemIndex);
         std::wstring GetItemText(int columnId, int itemIndex);
+        void OnItemActivated(std::vector<int> const& indices);
         void ShowContextMenu(POINT p, const std::vector<int>& selectedIndices);
         bool Sort(int columnId, SortOrder order);
 

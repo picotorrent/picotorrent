@@ -410,6 +410,13 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 
             break;
         }
+        case NM_DBLCLK:
+        {
+            LPNMITEMACTIVATE lpnmia = reinterpret_cast<LPNMITEMACTIVATE>(lParam);
+            std::vector<int> indices{ lpnmia->iItem };
+            lv->OnItemActivated(indices);
+            break;
+        }
         case LVN_GETDISPINFO:
         {
             NMLVDISPINFO* inf = reinterpret_cast<NMLVDISPINFO*>(nmhdr);
