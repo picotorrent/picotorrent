@@ -326,6 +326,23 @@ std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
     return TEXT("?unknown?");
 }
 
+void TorrentListView::OnItemActivated(std::vector<int> const& indices)
+{
+    if (indices.size() != 1)
+    {
+        return;
+    }
+
+    std::vector<Torrent> selection;
+    std::for_each(
+        indices.begin(),
+        indices.end(),
+        [this, &selection](int i) { selection.push_back(m_models.at(i)); });
+
+    Commands::ShowTorrentDetailsCommand show{ selection[0] };
+    SendCommand(PT_SHOWTORRENTDETAILS, reinterpret_cast<LPARAM>(&show));
+}
+
 void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
 {
     if (sel.empty())
