@@ -14,39 +14,19 @@
 namespace pj = picojson;
 
 Translator::Translator()
-    : m_instance(GetModuleHandle(NULL))
 {
+    EnumResourceNames(
+        GetModuleHandle(NULL),
+        MAKEINTRESOURCE(LANGFILE),
+        LoadTranslations,
+        reinterpret_cast<LONG_PTR>(this));
+
     Configuration &cfg = Configuration::GetInstance();
+    m_currentLanguage = cfg.GetCurrentLanguageId();
 
-    std::wstringstream ss;
-    ss << cfg.GetCurrentLanguageId() << TEXT(".json");
-    std::wstring lang_file = IO::Path::Combine(GetLanguagePath(), ss.str());
-
-    if (IO::File::Exists(lang_file))
+    if (m_strings.find(m_currentLanguage) == m_strings.end())
     {
-        std::error_code ec;
-        std::vector<char> buf = IO::File::ReadAllBytes(lang_file, ec);
-
-        pj::value v;
-        pj::parse(v, buf.begin(), buf.end());
-
-        m_strings = v.get<pj::object>()["strings"].get<pj::object>();
-    }
-    else
-    {
-        // Load JSON from our resource
-        HRSRC rc = FindResource(
-            m_instance,
-            MAKEINTRESOURCE(1337),
-            MAKEINTRESOURCE(TEXTFILE));
-
-        HGLOBAL data = LoadResource(m_instance, rc);
-        std::string json = static_cast<const char*>(LockResource(data));
-
-        pj::value v;
-        pj::parse(v, json);
-
-        m_strings = v.get<pj::object>()["strings"].get<pj::object>();
+        m_currentLanguage = 1033;
     }
 }
 
@@ -62,81 +42,61 @@ Translator& Translator::GetInstance()
 
 std::vector<Translator::Language> Translator::GetAvailableLanguages()
 {
-    std::wstring lang_path = GetLanguagePath();
-
-    Language def{ "English (United States)", 1033 };
-    std::vector<Language> langs;
-    langs.push_back(def);
-
-    if (!IO::Directory::Exists(lang_path))
-    {
-        return langs;
-    }
-
-    for (std::wstring &path : IO::Directory::GetFiles(lang_path, TEXT("*.json")))
-    {
-        std::error_code ec;
-        std::vector<char> buf = IO::File::ReadAllBytes(path, ec);
-
-        if (ec)
-        {
-            // LOG
-            continue;
-        }
-
-        pj::value v;
-        std::string err = pj::parse(v, buf.begin(), buf.end());
-
-        if (!err.empty())
-        {
-            // TODO: log
-            continue;
-        }
-
-        if (!v.is<pj::object>())
-        {
-            // TODO: log
-            continue;
-        }
-
-        pj::object obj = v.get<pj::object>();
-
-        if (obj.find("lang_name") == obj.end())
-        {
-            // TODO: log
-            continue;
-        }
-
-        std::string name = obj.at("lang_name").get<std::string>();
-
-        Language l;
-        l.code = (int)obj.at("lang_id").get<int64_t>();
-        l.name = name;
-
-        if (l.code == def.code)
-        {
-            continue;
-        }
-
-        langs.push_back(l);
-    }
-
-    return langs;
+    return m_languages;
 }
 
 std::string Translator::Translate(const std::string& key)
 {
     std::string result = key;
 
-    if (m_strings.find(key) != m_strings.end())
+    if (m_strings.find(m_currentLanguage) == m_strings.end())
     {
-        result = m_strings[key].get<std::string>();
+        return result;
     }
 
-    return result;
+    std::map<std::string, std::string>& str = m_strings.at(m_currentLanguage);
+
+    if (str.find(key) == str.end())
+    {
+        return result;
+    }
+
+    return str.at(key);
 }
 
-std::wstring Translator::GetLanguagePath()
+BOOL Translator::LoadTranslations(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
 {
-    return IO::Path::Combine(Environment::GetApplicationPath(), TEXT("lang"));
+    Translator* tr = reinterpret_cast<Translator*>(lParam);
+
+    HRSRC rc = FindResource(hModule, lpszName, lpszType);
+    HGLOBAL data = LoadResource(hModule, rc);
+    std::string json = static_cast<const char*>(LockResource(data));
+
+    pj::value v;
+    std::string err = pj::parse(v, json);
+
+    if (!err.empty())
+    {
+        return TRUE;
+    }
+
+    pj::object obj = v.get<pj::object>();
+
+    int langId = static_cast<int>(obj.at("lang_id").get<int64_t>());
+    std::string langName = obj.at("lang_name").get<std::string>();
+
+    Language l{ langName, langId };
+    tr->m_languages.push_back(l);
+
+    if (tr->m_strings.find(langId) == tr->m_strings.end())
+    {
+        tr->m_strings.insert({ langId, std::map<std::string, std::string>() });
+    }
+
+    for (auto& p : obj.at("strings").get<pj::object>())
+    {
+        tr->m_strings.at(langId).insert({ p.first, p.second.get<std::string>() });
+    }
+
+    return TRUE;
 }
