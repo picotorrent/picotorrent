@@ -36,8 +36,6 @@
         <Directory Id="TARGETDIR" Name="SourceDir">
             <Directory Id="$(var.PlatformProgramFilesFolder)" Name="PFiles">
                 <Directory Id="INSTALLDIR" Name="PicoTorrent">
-                    <Directory Id="LANGDIR" Name="lang" />
-
                     <Component Id="C_PicoTorrent" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205">
                         <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" Source="$(var.PublishDirectory)\PicoTorrent.exe" KeyPath="yes" />
 
@@ -212,48 +210,6 @@
           </Component>
         </ComponentGroup>
 
-        <ComponentGroup Id="CG_Languages" Directory="LANGDIR">
-          <Component Id="C_Lang_1027">
-            <File Name="1027.json" Source="$(var.PublishDirectory)\lang\1027.json" />
-          </Component>
-
-          <Component Id="C_Lang_1031">
-            <File Name="1031.json" Source="$(var.PublishDirectory)\lang\1031.json" />
-          </Component>
-
-          <Component Id="C_Lang_1034">
-            <File Name="1034.json" Source="$(var.PublishDirectory)\lang\1034.json" />
-          </Component>
-
-          <Component Id="C_Lang_1040">
-            <File Name="1040.json" Source="$(var.PublishDirectory)\lang\1040.json" />
-          </Component>
-
-          <Component Id="C_Lang_1046">
-            <File Name="1046.json" Source="$(var.PublishDirectory)\lang\1046.json" />
-          </Component>
-
-          <Component Id="C_Lang_1048">
-            <File Name="1048.json" Source="$(var.PublishDirectory)\lang\1048.json" />
-          </Component>
-
-          <Component Id="C_Lang_1049">
-            <File Name="1049.json" Source="$(var.PublishDirectory)\lang\1049.json" />
-          </Component>
-
-          <Component Id="C_Lang_1053">
-            <File Name="1053.json" Source="$(var.PublishDirectory)\lang\1053.json" />
-          </Component>
-
-          <Component Id="C_Lang_1062">
-            <File Name="1062.json" Source="$(var.PublishDirectory)\lang\1062.json" />
-          </Component>
-
-          <Component Id="C_Lang_1079">
-            <File Name="1079.json" Source="$(var.PublishDirectory)\lang\1079.json" />
-          </Component>
-        </ComponentGroup>
-
         <Feature Id="F_Complete"
                  Title="PicoTorrent"
                  Absent="disallow"
@@ -264,14 +220,6 @@
             <ComponentRef Id="C_PicoTorrent" />
             <ComponentGroupRef Id="CG_Libraries" />
             <ComponentGroupRef Id="CG_Plugins" />
-
-            <Feature Id="F_Lang"
-                     Title="Language files"
-                     Description="Language files for PicoTorrent."
-                     Level="1">
-
-              <ComponentGroupRef Id="CG_Languages" />
-            </Feature>
         </Feature>
 
         <Property Id="ARPPRODUCTICON" Value="I_PicoTorrent.ico" />
