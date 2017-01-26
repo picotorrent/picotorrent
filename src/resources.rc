@@ -9,8 +9,23 @@ IDR_MAINFRAME     ICON    "..\\res\\app.ico"
 // Bitmaps
 IDB_STATUS_ICONS_16 BITMAP "..\\res\\status_icons_16.bmp"
 
-// Default language is 1033, so embed the JSON file
-1337 TEXTFILE "..\\lang\\1033.json"
+// Embedded languages
+LANGBASE+1027 LANGFILE "..\\lang\\1027.json"
+LANGBASE+1031 LANGFILE "..\\lang\\1031.json"
+LANGBASE+1033 LANGFILE "..\\lang\\1033.json"
+LANGBASE+1034 LANGFILE "..\\lang\\1034.json"
+LANGBASE+1035 LANGFILE "..\\lang\\1035.json"
+LANGBASE+1036 LANGFILE "..\\lang\\1036.json"
+LANGBASE+1040 LANGFILE "..\\lang\\1040.json"
+LANGBASE+1043 LANGFILE "..\\lang\\1043.json"
+LANGBASE+1046 LANGFILE "..\\lang\\1046.json"
+LANGBASE+1048 LANGFILE "..\\lang\\1048.json"
+LANGBASE+1049 LANGFILE "..\\lang\\1049.json"
+LANGBASE+1053 LANGFILE "..\\lang\\1053.json"
+LANGBASE+1055 LANGFILE "..\\lang\\1055.json"
+LANGBASE+1057 LANGFILE "..\\lang\\1057.json"
+LANGBASE+1062 LANGFILE "..\\lang\\1062.json"
+LANGBASE+1079 LANGFILE "..\\lang\\1079.json"
 
 // Accelerators
 IDR_MAINFRAME ACCELERATORS

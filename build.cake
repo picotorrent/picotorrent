@@ -134,8 +134,6 @@ Task("Setup-Publish-Directory")
 
     CreateDirectory(PublishDirectory);
     CopyFiles(files, PublishDirectory);
-    CopyDirectory(Directory("lang"), PublishDirectory + Directory("lang"));
-    DeleteFile(PublishDirectory + Directory("lang") + File("1033.json"));
 });
 
 Task("Build-AppX-Package")

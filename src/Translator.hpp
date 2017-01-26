@@ -9,12 +9,6 @@
 #define TR(id) Translator::GetInstance().Translate(id).c_str()
 #define TRW(id) ToWideString(Translator::GetInstance().Translate(id)).c_str()
 
-namespace picojson
-{
-    class value;
-    typedef std::map<std::string, value> object;
-}
-
 class Translator
 {
 public:
@@ -30,11 +24,12 @@ public:
     std::string Translate(const std::string& key);
 
 private:
+    static BOOL CALLBACK LoadTranslations(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam);
+
     Translator();
     ~Translator();
 
-    std::wstring GetLanguagePath();
-
-    HINSTANCE m_instance;
-    picojson::object m_strings;
+    int m_currentLanguage;
+    std::vector<Language> m_languages;
+    std::map<int, std::map<std::string, std::string>> m_strings;
 };
