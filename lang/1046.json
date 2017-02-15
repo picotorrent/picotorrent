@@ -116,7 +116,7 @@
         "state_downloading": "Baixando",
         "state_downloading_checking": "Verificando",
         "state_downloading_forced": "[F] Baixando",
-        "state_downloading_metadata": "Baixando metadata",
+        "state_downloading_metadata": "Baixando metadados",
         "state_downloading_paused": "Pausado",
         "state_downloading_queued": "Na fila",
         "state_downloading_stalled": "Parado",
@@ -194,7 +194,11 @@
         "regex": "Expressão regular",
         "apply": "Aplicar",
         "maximized": "Maximizado",
-        "no_magnet_links_found": "Nenhum magnet links encontrado"
+        "no_magnet_links_found": "Nenhum magnet links encontrado",
+        "notification_area": "Área de notificação",			
+        "show_picotorrent_in_notification_area": "Mostrar PicoTorrent na área de notificação",			
+        "minimize_to_notification_area": "Minimizar para área de notificação",			
+	    "close_to_notification_area": "Fechar para área de notificação"
     }
 }
 
