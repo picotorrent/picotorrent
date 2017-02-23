@@ -1,4 +1,4 @@
-{
+﻿{
     "lang_id": 1049,
     "lang_name": "Russian",
     "strings":
@@ -198,6 +198,6 @@
         "notification_area": "Область уведомлений",
         "show_picotorrent_in_notification_area": "Показывать PicoTorrent в области уведомлений",
         "minimize_to_notification_area": "Сворачивать в область уведомлений",
-        "close_to_notification_area": "Закзывать в область уведомлений"
+        "close_to_notification_area": "Закрывать в область уведомлений"
     }
 }
