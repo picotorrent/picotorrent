@@ -23,6 +23,7 @@ namespace UI
         void Update(const Models::Peer& model);
 
     protected:
+        float GetItemProgress(int columnId, int itemIndex);
         std::wstring GetItemText(int columnId, int itemIndex);
         void ShowContextMenu(POINT p, const std::vector<int>& selectedIndices);
 
