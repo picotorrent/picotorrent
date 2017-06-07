@@ -9,7 +9,7 @@
     <?define VCRedistHash = "ff15c4f5da3c54f88676e6b44f3314b173835c28" ?>
     <?define VCRedistName = "VC_redist.x64.exe" ?>
     <?define VCRedistSize = "14990824" ?>
-    <?define VCRedistUrl = "https://download.microsoft.com/download/0/6/4/064F84EA-D1DB-4EAA-9A5C-CC2F0FF6A638/vc_redist.x64.exe" ?>
+    <?define VCRedistUrl = "https://picotorrent.blob.core.windows.net/public/vcredist/14.0.24123.0/vc_redist.x64.exe" ?>
     <?define VCRedistVersion = "14.0.24123.0" ?>
 <?else ?>
     <?define InstallFolder = "[ProgramFilesFolder]PicoTorrent" ?>
@@ -20,7 +20,7 @@
     <?define VCRedistHash = "e99e5b17b0ad882833bbdc8cf798dc56f9947a5e" ?>
     <?define VCRedistName = "VC_redist.x86.exe" ?>
     <?define VCRedistSize = "14157672" ?>
-    <?define VCRedistUrl = "https://download.microsoft.com/download/0/6/4/064F84EA-D1DB-4EAA-9A5C-CC2F0FF6A638/vc_redist.x86.exe" ?>
+    <?define VCRedistUrl = "https://picotorrent.blob.core.windows.net/public/vcredist/14.0.24123.0/vc_redist.x86.exe" ?>
     <?define VCRedistVersion = "14.0.24123.0" ?>
 <?endif ?>
 
