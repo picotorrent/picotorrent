@@ -108,6 +108,7 @@ Peer Peer::Map(const lt::peer_info& peer)
         TWS(peer.client),
         TWS(flags.str()),
         peer.payload_down_speed,
-        peer.payload_up_speed
+        peer.payload_up_speed,
+        peer.progress
     };
 }

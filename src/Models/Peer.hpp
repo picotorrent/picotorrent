@@ -30,5 +30,6 @@ namespace Models
         std::wstring flags;
         int downloadRate;
         int uploadRate;
+        float progress;
     };
 }

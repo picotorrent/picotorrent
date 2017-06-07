@@ -12,6 +12,7 @@
 #define LV_COL_FLAGS 3
 #define LV_COL_DOWNLOAD 4
 #define LV_COL_UPLOAD 5
+#define LV_COL_PROGRESS 6
 
 using UI::PeerListView;
 
@@ -23,6 +24,7 @@ PeerListView::PeerListView(HWND hWnd)
     AddColumn(LV_COL_FLAGS, TRW("flags"), SX(80), ColumnType::Text);
     AddColumn(LV_COL_DOWNLOAD, TRW("dl"), SX(80), ColumnType::Number);
     AddColumn(LV_COL_UPLOAD, TRW("ul"), SX(80), ColumnType::Number);
+    AddColumn(LV_COL_PROGRESS, TRW("progress"), SX(100), ColumnType::Progress);
 }
 
 PeerListView::~PeerListView()
@@ -49,6 +51,17 @@ void PeerListView::Update(const Models::Peer& model)
         auto index = std::distance(m_models.begin(), f);
         m_models.at(index) = model;
     }
+}
+
+float PeerListView::GetItemProgress(int columnId, int itemIndex)
+{
+    switch (columnId)
+    {
+    case LV_COL_PROGRESS:
+        return m_models.at(itemIndex).progress;
+    }
+
+    return -1;
 }
 
 std::wstring PeerListView::GetItemText(int columnId, int itemIndex)
