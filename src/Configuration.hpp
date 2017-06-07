@@ -174,6 +174,8 @@ public:
     StartupPosition GetStartupPosition();
     void SetStartupPosition(StartupPosition pos);
 
+    void Save();
+
 private:
     Configuration();
     ~Configuration();
@@ -185,7 +187,6 @@ private:
     template<> void Set(const char *name, int value);
 
     void Load();
-    void Save();
 
     std::shared_ptr<picojson::object> m_cfg;
 };
