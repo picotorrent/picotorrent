@@ -184,7 +184,8 @@ struct Torrent
     std::string infoHash;
     std::string name;
     int queuePosition;
-    int64_t size;
+    int64_t totalSize;
+    int64_t totalWanted;
     State state;
     float progress;
     std::chrono::seconds eta;

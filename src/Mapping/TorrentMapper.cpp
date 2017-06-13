@@ -169,6 +169,7 @@ Torrent TorrentMapper::Map(libtorrent::torrent_status const& status)
         status.name.empty() ? ss.str() : status.name,
         status.queue_position,
         totalSize,
+        status.total_wanted,
         state,
         status.progress,
         std::chrono::seconds(eta),
