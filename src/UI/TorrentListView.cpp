@@ -262,14 +262,39 @@ std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
     }
     case LV_COL_SIZE:
     {
-        if (m_models.at(itemIndex).size < 0)
+        Torrent& t = m_models.at(itemIndex);
+
+        if (t.totalSize < 0)
         {
             return L"-";
         }
 
-        TCHAR s[100];
-        StrFormatByteSize64(m_models.at(itemIndex).size, s, ARRAYSIZE(s));
-        return s;
+        TCHAR wanted[100];
+        StrFormatByteSize64(
+            t.totalWanted,
+            wanted,
+            ARRAYSIZE(wanted));
+
+        if (t.totalSize == t.totalWanted)
+        {
+            return wanted;
+        }
+
+        TCHAR total[100];
+        StrFormatByteSize64(
+            t.totalSize,
+            total,
+            ARRAYSIZE(total));
+
+        TCHAR text[200];
+        StringCchPrintf(
+            text,
+            ARRAYSIZE(text),
+            TEXT("%s (%s)"),
+            wanted,
+            total);
+
+        return text;
     }
     case LV_COL_STATUS:
     {
@@ -590,8 +615,8 @@ bool TorrentListView::Sort(int columnId, ListView::SortOrder order)
     {
         sorter = [asc](const Torrent& t1, const Torrent& t2)
         {
-            if (asc) return t1.size < t2.size;
-            return t1.size > t2.size;
+            if (asc) return t1.totalWanted < t2.totalWanted;
+            return t1.totalWanted > t2.totalWanted;
         };
         break;
     }

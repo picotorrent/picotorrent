@@ -11,7 +11,8 @@ pj::object TorrentSerializer::Serialize(Torrent const& torrent)
     obj["info_hash"] = pj::value(torrent.infoHash);
     obj["name"] = pj::value(torrent.name);
     obj["queue_position"] = pj::value(static_cast<int64_t>(torrent.queuePosition));
-    obj["size"] = pj::value(torrent.size);
+    obj["size"] = pj::value(torrent.totalWanted);
+    obj["size_total"] = pj::value(torrent.totalSize);
     obj["progress"] = pj::value(torrent.progress);
     obj["status"] = pj::value(static_cast<int64_t>(torrent.state));
 	obj["eta"] = pj::value(static_cast<int64_t>(torrent.eta.count()));
