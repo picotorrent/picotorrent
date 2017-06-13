@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace libtorrent
 {
@@ -12,11 +13,11 @@ namespace libtorrent
 class UIState
 {
 public:
-    struct ColumnState
+    struct ListViewState
     {
-        int order;
-        int width;
-        bool visible;
+        std::vector<int> order;
+        std::vector<bool> visibility;
+        std::vector<int> width;
     };
 
     struct WindowState
@@ -33,12 +34,10 @@ public:
         uint32_t show;
     };
 
-    typedef std::map<int, ColumnState> ColumnStateMap;
-
     static UIState& GetInstance();
 
-    ColumnStateMap GetListViewColumnState(const std::string& key);
-    void SetListViewColumnState(const std::string& key, const ColumnStateMap& state);
+    ListViewState GetListViewState(const std::string& key);
+    void SetListViewState(const std::string& key, const ListViewState& state);
 
     std::unique_ptr<WindowState> GetWindowState(const std::string& key);
     void SetWindowState(const std::string& key, const WindowState& state);

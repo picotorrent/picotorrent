@@ -25,17 +25,17 @@
 #include "../Scaler.hpp"
 #include "../Translator.hpp"
 
-#define LV_COL_NAME 1
-#define LV_COL_QUEUE_POSITION 2
-#define LV_COL_SIZE 3
-#define LV_COL_STATUS 4
-#define LV_COL_PROGRESS 5
-#define LV_COL_ETA 6
-#define LV_COL_DL 7
-#define LV_COL_UL 8
+#define LV_COL_NAME 0
+#define LV_COL_QUEUE_POSITION 1
+#define LV_COL_SIZE 2
+#define LV_COL_STATUS 3
+#define LV_COL_PROGRESS 4
+#define LV_COL_ETA 5
+#define LV_COL_DL 6
+#define LV_COL_UL 7
+#define LV_COL_RATIO 8
 #define LV_COL_SEEDS 9
 #define LV_COL_PEERS 10
-#define LV_COL_RATIO 11
 
 namespace lt = libtorrent;
 using UI::TorrentListView;
@@ -46,17 +46,83 @@ TorrentListView::TorrentListView(
     HWND hWnd)
     : ListView::ListView(hWnd)
 {
-    AddColumn(LV_COL_NAME, TRW("name"), SX(280), UI::ListView::ColumnType::Text);
-    AddColumn(LV_COL_QUEUE_POSITION, TRW("queue_position"), SX(30), UI::ListView::ColumnType::Number);
-    AddColumn(LV_COL_SIZE, TRW("size"), SX(80), UI::ListView::ColumnType::Number);
-    AddColumn(LV_COL_STATUS, TRW("status"), SX(120), UI::ListView::ColumnType::Text);
-    AddColumn(LV_COL_PROGRESS, TRW("progress"), SX(100), UI::ListView::ColumnType::Progress);
-    AddColumn(LV_COL_ETA, TRW("eta"), SX(80), UI::ListView::ColumnType::Number);
-    AddColumn(LV_COL_DL, TRW("dl"), SX(80), UI::ListView::ColumnType::Number);
-    AddColumn(LV_COL_UL, TRW("ul"), SX(80), UI::ListView::ColumnType::Number);
-    AddColumn(LV_COL_RATIO, TRW("ratio"), SX(80), UI::ListView::ColumnType::Number);
-    AddColumn(LV_COL_SEEDS, TRW("seeds"), SX(80), UI::ListView::ColumnType::Number);
-    AddColumn(LV_COL_PEERS, TRW("peers"), SX(80), UI::ListView::ColumnType::Number);
+    AddColumn(
+        std::wstring(TRW("name")),
+        LV_COL_NAME,
+        SX(280),
+        LVCFMT_LEFT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("queue_position")),
+        LV_COL_QUEUE_POSITION,
+        SX(30),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("size")),
+        LV_COL_SIZE,
+        SX(80),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("status")),
+        LV_COL_STATUS,
+        SX(120),
+        LVCFMT_LEFT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("progress")),
+        LV_COL_PROGRESS,
+        SX(100),
+        LVCFMT_LEFT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT,
+        true);
+
+    AddColumn(
+        std::wstring(TRW("eta")),
+        LV_COL_ETA,
+        SX(80),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("dl")),
+        LV_COL_DL,
+        SX(80),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("ul")),
+        LV_COL_UL,
+        SX(80),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("ratio")),
+        LV_COL_RATIO,
+        SX(80),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("seeds")),
+        LV_COL_SEEDS,
+        SX(80),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("peers")),
+        LV_COL_PEERS,
+        SX(80),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
 
     LoadState("torrents");
 

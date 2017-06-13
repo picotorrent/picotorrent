@@ -13,17 +13,6 @@
 
 using UI::ListView;
 
-struct ListView::Column
-{
-    int id;
-    int order;
-    int position;
-    std::wstring text;
-    ColumnType type;
-    bool visible;
-    int width;
-};
-
 ListView::ListView(HWND hWndList)
     : CListViewCtrl(hWndList)
 {
@@ -61,39 +50,30 @@ ListView::~ListView()
     CloseThemeData(m_progressTheme);
 }
 
-void ListView::AddColumn(int columnId, const std::wstring& title, int size, ColumnType type)
+void ListView::AddColumn(std::wstring& text, int position, int width, int format, int mask, bool isProgressCol)
 {
-    int existingColumns = GetHeader().GetItemCount();
-    int columnPosition = InsertColumn(
-        existingColumns,
-        title.c_str(),
-        type == ColumnType::Text ? LVCFMT_LEFT : LVCFMT_RIGHT,
-        size);
+    LVCOLUMN lvc = { 0 };
+    lvc.cx = width;
+    lvc.fmt = format;
+    lvc.mask = mask;
+    lvc.pszText = &text[0];
 
-    Column c;
-    c.id = columnId;
-    c.position = columnPosition;
-    c.text = title;
-    c.type = type;
-    c.visible = true;
-    c.width = size;
+    InsertColumn(position, &lvc);
 
-    m_cols.push_back(c);
+    ColumnState state;
+    state.showProgress = isProgressCol;
+    state.visible = true;
+    state.width = width;
+
+    m_columns.insert({ position, state });
 }
 
 ListView::SortOrder ListView::GetSortOrder(int columnId)
 {
-    auto col = std::find_if(
-        m_cols.begin(),
-        m_cols.end(),
-        [columnId](const Column& c) { return c.id == columnId; });
-
-    if (col == m_cols.end()) { return SortOrder::Unknown; }
-
     HDITEM hdrItem = { 0 };
     hdrItem.mask = HDI_FORMAT;
 
-    if (GetHeader().GetItem(col->position, &hdrItem))
+    if (GetHeader().GetItem(columnId, &hdrItem))
     {
         if (hdrItem.fmt & HDF_SORTDOWN) { return SortOrder::Descending; }
         if (hdrItem.fmt & HDF_SORTUP) { return SortOrder::Ascending; }
@@ -139,17 +119,10 @@ void ListView::SelectAll()
 
 void ListView::SetSortOrder(int columnId, SortOrder order)
 {
-    auto col = std::find_if(
-        m_cols.begin(),
-        m_cols.end(),
-        [columnId](const Column& c) { return c.id == columnId; });
-
-    if (col == m_cols.end()) { return; }
-
     HDITEM hdrItem = { 0 };
     hdrItem.mask = HDI_FORMAT;
 
-    if (!GetHeader().GetItem(col->position, &hdrItem))
+    if (!GetHeader().GetItem(columnId, &hdrItem))
     {
         return;
     }
@@ -173,51 +146,62 @@ void ListView::SetSortOrder(int columnId, SortOrder order)
     }
     }
 
-    GetHeader().SetItem(col->position, &hdrItem);
+    GetHeader().SetItem(columnId, &hdrItem);
 }
 
 void ListView::LoadState(const std::string& key)
 {
-    UIState::ColumnStateMap m = UIState::GetInstance().GetListViewColumnState(key);
-    if (m.empty()) { return; }
+    UIState::ListViewState state = UIState::GetInstance().GetListViewState(key);
 
-    // Order array
-    int* pOrder = new int[m.size()];
-
-    for (int i = 0; i < (int)m_cols.size(); i++)
+    if (state.order.size() != m_columns.size()
+        && state.visibility.size() != m_columns.size()
+        && state.width.size() != m_columns.size())
     {
-        Column& col = m_cols.at(i);
-        if (m.find(col.id) == m.end()) { continue; }
-
-        UIState::ColumnState& state = m.at(col.id);
-
-        col.order = state.order;
-        col.visible = state.visible;
-        col.width = state.width;
-
-        pOrder[i] = state.order;
-        SetColumnWidth(i, col.visible ? col.width : 0);
+        return;
     }
 
-    SetColumnOrderArray((int)m.size(), pOrder);
-    delete[] pOrder;
+    int* order = new int[m_columns.size()];
+
+    for each (auto pair in m_columns)
+    {
+        m_columns.at(pair.first).visible = state.visibility.at(pair.first);
+        m_columns.at(pair.first).width = state.width.at(pair.first);
+
+        order[pair.first] = state.order.at(pair.first);
+
+        SetColumnWidth(
+            pair.first,
+            m_columns.at(pair.first).visible
+            ? m_columns.at(pair.first).width
+            : 0);
+    }
+
+    ListView_SetColumnOrderArray(*this, m_columns.size(), order);
+    delete[] order;
 }
 
 void ListView::SaveState(const std::string& key)
 {
-    UIState::ColumnStateMap m;
+    size_t cols = m_columns.size();
 
-    for (Column& col : m_cols)
+    UIState::ListViewState state;
+    state.order.resize(cols);
+    state.visibility.resize(cols);
+    state.width.resize(cols);
+
+    int* order = new int[cols];
+    ListView_GetColumnOrderArray(*this, cols, order);
+
+    for each (auto pair in m_columns)
     {
-        UIState::ColumnState s;
-        s.order = col.order;
-        s.visible = col.visible;
-        s.width = col.width;
-
-        m.insert({ col.id, s });
+        state.order.at(pair.first) = order[pair.first];
+        state.visibility.at(pair.first) = pair.second.visible;
+        state.width.at(pair.first) = pair.second.width;
     }
 
-    UIState::GetInstance().SetListViewColumnState(key, m);
+    delete[] order;
+
+    UIState::GetInstance().SetListViewState(key, state);
 }
 
 bool ListView::IsPointInHeader(POINT p)
@@ -243,27 +227,37 @@ void ListView::ShowColumnContextMenu(POINT p)
 {
     HMENU hColumnSelector = CreatePopupMenu();
 
-    for (int i = 0; i < (int)m_cols.size(); i++)
+    int cols = GetHeader().GetItemCount();
+    int* colOrder = new int[cols];
+    GetColumnOrderArray(cols, colOrder);
+
+    HMENU hColumnMenu = CreatePopupMenu();
+
+    for (int i = 0; i < cols; i++)
     {
-        Column& col = m_cols.at(i);
+        TCHAR txt[1024];
 
-        UINT uFlags = MF_STRING;
+        HDITEM hdi = { 0 };
+        hdi.mask = HDI_TEXT;
+        hdi.pszText = txt;
+        hdi.cchTextMax = ARRAYSIZE(txt);
 
-        if (col.visible)
+        if (GetHeader().GetItem(colOrder[i], &hdi))
         {
-            uFlags |= MF_CHECKED;
-        }
+            UINT uFlags = MF_STRING;
+            if (m_columns.at(colOrder[i]).visible) { uFlags |= MF_CHECKED; }
 
-        AppendMenu(hColumnSelector, uFlags, 1000 + i, col.text.c_str());
+            AppendMenu(hColumnMenu, uFlags, i + 1000, hdi.pszText);
+        }
     }
 
     int res = TrackPopupMenu(
-        hColumnSelector,
+        hColumnMenu,
         TPM_NONOTIFY | TPM_RETURNCMD,
         p.x,
         p.y,
-        0,
-        m_hWnd,
+        NULL,
+        *this,
         NULL);
 
     if (res <= 0)
@@ -273,9 +267,10 @@ void ListView::ShowColumnContextMenu(POINT p)
 
     res -= 1000;
 
-    Column& col = m_cols.at(res);
-    SetColumnWidth(res, col.visible ? 0 : col.width);
-    col.visible = !col.visible;
+    ColumnState& cs = m_columns.at(colOrder[res]);
+
+    SetColumnWidth(colOrder[res], cs.visible ? 0 : cs.width);
+    cs.visible = !cs.visible;
 }
 
 LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -315,71 +310,40 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 
         switch (nmhdr->code)
         {
-        case HDN_ENDDRAG:
-        {
-            LPNMHEADER lpHeader = reinterpret_cast<LPNMHEADER>(nmhdr);
-            auto col = std::find_if(
-                lv->m_cols.begin(),
-                lv->m_cols.end(),
-                [lpHeader](const Column& c) { return c.position == lpHeader->iItem; });
-            if (col == lv->m_cols.end()) { break; }
-
-            col->order = lpHeader->pitem->iOrder;
-            break;
-        }
         case HDN_DIVIDERDBLCLICK:
         {
             LPNMHEADER lpHeader = reinterpret_cast<LPNMHEADER>(nmhdr);
-            auto col = std::find_if(
-                lv->m_cols.begin(),
-                lv->m_cols.end(),
-                [lpHeader](const Column& c) { return c.position == lpHeader->iItem; });
-            if (col == lv->m_cols.end()) { break; }
-
-            col->width = lv->GetColumnWidth(lpHeader->iItem);
+            lv->m_columns.at(lpHeader->iItem).width = lv->GetColumnWidth(lpHeader->iItem);
             break;
         }
         case HDN_ENDTRACK:
         {
             LPNMHEADER lpHeader = reinterpret_cast<LPNMHEADER>(nmhdr);
-            auto col = std::find_if(
-                lv->m_cols.begin(),
-                lv->m_cols.end(),
-                [lpHeader](const Column& c) { return c.position == lpHeader->iItem; });
-            if (col == lv->m_cols.end()) { break; }
-
-            col->width = lpHeader->pitem->cxy;
+            lv->m_columns.at(lpHeader->iItem).width = lpHeader->pitem->cxy;
             break;
         }
         case LVN_COLUMNCLICK:
         {
             LPNMLISTVIEW lpListView = reinterpret_cast<LPNMLISTVIEW>(nmhdr);
-            int position = lpListView->iSubItem;
-            auto col = std::find_if(
-                lv->m_cols.begin(),
-                lv->m_cols.end(),
-                [position](const Column& c) { return c.position == position; });
 
-            if (col == lv->m_cols.end()) { break; }
-
-            SortOrder currentSortOrder = lv->GetSortOrder(col->id);
+            SortOrder currentSortOrder = lv->GetSortOrder(lpListView->iSubItem);
             SortOrder newSortOrder = SortOrder::Ascending;
             if (currentSortOrder == SortOrder::Ascending) { newSortOrder = SortOrder::Descending; }
             if (currentSortOrder == SortOrder::Descending) { newSortOrder = SortOrder::Ascending; }
 
-            if (!lv->Sort(col->id, newSortOrder))
+            if (!lv->Sort(lpListView->iSubItem, newSortOrder))
             {
                 break;
             }
 
-            for (auto& it : lv->m_cols)
+            for (int i = 0; i < lv->GetHeader().GetItemCount(); i++)
             {
-                lv->SetSortOrder(it.id, SortOrder::Unknown);
+                lv->SetSortOrder(i, SortOrder::Unknown);
             }
 
             auto idx = lv->GetVisibleIndices();
             lv->RedrawItems(idx.first, idx.second);
-            lv->SetSortOrder(col->id, newSortOrder);
+            lv->SetSortOrder(lpListView->iSubItem, newSortOrder);
 
             break;
         }
@@ -428,23 +392,13 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
         case LVN_GETDISPINFO:
         {
             NMLVDISPINFO* inf = reinterpret_cast<NMLVDISPINFO*>(nmhdr);
-            
-            int position = inf->item.iSubItem;
-            auto col = std::find_if(
-                lv->m_cols.begin(),
-                lv->m_cols.end(),
-                [position](const Column& c) { return c.position == position; });
-
-            if (col == lv->m_cols.end())
-            {
-                break;
-            }
+            ColumnState& cs = lv->m_columns.at(inf->item.iSubItem);
 
             if (inf->item.mask & LVIF_TEXT)
             {
-                if (col->type == ColumnType::Text || col->type == ColumnType::Number)
+                if (!cs.showProgress)
                 {
-                    std::wstring value = lv->GetItemText(col->id, inf->item.iItem);
+                    std::wstring value = lv->GetItemText(inf->item.iSubItem, inf->item.iItem);
                     StringCchCopy(inf->item.pszText, inf->item.cchTextMax, value.c_str());
                 }
             }
@@ -487,16 +441,10 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
                 return CDRF_NOTIFYSUBITEMDRAW;
             case (CDDS_ITEMPREPAINT | CDDS_SUBITEM):
             {
-                int position = lpCustomDraw->iSubItem;
-                auto col = std::find_if(
-                    lv->m_cols.begin(),
-                    lv->m_cols.end(),
-                    [position](const Column& c) { return c.position == position; });
+                ColumnState& cs = lv->m_columns.at(lpCustomDraw->iSubItem);
+                if (!cs.showProgress) { break; }
 
-                if (col == lv->m_cols.end()) { break; }
-                if (col->type != ColumnType::Progress) { break; }
-
-                float progress = lv->GetItemProgress(col->id, (int)lpCustomDraw->nmcd.dwItemSpec);
+                float progress = lv->GetItemProgress(lpCustomDraw->iSubItem, (int)lpCustomDraw->nmcd.dwItemSpec);
                 if (progress < 0) { break; }
 
                 HDC hDc = lpCustomDraw->nmcd.hdc;
