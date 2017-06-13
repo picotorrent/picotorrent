@@ -11,13 +11,6 @@ namespace UI
 class ListView : public CListViewCtrl
 {
 public:
-    enum ColumnType
-    {
-        Number,
-        Progress,
-        Text
-    };
-
     enum SortOrder
     {
         Unknown,
@@ -28,7 +21,7 @@ public:
     ListView(HWND hWndList);
     ~ListView();
 
-    void AddColumn(int columnId, const std::wstring& title, int size, ColumnType type);
+    void AddColumn(std::wstring& text, int position, int width, int format, int mask, bool isProgressCol = false);
     SortOrder GetSortOrder(int columnId);
     std::pair<int, int> GetVisibleIndices();
     void SelectAll();
@@ -50,13 +43,19 @@ protected:
     virtual bool Sort(int columnId, SortOrder order) { return false; }
 
 private:
+    struct ColumnState
+    {
+        bool showProgress;
+        bool visible;
+        int width;
+    };
+
     bool IsPointInHeader(POINT p);
     void ShowColumnContextMenu(POINT p);
 
-    struct Column;
-
     static LRESULT CALLBACK SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
-    std::vector<Column> m_cols;
+
+    std::map<int, ColumnState> m_columns;
 
     HWND m_progress;
     HTHEME m_progressTheme;

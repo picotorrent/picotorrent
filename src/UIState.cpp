@@ -19,86 +19,92 @@ UIState& UIState::GetInstance()
     return instance;
 }
 
-UIState::ColumnStateMap UIState::GetListViewColumnState(const std::string& key)
+UIState::ListViewState UIState::GetListViewState(const std::string& key)
 {
-    // Find list view
-    if (m_map.find("lv") == m_map.end())
+    if (m_map.find("listViews") == m_map.end()
+        || m_map.at("listViews").type() != lt::entry::data_type::dictionary_t)
     {
-        return ColumnStateMap();
+        return ListViewState();
     }
 
-    lt::entry lv = m_map.at("lv");
+    lt::entry::dictionary_type lvs = m_map.at("listViews").dict();
 
-    if (lv.type() != lt::entry::data_type::dictionary_t)
+    if (lvs.find(key) == lvs.end()
+        || lvs.at(key).type() != lt::entry::data_type::dictionary_t)
     {
-        // LOG (perhaps data corruption?)
-        return ColumnStateMap();
+        return ListViewState();
     }
 
-    std::map<std::string, lt::entry> lv_map = lv.dict();
+    lt::entry::dictionary_type list = lvs.at(key).dict();
 
-    if (lv_map.find(key) == lv_map.end())
+    ListViewState state;
+
+    if (list.find("order") != list.end() && list.at("order").type() == lt::entry::data_type::list_t)
     {
-        return ColumnStateMap();
-    }
+        lt::entry::list_type orderList = list.at("order").list();
 
-    lt::entry lv_entry = lv_map.at(key);
-
-    if (lv_entry.type() != lt::entry::data_type::list_t)
-    {
-        return ColumnStateMap();
-    }
-
-    std::vector<lt::entry> lv_entry_list = lv_entry.list();
-    ColumnStateMap m;
-
-    for (lt::entry& e : lv_entry_list)
-    {
-        if (e.type() != lt::entry::data_type::dictionary_t)
+        for each (auto le in orderList)
         {
-            return ColumnStateMap();
+            state.order.push_back(static_cast<int>(le.integer()));
         }
-
-        std::map<std::string, lt::entry> emap = e.dict();
-
-        ColumnState st;
-        int id = static_cast<int>(emap.at("id").integer());
-
-        st.order = static_cast<int>(emap.at("o").integer());
-        st.visible = static_cast<int>(emap.at("v").integer()) > 0 ? true : false;
-        st.width = static_cast<int>(emap.at("w").integer());
-
-        m.insert({ id, st });
     }
 
-    return m;
+    if (list.find("visibility") != list.end() && list.at("visibility").type() == lt::entry::data_type::list_t)
+    {
+        lt::entry::list_type visibilityList = list.at("visibility").list();
+
+        for each (auto le in visibilityList)
+        {
+            state.visibility.push_back(le.integer() > 0);
+        }
+    }
+
+    if (list.find("width") != list.end() && list.at("width").type() == lt::entry::data_type::list_t)
+    {
+        lt::entry::list_type widthList = list.at("width").list();
+
+        for each (auto le in widthList)
+        {
+            state.width.push_back(static_cast<int>(le.integer()));
+        }
+    }
+
+    return state;
 }
 
-void UIState::SetListViewColumnState(const std::string& key, const ColumnStateMap& map)
+void UIState::SetListViewState(const std::string& key, const UIState::ListViewState& state)
 {
-    // Find list view
-    if (m_map.find("lv") == m_map.end())
+    lt::entry::list_type orderList;
+    lt::entry::list_type visibilityList;
+    lt::entry::list_type widthList;
+
+    for (size_t i = 0; i < state.order.size(); i++)
     {
-        m_map.insert({ "lv", lt::entry(lt::entry::data_type::dictionary_t) });
+        orderList.push_back(state.order.at(i));
     }
 
-    lt::entry& lv_entry = m_map.at("lv");
-    if (lv_entry.type() != lt::entry::data_type::dictionary_t) { return; }
-
-    std::vector<lt::entry> l;
-
-    for (auto& p : map)
+    for (size_t i = 0; i < state.visibility.size(); i++)
     {
-        std::map<std::string, lt::entry> o;
-        o.insert({ "id", lt::entry(p.first) });
-        o.insert({ "o", lt::entry(p.second.order) });
-        o.insert({ "v", lt::entry(p.second.visible ? 1 : 0) });
-        o.insert({ "w", lt::entry(p.second.width) });
-
-        l.push_back(lt::entry(o));
+        visibilityList.push_back(state.visibility.at(i) ? 1 : 0);
     }
 
-    lv_entry[key] = lt::entry(l);
+    for (size_t i = 0; i < state.width.size(); i++)
+    {
+        widthList.push_back(state.width.at(i));
+    }
+
+    lt::entry::dictionary_type list;
+    list.insert({ "order", orderList });
+    list.insert({ "visibility", visibilityList });
+    list.insert({ "width", widthList });
+
+    if (m_map.find("listViews") == m_map.end())
+    {
+        m_map.insert({ "listViews", lt::entry(lt::entry::dictionary_type()) });
+    }
+
+    lt::entry::dictionary_type& listViews = m_map.at("listViews").dict();
+    listViews[key] = list;
 }
 
 std::unique_ptr<UIState::WindowState> UIState::GetWindowState(const std::string& key)

@@ -12,20 +12,43 @@
 #define CTX_MENU_ADD 1
 #define CTX_MENU_REMOVE 2
 
-#define LV_COL_URL    1
-#define LV_COL_STATUS 2
-#define LV_COL_UPDATE 3
-#define LV_COL_SCRAPE 4
+#define LV_COL_URL    0
+#define LV_COL_STATUS 1
+#define LV_COL_UPDATE 2
+#define LV_COL_SCRAPE 3
 
 using UI::TrackerListView;
 
 TrackerListView::TrackerListView(HWND hWndParent)
     : ListView::ListView(hWndParent)
 {
-    AddColumn(LV_COL_URL, TRW("url"), SX(240), ColumnType::Text);
-    AddColumn(LV_COL_STATUS, TRW("status"), SX(100), ColumnType::Text);
-    AddColumn(LV_COL_UPDATE, TRW("next_announce"), SX(100), ColumnType::Number);
-    AddColumn(LV_COL_SCRAPE, TRW("scrape"), SX(120), ColumnType::Number);
+    AddColumn(
+        std::wstring(TRW("url")),
+        LV_COL_URL,
+        SX(240),
+        LVCFMT_LEFT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("status")),
+        LV_COL_STATUS,
+        SX(100),
+        LVCFMT_LEFT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("next_announce")),
+        LV_COL_UPDATE,
+        SX(100),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("scrape")),
+        LV_COL_SCRAPE,
+        SX(120),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
 }
 
 TrackerListView::~TrackerListView()

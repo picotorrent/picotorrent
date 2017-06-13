@@ -22,15 +22,34 @@ TorrentFileListView::TorrentFileListView(HWND hWnd, bool showProgress)
     : ListView::ListView(hWnd),
     m_showProgress(showProgress)
 {
-    AddColumn(LV_COL_NAME, TRW("name"), SX(270), ColumnType::Text);
-    AddColumn(LV_COL_SIZE, TRW("size"), SX(80), ColumnType::Number);
+    AddColumn(
+        std::wstring(TRW("name")),
+        LV_COL_NAME,
+        SX(270),
+        LVCFMT_LEFT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
 
-    if (showProgress)
-    {
-        AddColumn(LV_COL_PROGRESS, TRW("progress"), SX(120), ColumnType::Progress);
-    }
+    AddColumn(
+        std::wstring(TRW("size")),
+        LV_COL_SIZE,
+        SX(80),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
 
-    AddColumn(LV_COL_PRIO, TRW("priority"), SX(120), ColumnType::Text);
+    AddColumn(
+        std::wstring(TRW("progress")),
+        LV_COL_PROGRESS,
+        showProgress ? SX(120) : 0,
+        LVCFMT_LEFT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT,
+        true);
+
+    AddColumn(
+        std::wstring(TRW("priority")),
+        LV_COL_PRIO,
+        SX(120),
+        LVCFMT_LEFT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
 
     // Enable checkboxes
     SetExtendedListViewStyle(GetExtendedListViewStyle() | LVS_EX_CHECKBOXES);

@@ -7,24 +7,60 @@
 
 #include <strsafe.h>
 
-#define LV_COL_IP 1
-#define LV_COL_CLIENT 2
-#define LV_COL_FLAGS 3
-#define LV_COL_DOWNLOAD 4
-#define LV_COL_UPLOAD 5
-#define LV_COL_PROGRESS 6
+#define LV_COL_IP 0
+#define LV_COL_CLIENT 1
+#define LV_COL_FLAGS 2
+#define LV_COL_DOWNLOAD 3
+#define LV_COL_UPLOAD 4
+#define LV_COL_PROGRESS 5
 
 using UI::PeerListView;
 
 PeerListView::PeerListView(HWND hWnd)
     : ListView::ListView(hWnd)
 {
-    AddColumn(LV_COL_IP, TRW("ip"), SX(110), ColumnType::Text);
-    AddColumn(LV_COL_CLIENT, TRW("client"), SX(140), ColumnType::Text);
-    AddColumn(LV_COL_FLAGS, TRW("flags"), SX(80), ColumnType::Text);
-    AddColumn(LV_COL_DOWNLOAD, TRW("dl"), SX(80), ColumnType::Number);
-    AddColumn(LV_COL_UPLOAD, TRW("ul"), SX(80), ColumnType::Number);
-    AddColumn(LV_COL_PROGRESS, TRW("progress"), SX(100), ColumnType::Progress);
+    AddColumn(
+        std::wstring(TRW("ip")),
+        LV_COL_IP,
+        SX(110),
+        LVCFMT_LEFT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("client")),
+        LV_COL_CLIENT,
+        SX(140),
+        LVCFMT_LEFT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("flags")),
+        LV_COL_FLAGS,
+        SX(80),
+        LVCFMT_LEFT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("dl")),
+        LV_COL_DOWNLOAD,
+        SX(80),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("ul")),
+        LV_COL_UPLOAD,
+        SX(80),
+        LVCFMT_RIGHT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT);
+
+    AddColumn(
+        std::wstring(TRW("progress")),
+        LV_COL_PROGRESS,
+        SX(100),
+        LVCFMT_LEFT,
+        LVCF_TEXT | LVCF_WIDTH | LVCF_FMT,
+        true);
 }
 
 PeerListView::~PeerListView()
