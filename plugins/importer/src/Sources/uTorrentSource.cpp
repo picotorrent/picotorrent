@@ -67,7 +67,7 @@ std::vector<Sources::Source::AddTorrentRequest> uTorrentSource::GetRequests()
     lt::entry e;
     e = node;
 
-    std::map<std::string, lt::entry> d = e.dict();
+    lt::entry::dictionary_type d = e.dict();
 
     for (auto& p : d)
     {
@@ -76,7 +76,7 @@ std::vector<Sources::Source::AddTorrentRequest> uTorrentSource::GetRequests()
             continue;
         }
 
-        std::map<std::string, lt::entry> item = p.second.dict();
+        lt::entry::dictionary_type item = p.second.dict();
         std::string path = item.at("path").string();
         path = path.substr(0, path.find_last_of('\\'));
 

@@ -120,7 +120,7 @@ std::unique_ptr<UIState::WindowState> UIState::GetWindowState(const std::string&
         return nullptr;
     }
 
-    std::map<std::string, lt::entry> wnd_map = wnd.dict();
+    lt::entry::dictionary_type wnd_map = wnd.dict();
 
     if (wnd_map.find(key) == wnd_map.end())
     {
@@ -134,7 +134,7 @@ std::unique_ptr<UIState::WindowState> UIState::GetWindowState(const std::string&
         return nullptr;
     }
 
-    std::map<std::string, lt::entry> dict = wnd_entry.dict();
+    lt::entry::dictionary_type dict = wnd_entry.dict();
 
     std::unique_ptr<WindowState> state = std::make_unique<WindowState>();
     state->flags = static_cast<uint32_t>(dict.at("flags").integer());
@@ -162,7 +162,7 @@ void UIState::SetWindowState(const std::string& key, const UIState::WindowState&
     lt::entry& wnd_entry = m_map.at("wnd");
     if (wnd_entry.type() != lt::entry::data_type::dictionary_t) { return; }
 
-    std::map<std::string, lt::entry> s;
+    lt::entry::dictionary_type s;
     s.insert({ "flags", state.flags });
     s.insert({ "max_x", state.max_x });
     s.insert({ "max_y", state.max_y });

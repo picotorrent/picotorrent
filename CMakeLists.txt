@@ -130,20 +130,6 @@ link_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/bin/${PICO_ARCH}/$(Configuration)
 )
 
-set(PICO_LIBS
-    dbghelp
-    iphlpapi
-    shlwapi
-    uxtheme
-
-    # Rasterbar-libtorrent
-    torrent
-
-    # OpenSSL
-    libeay32
-    ssleay32
-)
-
 include_directories(
     c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/atlmfc/include
     include/
@@ -174,11 +160,21 @@ add_executable(
 target_link_libraries(
     PicoTorrent
 
-    ${PICO_LIBS}
+    dbghelp
+    iphlpapi
+    shlwapi
+    uxtheme
+
+    # Rasterbar-libtorrent
+    torrent
+
+    # OpenSSL
+    libssl
+    libcrypto
 
     # Boost System
-    debug boost_system-vc140-mt-gd-1_61
-    optimized boost_system-vc140-mt-1_61
+    debug boost_system-vc140-mt-gd-1_63
+    optimized boost_system-vc140-mt-1_63
 )
 
 # Include plugins

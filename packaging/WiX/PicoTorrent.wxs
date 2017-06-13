@@ -3,15 +3,19 @@
 <?if $(var.Platform) = "x64" ?>
     <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
     <?define UpgradeCode = "e8ab3252-b12e-4fca-b4c0-ff723283e7dc" ?>
+    <?define LibCrypto = "libcrypto-1_1-x64.dll" ?>
+    <?define LibSSL = "libssl-1_1-x64.dll" ?>
 <?else ?>
     <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
     <?define UpgradeCode = "2611493f-f5d7-4c5d-934a-623c9a7c7b36" ?>
+    <?define LibCrypto = "libcrypto-1_1.dll" ?>
+    <?define LibSSL = "libssl-1_1.dll" ?>
 <?endif ?>
 
 <?if $(var.Configuration) = "Debug" ?>
-    <?define BoostSystemFile = "boost_system-vc140-mt-gd-1_61.dll" ?>
+    <?define BoostSystemFile = "boost_system-vc140-mt-gd-1_63.dll" ?>
 <?else ?>
-    <?define BoostSystemFile = "boost_system-vc140-mt-1_61.dll" ?>
+    <?define BoostSystemFile = "boost_system-vc140-mt-1_63.dll" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
@@ -184,11 +188,11 @@
           </Component>
 
           <Component Id="C_libeay32">
-            <File Name="libeay32.dll" Source="$(var.PublishDirectory)\libeay32.dll" />
+            <File Name="$(var.LibCrypto)" Source="$(var.PublishDirectory)\$(var.LibCrypto)" />
           </Component>
 
           <Component Id="C_ssleay32">
-            <File Name="ssleay32.dll" Source="$(var.PublishDirectory)\ssleay32.dll" />
+            <File Name="$(var.LibSSL)" Source="$(var.PublishDirectory)\$(var.LibSSL)" />
           </Component>
 
           <Component Id="C_torrent">

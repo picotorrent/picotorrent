@@ -20,6 +20,6 @@ target_include_directories(
 target_link_libraries(
     WebSocket
 
-    debug boost_system-vc140-mt-gd-1_61
-    optimized boost_system-vc140-mt-1_61
+    debug boost_system-vc140-mt-gd-1_63
+    optimized boost_system-vc140-mt-1_63
 )

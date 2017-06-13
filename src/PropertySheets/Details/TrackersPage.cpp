@@ -47,10 +47,12 @@ TrackersPage::TrackersPage(const lt::torrent_handle& torrent)
 
 Models::Tracker TrackersPage::Map(const lt::announce_entry& entry)
 {
+    lt::time_point const now = lt::clock_type::now();
+
     Models::Tracker t;
     t.url = entry.url;
     t.state = GetTrackerState(entry);
-    t.nextUpdate = std::chrono::seconds(entry.next_announce_in());
+    t.nextUpdate = std::chrono::seconds(lt::total_seconds(entry.next_announce - now));
     t.complete = entry.scrape_complete;
     t.downloaded = entry.scrape_downloaded;
     t.incomplete = entry.scrape_incomplete;

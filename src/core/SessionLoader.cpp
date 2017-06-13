@@ -45,10 +45,6 @@ SessionLoader::State SessionLoader::Load()
 
     State state;
     state.session = std::make_shared<lt::session>(settings);
-    state.session->add_dht_router({ "router.bittorrent.com", 6881 });
-    state.session->add_dht_router({ "router.utorrent.com", 6881 });
-    state.session->add_dht_router({ "dht.transmissionbt.com", 6881 });
-    state.session->add_dht_router({ "dht.aelitis.com", 6881 }); // Vuze
 
     // Load state
 

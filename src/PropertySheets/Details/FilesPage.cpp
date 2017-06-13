@@ -34,11 +34,13 @@ std::vector<Models::TorrentFile> FilesPage::Map(const lt::torrent_handle& th)
 
     for (int i = 0; i < files.num_files(); i++)
     {
+        lt::file_index_t fi(i);
+
         Models::TorrentFile f{ i };
-        f.name = TWS(files.file_path(i));
-        f.priority = th.file_priority(i);
-        f.progress = (float)progress.at(i) / files.file_size(i);
-        f.size = files.file_size(i);
+        f.name = TWS(files.file_path(fi));
+        f.priority = th.file_priority(fi);
+        f.progress = (float)progress.at(i) / files.file_size(fi);
+        f.size = files.file_size(fi);
 
         result.push_back(f);
     }
@@ -100,7 +102,7 @@ LRESULT FilesPage::OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     for (int idx : cmd->indices)
     {
-        m_torrent.file_priority(idx, cmd->priority);
+        m_torrent.file_priority(lt::file_index_t(idx), cmd->priority);
         
         files.at(idx).priority = cmd->priority;
         m_filesList->Update(files.at(idx));

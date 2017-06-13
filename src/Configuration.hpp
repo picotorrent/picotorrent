@@ -67,7 +67,6 @@ public:
         int GetActiveDhtLimit();
         int GetActiveDownloads();
         int GetActiveLimit();
-        int GetActiveLoadedLimit();
         int GetActiveLsdLimit();
         int GetActiveSeeds();
         int GetActiveTrackerLimit();
