@@ -26,11 +26,6 @@ int Configuration::SessionSection::GetActiveLimit()
     return Get("session", "active_limit", 15);
 }
 
-int Configuration::SessionSection::GetActiveLoadedLimit()
-{
-    return Get("session", "active_loaded_limit", 100);
-}
-
 int Configuration::SessionSection::GetActiveLsdLimit()
 {
     return Get("session", "active_lsd_limit", 60);

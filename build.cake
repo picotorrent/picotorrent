@@ -35,7 +35,9 @@ var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Versio
 bool IsDebug() { return configuration.Equals("Debug"); }
 
 // Boost naming ickiness
-var BoostSystem = IsDebug() ? "boost_system-vc140-mt-gd-1_61.dll" : "boost_system-vc140-mt-1_61.dll";
+var BoostSystem = IsDebug() ? "boost_system-vc140-mt-gd-1_63.dll" : "boost_system-vc140-mt-1_63.dll";
+var LibCrypto   = platform.Equals("x86") ? "libcrypto-1_1.dll" : "libcrypto-1_1-x64.dll";
+var LibSSL      = platform.Equals("x86") ? "libssl-1_1.dll" : "libssl-1_1-x64.dll";
 
 public void SignFile(FilePath file, string description = "")
 {
@@ -105,8 +107,8 @@ Task("Setup-Library-Files")
     {
         // 3rd party libraries
         LibraryDirectory + File(BoostSystem),
-        LibraryDirectory + File("libeay32.dll"),
-        LibraryDirectory + File("ssleay32.dll"),
+        LibraryDirectory + File(LibCrypto),
+        LibraryDirectory + File(LibSSL),
         LibraryDirectory + File("torrent.dll")
     };
 
@@ -127,8 +129,8 @@ Task("Setup-Publish-Directory")
         BuildDirectory + File("WebSocket.dll"),
         // 3rd party libraries
         LibraryDirectory + File(BoostSystem),
-        LibraryDirectory + File("libeay32.dll"),
-        LibraryDirectory + File("ssleay32.dll"),
+        LibraryDirectory + File(LibCrypto),
+        LibraryDirectory + File(LibSSL),
         LibraryDirectory + File("torrent.dll")
     };
 
@@ -151,6 +153,8 @@ Task("Build-AppX-Package")
         .WithToken("VCDir", VCDir)
         .WithToken("CRTDir", CRTDir)
         .WithToken("BoostSystem", BoostSystem)
+        .WithToken("LibCrypto", LibCrypto)
+        .WithToken("LibSSL", LibSSL)
         .WithToken("PublishDirectory", MakeAbsolute(PublishDirectory))
         .WithToken("ResourceDirectory", MakeAbsolute(ResourceDirectory))
         .WithToken("PackagingDirectory", MakeAbsolute(Directory("./packaging/AppX")))

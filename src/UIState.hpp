@@ -5,10 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace libtorrent
-{
-    class entry;
-}
+#include <libtorrent/entry.hpp>
 
 class UIState
 {
@@ -49,5 +46,5 @@ private:
     void Load();
     void Save();
 
-    std::map<std::string, libtorrent::entry> m_map;
+    libtorrent::entry::dictionary_type m_map;
 };

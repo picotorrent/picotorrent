@@ -7,6 +7,7 @@
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
+#include <libtorrent/write_resume_data.hpp>
 
 #include <queue>
 
@@ -106,13 +107,13 @@ void SessionUnloader::Unload(const std::shared_ptr<lt::session>& session)
             lt::save_resume_data_alert *rd = lt::alert_cast<lt::save_resume_data_alert>(a);
             if (!rd) { continue; }
             --numOutstandingResumeData;
-            if (!rd->resume_data) { continue; }
 
             // PicoTorrent state
-            rd->resume_data->dict().insert({ "pT-queuePosition", rd->handle.status().queue_position });
+            lt::entry dat = lt::write_resume_data(rd->params);
+            dat.dict().insert({ "pT-queuePosition", rd->handle.status().queue_position });
 
             std::vector<char> buf;
-            lt::bencode(std::back_inserter(buf), *rd->resume_data);
+            lt::bencode(std::back_inserter(buf), dat);
 
             std::stringstream hex;
             hex << rd->handle.info_hash();

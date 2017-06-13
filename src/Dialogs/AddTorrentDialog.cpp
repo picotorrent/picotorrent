@@ -194,10 +194,12 @@ LRESULT AddTorrentDialog::OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lPa
         prm->file_priorities.at(idx) = cmd->priority;
 
         // Update model
+        lt::file_index_t fi(idx);
+
         Models::TorrentFile tf{ idx };
-        tf.name = TWS(files.file_path(idx));
+        tf.name = TWS(files.file_path(fi));
         tf.priority = cmd->priority;
-        tf.size = files.file_size(idx);
+        tf.size = files.file_size(fi);
 
         m_fileList->Update(tf);
     }
@@ -268,11 +270,11 @@ void AddTorrentDialog::ShowTorrent(size_t torrentIndex)
         for (int i = 0; i < files.num_files(); i++)
         {
             Models::TorrentFile tf{ i };
-            tf.name = TWS(files.file_path(i));
+            tf.name = TWS(files.file_path(lt::file_index_t(i)));
             tf.priority = prm->file_priorities.size() > (size_t)i
                 ? prm->file_priorities.at(i)
                 : PRIORITY_NORMAL;
-            tf.size = files.file_size(i);
+            tf.size = files.file_size(lt::file_index_t(i));
 
             m_fileList->Add(tf);
         }
@@ -397,8 +399,8 @@ void AddTorrentDialog::FilterFiles(bool include)
     for (int i = 0; i < files.num_files(); i++)
     {
         Models::TorrentFile tf{ i };
-        tf.name = TWS(files.file_path(i));
-        tf.size = files.file_size(i);
+        tf.name = TWS(files.file_path(lt::file_index_t(i)));
+        tf.size = files.file_size(lt::file_index_t(i));
 
         if (func(tf))
         {

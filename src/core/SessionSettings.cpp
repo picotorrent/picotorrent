@@ -18,6 +18,11 @@ lt::settings_pack SessionSettings::Get()
 
     lt::settings_pack settings;
     settings.set_int(lt::settings_pack::alert_mask, lt::alert::category_t::all_categories);
+    settings.set_str(lt::settings_pack::string_types::dht_bootstrap_nodes,
+        "router.bittorrent.com:6881" ","
+        "router.utorrent.com:6881" ","
+        "dht.transmissionbt.com:6881" ","
+        "dht.aelitis.com:6881");
 
     std::stringstream ifaces;
     for (auto &p : cfg.GetListenInterfaces())
@@ -34,7 +39,6 @@ lt::settings_pack SessionSettings::Get()
     settings.set_int(lt::settings_pack::active_dht_limit, cfg.Session()->GetActiveDhtLimit());
     settings.set_int(lt::settings_pack::active_downloads, cfg.Session()->GetActiveDownloads());
     settings.set_int(lt::settings_pack::active_limit, cfg.Session()->GetActiveLimit());
-    settings.set_int(lt::settings_pack::active_loaded_limit, cfg.Session()->GetActiveLoadedLimit());
     settings.set_int(lt::settings_pack::active_lsd_limit, cfg.Session()->GetActiveLsdLimit());
     settings.set_int(lt::settings_pack::active_seeds, cfg.Session()->GetActiveSeeds());
     settings.set_int(lt::settings_pack::active_tracker_limit, cfg.Session()->GetActiveTrackerLimit());

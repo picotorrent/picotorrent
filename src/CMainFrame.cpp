@@ -12,6 +12,7 @@
 #include <libtorrent/session_stats.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
+#include <libtorrent/write_resume_data.hpp>
 
 #include "API/PicoTorrent.hpp"
 #include "CommandLine.hpp"
@@ -682,11 +683,12 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             hex << srda->handle.info_hash();
 
             // Insert PicoTorrent-specific data
-            srda->resume_data->dict().insert({ "pT-queuePosition", srda->handle.status().queue_position });
+            lt::entry dat = lt::write_resume_data(srda->params);
+            dat.dict().insert({ "pT-queuePosition", srda->handle.status().queue_position });
             // ... more
 
             std::vector<char> buf;
-            lt::bencode(std::back_inserter(buf), *srda->resume_data);
+            lt::bencode(std::back_inserter(buf), dat);
 
             std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
             if (!IO::Directory::Exists(torrents_dir)) { IO::Directory::Create(torrents_dir); }
@@ -722,7 +724,7 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			std::vector<Torrent> updatedTorrents;
 
-            for (lt::torrent_status& ts : sua->status)
+            for (lt::torrent_status const& ts : sua->status)
             {
                 if (std::find(m_find_metadata.begin(), m_find_metadata.end(), ts.info_hash) != m_find_metadata.end())
                 {
