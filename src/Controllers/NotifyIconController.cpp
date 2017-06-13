@@ -29,7 +29,8 @@ void NotifyIconController::Execute(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_CONTEXTMENU:
     {
-        POINT p{ GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam) };
+        DWORD dwPos = GetMessagePos();
+        POINT p{ GET_X_LPARAM(dwPos), GET_Y_LPARAM(dwPos) };
 
         HMENU menu = CreatePopupMenu();
         AppendMenu(menu, MF_STRING, ID_NOTIFYICON_ADD, TRW("add_torrent"));
