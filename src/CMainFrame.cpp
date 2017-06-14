@@ -704,11 +704,13 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case lt::session_stats_alert::alert_type:
         {
             lt::session_stats_alert* ssa = lt::alert_cast<lt::session_stats_alert>(alert);
-            
-            int dht_nodes_idx = lt::find_metric_idx("dht.dht_peers");
-            uint64_t dht_nodes = ssa->values[dht_nodes_idx];
+            int idx = -1;
 
-            // m_statusBar->SetDhtNodes((int)dht_nodes);
+            if ((idx = lt::find_metric_idx("dht.dht_peers")) >= 0)
+            {
+                m_statusBar->SetDhtNodes(ssa->values.at(idx));
+            }
+
             break;
         }
         case lt::state_update_alert::alert_type:

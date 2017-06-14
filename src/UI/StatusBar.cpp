@@ -2,6 +2,8 @@
 
 #include <strsafe.h>
 
+#include "../Scaler.hpp"
+
 using UI::StatusBar;
 
 HWND StatusBar::Create(HWND hWndParent, RECT rc)
@@ -12,13 +14,13 @@ HWND StatusBar::Create(HWND hWndParent, RECT rc)
         NULL,
         WS_CHILD | WS_VISIBLE);
 
-    int parts[] = { 120, 300, -1 };
+    int parts[] = { SX(120), SX(300), -1 };
     m_status.SetParts(ARRAYSIZE(parts), parts);
 
     return hWnd;
 }
 
-void StatusBar::SetDhtNodes(int nodes)
+void StatusBar::SetDhtNodes(int64_t nodes)
 {
     TCHAR st[1024];
     StringCchPrintf(st, ARRAYSIZE(st), TEXT("DHT: %d node(s)"), nodes);
