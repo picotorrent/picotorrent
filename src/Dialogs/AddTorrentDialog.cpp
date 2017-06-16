@@ -364,6 +364,25 @@ void AddTorrentDialog::FilterFiles(bool include)
         if (dlg.DoModal() == IDOK)
         {
             std::wstring regex = dlg.GetInput();
+
+            try
+            {
+                std::wregex re(regex, std::regex_constants::icase);
+            }
+            catch (std::regex_error&)
+            {
+                TaskDialog(
+                    m_hWnd,
+                    NULL,
+                    TEXT("PicoTorrent"),
+                    TRW("invalid_regex"),
+                    NULL,
+                    TDCBF_OK_BUTTON,
+                    TD_WARNING_ICON,
+                    NULL);
+                break;
+            }
+
             func = [regex](Models::TorrentFile const& file)
             {
                 std::wregex re(regex, std::regex_constants::icase);
