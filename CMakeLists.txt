@@ -48,9 +48,6 @@ set(PICOTORRENT_SOURCES
     src/UnhandledExceptionHandler
     src/VersionInformation
 
-    src/API/IO/Directory
-    src/API/IO/File
-    src/API/IO/FileSystem
     src/API/LoggerProxy
     src/API/PicoTorrent
     src/API/TranslatorProxy
@@ -75,10 +72,6 @@ set(PICOTORRENT_SOURCES
     src/Dialogs/AddTrackerDialog
     src/Dialogs/OpenFileDialog
     src/Dialogs/TextInputDialog
-
-    src/IO/Directory
-    src/IO/File
-    src/IO/Path
 
     src/Mapping/TorrentMapper
 

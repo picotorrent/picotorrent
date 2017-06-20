@@ -7,16 +7,17 @@
 #include <libtorrent/sha1_hash.hpp>
 #include <libtorrent/torrent_info.hpp>
 
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 #include <queue>
 
 #include "../Configuration.hpp"
 #include "../Environment.hpp"
-#include "../IO/Directory.hpp"
-#include "../IO/File.hpp"
-#include "../IO/Path.hpp"
 #include "../Log.hpp"
 #include "SessionSettings.hpp"
 
+namespace fs = std::experimental::filesystem::v1;
 namespace lt = libtorrent;
 using Core::SessionLoader;
 
@@ -29,7 +30,7 @@ struct SessionLoadItem
 
     std::wstring path;
 
-    std::vector<char> resume_data;
+    std::string resume_data;
     std::string magnet_save_path;
     std::string magnet_url;
 };
@@ -37,9 +38,9 @@ struct SessionLoadItem
 SessionLoader::State SessionLoader::Load()
 {
     // Paths
-    std::wstring data_path = Environment::GetDataPath();
-    std::wstring state_file = IO::Path::Combine(data_path, TEXT("Session.dat"));
-    std::wstring torrents_dir = IO::Path::Combine(data_path, TEXT("Torrents"));
+    fs::path data_path = Environment::GetDataPath();
+    fs::path state_file = data_path / "Session.dat";
+    fs::path torrents_dir = data_path / "Torrents";
 
     lt::settings_pack settings = SessionSettings::Get();
 
@@ -48,38 +49,30 @@ SessionLoader::State SessionLoader::Load()
 
     // Load state
 
-    if (IO::File::Exists(state_file))
+    if (fs::exists(state_file))
     {
-        std::error_code ec;
-        std::vector<char> buf = IO::File::ReadAllBytes(state_file, ec);
+        std::ifstream state_input(state_file, std::ios::binary);
+        std::stringstream ss;
+        ss << state_input.rdbuf();
+        std::string buf = ss.str();
 
-        if (ec)
+        lt::bdecode_node node;
+        lt::error_code ltec;
+        lt::bdecode(&buf[0], &buf[0] + buf.size(), node, ltec);
+
+        if (ltec)
         {
-            LOG(Error) << "Could not read session state file, error: " << ec.message();
+            LOG(Error) << "Could not bdecode session state file, error: " << ltec.message();
         }
         else
         {
-            lt::bdecode_node node;
-            lt::error_code ltec;
-            lt::bdecode(&buf[0], &buf[0] + buf.size(), node, ltec);
-
-            if (ltec)
-            {
-                LOG(Error) << "Could not bdecode session state file, error: " << ltec.message();
-            }
-            else
-            {
-                state.session->load_state(node);
-            }
+            state.session->load_state(node);
         }
     }
 
     // Load torrents
-    if (IO::Directory::Exists(torrents_dir))
+    if (fs::exists(torrents_dir))
     {
-        std::vector<std::wstring> torrent_dat_files = IO::Directory::GetFiles(torrents_dir, TEXT("*.dat"));
-        LOG(Info) << "Loading " << torrent_dat_files.size() << " torrent(s)";
-
         typedef std::pair<int64_t, SessionLoadItem> prio_item_t;
         auto comparer = [](const prio_item_t &lhs, const prio_item_t &rhs)
         {
@@ -91,18 +84,21 @@ SessionLoader::State SessionLoader::Load()
         std::priority_queue<prio_item_t, std::vector<prio_item_t>, decltype(comparer)> queue(comparer);
         int64_t maxPosition = std::numeric_limits<int64_t>::max();
 
-        for (std::wstring& dat_file : torrent_dat_files)
+        for (auto& tmp : fs::directory_iterator(torrents_dir))
         {
-            SessionLoadItem item(dat_file);
+            fs::path dat_file = tmp.path();
 
-            std::error_code ec;
-            item.resume_data = IO::File::ReadAllBytes(dat_file, ec);
-
-            if (ec)
+            if (dat_file.extension() != ".dat")
             {
-                LOG(Debug) << "Could not read file '" << dat_file << "', error: " << ec;
                 continue;
             }
+
+            SessionLoadItem item(dat_file);
+
+            std::ifstream dat_input(dat_file, std::ios::binary);
+            std::stringstream ss;
+            ss << dat_input.rdbuf();
+            item.resume_data = ss.str();
 
             lt::error_code ltec;
             lt::bdecode_node node;
@@ -138,13 +134,13 @@ SessionLoader::State SessionLoader::Load()
             SessionLoadItem item = queue.top().second;
             queue.pop();
 
-            std::wstring torrent_file = IO::Path::ReplaceExtension(item.path, TEXT(".torrent"));
+            fs::path torrent_file = fs::path(item.path).replace_extension(".torrent");
 
-            if (!IO::File::Exists(torrent_file)
+            if (!fs::exists(torrent_file)
                 && item.magnet_url.empty())
             {
                 LOG(Warning) << "Dat file did not have a corresponding torrent file, deleting.";
-                IO::File::Delete(torrent_file);
+                fs::remove(torrent_file);
                 continue;
             }
 
@@ -155,7 +151,7 @@ SessionLoader::State SessionLoader::Load()
                 lt::error_code ltec;
                 params = lt::read_resume_data(
                     &item.resume_data[0],
-                    (int)item.resume_data.size(),
+                    static_cast<int>(item.resume_data.size()),
                     ltec);
 
                 if (ltec)
@@ -164,16 +160,13 @@ SessionLoader::State SessionLoader::Load()
                 }
             }
 
-            if (IO::File::Exists(torrent_file))
+            if (fs::exists(torrent_file))
             {
-                std::error_code ec;
-                std::vector<char> torrent_buf = IO::File::ReadAllBytes(torrent_file, ec);
 
-                if (ec)
-                {
-                    LOG(Info) << "Could not read torrent file '" << torrent_file << "'";
-                    continue;
-                }
+                std::ifstream torrent_input(torrent_file, std::ios::binary);
+                std::stringstream ss;
+                ss << torrent_input.rdbuf();
+                std::string torrent_buf = ss.str();
 
                 lt::bdecode_node node;
                 lt::error_code ltec;

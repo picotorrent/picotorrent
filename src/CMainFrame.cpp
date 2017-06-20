@@ -1,6 +1,8 @@
 #include "CMainFrame.hpp"
 
 #include <algorithm>
+#include <filesystem>
+#include <fstream>
 #include <strsafe.h>
 
 #include <libtorrent/hex.hpp>
@@ -38,9 +40,6 @@
 #include "Dialogs/OpenFileDialog.hpp"
 #include "Environment.hpp"
 #include "Log.hpp"
-#include "IO/Directory.hpp"
-#include "IO/File.hpp"
-#include "IO/Path.hpp"
 #include "Mapping/TorrentMapper.hpp"
 #include "Scaler.hpp"
 #include "SleepManager.hpp"
@@ -54,6 +53,7 @@
 #include "UIState.hpp"
 #include "VersionInformation.hpp"
 
+namespace fs = std::experimental::filesystem::v1;
 namespace lt = libtorrent;
 
 const UINT CMainFrame::TaskbarButtonCreated = RegisterWindowMessage(TEXT("TaskbarButtonCreated"));
@@ -206,7 +206,8 @@ LRESULT CMainFrame::OnFindMetadata(UINT uMsg, WPARAM wParam, LPARAM lParam)
     // Set a temporary save path
     std::stringstream hex;
     hex << p.info_hash;
-    p.save_path = TS(IO::Path::Combine(temp, TWS(hex.str())));
+
+    p.save_path = (fs::path(temp) / fs::path(hex.str())).string();
 
     // Add the info hash to our list of currently requested metadata files.
     m_find_metadata.push_back({ p.info_hash });
@@ -486,12 +487,13 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     // Load plugins
     m_api = std::make_shared<API::PicoTorrent>(m_hWnd, m_session);
 
-    std::wstring app_dir = Environment::GetApplicationPath();
-    for (std::wstring dll : IO::Directory::GetFiles(app_dir, TEXT("*.dll")))
+    fs::path app_dir = Environment::GetApplicationPath();
+
+    for (auto& p : fs::directory_iterator(app_dir))
     {
         typedef bool(*init_fn)(int, std::shared_ptr<IPicoTorrent>);
         // Find the "pico_init_plugin" export of each DLL
-        HMODULE hPluginModule = LoadLibrary(dll.c_str());
+        HMODULE hPluginModule = LoadLibrary(p.path().c_str());
         if (hPluginModule == NULL) { continue; }
 
         init_fn init = reinterpret_cast<init_fn>(GetProcAddress(hPluginModule, "pico_init_plugin"));
@@ -615,17 +617,20 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 std::vector<char> buf;
                 lt::bencode(std::back_inserter(buf), e);
 
-                std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
-                if (!IO::Directory::Exists(torrents_dir)) { IO::Directory::Create(torrents_dir); }
+                fs::path torrents_dir = fs::path(Environment::GetDataPath()) / TEXT("Torrents");
+                if (!fs::exists(torrents_dir)) { fs::create_directories(torrents_dir); }
 
                 std::stringstream hash;
                 hash << ata->handle.info_hash();
 
                 std::string file_name = hash.str() + ".dat";
-                std::wstring dat_file = IO::Path::Combine(torrents_dir, TWS(file_name));
+                std::wstring dat_file = torrents_dir / file_name;
 
-                std::error_code ec;
-                IO::File::WriteAllBytes(dat_file, buf, ec);
+                std::ofstream out(dat_file, std::ios::binary | std::ios::out);
+                std::copy(
+                    buf.begin(),
+                    buf.end(),
+                    std::ostreambuf_iterator<char>(out));
             }
 
             // Our torrent handle
@@ -690,14 +695,17 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             std::vector<char> buf;
             lt::bencode(std::back_inserter(buf), dat);
 
-            std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
-            if (!IO::Directory::Exists(torrents_dir)) { IO::Directory::Create(torrents_dir); }
+            fs::path torrents_dir = fs::path(Environment::GetDataPath()) / TEXT("Torrents");
+            if (!fs::exists(torrents_dir)) { fs::create_directories(torrents_dir); }
 
             std::string file_name = hex.str() + ".dat";
+            fs::path dat_file = torrents_dir / file_name;
 
-            std::wstring dat_file = IO::Path::Combine(torrents_dir, TWS(file_name));
-            std::error_code ec;
-            IO::File::WriteAllBytes(dat_file, buf, ec);
+            std::ofstream out(dat_file, std::ios::binary | std::ios::out);
+            std::copy(
+                buf.begin(),
+                buf.end(),
+                std::ostreambuf_iterator<char>(out));
 
             break;
         }
@@ -845,13 +853,13 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
             m_torrents.erase(tra->info_hash);
 
             // Remove the torrent and dat file from the hard drive
-            std::wstring hash = TWS(hex.str());
-            std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
-            std::wstring torrent_file = IO::Path::Combine(torrents_dir, hash + L".torrent");
-            std::wstring torrent_dat = IO::Path::Combine(torrents_dir, hash + L".dat");
+            std::string hash = hex.str();
+            fs::path torrents_dir = fs::path(Environment::GetDataPath()) / TEXT("Torrents");
+            fs::path torrent_file = torrents_dir / fs::path(hash + ".torrent");
+            fs::path torrent_dat = torrents_dir / fs::path(hash + ".dat");
 
-            if (IO::File::Exists(torrent_file)) { IO::File::Delete(torrent_file); }
-            if (IO::File::Exists(torrent_dat)) { IO::File::Delete(torrent_dat); }
+            if (fs::exists(torrent_file)) { fs::remove(torrent_file); }
+            if (fs::exists(torrent_dat)) { fs::remove(torrent_dat); }
 
             m_api->EmitTorrentRemoved(tra->info_hash);
             m_statusBar->SetTorrentCount((int)m_torrents.size(), 0);

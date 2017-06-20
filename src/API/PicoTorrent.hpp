@@ -22,7 +22,6 @@ namespace API
         void AddMenuItem(MenuItem const& item);
         std::shared_ptr<picojson::object> GetConfiguration();
         std::string GetCurrentVersion();
-        std::shared_ptr<IFileSystem> GetFileSystem();
         std::shared_ptr<ILogger> GetLogger();
         std::shared_ptr<libtorrent::session> GetSession();
         std::shared_ptr<ITranslator> GetTranslator();

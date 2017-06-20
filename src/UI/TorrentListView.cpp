@@ -1,5 +1,6 @@
 #include "TorrentListView.hpp"
 
+#include <filesystem>
 #include <iomanip>
 
 #include <libtorrent/sha1_hash.hpp>
@@ -20,7 +21,6 @@
 #include "../Commands/ShowTorrentDetailsCommand.hpp"
 #include "../Configuration.hpp"
 #include "../Dialogs/OpenFileDialog.hpp"
-#include "../IO/Path.hpp"
 #include "../resources.h"
 #include "../Scaler.hpp"
 #include "../Translator.hpp"
@@ -37,6 +37,7 @@
 #define LV_COL_SEEDS 9
 #define LV_COL_PEERS 10
 
+namespace fs = std::experimental::filesystem::v1;
 namespace lt = libtorrent;
 using UI::TorrentListView;
 
@@ -571,8 +572,8 @@ void TorrentListView::ShowContextMenu(POINT p, const std::vector<int>& sel)
     }
     case TORRENT_CONTEXT_MENU_OPEN_IN_EXPLORER:
     {
-        std::wstring savePath = TWS(m_models.at(sel[0]).savePath);
-        std::wstring path = IO::Path::Combine(savePath, TWS(m_models.at(sel[0]).name));
+        fs::path savePath = m_models.at(sel[0]).savePath;
+        fs::path path = savePath / m_models.at(sel[0]).name;
 
         LPITEMIDLIST il = ILCreateFromPath(path.c_str());
         SHOpenFolderAndSelectItems(il, 0, 0, 0);

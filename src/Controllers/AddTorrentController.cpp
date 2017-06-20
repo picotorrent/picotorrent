@@ -1,5 +1,8 @@
 #include "AddTorrentController.hpp"
 
+#include <fstream>
+#include <sstream>
+
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/session.hpp>
@@ -9,7 +12,6 @@
 #include "../Configuration.hpp"
 #include "../Dialogs/AddTorrentDialog.hpp"
 #include "../Dialogs/OpenFileDialog.hpp"
-#include "../IO/File.hpp"
 #include "../Log.hpp"
 #include "../Translator.hpp"
 
@@ -44,14 +46,10 @@ void AddTorrentController::Execute(const std::vector<std::wstring>& files)
 
     for (auto& path : files)
     {
-        std::error_code ec;
-        std::vector<char> buf = IO::File::ReadAllBytes(path, ec);
-
-        if (ec)
-        {
-            // LOG
-            continue;
-        }
+        std::ifstream input(path, std::ios::binary);
+        std::stringstream ss;
+        ss << input.rdbuf();
+        std::string buf = ss.str();
 
         lt::error_code ltec;
         lt::bdecode_node node;

@@ -1,5 +1,10 @@
 #include "uTorrentSource.hpp"
 
+#include <filesystem>
+#include <fstream>
+#include <memory>
+#include <sstream>
+
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session.hpp>
@@ -20,13 +25,9 @@
 
 #include "../resources.h"
 
+namespace fs = std::experimental::filesystem::v1;
 namespace lt = libtorrent;
 using Sources::uTorrentSource;
-
-uTorrentSource::uTorrentSource(std::shared_ptr<IFileSystem> fileSystem)
-    : m_fileSystem(fileSystem)
-{
-}
 
 std::vector<Sources::Source::AddTorrentRequest> uTorrentSource::GetRequests()
 {
@@ -37,23 +38,20 @@ std::vector<Sources::Source::AddTorrentRequest> uTorrentSource::GetRequests()
     std::wstring dat_path = p;
     dat_path = dat_path.substr(0, dat_path.find_last_of('\\'));
 
-    DirectoryPath data_path = dat_path;
-    FileHandle dat = m_fileSystem->GetFile(p);
+    fs::path data_path = dat_path;
+    fs::path dat = p;
 
-    if (!dat->Exists())
+    if (!fs::exists(dat))
     {
         return std::vector<AddTorrentRequest>();
     }
 
     std::vector<AddTorrentRequest> result;
 
-    std::error_code ec;
-    std::vector<char> buf = dat->ReadAllBytes(ec);
-
-    if (ec)
-    {
-        return result;
-    }
+    std::ifstream dat_input(dat, std::ios::binary);
+    std::stringstream ss;
+    ss << dat_input.rdbuf();
+    std::string buf = ss.str();
 
     lt::bdecode_node node;
     lt::error_code ltec;
@@ -80,20 +78,17 @@ std::vector<Sources::Source::AddTorrentRequest> uTorrentSource::GetRequests()
         std::string path = item.at("path").string();
         path = path.substr(0, path.find_last_of('\\'));
 
-        FilePath torrent_path = data_path + TWS(p.first);
-        FileHandle torrent_file = m_fileSystem->GetFile(torrent_path);
+        fs::path torrent_path = data_path / p.first;
 
-        if (!torrent_file->Exists())
+        if (!fs::exists(torrent_path))
         {
             continue;
         }
 
-        std::vector<char> tbuf = torrent_file->ReadAllBytes(ec);
-
-        if (ec)
-        {
-            continue;
-        }
+        std::ifstream input(torrent_path, std::ios::binary);
+        std::stringstream ss;
+        ss << dat_input.rdbuf();
+        std::string tbuf = ss.str();
 
         lt::bdecode_node tnode;
         lt::bdecode(&tbuf[0], &tbuf[0] + tbuf.size(), tnode, ltec);

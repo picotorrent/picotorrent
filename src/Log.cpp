@@ -1,5 +1,6 @@
 #include "Log.hpp"
 
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
@@ -7,9 +8,9 @@
 #include <strsafe.h>
 
 #include "Environment.hpp"
-#include "IO/Directory.hpp"
-#include "IO/Path.hpp"
 #include "StringUtils.hpp"
+
+namespace fs = std::experimental::filesystem::v1;
 
 Log::Record::Record(std::ostream& stream)
     : m_stream(stream)
@@ -62,17 +63,17 @@ void Log::Initialize()
 {
     DWORD pid = GetCurrentProcessId();
 
-    std::wstring data_path = Environment::GetDataPath();
-    std::wstring log_path = IO::Path::Combine(data_path, L"Logs");
+    fs::path data_path = Environment::GetDataPath();
+    fs::path log_path = data_path / "Logs";
 
-    if (!IO::Directory::Exists(log_path))
+    if (!fs::exists(log_path))
     {
-        IO::Directory::Create(log_path);
+        fs::create_directories(log_path);
     }
 
-    std::wstringstream ss;
-    ss << L"PicoTorrent." << pid << L".log";
-    std::wstring log_file = IO::Path::Combine(log_path, ss.str());
+    std::stringstream ss;
+    ss << "PicoTorrent." << pid << ".log";
+    fs::path log_file = log_path /  ss.str();
 
     m_stream = std::make_unique<std::ofstream>(log_file);
     m_isInitialized = true;

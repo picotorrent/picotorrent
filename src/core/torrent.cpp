@@ -1,16 +1,16 @@
 #include "Torrent.hpp"
 
+#include <filesystem>
+#include <fstream>
 #include <sstream>
 
 #include <libtorrent/create_torrent.hpp>
 #include <libtorrent/torrent_info.hpp>
 
 #include "../Environment.hpp"
-#include "../IO/Directory.hpp"
-#include "../IO/File.hpp"
-#include "../IO/Path.hpp"
 #include "../StringUtils.hpp"
 
+namespace fs = std::experimental::filesystem::v1;
 namespace lt = libtorrent;
 using Core::Torrent;
 
@@ -22,13 +22,18 @@ void Torrent::Save(const std::shared_ptr<const lt::torrent_info>& ti, std::error
     std::vector<char> buf;
     lt::bencode(std::back_inserter(buf), e);
 
-    std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
-    if (!IO::Directory::Exists(torrents_dir)) { IO::Directory::Create(torrents_dir); }
+    fs::path torrents_dir = fs::path(Environment::GetDataPath()) / "Torrents";
+    if (!fs::exists(torrents_dir)) { fs::create_directories(torrents_dir); }
 
     std::stringstream hex;
     hex << ti->info_hash();
     std::string file_name = hex.str() + ".torrent";
 
-    std::wstring torrent_file = IO::Path::Combine(torrents_dir, TWS(file_name));
-    IO::File::WriteAllBytes(torrent_file, buf, ec);
+    fs::path torrent_file = torrents_dir / file_name;
+
+    std::ofstream out(torrent_file, std::ios::binary | std::ios::out);
+    std::copy(
+        buf.begin(),
+        buf.end(),
+        std::ostreambuf_iterator<char>(out));
 }
