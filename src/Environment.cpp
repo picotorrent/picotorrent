@@ -3,9 +3,7 @@
 #include <windows.h>
 #include <shlwapi.h>
 
-#include "IO/Path.hpp"
-
-std::wstring Environment::GetApplicationPath()
+fs::path Environment::GetApplicationPath()
 {
     TCHAR buf[MAX_PATH];
     GetModuleFileName(NULL, buf, ARRAYSIZE(buf));
@@ -13,19 +11,17 @@ std::wstring Environment::GetApplicationPath()
     return buf;
 }
 
-std::wstring Environment::GetDataPath()
+fs::path Environment::GetDataPath()
 {
     if (IsInstalled() || IsAppContainerProcess())
     {
-        return IO::Path::Combine(
-            GetKnownFolderPath(FOLDERID_LocalAppData),
-            TEXT("PicoTorrent"));
+        return fs::path(GetKnownFolderPath(FOLDERID_LocalAppData)) / "PicoTorrent";
     }
 
     return GetApplicationPath();
 }
 
-std::wstring Environment::GetKnownFolderPath(const KNOWNFOLDERID& rfid)
+fs::path Environment::GetKnownFolderPath(const KNOWNFOLDERID& rfid)
 {
     PWSTR buf;
     HRESULT hResult = SHGetKnownFolderPath(

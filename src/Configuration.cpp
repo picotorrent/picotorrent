@@ -1,14 +1,15 @@
 #include "Configuration.hpp"
 
+#include <filesystem>
+#include <fstream>
 #include <picojson.hpp>
 #include <sstream>
 #include <windows.h>
 
 #include "Environment.hpp"
-#include "IO/File.hpp"
-#include "IO/Path.hpp"
 #include "StringUtils.hpp"
 
+namespace fs = std::experimental::filesystem::v1;
 namespace pj = picojson;
 
 const LPTSTR FileName = TEXT("PicoTorrent.json");
@@ -333,26 +334,22 @@ void Configuration::Set<int>(const char *name, int value)
 
 void Configuration::Load()
 {
-    std::wstring data_path = Environment::GetDataPath();
-    std::wstring config_file = IO::Path::Combine(data_path, FileName);
+    fs::path data_path = Environment::GetDataPath();
+    fs::path config_file = data_path / FileName;
 
-    if (!IO::File::Exists(config_file))
+    if (!fs::exists(config_file))
     {
         m_cfg = std::make_shared<pj::object>();
         return;
     }
 
-    std::error_code ec;
-    std::vector<char> buf = IO::File::ReadAllBytes(config_file, ec);
-
-    if (ec)
-    {
-        m_cfg = std::make_shared<pj::object>();
-        return;
-    }
+    std::ifstream input(config_file, std::ios::binary);
+    std::stringstream ss;
+    ss << input.rdbuf();
+    std::string tmp = ss.str();
 
     pj::value v;
-    pj::parse(v, buf.begin(), buf.end());
+    pj::parse(v, tmp);
 
     if (!v.is<pj::object>())
     {
@@ -370,9 +367,12 @@ void Configuration::Save()
     std::vector<char> buf;
     v.serialize(std::back_inserter(buf), true);
 
-    std::wstring data_path = Environment::GetDataPath();
-    std::wstring config_file = IO::Path::Combine(data_path, FileName);
+    fs::path data_path = Environment::GetDataPath();
+    fs::path config_file = data_path / FileName;
 
-    std::error_code ec;
-    IO::File::WriteAllBytes(config_file, buf, ec);
+    std::ofstream out(config_file, std::ios::binary | std::ios::out);
+    std::copy(
+        buf.begin(),
+        buf.end(),
+        std::ostreambuf_iterator<char>(out));
 }

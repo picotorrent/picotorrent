@@ -1,5 +1,10 @@
 #include "qBittorrentSource.hpp"
 
+#include <filesystem>
+#include <fstream>
+#include <memory>
+#include <sstream>
+
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session.hpp>
@@ -20,13 +25,9 @@
 
 #include "../resources.h"
 
+namespace fs = std::experimental::filesystem::v1;
 namespace lt = libtorrent;
 using Sources::qBittorrentSource;
-
-qBittorrentSource::qBittorrentSource(std::shared_ptr<IFileSystem> fileSystem)
-    : m_fileSystem(fileSystem)
-{
-}
 
 std::vector<Sources::Source::AddTorrentRequest> qBittorrentSource::GetRequests()
 {
@@ -34,47 +35,54 @@ std::vector<Sources::Source::AddTorrentRequest> qBittorrentSource::GetRequests()
     TCHAR p[MAX_PATH];
     path.GetWindowText(p, ARRAYSIZE(p));
 
-    DirectoryHandle dir = m_fileSystem->GetDirectory(p);
-    std::vector<AddTorrentRequest> result;
-
-    if (!dir->Exists())
+    if (!fs::exists(p))
     {
         return std::vector<AddTorrentRequest>();
     }
 
-    for (FileHandle file : dir->GetFiles(L"*.fastresume"))
+    std::vector<AddTorrentRequest> result;
+
+    for (auto& entry : fs::directory_iterator(p))
     {
-        FileHandle torrent = file->ChangeExtension(L".torrent");
+        fs::path path = entry.path();
 
-        if (!file->Exists() || !torrent->Exists())
+        if (path.extension() != ".fastresume")
         {
             continue;
         }
 
-        std::error_code ec;
-        ByteBuffer buf = file->ReadAllBytes(ec);
+        fs::path torrent = path.replace_extension(".torrent");
 
-        if (ec)
+        if (!fs::exists(path) || !fs::exists(torrent))
         {
             continue;
         }
+
+        std::ifstream resume_input(path, std::ios::binary);
+        std::stringstream rss;
+        rss << resume_input.rdbuf();
+        std::string buf = rss.str();
 
         lt::error_code ltec;
-        lt::add_torrent_params params = lt::read_resume_data(&buf[0], (int)buf.size(), ltec);
+        lt::add_torrent_params params = lt::read_resume_data(
+            &buf[0],
+            static_cast<int>(buf.size()),
+            ltec);
 
         if (ltec)
         {
             continue;
         }
 
-        buf = torrent->ReadAllBytes(ec);
+        std::ifstream torrent_input(torrent, std::ios::binary);
+        std::stringstream tss;
+        tss << torrent_input.rdbuf();
+        buf = tss.str();
 
-        if (ec)
-        {
-            continue;
-        }
-
-        params.ti = std::make_shared<lt::torrent_info>(&buf[0], (int)buf.size(), ltec);
+        params.ti = std::make_shared<lt::torrent_info>(
+            &buf[0],
+            static_cast<int>(buf.size()),
+            ltec);
 
         if (ltec)
         {

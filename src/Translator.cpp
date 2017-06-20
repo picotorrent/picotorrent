@@ -5,10 +5,6 @@
 
 #include "Configuration.hpp"
 #include "Environment.hpp"
-#include "IO/Directory.hpp"
-#include "IO/File.hpp"
-#include "IO/Path.hpp"
-
 #include "resources.h"
 
 namespace pj = picojson;

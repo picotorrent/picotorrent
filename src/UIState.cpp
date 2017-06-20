@@ -1,5 +1,8 @@
 #include "UIState.hpp"
 
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -8,9 +11,8 @@
 #include <libtorrent/entry.hpp>
 
 #include "Environment.hpp"
-#include "IO/File.hpp"
-#include "IO/Path.hpp"
 
+namespace fs = std::experimental::filesystem::v1;
 namespace lt = libtorrent;
 
 UIState& UIState::GetInstance()
@@ -189,22 +191,18 @@ UIState::~UIState()
 
 void UIState::Load()
 {
-    std::wstring data_path = Environment::GetDataPath();
-    std::wstring state_file = IO::Path::Combine(data_path, TEXT("UI.dat"));
+    fs::path data_path = Environment::GetDataPath();
+    fs::path state_file = data_path / "UI.dat";
 
-    if (!IO::File::Exists(state_file))
+    if (!fs::exists(state_file))
     {
         return;
     }
 
-    std::error_code ec;
-    std::vector<char> buf = IO::File::ReadAllBytes(state_file, ec);
-
-    if (ec)
-    {
-        // LOG
-        return;
-    }
+    std::ifstream input(state_file, std::ios::binary);
+    std::stringstream ss;
+    ss << input.rdbuf();
+    std::string buf = ss.str();
 
     lt::bdecode_node node;
     lt::error_code ltec;
@@ -234,9 +232,12 @@ void UIState::Save()
     std::vector<char> buf;
     lt::bencode(std::back_inserter(buf), lt::entry(m_map));
 
-    std::wstring data_path = Environment::GetDataPath();
-    std::wstring state_file = IO::Path::Combine(data_path, TEXT("UI.dat"));
+    fs::path data_path = Environment::GetDataPath();
+    fs::path state_file = data_path / "UI.dat";
 
-    std::error_code ec;
-    IO::File::WriteAllBytes(state_file, buf, ec);
+    std::ofstream out(state_file, std::ios::binary | std::ios::out);
+    std::copy(
+        buf.begin(),
+        buf.end(),
+        std::ostreambuf_iterator<char>(out));
 }

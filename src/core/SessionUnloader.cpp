@@ -9,13 +9,13 @@
 #include <libtorrent/torrent_status.hpp>
 #include <libtorrent/write_resume_data.hpp>
 
+#include <filesystem>
+#include <fstream>
 #include <queue>
+#include <sstream>
 
 #include "../Configuration.hpp"
 #include "../Environment.hpp"
-#include "../IO/Directory.hpp"
-#include "../IO/File.hpp"
-#include "../IO/Path.hpp"
 #include "../Log.hpp"
 #include "../resources.h"
 #include "../StringUtils.hpp"
@@ -32,21 +32,19 @@ void SessionUnloader::Unload(const std::shared_ptr<lt::session>& session)
     std::vector<char> buf;
     lt::bencode(std::back_inserter(buf), entry);
 
-    std::wstring data_path = Environment::GetDataPath();
-    std::wstring state_file = IO::Path::Combine(data_path, TEXT("Session.dat"));
+    fs::path data_path = Environment::GetDataPath();
+    fs::path state_file = data_path / "Session.dat";
 
-    if (!IO::Directory::Exists(Environment::GetDataPath()))
+    if (!fs::exists(data_path))
     {
-        IO::Directory::Create(Environment::GetDataPath());
+        fs::create_directories(data_path);
     }
 
-    std::error_code ec;
-    IO::File::WriteAllBytes(state_file, buf, ec);
-
-    if (ec)
-    {
-        LOG(Warning) << "Could not save session state, error: " << ec;
-    }
+    std::ofstream state_stream(state_file, std::ios::binary);
+    std::copy(
+        buf.begin(),
+        buf.end(),
+        std::ostreambuf_iterator<char>(state_stream));
 
     session->pause();
 
@@ -72,11 +70,11 @@ void SessionUnloader::Unload(const std::shared_ptr<lt::session>& session)
     }
 
     LOG(Info) << "Saving resume data for " << numOutstandingResumeData << " torrent(s)";
-    std::wstring torrents_dir = IO::Path::Combine(Environment::GetDataPath(), TEXT("Torrents"));
+    fs::path torrents_dir = data_path / "Torrents";
 
-    if (!IO::Directory::Exists(torrents_dir))
+    if (!fs::exists(torrents_dir))
     {
-        IO::Directory::Create(torrents_dir);
+        fs::create_directories(torrents_dir);
     }
 
     while (numOutstandingResumeData > 0)
@@ -117,11 +115,13 @@ void SessionUnloader::Unload(const std::shared_ptr<lt::session>& session)
 
             std::stringstream hex;
             hex << rd->handle.info_hash();
-            std::string file_name = hex.str() + ".dat";
-            std::wstring dat_file = IO::Path::Combine(torrents_dir, TWS(file_name));
+            fs::path dat_file = torrents_dir / (hex.str() + ".dat");
 
-            std::error_code ec;
-            IO::File::WriteAllBytes(dat_file, buf, ec);
+            std::ofstream dat_stream(state_file, std::ios::binary);
+            std::copy(
+                buf.begin(),
+                buf.end(),
+                std::ostreambuf_iterator<char>(dat_stream));
         }
     }
 }
