@@ -14,7 +14,6 @@ namespace UI
     {
     public:
         TorrentListView(HWND hWndList);
-        ~TorrentListView();
 
         void Add(const Torrent& model);
         std::vector<Torrent> GetSelectedTorrents();
@@ -26,6 +25,7 @@ namespace UI
         float GetItemProgress(int columnId, int itemIndex);
         std::wstring GetItemText(int columnId, int itemIndex);
         void OnItemActivated(std::vector<int> const& indices);
+        void OnDestroy();
         void ShowContextMenu(POINT p, const std::vector<int>& selectedIndices);
         bool Sort(int columnId, SortOrder order);
 

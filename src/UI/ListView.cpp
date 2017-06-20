@@ -190,7 +190,7 @@ void ListView::SaveState(const std::string& key)
     state.width.resize(cols);
 
     int* order = new int[cols];
-    ListView_GetColumnOrderArray(*this, cols, order);
+    GetColumnOrderArray(static_cast<int>(cols), order);
 
     for each (auto pair in m_columns)
     {
@@ -302,6 +302,11 @@ LRESULT ListView::SubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
         }
 
         lv->ShowContextMenu(p, selectedIndices);
+        break;
+    }
+    case WM_DESTROY:
+    {
+        lv->OnDestroy();
         break;
     }
     case WM_NOTIFY:

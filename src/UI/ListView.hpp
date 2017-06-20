@@ -41,6 +41,7 @@ protected:
     virtual void ToggleItemState(const std::vector<int>& selectedIndices) { }
     virtual void ShowContextMenu(POINT p, const std::vector<int>& selectedIndices) { };
     virtual bool Sort(int columnId, SortOrder order) { return false; }
+    virtual void OnDestroy() { }
 
 private:
     struct ColumnState
