@@ -147,11 +147,6 @@ TorrentListView::TorrentListView(
     SetImageList(m_icons, LVSIL_SMALL);
 }
 
-TorrentListView::~TorrentListView()
-{
-    SaveState("torrents");
-}
-
 void TorrentListView::Add(const Torrent& model)
 {
     m_models.push_back(model);
@@ -416,6 +411,11 @@ std::wstring TorrentListView::GetItemText(int columnId, int itemIndex)
     }
 
     return TEXT("?unknown?");
+}
+
+void TorrentListView::OnDestroy()
+{
+    SaveState("torrents");
 }
 
 void TorrentListView::OnItemActivated(std::vector<int> const& indices)
