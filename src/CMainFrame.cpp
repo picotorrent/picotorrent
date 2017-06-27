@@ -455,6 +455,7 @@ LRESULT CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     ResizeClient(SX(800), SY(200));
     SetMenu(UI::MainMenu::Create());
     SetWindowText(TEXT("PicoTorrent"));
+    ::DragAcceptFiles(m_hWnd, TRUE);
 
     Configuration& cfg = Configuration::GetInstance();
 
@@ -885,4 +886,20 @@ void CMainFrame::OnUnhandledCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
     {
         m_extensionMenuItems.at(nID)->OnClick();
     }*/
+}
+
+void CMainFrame::OnDropFiles(HDROP dropData) {
+    Controllers::AddTorrentController atc(m_hWnd, m_session);
+
+    UINT fileCount = ::DragQueryFile(dropData, 0xFFFFFFFF, NULL, 0);
+    std::vector<std::wstring> files;
+    TCHAR buffer[1024];
+
+    for (UINT i = 0; i < fileCount; i++) {
+        if (::DragQueryFile(dropData, i, buffer, 1024) > 0) {
+            files.push_back(std::wstring(buffer));
+        }
+    }
+
+    atc.Execute(files);
 }

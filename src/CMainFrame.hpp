@@ -7,6 +7,7 @@
 #include <memory>
 #include <thread>
 #include <vector>
+#include <shellapi.h>
 
 #include <libtorrent/sha1_hash.hpp>
 
@@ -78,6 +79,7 @@ private:
     LRESULT OnTaskbarButtonCreated(UINT uMsg, WPARAM wParam, LPARAM lParam);
     void OnTimerElapsed(UINT_PTR nIDEvent);
     void OnUnhandledCommand(UINT uNotifyCode, int nID, CWindow wndCtl);
+    void OnDropFiles(HDROP dropData);
 
     BEGIN_MSG_MAP(CMainFrame)
         MSG_WM_SYSCOMMAND(OnSysCommand)
@@ -86,6 +88,7 @@ private:
         MSG_WM_COPYDATA(OnCopyData)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_TIMER(OnTimerElapsed)
+        MSG_WM_DROPFILES(OnDropFiles)
 
         MESSAGE_HANDLER_EX(TaskbarButtonCreated, OnTaskbarButtonCreated)
 
