@@ -11,7 +11,7 @@ tools/Cake.CMake
 tools/nuget.exe
 tools/PicoTorrent.Libs
 tools/WiX
-
+.vscode
 [D|d]ebug
 [R|r]elease
 
