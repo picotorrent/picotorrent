@@ -74,6 +74,7 @@
         "socks5": "SOCKS5",
         "socks5_with_credentials": "SOCKS5 (avec identification)",
         "invalid_listen_port": "Port d'écoute non valide. Ce doit être un nombre compris entre 1 024 et 65 535.",
+        "details": "Détails",
         "preferences": "Préférences",
         "advanced": "Avancée",
         "experimental": "Expérimental",

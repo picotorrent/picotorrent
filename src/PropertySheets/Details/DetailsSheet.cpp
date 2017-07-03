@@ -29,5 +29,5 @@ DetailsSheet::~DetailsSheet()
 
 void DetailsSheet::OnSheetInitialized()
 {
-    SetTitle(TRW("preferences"));
+    SetTitle(TRW("details"));
 }
