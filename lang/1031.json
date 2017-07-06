@@ -195,9 +195,10 @@
         "apply" : "Anwenden",
         "maximized" : "Maximiert",
         "no_magnet_links_found" : "Keine magnet-Links gefunden",
-        "notification_area": "System Tray (Benachrichtigungsfeld)",
-        "show_picotorrent_in_notification_area": "PicoTorrent im System Tray anzeigen",
-        "minimize_to_notification_area": "Ins System Tray minimieren",
-        "close_to_notification_area": "Ins System Tray schließen"
+        "notification_area": "Benachrichtigungsfeld",
+        "show_picotorrent_in_notification_area": "PicoTorrent im Benachrichtigungsfeld anzeigen",
+        "minimize_to_notification_area": "Ins Benachrichtigungsfeld minimieren",
+        "close_to_notification_area": "Ins Benachrichtigungsfeld schließen",
+        "invalid_regex": "Ungültiger regulärer Ausdruck"
     }
 }
