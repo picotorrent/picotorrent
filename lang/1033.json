@@ -75,7 +75,6 @@
         "socks5_with_credentials": "SOCKS5 (with credentials)",
         "invalid_listen_port": "Invalid listen port. Must be a number between 1024 and 65535.",
         "preferences": "Preferences",
-        "details":"Details",
         "advanced": "Advanced",
         "experimental": "Experimental",
         "use_picotorrent_peer_id": "Use PicoTorrent peer id and user agent",
