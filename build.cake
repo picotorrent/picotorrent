@@ -65,11 +65,11 @@ Task("Generate-Project")
     .IsDependentOn("Clean")
     .Does(() =>
 {
-    var generator = "Visual Studio 14 Win64";
+    var generator = "Visual Studio 15 2017 Win64";
 
     if(platform == "x86")
     {
-        generator = "Visual Studio 14";
+        generator = "Visual Studio 15 2017";
     }
 
     CMake("./", new CMakeSettings {
@@ -172,7 +172,7 @@ Task("Build-AppX-Package")
     argsBuilder.Append("/f {0}", MakeAbsolute(File("./packaging/AppX/PicoTorrent.mapping")));
     argsBuilder.Append("/p {0}", MakeAbsolute(PackagesDirectory + File(AppXPackage)));
 
-    var makeAppXTool = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\x86\\makeappx.exe";
+    var makeAppXTool = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.15063.0\\x86\\makeappx.exe";
     int exitCode = StartProcess(makeAppXTool, new ProcessSettings
     {
         Arguments = argsBuilder

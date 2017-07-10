@@ -20,15 +20,15 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 
 ## Building PicoTorrent
 
-PicoTorrent depends only on what Rasterbar-libtorrent needs (Boost.System,
-and Boost.Random) and all dependencies are conveniently pre-packaged in a
-NuGet package which will be downloaded as a part of the build process.
+PicoTorrent depends only on what Rasterbar-libtorrent needs (Boost.System
+and OpenSSL) and all dependencies are conveniently pre-packaged in a NuGet
+package which will be downloaded as a part of the build process.
 
 To successfully build PicoTorrent, you need the following tools installed,
 
-- CMake (>= v2.8) (installed and added to `PATH`)
-- Visual Studio 2015 (Community edition) (with C++ toolset installed)
-- Chocolatey (>= v0.9.9.11)
+- CMake (>= v3.8) (installed and added to `PATH`)
+- Visual Studio 2017 (w/ C++ toolset)
+- Chocolatey (>= v0.10.7)
 
 Build PicoTorrent by running the following in a PowerShell prompt,
 
@@ -39,5 +39,5 @@ PS> .\build.ps1
 
 ## License
 
-Copyright (c) 2015, Viktor Elofsson and contributors. PicoTorrent is provided
+Copyright (c) Viktor Elofsson and contributors. PicoTorrent is provided
 as-is under the MIT license. For more information see [LICENSE](LICENSE).
