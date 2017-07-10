@@ -1,6 +1,6 @@
 # AppVeyor build configuration
 
-os: Visual Studio 2015
+os: Visual Studio 2017
 
 branches:
   except:
