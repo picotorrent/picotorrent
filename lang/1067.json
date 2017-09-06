@@ -98,7 +98,7 @@
         "url": "Url",
         "next_announce": "Հաջորդ հայտարարությունը",
         "scrape": "Քերել",
-        "picotorrent_v_available": "PicoTorrent-ը %s առկա է",
+        "picotorrent_v_available": "PicoTorrent %s առկա է",
         "no_update_available": "Թարմացումներ չկան",
         "show_on_github": "Ցույց տալ Github-ում",
         "new_version_available": "Հասանելի է նոր տարբերակ",
