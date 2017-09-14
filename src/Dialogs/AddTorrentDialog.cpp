@@ -48,14 +48,9 @@ namespace lt = libtorrent;
 using Dialogs::AddTorrentDialog;
 
 AddTorrentDialog::AddTorrentDialog(
-    const std::vector<std::shared_ptr<lt::add_torrent_params>>& params)
+    std::vector<lt::add_torrent_params>& params)
     : m_params(params)
 {
-}
-
-std::vector<std::shared_ptr<libtorrent::add_torrent_params>>& AddTorrentDialog::GetParams()
-{
-    return m_params;
 }
 
 void AddTorrentDialog::OnShowFileFilter(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -115,20 +110,20 @@ BOOL AddTorrentDialog::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 
     m_fileList = std::make_shared<UI::TorrentFileListView>(GetDlgItem(ID_FILES));
 
-    for (auto p : m_params)
+    for (auto& p : m_params)
     {
-        if (!p->name.empty())
+        if (!p.name.empty())
         {
-            m_torrents.AddString(TWS(p->name));
+            m_torrents.AddString(TWS(p.name));
         }
-        else if (p->ti && !p->ti->name().empty())
+        else if (p.ti && !p.ti->name().empty())
         {
-            m_torrents.AddString(TWS(p->ti->name()));
+            m_torrents.AddString(TWS(p.ti->name()));
         }
-        else if (!p->info_hash.is_all_zeros())
+        else if (!p.info_hash.is_all_zeros())
         {
             std::stringstream hash;
-            hash << p->info_hash;
+            hash << p.info_hash;
             m_torrents.AddString(TWS(hash.str()));
         }
         else
@@ -145,19 +140,19 @@ BOOL AddTorrentDialog::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 
 void AddTorrentDialog::OnChangeStorageMode(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    std::shared_ptr<lt::add_torrent_params> prm = m_params.at(m_torrents.GetCurSel());
+    lt::add_torrent_params& prm = m_params.at(m_torrents.GetCurSel());
 
     switch (nID)
     {
     case ID_ADD_STORAGE_MODE_FULL:
         m_storageFull.SetCheck(BST_CHECKED);
         m_storageSparse.SetCheck(BST_UNCHECKED);
-        prm->storage_mode = lt::storage_mode_t::storage_mode_allocate;
+        prm.storage_mode = lt::storage_mode_t::storage_mode_allocate;
         break;
     case ID_ADD_STORAGE_MODE_SPARSE:
         m_storageSparse.SetCheck(BST_CHECKED);
         m_storageFull.SetCheck(BST_UNCHECKED);
-        prm->storage_mode = lt::storage_mode_t::storage_mode_sparse;
+        prm.storage_mode = lt::storage_mode_t::storage_mode_sparse;
         break;
     }
 }
@@ -172,8 +167,8 @@ void AddTorrentDialog::OnChangeSavePath(UINT uNotifyCode, int nID, CWindow wndCt
     auto res = openDialog.GetPaths();
     if (res.empty()) { return; }
 
-    std::shared_ptr<lt::add_torrent_params> prm = m_params.at(m_torrents.GetCurSel());
-    prm->save_path = ToString(res[0]);
+    lt::add_torrent_params& prm = m_params.at(m_torrents.GetCurSel());
+    prm.save_path = ToString(res[0]);
     m_savePath.SetWindowText(res[0].c_str());
 }
 
@@ -181,17 +176,18 @@ LRESULT AddTorrentDialog::OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lPa
 {
     auto cmd = reinterpret_cast<Commands::PrioritizeFilesCommand*>(lParam);
     int current = m_torrents.GetCurSel();
-    auto prm = m_params.at(current);
-    auto files = prm->ti->files();
+
+	auto& prm = m_params.at(current);
+    auto files = prm.ti->files();
 
     for (int idx : cmd->indices)
     {
-        if (prm->file_priorities.size() <= (size_t)idx)
+        if (prm.file_priorities.size() <= (size_t)idx)
         {
-            prm->file_priorities.resize(idx + 1, PRIORITY_NORMAL);
+            prm.file_priorities.resize(idx + 1, PRIORITY_NORMAL);
         }
 
-        prm->file_priorities.at(idx) = cmd->priority;
+        prm.file_priorities.at(idx) = cmd->priority;
 
         // Update model
         lt::file_index_t fi(idx);
@@ -214,8 +210,8 @@ LRESULT AddTorrentDialog::OnPrioritizeFiles(UINT uMsg, WPARAM wParam, LPARAM lPa
 
 void AddTorrentDialog::OnSavePathChanged(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    std::shared_ptr<lt::add_torrent_params> prm = m_params.at(m_torrents.GetCurSel());
-    prm->save_path = m_savePath.GetValueA();
+    lt::add_torrent_params& prm = m_params.at(m_torrents.GetCurSel());
+    prm.save_path = m_savePath.GetValueA();
 }
 
 void AddTorrentDialog::OnTorrentSelected(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -231,8 +227,8 @@ void AddTorrentDialog::ShowTorrent(size_t torrentIndex)
         return;
     }
 
-    std::shared_ptr<lt::add_torrent_params> prm = m_params.at(torrentIndex);
-    std::shared_ptr<lt::torrent_info> ti = prm->ti;
+    lt::add_torrent_params& prm = m_params.at(torrentIndex);
+    std::shared_ptr<lt::torrent_info> ti = prm.ti;
 
     m_fileList->EnableWindow(FALSE);
     m_fileList->RemoveAll();
@@ -240,11 +236,11 @@ void AddTorrentDialog::ShowTorrent(size_t torrentIndex)
     m_includeFilter.EnableWindow(FALSE);
     m_excludeFilter.EnableWindow(FALSE);
 
-    m_savePath.SetWindowText(ToWideString(prm->save_path).c_str());
+    m_savePath.SetWindowText(ToWideString(prm.save_path).c_str());
     m_storageFull.SetCheck(BST_UNCHECKED);
     m_storageSparse.SetCheck(BST_UNCHECKED);
 
-    switch (prm->storage_mode)
+    switch (prm.storage_mode)
     {
     case lt::storage_mode_t::storage_mode_allocate:
         m_storageFull.SetCheck(BST_CHECKED);
@@ -271,8 +267,8 @@ void AddTorrentDialog::ShowTorrent(size_t torrentIndex)
         {
             Models::TorrentFile tf{ i };
             tf.name = TWS(files.file_path(lt::file_index_t(i)));
-            tf.priority = prm->file_priorities.size() > (size_t)i
-                ? prm->file_priorities.at(i)
+            tf.priority = prm.file_priorities.size() > (size_t)i
+                ? prm.file_priorities.at(i)
                 : PRIORITY_NORMAL;
             tf.size = files.file_size(lt::file_index_t(i));
 
@@ -411,8 +407,8 @@ void AddTorrentDialog::FilterFiles(bool include)
         return;
     }
 
-    std::shared_ptr<lt::add_torrent_params> prm = m_params.at(m_torrents.GetCurSel());
-    const lt::file_storage& files = prm->ti->files();
+    lt::add_torrent_params& prm = m_params.at(m_torrents.GetCurSel());
+    const lt::file_storage& files = prm.ti->files();
     std::vector<int> indices;
 
     for (int i = 0; i < files.num_files(); i++)

@@ -8,7 +8,7 @@
 
 namespace libtorrent
 {
-    class torrent_info;
+	struct add_torrent_params;
 }
 
 namespace Dialogs
@@ -21,31 +21,22 @@ public:
     AddMagnetLinkDialog(const std::vector<std::wstring>& magnetLinks);
     ~AddMagnetLinkDialog();
 
-    std::vector<libtorrent::torrent_info> GetTorrentFiles();
+	std::vector<libtorrent::add_torrent_params> GetTorrentParams();
 
 private:
-    std::vector<std::string> GetLinks();
-
     bool IsInfoHash(std::string const& link);
     bool IsMagnetLink(std::string const& link);
+	std::vector<libtorrent::add_torrent_params> ParseTorrentParams();
 
     void OnAddMagnetLinks(UINT uNotifyCode, int nID, CWindow wndCtl);
-    void OnDestroy();
-    void OnEndDialog(UINT uNotifyCode, int nID, CWindow wndCtl);
     BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam);
-    LRESULT OnMetadataFound(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    void UpdateCount();
 
     BEGIN_MSG_MAP_EX(AddMagnetLinkDialog)
-        MSG_WM_DESTROY(OnDestroy)
         MSG_WM_INITDIALOG(OnInitDialog)
         COMMAND_ID_HANDLER_EX(ID_MAGNET_ADD_LINKS, OnAddMagnetLinks)
-        COMMAND_ID_HANDLER_EX(IDCANCEL, OnEndDialog)
-        MESSAGE_HANDLER_EX(PT_METADATAFOUND, OnMetadataFound)
     END_MSG_MAP()
 
-    int m_waiting_for;
-    std::vector<std::wstring> m_links;
-    std::vector<libtorrent::torrent_info> m_torrent_files;
+	std::vector<std::wstring> m_links;
+	std::vector<libtorrent::add_torrent_params> m_params;
 };
 }

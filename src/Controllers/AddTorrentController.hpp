@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace libtorrent { class session; class torrent_info; }
+namespace libtorrent { struct add_torrent_params; class session; class torrent_info; }
 
 namespace Controllers
 {
@@ -19,8 +19,8 @@ public:
     explicit AddTorrentController(HWND hWndOwner, const std::shared_ptr<libtorrent::session>& session);
 
     void Execute();
+	void Execute(std::vector<libtorrent::add_torrent_params>& params);
     void Execute(const std::vector<std::wstring>& files);
-    void Execute(const std::vector<libtorrent::torrent_info>& torrents);
     void ExecuteMagnets(const std::vector<std::wstring>& magnetLinks);
 
 private:
