@@ -23,12 +23,13 @@ void AddMagnetLinkController::Execute()
 void AddMagnetLinkController::Execute(const std::vector<std::wstring>& magnetLinks)
 {
     Dialogs::AddMagnetLinkDialog dlg(magnetLinks);
+
     if (dlg.DoModal(m_hWndOwner) == IDOK)
     {
-        std::vector<lt::torrent_info> ti = dlg.GetTorrentFiles();
+        std::vector<lt::add_torrent_params> params = dlg.GetTorrentParams();
 
         AddTorrentController atc(m_hWndOwner, m_session);
-        atc.Execute(ti);
+        atc.Execute(params);
     }
 }
 

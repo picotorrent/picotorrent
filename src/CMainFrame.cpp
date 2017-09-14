@@ -175,47 +175,6 @@ LRESULT CMainFrame::OnUnregisterNotify(UINT uMsg, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
-LRESULT CMainFrame::OnFindMetadata(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    auto cmd = reinterpret_cast<Commands::FindMetadataCommand*>(lParam);
-
-    lt::add_torrent_params p;
-    lt::error_code ec;
-    lt::parse_magnet_uri(cmd->magnetUri, p, ec);
-
-    if (ec)
-    {
-        LOG(Error) << "Could not parse magnet link: " << ec.message();
-        return FALSE;
-    }
-
-    if (std::find(m_find_metadata.begin(), m_find_metadata.end(), p.info_hash) != m_find_metadata.end())
-    {
-        LOG(Warning) << "Torrent already exists in session: " << p.info_hash;
-        return FALSE;
-    }
-
-    // Forced start
-    p.flags &= ~lt::add_torrent_params::flag_paused;
-    p.flags &= ~lt::add_torrent_params::flag_auto_managed;
-    p.flags |= lt::add_torrent_params::flag_upload_mode;
-
-    TCHAR temp[MAX_PATH];
-    GetTempPath(ARRAYSIZE(temp), temp);
-
-    // Set a temporary save path
-    std::stringstream hex;
-    hex << p.info_hash;
-
-    p.save_path = (fs::path(temp) / fs::path(hex.str())).string();
-
-    // Add the info hash to our list of currently requested metadata files.
-    m_find_metadata.push_back({ p.info_hash });
-    m_session->async_add_torrent(p);
-
-    return FALSE;
-}
-
 LRESULT CMainFrame::OnMoveTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     Dialogs::OpenFileDialog dlg;
@@ -585,12 +544,6 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 break;
             }
 
-            if (std::find(m_find_metadata.begin(), m_find_metadata.end(), ata->params.info_hash) != m_find_metadata.end())
-            {
-                // This is a torrent we search for metadata
-                break;
-            }
-
             // A check to see if this is a hash we have added from the
             // torrent directory when starting PicoTorrent.
             std::vector<lt::sha1_hash>::iterator h = std::find(
@@ -658,19 +611,6 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             lt::metadata_received_alert* mra = lt::alert_cast<lt::metadata_received_alert>(alert);
 
-            if (std::find(m_find_metadata.begin(), m_find_metadata.end(), mra->handle.info_hash()) != m_find_metadata.end())
-            {
-                const lt::torrent_info* ti = mra->handle.torrent_file().get();
-
-                for (HWND hWndListener : m_listeners)
-                {
-                    ::SendMessage(hWndListener, PT_METADATAFOUND, NULL, reinterpret_cast<LPARAM>(ti));
-                }
-
-                m_session->remove_torrent(mra->handle, lt::session::options_t::delete_files);
-                break;
-            }
-
             std::error_code ec;
             Core::Torrent::Save(mra->handle.torrent_file(), ec);
 
@@ -737,11 +677,6 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             for (lt::torrent_status const& ts : sua->status)
             {
-                if (std::find(m_find_metadata.begin(), m_find_metadata.end(), ts.info_hash) != m_find_metadata.end())
-                {
-                    continue;
-                }
-
                 Torrent model = Mapping::TorrentMapper::Map(ts);
                 m_torrentList->Update(model);
                 updatedTorrents.push_back(model);
@@ -839,13 +774,6 @@ LRESULT CMainFrame::OnSessionAlert(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case lt::torrent_removed_alert::alert_type:
         {
             lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
-
-            auto f = std::find(m_find_metadata.begin(), m_find_metadata.end(), tra->info_hash);
-            if (f != m_find_metadata.end())
-            {
-                m_find_metadata.erase(f);
-                break;
-            }
 
 			std::stringstream hex;
 			hex << tra->info_hash;

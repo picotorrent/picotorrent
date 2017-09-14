@@ -40,9 +40,63 @@ void AddTorrentController::Execute()
     Execute(res);
 }
 
+void AddTorrentController::Execute(std::vector<lt::add_torrent_params>& params)
+{
+	if (params.empty())
+	{
+		return;
+	}
+
+	Configuration& cfg = Configuration::GetInstance();
+
+	for (lt::add_torrent_params& p : params)
+	{
+		// Set default settings
+		p.save_path = cfg.GetDefaultSavePath();
+
+		if (!p.ti)
+		{
+			continue;
+		}
+
+		lt::torrent_handle th = m_session->find_torrent(p.ti->info_hash());
+
+		if (th.is_valid())
+		{
+			LOG(Warning) << "Torrent " << p.ti->name() << " already in session.";
+			TaskDialog(
+				m_hWndOwner,
+				NULL,
+				TEXT("PicoTorrent"),
+				TRW("torrent_s_already_in_session"),
+				TWS(p.ti->name()),
+				TDCBF_OK_BUTTON,
+				TD_WARNING_ICON,
+				NULL);
+			continue;
+		}
+	}
+
+	bool shouldAddFiles = true;
+	Dialogs::AddTorrentDialog dlg(params);
+
+	if (cfg.UI()->GetShowAddTorrentDialog())
+	{
+		shouldAddFiles = (dlg.DoModal(m_hWndOwner) == IDOK);
+	}
+
+	if (shouldAddFiles)
+	{
+		for (auto& p : params)
+		{
+			m_session->async_add_torrent(p);
+		}
+	}
+}
+
 void AddTorrentController::Execute(const std::vector<std::wstring>& files)
 {
-    std::vector<lt::torrent_info> torrents;
+    std::vector<lt::add_torrent_params> params;
 
     for (auto& path : files)
     {
@@ -61,76 +115,24 @@ void AddTorrentController::Execute(const std::vector<std::wstring>& files)
             continue;
         }
 
-        lt::torrent_info info(node, ltec);
+		lt::add_torrent_params param;
+		param.ti = std::make_shared<lt::torrent_info>(node, ltec);
 
         if (ltec)
         {
             continue;
         }
 
-        torrents.push_back(info);
+        params.push_back(param);
     }
 
-    Execute(torrents);
-}
-
-void AddTorrentController::Execute(const std::vector<lt::torrent_info>& torrents)
-{
-    Configuration& cfg = Configuration::GetInstance();
-    std::vector<std::shared_ptr<lt::add_torrent_params>> params;
-
-    for (auto& ti : torrents)
-    {
-        lt::torrent_handle th = m_session->find_torrent(ti.info_hash());
-
-        if (th.is_valid())
-        {
-            LOG(Warning) << "Torrent " << ti.name() << " already in session.";
-            TaskDialog(
-                m_hWndOwner,
-                NULL,
-                TEXT("PicoTorrent"),
-                TRW("torrent_s_already_in_session"),
-                TWS(ti.name()),
-                TDCBF_OK_BUTTON,
-                TD_WARNING_ICON,
-                NULL);
-            continue;
-        }
-
-        auto p = std::make_shared<lt::add_torrent_params>();
-        p->save_path = cfg.GetDefaultSavePath();
-        p->ti = std::make_shared<lt::torrent_info>(ti);
-
-        params.push_back(p);
-    }
-
-    if (params.empty())
-    {
-        return;
-    }
-
-    bool shouldAddFiles = true;
-    Dialogs::AddTorrentDialog dlg(params);
-
-    if (cfg.UI()->GetShowAddTorrentDialog())
-    {
-        shouldAddFiles = (dlg.DoModal(m_hWndOwner) == IDOK);
-    }
-
-    if (shouldAddFiles)
-    {
-        for (auto& p : dlg.GetParams())
-        {
-            m_session->async_add_torrent(*p);
-        }
-    }
+    Execute(params);
 }
 
 void AddTorrentController::ExecuteMagnets(const std::vector<std::wstring>& magnetLinks)
 {
     Configuration& cfg = Configuration::GetInstance();
-    std::vector<std::shared_ptr<lt::add_torrent_params>> params;
+    std::vector<lt::add_torrent_params> params;
 
     for (auto& link : magnetLinks)
     {
@@ -144,27 +146,10 @@ void AddTorrentController::ExecuteMagnets(const std::vector<std::wstring>& magne
             continue;
         }
 
-        p.save_path = cfg.GetDefaultSavePath();
-        p.url = TS(link);
-
-        params.push_back(std::make_shared<lt::add_torrent_params>(p));
+        params.push_back(p);
     }
 
-    bool shouldAddMagnets = true;
-    Dialogs::AddTorrentDialog dlg(params);
-
-    if (cfg.UI()->GetShowAddTorrentDialog())
-    {
-        shouldAddMagnets = (dlg.DoModal(m_hWndOwner) == IDOK);
-    }
-
-    if (shouldAddMagnets)
-    {
-        for (auto& p : dlg.GetParams())
-        {
-            m_session->async_add_torrent(*p);
-        }
-    }
+	return Execute(params);
 }
 
 std::vector<std::wstring> AddTorrentController::OpenFiles()

@@ -63,7 +63,6 @@ private:
     void OnDestroy();
     LRESULT OnRegisterNotify(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnUnregisterNotify(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    LRESULT OnFindMetadata(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnMoveTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnPauseTorrents(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT OnQueueTorrent(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -96,7 +95,6 @@ private:
         MESSAGE_HANDLER_EX(PT_ALERT, OnSessionAlert)
         MESSAGE_HANDLER_EX(PT_REGISTERNOTIFY, OnRegisterNotify)
         MESSAGE_HANDLER_EX(PT_UNREGISTERNOTIFY, OnUnregisterNotify)
-        MESSAGE_HANDLER_EX(PT_FINDMETADATA, OnFindMetadata)
         MESSAGE_HANDLER_EX(PT_MOVETORRENTS, OnMoveTorrents)
         MESSAGE_HANDLER_EX(PT_PAUSETORRENTS, OnPauseTorrents)
         MESSAGE_HANDLER_EX(PT_QUEUETORRENT, OnQueueTorrent)
@@ -133,7 +131,6 @@ private:
     std::vector<HWND> m_listeners;
     std::vector<libtorrent::stats_metric> m_metrics;
     std::vector<libtorrent::sha1_hash> m_muted_hashes;
-    std::vector<libtorrent::sha1_hash> m_find_metadata;
     std::shared_ptr<libtorrent::session> m_session;
     std::map<libtorrent::sha1_hash, libtorrent::torrent_handle> m_torrents;
     std::shared_ptr<UI::NotifyIcon> m_notifyIcon;

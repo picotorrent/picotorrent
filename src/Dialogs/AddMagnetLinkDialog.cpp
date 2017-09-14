@@ -6,6 +6,8 @@
 #include <shellapi.h>
 #include <strsafe.h>
 
+#include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/torrent_info.hpp>
 
 #include "../Commands/FindMetadataCommand.hpp"
@@ -28,11 +30,6 @@ AddMagnetLinkDialog::~AddMagnetLinkDialog()
 {
 }
 
-std::vector<lt::torrent_info> AddMagnetLinkDialog::GetTorrentFiles()
-{
-    return m_torrent_files;
-}
-
 bool AddMagnetLinkDialog::IsInfoHash(std::string const& link)
 {
     return (link.size() == 40 && !std::regex_match(link, std::regex("[^0-9A-Fa-f]")))
@@ -44,60 +41,77 @@ bool AddMagnetLinkDialog::IsMagnetLink(std::string const& link)
     return link.substr(0, magnet_prefix.size()) == magnet_prefix;
 }
 
-std::vector<std::string> AddMagnetLinkDialog::GetLinks()
+std::vector<lt::add_torrent_params> AddMagnetLinkDialog::GetTorrentParams()
 {
-    UI::TextBox magnetLinks = GetDlgItem(ID_MAGNET_LINKS_TEXT);
+	return m_params;
+}
 
-    std::vector<std::string> result;
-    std::string::size_type pos = 0;
-    std::string::size_type prev = 0;
-    std::string l = magnetLinks.GetValueA();
+std::vector<lt::add_torrent_params> AddMagnetLinkDialog::ParseTorrentParams()
+{
+	UI::TextBox magnetLinks = GetDlgItem(ID_MAGNET_LINKS_TEXT);
 
-    while ((pos = l.find('\n', prev)) != std::string::npos)
-    {
-        std::string link = l.substr(prev, pos - prev);
-        link.erase(link.find_last_not_of("\r") + 1);
-        link.erase(link.find_last_not_of("\n") + 1);
+	std::vector<lt::add_torrent_params> result;
 
-        // If only info hash, append magnet link template
-        if (IsInfoHash(link))
-        {
-            link = magnet_prefix + link;
-        }
+	std::string::size_type pos = 0;
+	std::string::size_type prev = 0;
+	std::string l = magnetLinks.GetValueA();
 
-        // Check if link starts with "magnet:?xt=urn:btih:"
-        if (IsMagnetLink(link))
-        {
-            result.push_back(l.substr(prev, pos - prev));
-        }
+	while ((pos = l.find('\n', prev)) != std::string::npos)
+	{
+		std::string link = l.substr(prev, pos - prev);
+		link.erase(link.find_last_not_of("\r") + 1);
+		link.erase(link.find_last_not_of("\n") + 1);
 
-        prev = pos + 1;
-    }
+		// If only info hash, append magnet link template
+		if (IsInfoHash(link))
+		{
+			link = magnet_prefix + link;
+		}
 
-    // To get the last substring (or only, if delimiter is not found)
-    std::string ll = l.substr(prev);
-    ll.erase(ll.find_last_not_of("\r") + 1);
-    ll.erase(ll.find_last_not_of("\n") + 1);
+		lt::add_torrent_params params;
+		lt::error_code ec;
 
-    if (IsInfoHash(ll))
-    {
-        ll = magnet_prefix + ll;
-    }
+		lt::parse_magnet_uri(link, params, ec);
 
-    if (IsMagnetLink(ll))
-    {
-        result.push_back(ll);
-    }
+		if (!ec)
+		{
+			result.push_back(params);
+		}
 
-    return result;
+		prev = pos + 1;
+	}
+
+	// To get the last substring (or only, if delimiter is not found)
+	std::string ll = l.substr(prev);
+	ll.erase(ll.find_last_not_of("\r") + 1);
+	ll.erase(ll.find_last_not_of("\n") + 1);
+
+	if (IsInfoHash(ll))
+	{
+		ll = magnet_prefix + ll;
+	}
+
+	if (IsMagnetLink(ll))
+	{
+		lt::add_torrent_params params;
+		lt::error_code ec;
+
+		lt::parse_magnet_uri(ll, params, ec);
+
+		if (!ec)
+		{
+			result.push_back(params);
+		}
+	}
+
+	return result;
 }
 
 void AddMagnetLinkDialog::OnAddMagnetLinks(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    auto links = GetLinks();
-    m_waiting_for = (int)links.size();
+	m_params = ParseTorrentParams();
 
-    if (links.empty())
+    if (m_params.empty())
     {
         TaskDialog(
             m_hWnd,
@@ -111,37 +125,7 @@ void AddMagnetLinkDialog::OnAddMagnetLinks(UINT uNotifyCode, int nID, CWindow wn
         return;
     }
 
-    // Subscribe to notifications
-    GetParent().SendMessage(PT_REGISTERNOTIFY, NULL, reinterpret_cast<LPARAM>(m_hWnd));
-
-    // Disable textbox and button
-    CButton addButton = GetDlgItem(ID_MAGNET_ADD_LINKS);
-    CProgressBarCtrl progress = GetDlgItem(ID_MAGNET_PROGRESS);
-    UI::TextBox magnetLinks = GetDlgItem(ID_MAGNET_LINKS_TEXT);
-
-    addButton.EnableWindow(FALSE);
-    progress.SetMarquee(TRUE);
-    magnetLinks.EnableWindow(FALSE);
-
-    for (auto& link : links)
-    {
-        // Send a command to find magnet links
-        Commands::FindMetadataCommand cmd{ link };
-        GetParent().SendMessage(PT_FINDMETADATA, NULL, reinterpret_cast<LPARAM>(&cmd));
-    }
-
-    UpdateCount();
-}
-
-void AddMagnetLinkDialog::OnDestroy()
-{
-    // Unsubscribe
-    GetParent().SendMessage(PT_UNREGISTERNOTIFY, NULL, reinterpret_cast<LPARAM>(m_hWnd));
-}
-
-void AddMagnetLinkDialog::OnEndDialog(UINT uNotifyCode, int nID, CWindow wndCtl)
-{
-    EndDialog(m_torrent_files.size() > 0 ? IDOK : nID);
+	EndDialog(IDOK);
 }
 
 BOOL AddMagnetLinkDialog::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
@@ -157,26 +141,4 @@ BOOL AddMagnetLinkDialog::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
     SetDlgItemText(ID_MAGNET_LINKS_TEXT, wss.str().c_str());
 
     return FALSE;
-}
-
-LRESULT AddMagnetLinkDialog::OnMetadataFound(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    const lt::torrent_info* ti = reinterpret_cast<const lt::torrent_info*>(lParam);
-    m_torrent_files.push_back(lt::torrent_info(*ti));
-
-    UpdateCount();
-
-    if (m_waiting_for == (int)m_torrent_files.size())
-    {
-        EndDialog(IDOK);
-    }
-
-    return FALSE;
-}
-
-void AddMagnetLinkDialog::UpdateCount()
-{
-    TCHAR text[1024];
-    StringCchPrintf(text, ARRAYSIZE(text), TEXT("%d / %d"), m_torrent_files.size(), m_waiting_for);
-    SetDlgItemText(ID_MAGNET_CURRENT_STATUS, text);
 }

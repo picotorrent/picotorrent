@@ -17,10 +17,7 @@ class AddTorrentDialog : public CDialogImpl<AddTorrentDialog>, public CDialogRes
 public:
     enum { IDD = IDD_ADD_TORRENT };
 
-    AddTorrentDialog(
-        const std::vector<std::shared_ptr<libtorrent::add_torrent_params>>& params);
-
-    std::vector<std::shared_ptr<libtorrent::add_torrent_params>>& GetParams();
+    AddTorrentDialog(std::vector<libtorrent::add_torrent_params>& params);
 
 private:
     void OnEndDialog(UINT uNotifyCode, int nID, CWindow wndCtl);
@@ -63,7 +60,8 @@ private:
         DLGRESIZE_CONTROL(IDOK, DLSZ_MOVE_X | DLSZ_MOVE_Y)
     END_DLGRESIZE_MAP()
 
-    std::vector<std::shared_ptr<libtorrent::add_torrent_params>> m_params;
+    std::vector<libtorrent::add_torrent_params>& m_params;
+
     std::shared_ptr<UI::TorrentFileListView> m_fileList;
 
     CComboBox m_torrents;
