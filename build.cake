@@ -74,8 +74,7 @@ Task("Generate-Project")
 
     CMake("./", new CMakeSettings {
       OutputPath = OutputDirectory,
-      Generator = generator,
-      Toolset = "v140"
+      Generator = generator
     });
 });
 
