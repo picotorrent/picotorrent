@@ -27,6 +27,9 @@ namespace pt
 		~MainFrame();
 
     private:
+		void OnAbout(wxCommandEvent&);
+		void OnExit(wxCommandEvent&);
+
         wxDECLARE_EVENT_TABLE();
 
 		wxSplitterWindow* m_splitter;

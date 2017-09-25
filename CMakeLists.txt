@@ -39,6 +39,7 @@ add_executable(
     src/picotorrent/application
     src/picotorrent/main
     src/picotorrent/mainframe
+    src/picotorrent/resources.rc
     src/picotorrent/torrentdetailsview
     src/picotorrent/torrentlistview
 )
