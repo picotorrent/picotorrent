@@ -9,8 +9,9 @@ src/core/version_info.cpp
 tools/Cake
 tools/Cake.CMake
 tools/nuget.exe
-tools/PicoTorrent.Libs
+tools/Rasterbar-libtorrent
 tools/WiX
+tools/wxWidgets
 .vscode
 [D|d]ebug
 [R|r]elease

@@ -13,9 +13,9 @@
 <?endif ?>
 
 <?if $(var.Configuration) = "Debug" ?>
-    <?define BoostSystemFile = "boost_system-vc140-mt-gd-1_63.dll" ?>
+    <?define BoostSystemFile = "boost_system-vc141-mt-gd-1_65_1.dll" ?>
 <?else ?>
-    <?define BoostSystemFile = "boost_system-vc140-mt-1_63.dll" ?>
+    <?define BoostSystemFile = "boost_system-vc141-mt-1_65_1.dll" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
@@ -200,20 +200,6 @@
           </Component>
         </ComponentGroup>
 
-        <ComponentGroup Id="CG_Plugins" Directory="INSTALLDIR">
-          <Component Id="C_Importer">
-            <File Name="Importer.dll" Source="$(var.PublishDirectory)\Importer.dll" />
-          </Component>
-
-          <Component Id="C_UpdateChecker">
-            <File Name="UpdateChecker.dll" Source="$(var.PublishDirectory)\UpdateChecker.dll" />
-          </Component>
-
-          <Component Id="C_WebSocket">
-            <File Name="WebSocket.dll" Source="$(var.PublishDirectory)\WebSocket.dll" />
-          </Component>
-        </ComponentGroup>
-
         <Feature Id="F_Complete"
                  Title="PicoTorrent"
                  Absent="disallow"
@@ -223,7 +209,6 @@
 
             <ComponentRef Id="C_PicoTorrent" />
             <ComponentGroupRef Id="CG_Libraries" />
-            <ComponentGroupRef Id="CG_Plugins" />
         </Feature>
 
         <Property Id="ARPPRODUCTICON" Value="I_PicoTorrent.ico" />

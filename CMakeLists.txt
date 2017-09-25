@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-
 project("PicoTorrent")
+
+# Get current architecture
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(PICO_ARCH "x64")
+    set(WXWIDGETS_LIB "${CMAKE_CURRENT_SOURCE_DIR}/tools/wxWidgets/wxWidgets/lib/vc_x64_lib")
+else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(PICO_ARCH "x86")
+    set(WXWIDGETS_LIB "${CMAKE_CURRENT_SOURCE_DIR}/tools/wxWidgets/wxWidgets/lib/vc_lib")
+endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 add_definitions(
     -D_UNICODE
@@ -12,12 +20,14 @@ add_definitions(
 )
 
 include_directories(
-    C:/Code/wxWidgets/include
-    C:/Code/wxWidgets/include/msvc
+    tools/Rasterbar-libtorrent/Rasterbar-libtorrent/include
+    tools/wxWidgets/wxWidgets/include
+    tools/wxWidgets/wxWidgets/include/msvc
 )
 
 link_directories(
-    C:/Code/wxWidgets/lib/vc_x64_lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/Rasterbar-libtorrent/Rasterbar-libtorrent/bin/${PICO_ARCH}
+    ${WXWIDGETS_LIB}
 )
 
 add_executable(

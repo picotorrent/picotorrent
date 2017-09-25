@@ -16,7 +16,8 @@ var PublishDirectory   = BuildDirectory + Directory("publish");
 var ResourceDirectory  = Directory("./res");
 
 var LibraryDirectory   = Directory("./tools")
-                       + Directory("PicoTorrent.Libs")
+                       + Directory("Rasterbar-libtorrent")
+                       + Directory("Rasterbar-libtorrent")
                        + Directory("bin")
                        + Directory(platform)
                        + Directory(configuration);
@@ -35,7 +36,7 @@ var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Versio
 bool IsDebug() { return configuration.Equals("Debug"); }
 
 // Boost naming ickiness
-var BoostSystem = IsDebug() ? "boost_system-vc140-mt-gd-1_63.dll" : "boost_system-vc140-mt-1_63.dll";
+var BoostSystem = IsDebug() ? "boost_system-vc141-mt-gd-1_65_1.dll" : "boost_system-vc141-mt-1_65_1.dll";
 var LibCrypto   = platform.Equals("x86") ? "libcrypto-1_1.dll" : "libcrypto-1_1-x64.dll";
 var LibSSL      = platform.Equals("x86") ? "libssl-1_1.dll" : "libssl-1_1-x64.dll";
 
@@ -102,6 +103,14 @@ Task("Build")
 Task("Setup-Library-Files")
     .Does(() =>
 {
+    
+    var libtorrentDirector = Directory("./tools")
+                           + Directory("Rasterbar-libtorrent")
+                           + Directory("Rasterbar-libtorrent")
+                           + Directory("bin")
+                           + Directory(platform)
+                           + Directory(configuration);
+
     var files = new FilePath[]
     {
         // 3rd party libraries
@@ -122,10 +131,6 @@ Task("Setup-Publish-Directory")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.exe"),
-        // Plugins
-        BuildDirectory + File("Importer.dll"),
-        BuildDirectory + File("UpdateChecker.dll"),
-        BuildDirectory + File("WebSocket.dll"),
         // 3rd party libraries
         LibraryDirectory + File(BoostSystem),
         LibraryDirectory + File(LibCrypto),
@@ -260,10 +265,7 @@ Task("Build-Symbols-Package")
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.pdb"),
-        BuildDirectory + File("Importer.pdb"),
-        BuildDirectory + File("UpdateChecker.pdb"),
-        BuildDirectory + File("WebSocket.pdb")
+        BuildDirectory + File("PicoTorrent.pdb")
     };
 
     Zip(BuildDirectory, PackagesDirectory + File(SymbolsPackage), files);
