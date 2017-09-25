@@ -36,6 +36,7 @@ link_directories(
 add_executable(
     PicoTorrent
     WIN32
+    src/picotorrent/addtorrentdlg
     src/picotorrent/application
     src/picotorrent/main
     src/picotorrent/mainframe

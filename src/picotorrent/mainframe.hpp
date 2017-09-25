@@ -27,7 +27,13 @@ namespace pt
 		~MainFrame();
 
     private:
+		enum
+		{
+			ptID_ADD_TORRENTS = wxID_HIGHEST + 1
+		};
+
 		void OnAbout(wxCommandEvent&);
+		void OnAddTorrents(wxCommandEvent&);
 		void OnExit(wxCommandEvent&);
 
         wxDECLARE_EVENT_TABLE();
