@@ -14,6 +14,9 @@ add_definitions(
     -D_UNICODE
     -D_WIN32
     -D_WIN32_WINNT=0x0600
+    -DBOOST_ALL_NO_LIB
+    -DTORRENT_NO_DEPRECATE
+    -DTORRENT_USE_OPENSSL
     -DUNICODE
     -DWIN32
     -DWIN32_LEAN_AND_MEAN
@@ -38,4 +41,19 @@ add_executable(
     src/picotorrent/mainframe
     src/picotorrent/torrentdetailsview
     src/picotorrent/torrentlistview
+)
+
+target_link_libraries(
+    PicoTorrent
+
+    # Rasterbar-libtorrent
+    torrent
+
+    # OpenSSL
+    libssl
+    libcrypto
+
+    # Boost System
+    debug boost_system-vc141-mt-gd-1_65_1
+    optimized boost_system-vc141-mt-1_65_1
 )
