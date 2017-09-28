@@ -38,11 +38,13 @@ add_executable(
     WIN32
     src/picotorrent/addtorrentdlg
     src/picotorrent/application
+    src/picotorrent/environment
     src/picotorrent/main
     src/picotorrent/mainframe
     src/picotorrent/resources.rc
     src/picotorrent/torrentdetailsview
     src/picotorrent/torrentlistview
+    src/picotorrent/utils
 )
 
 target_link_libraries(

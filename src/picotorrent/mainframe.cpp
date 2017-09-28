@@ -1,8 +1,15 @@
 #include "mainframe.hpp"
 
 #include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/alert_types.hpp>
+#include <libtorrent/bencode.hpp>
+#include <libtorrent/create_torrent.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
+#include <libtorrent/write_resume_data.hpp>
+
+#include <filesystem>
+#include <fstream>
 
 #include <wx/aboutdlg.h>
 #include <wx/dataview.h>
@@ -11,9 +18,11 @@
 #include <wx/splitter.h>
 
 #include "addtorrentdlg.hpp"
+#include "environment.hpp"
 #include "torrentdetailsview.hpp"
 #include "torrentlistview.hpp"
 
+namespace fs = std::experimental::filesystem::v1;
 namespace lt = libtorrent;
 using pt::MainFrame;
 
@@ -23,12 +32,12 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
 	EVT_MENU(wxID_EXIT, MainFrame::OnExit)
 wxEND_EVENT_TABLE()
 
-MainFrame::MainFrame()
+MainFrame::MainFrame(std::shared_ptr<pt::Environment> env)
 	: wxFrame(NULL, wxID_ANY, "PicoTorrent"),
+	m_env(env),
 	m_splitter(new wxSplitterWindow(this, wxID_ANY)),
 	m_torrentListView(new TorrentListView(m_splitter)),
-	m_torrentDetailsView(new TorrentDetailsView(m_splitter)),
-	m_session(std::make_shared<lt::session>())
+	m_torrentDetailsView(new TorrentDetailsView(m_splitter))
 {
 	wxMenu* menuFile = new wxMenu();
 	menuFile->Append(ptID_ADD_TORRENTS, "Add torrent(s)");
@@ -53,6 +62,13 @@ MainFrame::MainFrame()
 
 	this->SetIcon(wxICON(AppIcon));
 	this->SetSizerAndFit(mainSizer);
+
+	m_session = std::make_shared<lt::session>();
+	m_session->set_alert_notify(
+		[this]()
+	{
+		this->GetEventHandler()->CallAfter(std::bind(&MainFrame::OnSessionAlert, this));
+	});
 }
 
 MainFrame::~MainFrame()
@@ -102,6 +118,8 @@ void MainFrame::OnAddTorrents(wxCommandEvent& WXUNUSED(event))
 	{
 		lt::add_torrent_params p;
 		lt::error_code ec;
+
+		// save path
 		p.ti = std::make_shared<lt::torrent_info>(filePath.ToStdString(), ec);
 
 		if (ec)
@@ -112,16 +130,86 @@ void MainFrame::OnAddTorrents(wxCommandEvent& WXUNUSED(event))
 		params.push_back(p);
 	}
 
-	AddTorrentDialog addDialog(this);
+	AddTorrentDialog addDialog(this, params);
 	int result = addDialog.ShowModal();
 
 	if (result == wxID_OK)
 	{
-		printf("");
+		for (lt::add_torrent_params& p : params)
+		{
+			m_session->async_add_torrent(p);
+		}
 	}
 }
 
 void MainFrame::OnExit(wxCommandEvent& WXUNUSED(event))
 {
+	m_session->set_alert_notify([]() {});
 	Close(true);
+}
+
+void MainFrame::OnSessionAlert()
+{
+	std::vector<lt::alert*> alerts;
+	m_session->pop_alerts(&alerts);
+
+	for (lt::alert* alert : alerts)
+	{
+		wxLogDebug("%s", alert->message().c_str());
+
+		switch (alert->type())
+		{
+		case lt::add_torrent_alert::alert_type:
+		{
+			lt::add_torrent_alert* ata = lt::alert_cast<lt::add_torrent_alert>(alert);
+
+			if (ata->error)
+			{
+				// TODO (logging)
+				break;
+			}
+
+			if (ata->handle.torrent_file())
+			{
+				fs::path torrentsDirectory = m_env->GetApplicationDataPath() / "Torrents";
+				if (!fs::exists(torrentsDirectory)) { fs::create_directories(torrentsDirectory); }
+
+				lt::create_torrent ct(*ata->handle.torrent_file());
+				lt::entry entry = ct.generate();
+
+				std::stringstream hex;
+				hex << ata->handle.info_hash();
+
+				fs::path torrentFile = torrentsDirectory / (hex.str() + ".torrent");
+				std::ofstream out(torrentFile, std::ios::binary | std::ios::out);
+				lt::bencode(std::ostreambuf_iterator<char>(out), entry);
+
+				// Generate a save resume data alert to save torrent state
+				ata->handle.save_resume_data();
+			}
+
+			m_torrents.insert({ ata->handle.info_hash(), ata->handle.status() });
+			m_torrentListView->AddTorrent(ata->handle.status());
+
+			break;
+		}
+		case lt::save_resume_data_alert::alert_type:
+		{
+			lt::save_resume_data_alert* srda = lt::alert_cast<lt::save_resume_data_alert>(alert);
+			lt::entry entry = lt::write_resume_data(srda->params);
+
+			fs::path torrentsDirectory = m_env->GetApplicationDataPath() / "Torrents";
+			if (!fs::exists(torrentsDirectory)) { fs::create_directories(torrentsDirectory); }
+
+			std::stringstream hex;
+			hex << srda->handle.info_hash();
+
+			fs::path datFile = torrentsDirectory / (hex.str() + ".dat");
+			std::ofstream out(datFile, std::ios::binary | std::ios::out);
+			lt::bencode(std::ostreambuf_iterator<char>(out), entry);
+
+			break;
+		}
+		}
+	}
 }
