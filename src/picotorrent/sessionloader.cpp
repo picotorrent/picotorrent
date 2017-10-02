@@ -88,16 +88,16 @@ std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Enviro
             }
 
 
-            std::ifstream datStream(datFile, std::ios::binary);
+            std::ifstream datStream(datFile, std::ios::binary | std::ios::in);
 			
 			SessionLoadItem item(datFile);
-			item.resume_data = std::vector<char>(
-				std::istream_iterator<char>(datStream),
-				std::istream_iterator<char>());
+			std::stringstream ss;
+			ss << datStream.rdbuf();
+			std::string c = ss.str();
+			item.resume_data.assign(c.begin(), c.end());
 
             lt::error_code ltec;
-			int pos = -1;
-            lt::bdecode_node node = lt::bdecode(item.resume_data, ltec, &pos);
+            lt::bdecode_node node = lt::bdecode(item.resume_data, ltec);
 
             if (ltec)
             {
