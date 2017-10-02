@@ -33,12 +33,14 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
 	EVT_MENU(ptID_ADD_TORRENTS, MainFrame::OnAddTorrents)
 	EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
 	EVT_MENU(wxID_EXIT, MainFrame::OnExit)
+	EVT_TIMER(ptID_MAIN_TIMER, MainFrame::OnTimer)
 wxEND_EVENT_TABLE()
 
 MainFrame::MainFrame(std::shared_ptr<pt::Environment> env)
 	: wxFrame(NULL, wxID_ANY, "PicoTorrent"),
 	m_env(env),
 	m_splitter(new wxSplitterWindow(this, wxID_ANY)),
+	m_timer(new wxTimer(this, ptID_MAIN_TIMER)),
 	m_torrentListView(new TorrentListView(m_splitter)),
 	m_torrentDetailsView(new TorrentDetailsView(m_splitter))
 {
@@ -72,6 +74,8 @@ MainFrame::MainFrame(std::shared_ptr<pt::Environment> env)
 	{
 		this->GetEventHandler()->CallAfter(std::bind(&MainFrame::OnSessionAlert, this));
 	});
+
+	m_timer->Start(1000);
 }
 
 MainFrame::~MainFrame()
@@ -208,14 +212,26 @@ void MainFrame::OnSessionAlert()
 			std::stringstream hex;
 			hex << srda->handle.info_hash();
 
-			fs::path datFile = torrentsDirectory / (hex.str() + ".dat");
-			std::ofstream out(datFile, std::ios::binary);
 			lt::entry entry = lt::write_resume_data(srda->params);
+			std::vector<char> buf;
+			lt::bencode(std::back_inserter(buf), entry);
 
-			lt::bencode(std::ostreambuf_iterator<char>(out), entry);
+			fs::path datFile = torrentsDirectory / (hex.str() + ".dat");
+			std::ofstream out(datFile, std::ios::binary | std::ios::out);
+			std::copy(
+				buf.begin(),
+				buf.end(),
+				std::ostreambuf_iterator<char>(out));
 
 			break;
 		}
 		}
 	}
+}
+
+void MainFrame::OnTimer(wxTimerEvent& WXUNUSED(event))
+{
+	m_state->session->post_dht_stats();
+	m_state->session->post_session_stats();
+	m_state->session->post_torrent_updates();
 }

@@ -25,17 +25,20 @@ namespace pt
     private:
 		enum
 		{
-			ptID_ADD_TORRENTS = wxID_HIGHEST + 1
+			ptID_ADD_TORRENTS = wxID_HIGHEST + 1,
+			ptID_MAIN_TIMER
 		};
 
 		void OnAbout(wxCommandEvent&);
 		void OnAddTorrents(wxCommandEvent&);
 		void OnExit(wxCommandEvent&);
 		void OnSessionAlert();
+		void OnTimer(wxTimerEvent&);
 
         wxDECLARE_EVENT_TABLE();
 
 		wxSplitterWindow* m_splitter;
+		wxTimer* m_timer;
 		TorrentListView* m_torrentListView;
 		TorrentDetailsView* m_torrentDetailsView;
 
