@@ -5,22 +5,14 @@
 #include <wx/wx.h>
 #endif
 
-#include <map>
 #include <memory>
-
-#include <libtorrent/sha1_hash.hpp>
-
-namespace libtorrent
-{
-	class session;
-	struct torrent_status;
-}
 
 class wxSplitterWindow;
 
 namespace pt
 {
 	class Environment;
+	struct SessionState;
 	class TorrentDetailsView;
 	class TorrentListView;
 
@@ -48,7 +40,6 @@ namespace pt
 		TorrentDetailsView* m_torrentDetailsView;
 
 		std::shared_ptr<Environment> m_env;
-		std::shared_ptr<libtorrent::session> m_session;
-		std::map<libtorrent::sha1_hash, libtorrent::torrent_status> m_torrents;
+		std::shared_ptr<SessionState> m_state;
     };
 }

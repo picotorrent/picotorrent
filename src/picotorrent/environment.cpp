@@ -1,12 +1,16 @@
 #include "environment.hpp"
 
+#include <Windows.h>
+#include <ShlObj.h>
+#include <Shlwapi.h>
+
 using pt::Environment;
 
 fs::path Environment::GetApplicationDataPath()
 {
 	if (IsInstalled() || IsAppContainerProcess())
 	{
-		return fs::path(GetKnownFolderPath(FOLDERID_LocalAppData)) / "PicoTorrent";
+		return fs::path(GetKnownFolderPath(KnownFolder::LocalAppData)) / "PicoTorrent";
 	}
 
 	TCHAR path[MAX_PATH];
@@ -15,8 +19,19 @@ fs::path Environment::GetApplicationDataPath()
     return fs::path(path) / "Data";
 }
 
-fs::path Environment::GetKnownFolderPath(const KNOWNFOLDERID& rfid)
+fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
 {
+	KNOWNFOLDERID rfid;
+
+	switch (knownFolder)
+	{
+	case KnownFolder::LocalAppData:
+		rfid = FOLDERID_LocalAppData;
+		break;
+	default:
+		throw std::exception("Unknown folder");
+	}
+
 	PWSTR buf;
 	HRESULT hResult = SHGetKnownFolderPath(
 		rfid,

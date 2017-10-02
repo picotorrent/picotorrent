@@ -2,10 +2,6 @@
 
 #include <filesystem>
 
-#include <Windows.h>
-#include <ShlObj.h>
-#include <Shlwapi.h>
-
 namespace fs = std::experimental::filesystem::v1;
 
 namespace pt
@@ -13,8 +9,13 @@ namespace pt
     class Environment
     {
     public:
+		enum KnownFolder
+		{
+			LocalAppData
+		};
+
         fs::path GetApplicationDataPath();
-		fs::path Environment::GetKnownFolderPath(KNOWNFOLDERID const& rfid);
+		fs::path Environment::GetKnownFolderPath(KnownFolder knownFolder);
 		bool IsAppContainerProcess();
         bool IsInstalled();
     };

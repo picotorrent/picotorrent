@@ -19,6 +19,9 @@
 
 #include "addtorrentdlg.hpp"
 #include "environment.hpp"
+#include "sessionloader.hpp"
+#include "sessionstate.hpp"
+#include "sessionunloader.hpp"
 #include "torrentdetailsview.hpp"
 #include "torrentlistview.hpp"
 
@@ -63,8 +66,8 @@ MainFrame::MainFrame(std::shared_ptr<pt::Environment> env)
 	this->SetIcon(wxICON(AppIcon));
 	this->SetSizerAndFit(mainSizer);
 
-	m_session = std::make_shared<lt::session>();
-	m_session->set_alert_notify(
+	m_state = SessionLoader::Load(m_env);
+	m_state->session->set_alert_notify(
 		[this]()
 	{
 		this->GetEventHandler()->CallAfter(std::bind(&MainFrame::OnSessionAlert, this));
@@ -137,21 +140,23 @@ void MainFrame::OnAddTorrents(wxCommandEvent& WXUNUSED(event))
 	{
 		for (lt::add_torrent_params& p : params)
 		{
-			m_session->async_add_torrent(p);
+			m_state->session->async_add_torrent(p);
 		}
 	}
 }
 
 void MainFrame::OnExit(wxCommandEvent& WXUNUSED(event))
 {
-	m_session->set_alert_notify([]() {});
+	m_state->session->set_alert_notify([]() {});
+	SessionUnloader::Unload(m_state, m_env);
+
 	Close(true);
 }
 
 void MainFrame::OnSessionAlert()
 {
 	std::vector<lt::alert*> alerts;
-	m_session->pop_alerts(&alerts);
+	m_state->session->pop_alerts(&alerts);
 
 	for (lt::alert* alert : alerts)
 	{
@@ -188,7 +193,7 @@ void MainFrame::OnSessionAlert()
 				ata->handle.save_resume_data();
 			}
 
-			m_torrents.insert({ ata->handle.info_hash(), ata->handle.status() });
+			m_state->torrents.insert({ ata->handle.info_hash(), ata->handle.status() });
 			m_torrentListView->AddTorrent(ata->handle.status());
 
 			break;
@@ -196,7 +201,6 @@ void MainFrame::OnSessionAlert()
 		case lt::save_resume_data_alert::alert_type:
 		{
 			lt::save_resume_data_alert* srda = lt::alert_cast<lt::save_resume_data_alert>(alert);
-			lt::entry entry = lt::write_resume_data(srda->params);
 
 			fs::path torrentsDirectory = m_env->GetApplicationDataPath() / "Torrents";
 			if (!fs::exists(torrentsDirectory)) { fs::create_directories(torrentsDirectory); }
@@ -205,7 +209,9 @@ void MainFrame::OnSessionAlert()
 			hex << srda->handle.info_hash();
 
 			fs::path datFile = torrentsDirectory / (hex.str() + ".dat");
-			std::ofstream out(datFile, std::ios::binary | std::ios::out);
+			std::ofstream out(datFile, std::ios::binary);
+			lt::entry entry = lt::write_resume_data(srda->params);
+
 			lt::bencode(std::ostreambuf_iterator<char>(out), entry);
 
 			break;

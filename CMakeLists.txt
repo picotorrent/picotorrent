@@ -15,6 +15,7 @@ add_definitions(
     -D_WIN32
     -D_WIN32_WINNT=0x0600
     -DBOOST_ALL_NO_LIB
+    -DNOMINMAX
     -DTORRENT_NO_DEPRECATE
     -DTORRENT_USE_OPENSSL
     -DUNICODE
@@ -42,6 +43,8 @@ add_executable(
     src/picotorrent/main
     src/picotorrent/mainframe
     src/picotorrent/resources.rc
+    src/picotorrent/sessionloader
+    src/picotorrent/sessionunloader
     src/picotorrent/torrentdetailsview
     src/picotorrent/torrentlistview
     src/picotorrent/utils
