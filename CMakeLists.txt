@@ -64,6 +64,7 @@ add_executable(
     src/picotorrent/sessionloader
     src/picotorrent/sessionunloader
     src/picotorrent/string
+    src/picotorrent/torrentcontextmenu
     src/picotorrent/torrentdetailsview
     src/picotorrent/torrentlistview
     src/picotorrent/torrentlistviewmodel

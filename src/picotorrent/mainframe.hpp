@@ -37,6 +37,7 @@ namespace pt
 		void OnExit(wxCommandEvent&);
 		void OnSessionAlert();
 		void OnTimer(wxTimerEvent&);
+		void OnTorrentContextMenu(wxDataViewEvent&);
 		void OnTorrentSelectionChanged(wxDataViewEvent&);
 
         wxDECLARE_EVENT_TABLE();

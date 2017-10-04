@@ -23,6 +23,7 @@
 #include "sessionloader.hpp"
 #include "sessionstate.hpp"
 #include "sessionunloader.hpp"
+#include "torrentcontextmenu.hpp"
 #include "torrentdetailsview.hpp"
 #include "torrentlistview.hpp"
 #include "torrentlistviewmodel.hpp"
@@ -32,6 +33,7 @@ namespace lt = libtorrent;
 using pt::MainFrame;
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
+	EVT_DATAVIEW_ITEM_CONTEXT_MENU(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentContextMenu)
 	EVT_DATAVIEW_SELECTION_CHANGED(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentSelectionChanged)
 	EVT_MENU(ptID_ADD_TORRENTS, MainFrame::OnAddTorrents)
 	EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
@@ -251,6 +253,24 @@ void MainFrame::OnTimer(wxTimerEvent& WXUNUSED(event))
 	m_state->session->post_dht_stats();
 	m_state->session->post_session_stats();
 	m_state->session->post_torrent_updates();
+}
+
+void MainFrame::OnTorrentContextMenu(wxDataViewEvent& event)
+{
+	const unsigned int MaxRow = std::numeric_limits<unsigned int>::max();
+
+	unsigned int row = m_torrentListViewModel->GetRow(event.GetItem());
+
+	if (row >= MaxRow)
+	{
+		return;
+	}
+
+	lt::sha1_hash hash = m_torrentListViewModel->FindHashByRow(row);
+	lt::torrent_handle torrent = m_state->torrents.at(hash);
+
+	TorrentContextMenu menu(torrent);
+	PopupMenu(&menu);
 }
 
 void MainFrame::OnTorrentSelectionChanged(wxDataViewEvent& event)
