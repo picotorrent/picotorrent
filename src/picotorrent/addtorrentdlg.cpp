@@ -98,7 +98,7 @@ void AddTorrentDialog::LoadTorrentInfo(int index)
 	lt::add_torrent_params& params = m_params.at(index);
 
 	// Size
-	m_size->SetLabel(wxString(ToHumanFileSize(params.ti->total_size())));
+	m_size->SetLabel(wxString(Utils::ToHumanFileSize(params.ti->total_size())));
 
 	// Save path
 	m_savePath->SetPath(params.save_path);

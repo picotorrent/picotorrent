@@ -9,7 +9,7 @@
 namespace libtorrent
 {
     class session;
-    struct torrent_status;
+    struct torrent_handle;
 }
 
 namespace pt
@@ -18,6 +18,6 @@ namespace pt
     {
         std::vector<libtorrent::sha1_hash> loaded_torrents;
         std::unique_ptr<libtorrent::session> session;
-        std::map<libtorrent::sha1_hash, libtorrent::torrent_status> torrents;
+        std::map<libtorrent::sha1_hash, libtorrent::torrent_handle> torrents;
     };
 }

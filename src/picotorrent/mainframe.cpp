@@ -10,6 +10,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <limits>
 
 #include <wx/aboutdlg.h>
 #include <wx/dataview.h>
@@ -24,12 +25,14 @@
 #include "sessionunloader.hpp"
 #include "torrentdetailsview.hpp"
 #include "torrentlistview.hpp"
+#include "torrentlistviewmodel.hpp"
 
 namespace fs = std::experimental::filesystem::v1;
 namespace lt = libtorrent;
 using pt::MainFrame;
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
+	EVT_DATAVIEW_SELECTION_CHANGED(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentSelectionChanged)
 	EVT_MENU(ptID_ADD_TORRENTS, MainFrame::OnAddTorrents)
 	EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
 	EVT_MENU(wxID_EXIT, MainFrame::OnExit)
@@ -41,9 +44,12 @@ MainFrame::MainFrame(std::shared_ptr<pt::Environment> env)
 	m_env(env),
 	m_splitter(new wxSplitterWindow(this, wxID_ANY)),
 	m_timer(new wxTimer(this, ptID_MAIN_TIMER)),
-	m_torrentListView(new TorrentListView(m_splitter)),
+	m_torrentListView(new TorrentListView(m_splitter, ptID_TORRENT_LIST_VIEW)),
+	m_torrentListViewModel(new TorrentListViewModel()),
 	m_torrentDetailsView(new TorrentDetailsView(m_splitter))
 {
+	m_torrentListView->AssociateModel(m_torrentListViewModel);
+
 	wxMenu* menuFile = new wxMenu();
 	menuFile->Append(ptID_ADD_TORRENTS, "Add torrent(s)");
 	menuFile->AppendSeparator();
@@ -197,8 +203,8 @@ void MainFrame::OnSessionAlert()
 				ata->handle.save_resume_data();
 			}
 
-			m_state->torrents.insert({ ata->handle.info_hash(), ata->handle.status() });
-			m_torrentListView->AddTorrent(ata->handle.status());
+			m_state->torrents.insert({ ata->handle.info_hash(), ata->handle });
+			m_torrentListViewModel->Add(ata->handle.status());
 
 			break;
 		}
@@ -225,6 +231,17 @@ void MainFrame::OnSessionAlert()
 
 			break;
 		}
+		case lt::state_update_alert::alert_type:
+		{
+			lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
+
+			for (lt::torrent_status const& ts : sua->status)
+			{
+				m_torrentListViewModel->Update(ts);
+			}
+
+			break;
+		}
 		}
 	}
 }
@@ -234,4 +251,21 @@ void MainFrame::OnTimer(wxTimerEvent& WXUNUSED(event))
 	m_state->session->post_dht_stats();
 	m_state->session->post_session_stats();
 	m_state->session->post_torrent_updates();
+}
+
+void MainFrame::OnTorrentSelectionChanged(wxDataViewEvent& event)
+{
+	const unsigned int MaxRow = std::numeric_limits<unsigned int>::max();
+
+	unsigned int row = m_torrentListViewModel->GetRow(event.GetItem());
+
+	if (row >= MaxRow)
+	{
+		return;
+	}
+
+	lt::sha1_hash hash = m_torrentListViewModel->FindHashByRow(row);
+	lt::torrent_handle torrent = m_state->torrents.at(hash);
+
+	m_torrentDetailsView->SetTorrent(torrent);
 }

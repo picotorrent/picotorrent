@@ -55,13 +55,18 @@ add_executable(
     src/picotorrent/addtorrentdlg
     src/picotorrent/application
     src/picotorrent/environment
+    src/picotorrent/filespage
+    src/picotorrent/filestorageviewmodel
     src/picotorrent/main
     src/picotorrent/mainframe
+    src/picotorrent/overviewpage
     src/picotorrent/resources.rc
     src/picotorrent/sessionloader
     src/picotorrent/sessionunloader
+    src/picotorrent/string
     src/picotorrent/torrentdetailsview
     src/picotorrent/torrentlistview
+    src/picotorrent/torrentlistviewmodel
     src/picotorrent/utils
 )
 

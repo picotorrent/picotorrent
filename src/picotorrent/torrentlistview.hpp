@@ -5,27 +5,14 @@
 #include <wx/wx.h>
 #endif
 
-namespace libtorrent
-{
-	struct torrent_status;
-}
-
-class wxDataViewCtrl;
+#include <wx/dataview.h>
 
 namespace pt
 {
-    class TorrentListView : public wxPanel
+    class TorrentListView : public wxDataViewCtrl
     {
     public:
-        TorrentListView(wxWindow* parent);
-
-		void AddTorrent(libtorrent::torrent_status const& torrent);
+        TorrentListView(wxWindow* parent, wxWindowID id);
 		virtual wxSize GetMinSize() const;
-
-	private:
-		class Model;
-
-		Model* m_torrentsModel;
-		wxDataViewCtrl* m_torrentsView;
     };
 }

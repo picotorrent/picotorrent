@@ -7,6 +7,7 @@
 
 #include <memory>
 
+class wxDataViewEvent;
 class wxSplitterWindow;
 
 namespace pt
@@ -15,6 +16,7 @@ namespace pt
 	struct SessionState;
 	class TorrentDetailsView;
 	class TorrentListView;
+	class TorrentListViewModel;
 
     class MainFrame : public wxFrame
     {
@@ -26,6 +28,7 @@ namespace pt
 		enum
 		{
 			ptID_ADD_TORRENTS = wxID_HIGHEST + 1,
+			ptID_TORRENT_LIST_VIEW,
 			ptID_MAIN_TIMER
 		};
 
@@ -34,12 +37,14 @@ namespace pt
 		void OnExit(wxCommandEvent&);
 		void OnSessionAlert();
 		void OnTimer(wxTimerEvent&);
+		void OnTorrentSelectionChanged(wxDataViewEvent&);
 
         wxDECLARE_EVENT_TABLE();
 
 		wxSplitterWindow* m_splitter;
 		wxTimer* m_timer;
 		TorrentListView* m_torrentListView;
+		TorrentListViewModel* m_torrentListViewModel;
 		TorrentDetailsView* m_torrentDetailsView;
 
 		std::shared_ptr<Environment> m_env;

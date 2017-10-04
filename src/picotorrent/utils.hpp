@@ -4,5 +4,9 @@
 
 namespace pt
 {
-    std::wstring ToHumanFileSize(int64_t bytes);
+	class Utils
+	{
+	public:
+		static std::wstring ToHumanFileSize(int64_t bytes);
+	};
 }
