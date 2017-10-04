@@ -101,7 +101,7 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned row, unsig
 		std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(secs - hours_left - min_left);
 
 		variant = wxString::Format(
-			"%dh %dm %ds",
+			"%dh %dm %I64ds",
 			hours_left.count(),
 			min_left.count(),
 			sec_left.count());
