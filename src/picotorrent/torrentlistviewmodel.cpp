@@ -51,7 +51,7 @@ wxString TorrentListViewModel::GetColumnType(unsigned int col) const
 	return "string";
 }
 
-void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned row, unsigned col) const
+void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned int col) const
 {
 	lt::sha1_hash const& hash = m_order.at(row);
 	lt::torrent_status const& ts = m_status.at(hash);
