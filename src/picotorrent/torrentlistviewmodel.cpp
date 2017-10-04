@@ -75,7 +75,7 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
 		variant = Utils::ToHumanFileSize(ts.total_wanted);
 		break;
 	case 3:
-		variant = "status";
+		variant = Utils::ToReadableStatus(ts);
 		break;
 	case 4:
 		variant = static_cast<long>(ts.progress * 100);
