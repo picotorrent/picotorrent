@@ -240,6 +240,11 @@ void MainFrame::OnSessionAlert()
 			for (lt::torrent_status const& ts : sua->status)
 			{
 				m_torrentListViewModel->Update(ts);
+
+				if (ts.info_hash == m_state->selected_torrent)
+				{
+					m_torrentDetailsView->Update(ts.handle);
+				}
 			}
 
 			break;
@@ -279,13 +284,16 @@ void MainFrame::OnTorrentSelectionChanged(wxDataViewEvent& event)
 
 	unsigned int row = m_torrentListViewModel->GetRow(event.GetItem());
 
+	m_torrentDetailsView->Clear();
+
 	if (row >= MaxRow)
 	{
+		m_state->selected_torrent = lt::sha1_hash();
 		return;
 	}
 
-	lt::sha1_hash hash = m_torrentListViewModel->FindHashByRow(row);
-	lt::torrent_handle torrent = m_state->torrents.at(hash);
+	m_state->selected_torrent = m_torrentListViewModel->FindHashByRow(row);
+	lt::torrent_handle torrent = m_state->torrents.at(m_state->selected_torrent);
 
-	m_torrentDetailsView->SetTorrent(torrent);
+	m_torrentDetailsView->Update(torrent);
 }

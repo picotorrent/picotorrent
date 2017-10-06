@@ -16,17 +16,23 @@ namespace pt
 {
 	class FilesPage;
 	class OverviewPage;
+	class PeersPage;
+	class TrackersPage;
 
     class TorrentDetailsView : public wxPanel
     {
     public:
         TorrentDetailsView(wxWindow* parent);
 		virtual wxSize GetMinSize() const;
-		void SetTorrent(libtorrent::torrent_handle const& th);
+
+		void Clear();
+		void Update(libtorrent::torrent_handle const& th);
 
 	private:
 		wxNotebook* m_notebook;
 		OverviewPage* m_overview;
 		FilesPage* m_files;
+		PeersPage* m_peers;
+		TrackersPage* m_trackers;
 	};
 }

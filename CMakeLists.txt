@@ -60,11 +60,15 @@ add_executable(
     src/picotorrent/main
     src/picotorrent/mainframe
     src/picotorrent/overviewpage
+    src/picotorrent/peerspage
+    src/picotorrent/peersviewmodel
     src/picotorrent/resources.rc
     src/picotorrent/sessionloader
     src/picotorrent/sessionunloader
     src/picotorrent/string
     src/picotorrent/torrentcontextmenu
+    src/picotorrent/trackerspage
+    src/picotorrent/trackersviewmodel
     src/picotorrent/torrentdetailsview
     src/picotorrent/torrentlistview
     src/picotorrent/torrentlistviewmodel
