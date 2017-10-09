@@ -3,7 +3,7 @@
 using pt::TorrentListView;
 
 TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id)
-	: wxDataViewCtrl(parent, id)
+	: wxDataViewCtrl(parent, id, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE)
 {
 	AppendTextColumn(_("Name"), 0, wxDATAVIEW_CELL_INERT, 180);
 	AppendTextColumn("#", 1, wxDATAVIEW_CELL_INERT, 30, wxALIGN_RIGHT);
@@ -20,5 +20,5 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id)
 
 wxSize TorrentListView::GetMinSize() const
 {
-	return wxSize(400, 100);
+	return wxSize(500, 150);
 }
