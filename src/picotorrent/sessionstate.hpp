@@ -17,7 +17,7 @@ namespace pt
     struct SessionState
     {
         std::vector<libtorrent::sha1_hash> loaded_torrents;
-		libtorrent::sha1_hash selected_torrent;
+		std::vector<libtorrent::torrent_handle> selected_torrents;
         std::unique_ptr<libtorrent::session> session;
         std::map<libtorrent::sha1_hash, libtorrent::torrent_handle> torrents;
     };

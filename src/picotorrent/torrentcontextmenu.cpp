@@ -1,33 +1,39 @@
 #include "torrentcontextmenu.hpp"
 
+#include "sessionstate.hpp"
+
 #include <libtorrent/torrent_handle.hpp>
 
 namespace lt = libtorrent;
 using pt::TorrentContextMenu;
 
-TorrentContextMenu::TorrentContextMenu(lt::torrent_handle const& th)
+BEGIN_EVENT_TABLE(TorrentContextMenu, wxMenu)
+	EVT_MENU(ptID_QUEUE_UP, TorrentContextMenu::QueueUp)
+END_EVENT_TABLE()
+
+TorrentContextMenu::TorrentContextMenu(std::shared_ptr<pt::SessionState> state)
+	: m_state(state)
 {
 	wxMenu* queueMenu = new wxMenu();
-	queueMenu->Append(wxID_ANY, "Up");
-	queueMenu->Append(wxID_ANY, "Down");
+	queueMenu->Append(ptID_QUEUE_UP, "Up");
+	queueMenu->Append(ptID_QUEUE_DOWN, "Down");
 	queueMenu->AppendSeparator();
-	queueMenu->Append(wxID_ANY, "Top");
-	queueMenu->Append(wxID_ANY, "Bottom");
+	queueMenu->Append(ptID_QUEUE_TOP, "Top");
+	queueMenu->Append(ptID_QUEUE_BOTTOM, "Bottom");
 
-	Append(wxID_ANY, "Resume");
+	Append(ptID_RESUME, "Resume");
+	Append(ptID_PAUSE, "Pause");
 	AppendSeparator();
-	Append(wxID_ANY, "Move");
-	Append(wxID_ANY, "Remove");
+	Append(ptID_MOVE, "Move");
+	Append(ptID_REMOVE, "Remove");
 	AppendSeparator();
 	AppendSubMenu(queueMenu, "Queuing");
 	AppendSeparator();
-	Append(wxID_ANY, "Copy info hash");
-	Append(wxID_ANY, "Open in Explorer");
-
-	Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(TorrentContextMenu::OnCommand), NULL, this);
+	Append(ptID_COPY_INFO_HASH, "Copy info hash");
+	Append(ptID_OPEN_IN_EXPLORER, "Open in Explorer");
 }
 
-void TorrentContextMenu::OnCommand(wxCommandEvent& event)
+void TorrentContextMenu::QueueUp(wxCommandEvent& WXUNUSED(event))
 {
-	// TODO implement this
+	printf("");
 }

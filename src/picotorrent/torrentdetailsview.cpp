@@ -3,6 +3,7 @@
 #include "filespage.hpp"
 #include "overviewpage.hpp"
 #include "peerspage.hpp"
+#include "sessionstate.hpp"
 #include "trackerspage.hpp"
 
 #include <libtorrent/torrent_handle.hpp>
@@ -12,8 +13,9 @@
 namespace lt = libtorrent;
 using pt::TorrentDetailsView;
 
-TorrentDetailsView::TorrentDetailsView(wxWindow* parent)
+TorrentDetailsView::TorrentDetailsView(wxWindow* parent, std::shared_ptr<pt::SessionState> state)
 	: wxPanel(parent),
+	m_state(state),
 	m_notebook(new wxNotebook(this, wxID_ANY)),
 	m_overview(new OverviewPage(m_notebook, wxID_ANY)),
 	m_files(new FilesPage(m_notebook, wxID_ANY)),
@@ -31,17 +33,20 @@ TorrentDetailsView::TorrentDetailsView(wxWindow* parent)
 	this->SetSizer(sizer);
 }
 
-void TorrentDetailsView::Clear()
-{
-}
-
 wxSize TorrentDetailsView::GetMinSize() const
 {
 	return wxSize(450, 150);
 }
 
-void TorrentDetailsView::Update(lt::torrent_handle const& th)
+void TorrentDetailsView::Update()
 {
+	if (m_state->selected_torrents.size() != 1)
+	{
+		// TODO: clear
+		return;
+	}
+
+	lt::torrent_handle th = m_state->selected_torrents.front();
 	lt::torrent_status ts = th.status();
 
 	m_overview->Update(ts);

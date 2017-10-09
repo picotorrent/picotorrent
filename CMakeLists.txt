@@ -59,6 +59,7 @@ add_executable(
     src/picotorrent/filestorageviewmodel
     src/picotorrent/main
     src/picotorrent/mainframe
+    src/picotorrent/mainmenu
     src/picotorrent/overviewpage
     src/picotorrent/peerspage
     src/picotorrent/peersviewmodel

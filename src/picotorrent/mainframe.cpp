@@ -18,8 +18,8 @@
 #include <wx/notebook.h>
 #include <wx/splitter.h>
 
-#include "addtorrentdlg.hpp"
 #include "environment.hpp"
+#include "mainmenu.hpp"
 #include "sessionloader.hpp"
 #include "sessionstate.hpp"
 #include "sessionunloader.hpp"
@@ -35,9 +35,6 @@ using pt::MainFrame;
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
 	EVT_DATAVIEW_ITEM_CONTEXT_MENU(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentContextMenu)
 	EVT_DATAVIEW_SELECTION_CHANGED(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentSelectionChanged)
-	EVT_MENU(ptID_ADD_TORRENTS, MainFrame::OnAddTorrents)
-	EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
-	EVT_MENU(wxID_EXIT, MainFrame::OnExit)
 	EVT_TIMER(ptID_MAIN_TIMER, MainFrame::OnTimer)
 wxEND_EVENT_TABLE()
 
@@ -45,27 +42,21 @@ MainFrame::MainFrame(std::shared_ptr<pt::Environment> env)
 	: wxFrame(NULL, wxID_ANY, "PicoTorrent"),
 	m_env(env),
 	m_splitter(new wxSplitterWindow(this, wxID_ANY)),
-	m_timer(new wxTimer(this, ptID_MAIN_TIMER)),
-	m_torrentListView(new TorrentListView(m_splitter, ptID_TORRENT_LIST_VIEW)),
-	m_torrentListViewModel(new TorrentListViewModel()),
-	m_torrentDetailsView(new TorrentDetailsView(m_splitter))
+	m_torrentListViewModel(new TorrentListViewModel())
 {
+	m_state = SessionLoader::Load(m_env);
+	m_state->session->set_alert_notify(
+		[this]()
+	{
+		this->GetEventHandler()->CallAfter(std::bind(&MainFrame::OnSessionAlert, this));
+	});
+
+	// Create UI
+	m_torrentListView = new TorrentListView(m_splitter, ptID_TORRENT_LIST_VIEW);
 	m_torrentListView->AssociateModel(m_torrentListViewModel);
+	m_torrentDetailsView = new TorrentDetailsView(m_splitter, m_state);
 
-	wxMenu* menuFile = new wxMenu();
-	menuFile->Append(ptID_ADD_TORRENTS, "Add torrent(s)");
-	menuFile->AppendSeparator();
-	menuFile->Append(wxID_EXIT);
-
-	wxMenu* menuHelp = new wxMenu();
-	menuHelp->Append(wxID_ABOUT);
-
-	wxMenuBar* menuBar = new wxMenuBar();
-	menuBar->Append(menuFile, "&File");
-	menuBar->Append(menuHelp, "&Help");
-
-	SetMenuBar(menuBar);
-
+	// Splitter
 	m_splitter->SetSashGravity(0.5);
 	m_splitter->SplitHorizontally(m_torrentListView, m_torrentDetailsView);
 
@@ -74,95 +65,17 @@ MainFrame::MainFrame(std::shared_ptr<pt::Environment> env)
 	mainSizer->SetSizeHints(this);
 
 	this->SetIcon(wxICON(AppIcon));
+	this->SetMenuBar(new MainMenu(m_state));
 	this->SetSizerAndFit(mainSizer);
 
-	m_state = SessionLoader::Load(m_env);
-	m_state->session->set_alert_notify(
-		[this]()
-	{
-		this->GetEventHandler()->CallAfter(std::bind(&MainFrame::OnSessionAlert, this));
-	});
-
+	m_timer = new wxTimer(this, ptID_MAIN_TIMER);
 	m_timer->Start(1000);
 }
 
 MainFrame::~MainFrame()
 {
-}
-
-void MainFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
-{
-	wxAboutDialogInfo aboutInfo;
-	aboutInfo.SetName("PicoTorrent");
-	aboutInfo.SetVersion("1.0");
-	aboutInfo.SetDescription(_("Built with love on top of Boost, OpenSSL and Rasterbar-libtorrent."));
-	aboutInfo.SetCopyright("(C) 2015-2017");
-	aboutInfo.SetWebSite("http://picotorrent.org");
-	aboutInfo.AddDeveloper("Viktor Elofsson");
-
-	wxAboutBox(aboutInfo);
-}
-
-void MainFrame::OnAddTorrents(wxCommandEvent& WXUNUSED(event))
-{
-	// Open some torrent files!
-	wxFileDialog openDialog(
-		this,
-		"Add torrent files",
-		wxEmptyString,
-		wxEmptyString,
-		"Torrent files (*.torrent)|*.torrent",
-		wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
-
-	if (openDialog.ShowModal() != wxID_OK)
-	{
-		return;
-	}
-
-	wxArrayString paths;
-	openDialog.GetPaths(paths);
-
-	if (paths.IsEmpty())
-	{
-		return;
-	}
-
-	std::vector<lt::add_torrent_params> params;
-
-	for (wxString& filePath : paths)
-	{
-		lt::add_torrent_params p;
-		lt::error_code ec;
-
-		// save path
-		p.ti = std::make_shared<lt::torrent_info>(filePath.ToStdString(), ec);
-
-		if (ec)
-		{
-			continue;
-		}
-
-		params.push_back(p);
-	}
-
-	AddTorrentDialog addDialog(this, params);
-	int result = addDialog.ShowModal();
-
-	if (result == wxID_OK)
-	{
-		for (lt::add_torrent_params& p : params)
-		{
-			m_state->session->async_add_torrent(p);
-		}
-	}
-}
-
-void MainFrame::OnExit(wxCommandEvent& WXUNUSED(event))
-{
 	m_state->session->set_alert_notify([]() {});
 	SessionUnloader::Unload(m_state, m_env);
-
-	Close(true);
 }
 
 void MainFrame::OnSessionAlert()
@@ -240,11 +153,6 @@ void MainFrame::OnSessionAlert()
 			for (lt::torrent_status const& ts : sua->status)
 			{
 				m_torrentListViewModel->Update(ts);
-
-				if (ts.info_hash == m_state->selected_torrent)
-				{
-					m_torrentDetailsView->Update(ts.handle);
-				}
 			}
 
 			break;
@@ -258,42 +166,42 @@ void MainFrame::OnTimer(wxTimerEvent& WXUNUSED(event))
 	m_state->session->post_dht_stats();
 	m_state->session->post_session_stats();
 	m_state->session->post_torrent_updates();
+
+	m_torrentDetailsView->Update();
 }
 
 void MainFrame::OnTorrentContextMenu(wxDataViewEvent& event)
 {
-	const unsigned int MaxRow = std::numeric_limits<unsigned int>::max();
-
-	unsigned int row = m_torrentListViewModel->GetRow(event.GetItem());
-
-	if (row >= MaxRow)
+	if (m_state->selected_torrents.empty())
 	{
 		return;
 	}
 
-	lt::sha1_hash hash = m_torrentListViewModel->FindHashByRow(row);
-	lt::torrent_handle torrent = m_state->torrents.at(hash);
-
-	TorrentContextMenu menu(torrent);
+	TorrentContextMenu menu(m_state);
 	PopupMenu(&menu);
 }
 
 void MainFrame::OnTorrentSelectionChanged(wxDataViewEvent& event)
 {
-	const unsigned int MaxRow = std::numeric_limits<unsigned int>::max();
+	wxDataViewItemArray items;
+	m_torrentListView->GetSelections(items);
 
-	unsigned int row = m_torrentListViewModel->GetRow(event.GetItem());
-
-	m_torrentDetailsView->Clear();
-
-	if (row >= MaxRow)
+	m_state->selected_torrents.clear();
+	
+	if (items.IsEmpty())
 	{
-		m_state->selected_torrent = lt::sha1_hash();
 		return;
 	}
 
-	m_state->selected_torrent = m_torrentListViewModel->FindHashByRow(row);
-	lt::torrent_handle torrent = m_state->torrents.at(m_state->selected_torrent);
+	for (wxDataViewItem& item : items)
+	{
+		unsigned int row = m_torrentListViewModel->GetRow(item);
 
-	m_torrentDetailsView->Update(torrent);
+		lt::sha1_hash hash = m_torrentListViewModel->FindHashByRow(row);
+		lt::torrent_handle th = m_state->torrents.at(hash);
+
+		m_state->selected_torrents.push_back(th);
+	}
+
+	m_torrentDetailsView->Update();
 }

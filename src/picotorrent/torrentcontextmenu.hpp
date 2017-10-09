@@ -5,19 +5,36 @@
 #include <wx/wx.h>
 #endif
 
-namespace libtorrent
-{
-	struct torrent_handle;
-}
+#include <memory>
 
 namespace pt
 {
+	struct SessionState;
+
     class TorrentContextMenu : public wxMenu
     {
     public:
-        TorrentContextMenu(libtorrent::torrent_handle const& th);
+        TorrentContextMenu(std::shared_ptr<SessionState> state);
 
 	private:
-		void OnCommand(wxCommandEvent&);
+		enum
+		{
+			ptID_RESUME = wxID_HIGHEST + 1,
+			ptID_PAUSE,
+			ptID_MOVE,
+			ptID_REMOVE,
+			ptID_QUEUE_UP,
+			ptID_QUEUE_DOWN,
+			ptID_QUEUE_TOP,
+			ptID_QUEUE_BOTTOM,
+			ptID_COPY_INFO_HASH,
+			ptID_OPEN_IN_EXPLORER
+		};
+
+		wxDECLARE_EVENT_TABLE();
+
+		void QueueUp(wxCommandEvent&);
+
+		std::shared_ptr<SessionState> m_state;
     };
 }

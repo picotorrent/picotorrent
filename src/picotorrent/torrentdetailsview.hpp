@@ -5,6 +5,8 @@
 #include <wx/wx.h>
 #endif
 
+#include <memory>
+
 class wxNotebook;
 
 namespace libtorrent
@@ -17,16 +19,16 @@ namespace pt
 	class FilesPage;
 	class OverviewPage;
 	class PeersPage;
+	struct SessionState;
 	class TrackersPage;
 
     class TorrentDetailsView : public wxPanel
     {
     public:
-        TorrentDetailsView(wxWindow* parent);
+        TorrentDetailsView(wxWindow* parent, std::shared_ptr<SessionState> state);
 		virtual wxSize GetMinSize() const;
 
-		void Clear();
-		void Update(libtorrent::torrent_handle const& th);
+		void Update();
 
 	private:
 		wxNotebook* m_notebook;
@@ -34,5 +36,7 @@ namespace pt
 		FilesPage* m_files;
 		PeersPage* m_peers;
 		TrackersPage* m_trackers;
+
+		std::shared_ptr<SessionState> m_state;
 	};
 }
