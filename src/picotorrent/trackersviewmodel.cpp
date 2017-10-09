@@ -54,7 +54,7 @@ void TrackersViewModel::Update(lt::torrent_status const& ts)
 
 unsigned int TrackersViewModel::GetColumnCount() const
 {
-	return -1;
+	return 4;
 }
 
 wxString TrackersViewModel::GetColumnType(unsigned int col) const
@@ -72,18 +72,18 @@ void TrackersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsi
 
 	switch (col)
 	{
-	case 0: // Url
+	case Column::Url:
 		variant = tracker.url;
 		break;
-	case 1: // Fails
+	case Column::Fails:
 		variant = wxString::Format("%d (of %d)",
 			(endp != tracker.endpoints.end() ? endp->fails : 0),
 			tracker.fail_limit);
 		break;
-	case 2: // Verified
+	case Column::Verified:
 		variant = (tracker.verified ? "OK" : "-");
 		break;
-	case 3: // Next announce
+	case Column::NextAnnounce:
 		variant = wxString::Format("%I64ds",
 			(endp != tracker.endpoints.end()
 				? lt::total_seconds(endp->next_announce - lt::clock_type::now())

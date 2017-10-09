@@ -23,6 +23,14 @@ namespace pt
         void Update(libtorrent::torrent_status const& ts);
 
 	private:
+		enum Column
+		{
+			Url,
+			Fails,
+			Verified,
+			NextAnnounce
+		};
+
 		unsigned int GetColumnCount() const wxOVERRIDE;
 		wxString GetColumnType(unsigned int col) const wxOVERRIDE;
 		void GetValueByRow(wxVariant &variant, unsigned row, unsigned col) const wxOVERRIDE;
