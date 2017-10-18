@@ -222,7 +222,7 @@ void MainFrame::OnTorrentContextMenu(wxDataViewEvent& event)
 		return;
 	}
 
-	TorrentContextMenu menu(m_trans, m_state);
+	TorrentContextMenu menu(this, m_trans, m_state);
 	PopupMenu(&menu);
 }
 

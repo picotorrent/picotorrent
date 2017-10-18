@@ -15,7 +15,8 @@ namespace pt
     class TorrentContextMenu : public wxMenu
     {
     public:
-        TorrentContextMenu(std::shared_ptr<Translator> translator,
+        TorrentContextMenu(wxWindow* parent,
+			std::shared_ptr<Translator> translator,
 			std::shared_ptr<SessionState> state);
 
 	private:
@@ -35,8 +36,17 @@ namespace pt
 
 		wxDECLARE_EVENT_TABLE();
 
+		void CopyInfoHash(wxCommandEvent&);
+		void Move(wxCommandEvent&);
+		void OpenInExplorer(wxCommandEvent&);
+		void Remove(wxCommandEvent&);
 		void QueueUp(wxCommandEvent&);
+		void QueueDown(wxCommandEvent&);
+		void QueueTop(wxCommandEvent&);
+		void QueueBottom(wxCommandEvent&);
 
+		wxWindow* m_parent;
 		std::shared_ptr<SessionState> m_state;
+		std::shared_ptr<Translator> m_trans;
     };
 }
