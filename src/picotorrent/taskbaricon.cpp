@@ -1,19 +1,59 @@
 #include "taskbaricon.hpp"
 
+#include "addtorrentproc.hpp"
+#include "preferencesdlg.hpp"
+#include "sessionstate.hpp"
+#include "translator.hpp"
+
 using pt::TaskBarIcon;
 
-TaskBarIcon::TaskBarIcon(wxFrame* parent)
-	: m_parent(parent)
+wxBEGIN_EVENT_TABLE(TaskBarIcon, wxTaskBarIcon)
+	EVT_MENU(ptID_ADD_TORRENT, TaskBarIcon::OnAddTorrent)
+	EVT_MENU(ptID_ADD_MAGNET_LINK, TaskBarIcon::OnAddMagnetLink)
+	EVT_MENU(ptID_PREFERENCES, TaskBarIcon::OnViewPreferences)
+	EVT_TASKBAR_LEFT_DCLICK(TaskBarIcon::OnLeftButtonDClick)
+wxEND_EVENT_TABLE()
+
+TaskBarIcon::TaskBarIcon(wxFrame* parent,
+	std::shared_ptr<pt::Translator> translator,
+	std::shared_ptr<pt::SessionState> state)
+	: m_parent(parent),
+	m_trans(translator),
+	m_state(state)
 {
 }
 
 wxMenu* TaskBarIcon::CreatePopupMenu()
 {
 	wxMenu* menu = new wxMenu();
-	menu->Append(wxID_ANY, "Add torrents");
-	menu->Append(wxID_ANY, "Add magnet links");
+	menu->Append(ptID_ADD_TORRENT, i18n(m_trans, "amp_add_torrent"));
+	menu->Append(ptID_ADD_MAGNET_LINK, i18n(m_trans, "amp_add_magnet_link_s"));
 	menu->AppendSeparator();
-	menu->Append(wxID_ANY, "Exit");
+	menu->Append(ptID_PREFERENCES, i18n(m_trans, "preferences"));
+	menu->AppendSeparator();
+	menu->Append(wxID_EXIT, i18n(m_trans, "amp_exit"));
 
 	return menu;
+}
+
+void TaskBarIcon::OnAddTorrent(wxCommandEvent& WXUNUSED(event))
+{
+	AddTorrentProcedure proc(m_parent, m_trans, m_state);
+	proc.Execute();
+}
+
+void TaskBarIcon::OnAddMagnetLink(wxCommandEvent& WXUNUSED(event))
+{
+}
+
+void TaskBarIcon::OnLeftButtonDClick(wxTaskBarIconEvent& WXUNUSED(event))
+{
+	m_parent->Raise();
+	m_parent->Show();
+}
+
+void TaskBarIcon::OnViewPreferences(wxCommandEvent& WXUNUSED(event))
+{
+	PreferencesDialog dlg(m_parent, m_trans);
+	dlg.ShowModal();
 }

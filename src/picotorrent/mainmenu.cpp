@@ -1,6 +1,7 @@
 #include "mainmenu.hpp"
 
 #include "addtorrentdlg.hpp"
+#include "addtorrentproc.hpp"
 #include "preferencesdlg.hpp"
 #include "sessionstate.hpp"
 #include "translator.hpp"
@@ -59,56 +60,8 @@ void MainMenu::OnAbout(wxCommandEvent& WXUNUSED(event))
 
 void MainMenu::OnAddTorrents(wxCommandEvent& event)
 {
-	// Open some torrent files!
-	wxFileDialog openDialog(
-		this,
-		m_trans->Translate("add_torrent_s"),
-		wxEmptyString,
-		wxEmptyString,
-		"Torrent files (*.torrent)|*.torrent",
-		wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
-
-	if (openDialog.ShowModal() != wxID_OK)
-	{
-		return;
-	}
-
-	wxArrayString paths;
-	openDialog.GetPaths(paths);
-
-	if (paths.IsEmpty())
-	{
-		return;
-	}
-
-	std::vector<lt::add_torrent_params> params;
-
-	for (wxString& filePath : paths)
-	{
-		lt::add_torrent_params p;
-		lt::error_code ec;
-
-		// TODO: save path
-		p.ti = std::make_shared<lt::torrent_info>(filePath.ToStdString(), ec);
-
-		if (ec)
-		{
-			continue;
-		}
-
-		params.push_back(p);
-	}
-
-	AddTorrentDialog addDialog(this, m_trans, params);
-	int result = addDialog.ShowModal();
-
-	if (result == wxID_OK)
-	{
-		for (lt::add_torrent_params& p : params)
-		{
-			m_state->session->async_add_torrent(p);
-		}
-	}
+	AddTorrentProcedure proc(this->GetFrame(), m_trans, m_state);
+	proc.Execute();
 }
 
 void MainMenu::OnExit(wxCommandEvent& WXUNUSED(event))

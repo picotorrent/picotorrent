@@ -52,6 +52,7 @@ add_executable(
     PicoTorrent
     WIN32
     src/picotorrent/addtorrentdlg
+    src/picotorrent/addtorrentproc
     src/picotorrent/application
     src/picotorrent/environment
     src/picotorrent/connectionpage

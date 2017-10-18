@@ -68,7 +68,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Environment> env,
 	mainSizer->SetSizeHints(this);
 
 	// Task bar icon
-	m_taskBar = new TaskBarIcon(this);
+	m_taskBar = new TaskBarIcon(this, m_trans, m_state);
 	m_taskBar->SetIcon(wxICON(AppIcon), "PicoTorrent");
 
 	this->SetIcon(wxICON(AppIcon));
@@ -81,6 +81,8 @@ MainFrame::MainFrame(std::shared_ptr<pt::Environment> env,
 
 MainFrame::~MainFrame()
 {
+	delete m_taskBar;
+
 	m_timer->Stop();
 
 	m_state->session->set_alert_notify([] {});
