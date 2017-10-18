@@ -5,6 +5,8 @@
 #include <wx/wx.h>
 #endif
 
+#include <memory>
+
 class wxDataViewCtrl;
 
 namespace libtorrent
@@ -15,11 +17,12 @@ namespace libtorrent
 namespace pt
 {
 	class TrackersViewModel;
+	class Translator;
 
     class TrackersPage : public wxPanel
     {
 	public:
-		TrackersPage(wxWindow* parent, wxWindowID id);
+		TrackersPage(wxWindow* parent, wxWindowID id, std::shared_ptr<Translator> translator);
 		void Update(libtorrent::torrent_status const& ts);
 
 	private:

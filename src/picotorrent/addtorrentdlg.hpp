@@ -20,11 +20,14 @@ namespace libtorrent
 
 namespace pt
 {
+	class Translator;
+
     class AddTorrentDialog : public wxDialog
     {
     public:
         AddTorrentDialog(
 			wxWindow* parent,
+			std::shared_ptr<Translator> translator,
 			std::vector<libtorrent::add_torrent_params>& params);
 
 		~AddTorrentDialog();
@@ -50,6 +53,7 @@ namespace pt
 		wxDirPickerCtrl* m_savePath;
 		wxTreeListCtrl* m_torrentFiles;
 
+		std::shared_ptr<Translator> m_trans;
 		std::vector<libtorrent::add_torrent_params>& m_params;
     };
 }

@@ -2,6 +2,7 @@
 
 #include "filestorageviewmodel.hpp"
 #include "string.hpp"
+#include "translator.hpp"
 
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
@@ -10,12 +11,12 @@
 namespace lt = libtorrent;
 using pt::FilesPage;
 
-FilesPage::FilesPage(wxWindow* parent, wxWindowID id)
+FilesPage::FilesPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Translator> tran)
     : wxPanel(parent, id),
 	m_filesView(new wxDataViewCtrl(this, wxID_ANY))
 {
-	m_filesView->AppendTextColumn("Name", 0, wxDATAVIEW_CELL_INERT, 120, wxALIGN_LEFT);
-	m_filesView->AppendTextColumn("Size", 1, wxDATAVIEW_CELL_INERT, 80, wxALIGN_RIGHT);
+	m_filesView->AppendTextColumn(i18n(tran, "name"), 0, wxDATAVIEW_CELL_INERT, 120, wxALIGN_LEFT);
+	m_filesView->AppendTextColumn(i18n(tran, "size"), 1, wxDATAVIEW_CELL_INERT, 80, wxALIGN_RIGHT);
 
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(m_filesView, 1, wxEXPAND);

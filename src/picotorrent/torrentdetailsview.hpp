@@ -21,11 +21,14 @@ namespace pt
 	class PeersPage;
 	struct SessionState;
 	class TrackersPage;
+	class Translator;
 
     class TorrentDetailsView : public wxPanel
     {
     public:
-        TorrentDetailsView(wxWindow* parent, std::shared_ptr<SessionState> state);
+        TorrentDetailsView(wxWindow* parent,
+			std::shared_ptr<Translator> translator,
+			std::shared_ptr<SessionState> state);
 		virtual wxSize GetMinSize() const;
 
 		void Update();

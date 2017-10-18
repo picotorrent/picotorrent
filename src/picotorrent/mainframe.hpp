@@ -14,14 +14,16 @@ namespace pt
 {
 	class Environment;
 	struct SessionState;
+	class TaskBarIcon;
 	class TorrentDetailsView;
 	class TorrentListView;
 	class TorrentListViewModel;
+	class Translator;
 
     class MainFrame : public wxFrame
     {
     public:
-		MainFrame(std::shared_ptr<Environment> env);
+		MainFrame(std::shared_ptr<Environment> env, std::shared_ptr<Translator> translator);
 		~MainFrame();
 
     private:
@@ -40,11 +42,13 @@ namespace pt
 
 		wxSplitterWindow* m_splitter;
 		wxTimer* m_timer;
+		TaskBarIcon* m_taskBar;
 		TorrentListView* m_torrentListView;
 		TorrentListViewModel* m_torrentListViewModel;
 		TorrentDetailsView* m_torrentDetailsView;
 
 		std::shared_ptr<Environment> m_env;
 		std::shared_ptr<SessionState> m_state;
+		std::shared_ptr<Translator> m_trans;
     };
 }

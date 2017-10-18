@@ -5,6 +5,8 @@
 #include <wx/wx.h>
 #endif
 
+#include <memory>
+
 namespace libtorrent
 {
 	struct torrent_status;
@@ -12,10 +14,12 @@ namespace libtorrent
 
 namespace pt
 {
+	class Translator;
+
     class OverviewPage : public wxPanel
     {
 	public:
-		OverviewPage(wxWindow* parent, wxWindowID id);
+		OverviewPage(wxWindow* parent, wxWindowID id, std::shared_ptr<Translator> translator);
 		void Update(libtorrent::torrent_status const& ts);
 
 	private:

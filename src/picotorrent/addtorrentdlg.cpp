@@ -1,5 +1,6 @@
 #include "addtorrentdlg.hpp"
 
+#include "translator.hpp"
 #include "utils.hpp"
 
 #include <libtorrent/add_torrent_params.hpp>
@@ -18,10 +19,13 @@ wxBEGIN_EVENT_TABLE(AddTorrentDialog, wxDialog)
 	EVT_TREELIST_ITEM_CONTEXT_MENU(ptID_TORRENT_FILE_LIST, OnTorrentFileContextMenu)
 wxEND_EVENT_TABLE()
 
-AddTorrentDialog::AddTorrentDialog(wxWindow* parent, std::vector<lt::add_torrent_params>& params)
+AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
+	std::shared_ptr<pt::Translator> translator,
+	std::vector<lt::add_torrent_params>& params)
 	: wxDialog(parent, wxID_ANY, "Add torrent(s)", wxDefaultPosition, wxSize(400, 400)),
 	m_params(params),
-	m_icons(new wxImageList(16, 16))
+	m_icons(new wxImageList(16, 16)),
+	m_trans(translator)
 {
 	wxPanel* panel = new wxPanel(this, wxID_ANY);
 	m_torrents = new wxChoice(panel, ptID_TORRENT_LIST);
@@ -32,7 +36,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, std::vector<lt::add_torrent
 	flexGrid->AddGrowableCol(1, 1);
 
 	// Torrent
-	flexGrid->Add(new wxStaticText(panel, wxID_ANY, "Torrent"));
+	flexGrid->Add(new wxStaticText(panel, wxID_ANY, m_trans->Translate("torrent")));
 
 	for (lt::add_torrent_params& p : m_params)
 	{
@@ -42,11 +46,11 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, std::vector<lt::add_torrent
 	flexGrid->Add(m_torrents, 1, wxEXPAND);
 
 	// Size
-	flexGrid->Add(new wxStaticText(panel, wxID_ANY, "Size (on disk)"));
+	flexGrid->Add(new wxStaticText(panel, wxID_ANY, m_trans->Translate("size")));
 	flexGrid->Add(m_size);
 
 	// Save path
-	flexGrid->Add(new wxStaticText(panel, wxID_ANY, "Save path"));
+	flexGrid->Add(new wxStaticText(panel, wxID_ANY, m_trans->Translate("save_path")));
 	flexGrid->Add(m_savePath, 1, wxEXPAND);
 
 	SHSTOCKICONINFO inf = { 0 };
@@ -132,14 +136,14 @@ void AddTorrentDialog::OnTorrentChanged(wxCommandEvent& event)
 void AddTorrentDialog::OnTorrentFileContextMenu(wxTreeListEvent& event)
 {
 	wxMenu* prioMenu = new wxMenu();
-	prioMenu->Append(wxID_ANY, "Maximum");
-	prioMenu->Append(wxID_ANY, "High");
-	prioMenu->Append(wxID_ANY, "Normal");
+	prioMenu->Append(wxID_ANY, m_trans->Translate("priority"));
+	prioMenu->Append(wxID_ANY, m_trans->Translate("high"));
+	prioMenu->Append(wxID_ANY, m_trans->Translate("normal"));
 	prioMenu->AppendSeparator();
-	prioMenu->Append(wxID_ANY, "Do not download");
+	prioMenu->Append(wxID_ANY, m_trans->Translate("do_not_download"));
 
 	wxMenu menu;
-	menu.AppendSubMenu(prioMenu, "Priority");
+	menu.AppendSubMenu(prioMenu, m_trans->Translate("priority"));
 
 	PopupMenu(&menu);
 }

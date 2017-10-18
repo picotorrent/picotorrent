@@ -10,8 +10,6 @@ else(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(WXWIDGETS_LIB "${CMAKE_CURRENT_SOURCE_DIR}/tools/wxWidgets/wxWidgets/lib/vc_lib")
 endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
-
-
 # Shared flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
@@ -31,6 +29,7 @@ add_definitions(
     -D_WIN32_WINNT=0x0600
     -DBOOST_ALL_NO_LIB
     -DNOMINMAX
+    -DPICOJSON_USE_INT64
     -DTORRENT_NO_DEPRECATE
     -DTORRENT_USE_OPENSSL
     -DUNICODE
@@ -55,21 +54,28 @@ add_executable(
     src/picotorrent/addtorrentdlg
     src/picotorrent/application
     src/picotorrent/environment
+    src/picotorrent/connectionpage
+    src/picotorrent/downloadspage
     src/picotorrent/filespage
     src/picotorrent/filestorageviewmodel
+    src/picotorrent/generalpage
     src/picotorrent/main
     src/picotorrent/mainframe
     src/picotorrent/mainmenu
     src/picotorrent/overviewpage
     src/picotorrent/peerspage
     src/picotorrent/peersviewmodel
+    src/picotorrent/preferencesdlg
+    src/picotorrent/proxypage
     src/picotorrent/resources.rc
     src/picotorrent/sessionloader
     src/picotorrent/sessionunloader
     src/picotorrent/string
+    src/picotorrent/taskbaricon
     src/picotorrent/torrentcontextmenu
     src/picotorrent/trackerspage
     src/picotorrent/trackersviewmodel
+    src/picotorrent/translator
     src/picotorrent/torrentdetailsview
     src/picotorrent/torrentlistview
     src/picotorrent/torrentlistviewmodel

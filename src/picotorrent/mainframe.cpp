@@ -23,6 +23,7 @@
 #include "sessionloader.hpp"
 #include "sessionstate.hpp"
 #include "sessionunloader.hpp"
+#include "taskbaricon.hpp"
 #include "torrentcontextmenu.hpp"
 #include "torrentdetailsview.hpp"
 #include "torrentlistview.hpp"
@@ -38,11 +39,13 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
 	EVT_TIMER(ptID_MAIN_TIMER, MainFrame::OnTimer)
 wxEND_EVENT_TABLE()
 
-MainFrame::MainFrame(std::shared_ptr<pt::Environment> env)
+MainFrame::MainFrame(std::shared_ptr<pt::Environment> env,
+	std::shared_ptr<pt::Translator> translator)
 	: wxFrame(NULL, wxID_ANY, "PicoTorrent"),
 	m_env(env),
 	m_splitter(new wxSplitterWindow(this, wxID_ANY)),
-	m_torrentListViewModel(new TorrentListViewModel())
+	m_torrentListViewModel(new TorrentListViewModel()),
+	m_trans(translator)
 {
 	m_state = SessionLoader::Load(m_env);
 	m_state->session->set_alert_notify(
@@ -52,9 +55,9 @@ MainFrame::MainFrame(std::shared_ptr<pt::Environment> env)
 	});
 
 	// Create UI
-	m_torrentListView = new TorrentListView(m_splitter, ptID_TORRENT_LIST_VIEW);
+	m_torrentListView = new TorrentListView(m_splitter, ptID_TORRENT_LIST_VIEW, m_trans);
 	m_torrentListView->AssociateModel(m_torrentListViewModel);
-	m_torrentDetailsView = new TorrentDetailsView(m_splitter, m_state);
+	m_torrentDetailsView = new TorrentDetailsView(m_splitter, m_trans, m_state);
 
 	// Splitter
 	m_splitter->SetSashGravity(0.5);
@@ -64,8 +67,12 @@ MainFrame::MainFrame(std::shared_ptr<pt::Environment> env)
 	mainSizer->Add(m_splitter, 1, wxEXPAND, 0);
 	mainSizer->SetSizeHints(this);
 
+	// Task bar icon
+	m_taskBar = new TaskBarIcon(this);
+	m_taskBar->SetIcon(wxICON(AppIcon), "PicoTorrent");
+
 	this->SetIcon(wxICON(AppIcon));
-	this->SetMenuBar(new MainMenu(m_state));
+	this->SetMenuBar(new MainMenu(m_state, m_trans));
 	this->SetSizerAndFit(mainSizer);
 
 	m_timer = new wxTimer(this, ptID_MAIN_TIMER);
@@ -74,7 +81,9 @@ MainFrame::MainFrame(std::shared_ptr<pt::Environment> env)
 
 MainFrame::~MainFrame()
 {
-	m_state->session->set_alert_notify([]() {});
+	m_timer->Stop();
+
+	m_state->session->set_alert_notify([] {});
 	SessionUnloader::Unload(m_state, m_env);
 }
 
@@ -177,7 +186,7 @@ void MainFrame::OnTorrentContextMenu(wxDataViewEvent& event)
 		return;
 	}
 
-	TorrentContextMenu menu(m_state);
+	TorrentContextMenu menu(m_trans, m_state);
 	PopupMenu(&menu);
 }
 

@@ -2,13 +2,15 @@
 
 #include "environment.hpp"
 #include "mainframe.hpp"
+#include "translator.hpp"
 
 using pt::Application;
 
 Application::Application()
 {
 	m_mainFrame = new MainFrame(
-		std::make_shared<Environment>()
+		std::make_shared<Environment>(),
+		Translator::Load(GetModuleHandle(NULL))
 	);
 }
 

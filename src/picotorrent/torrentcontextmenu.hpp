@@ -10,11 +10,13 @@
 namespace pt
 {
 	struct SessionState;
+	class Translator;
 
     class TorrentContextMenu : public wxMenu
     {
     public:
-        TorrentContextMenu(std::shared_ptr<SessionState> state);
+        TorrentContextMenu(std::shared_ptr<Translator> translator,
+			std::shared_ptr<SessionState> state);
 
 	private:
 		enum
