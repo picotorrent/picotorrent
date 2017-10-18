@@ -5,6 +5,7 @@
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/create_torrent.hpp>
 #include <libtorrent/session.hpp>
+#include <libtorrent/session_stats.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/write_resume_data.hpp>
 
@@ -23,6 +24,7 @@
 #include "sessionloader.hpp"
 #include "sessionstate.hpp"
 #include "sessionunloader.hpp"
+#include "statusbar.hpp"
 #include "taskbaricon.hpp"
 #include "torrentcontextmenu.hpp"
 #include "torrentdetailsview.hpp"
@@ -71,9 +73,13 @@ MainFrame::MainFrame(std::shared_ptr<pt::Environment> env,
 	m_taskBar = new TaskBarIcon(this, m_trans, m_state);
 	m_taskBar->SetIcon(wxICON(AppIcon), "PicoTorrent");
 
+	// Status bar
+	m_status = new StatusBar(this);
+
 	this->SetIcon(wxICON(AppIcon));
 	this->SetMenuBar(new MainMenu(m_state, m_trans));
 	this->SetSizerAndFit(mainSizer);
+	this->SetStatusBar(m_status);
 
 	m_timer = new wxTimer(this, ptID_MAIN_TIMER);
 	m_timer->Start(1000);
@@ -130,6 +136,7 @@ void MainFrame::OnSessionAlert()
 			}
 
 			m_state->torrents.insert({ ata->handle.info_hash(), ata->handle });
+			m_status->UpdateTorrentCount(m_state->torrents.size());
 			m_torrentListViewModel->Add(ata->handle.status());
 
 			break;
@@ -157,15 +164,42 @@ void MainFrame::OnSessionAlert()
 
 			break;
 		}
+		case lt::session_stats_alert::alert_type:
+		{
+			lt::session_stats_alert* ssa = lt::alert_cast<lt::session_stats_alert>(alert);
+			lt::span<const int64_t> counters = ssa->counters();
+			int idx = -1;
+
+			if ((idx = lt::find_metric_idx("dht.dht_nodes")) >= 0)
+			{
+				m_status->UpdateDhtNodesCount(counters[idx]);
+			}
+
+			break;
+		}
 		case lt::state_update_alert::alert_type:
 		{
 			lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
 
+			int64_t dl_rate = 0;
+			int64_t ul_rate = 0;
+
 			for (lt::torrent_status const& ts : sua->status)
 			{
 				m_torrentListViewModel->Update(ts);
+
+				dl_rate += ts.download_payload_rate;
+				ul_rate += ts.upload_payload_rate;
 			}
 
+			m_status->UpdateTorrentCount(m_state->torrents.size());
+			m_status->UpdateTransferRates(dl_rate, ul_rate);
+
+			break;
+		}
+		case lt::torrent_removed_alert::alert_type:
+		{
+			m_status->UpdateTorrentCount(m_state->torrents.size());
 			break;
 		}
 		}

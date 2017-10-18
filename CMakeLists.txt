@@ -71,6 +71,7 @@ add_executable(
     src/picotorrent/resources.rc
     src/picotorrent/sessionloader
     src/picotorrent/sessionunloader
+    src/picotorrent/statusbar
     src/picotorrent/string
     src/picotorrent/taskbaricon
     src/picotorrent/torrentcontextmenu

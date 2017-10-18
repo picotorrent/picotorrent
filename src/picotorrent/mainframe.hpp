@@ -14,6 +14,7 @@ namespace pt
 {
 	class Environment;
 	struct SessionState;
+	class StatusBar;
 	class TaskBarIcon;
 	class TorrentDetailsView;
 	class TorrentListView;
@@ -42,6 +43,7 @@ namespace pt
 
 		wxSplitterWindow* m_splitter;
 		wxTimer* m_timer;
+		StatusBar* m_status;
 		TaskBarIcon* m_taskBar;
 		TorrentListView* m_torrentListView;
 		TorrentListViewModel* m_torrentListViewModel;
