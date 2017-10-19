@@ -2,24 +2,28 @@
 
 #include "sessionstate.hpp"
 #include "translator.hpp"
+#include "utils.hpp"
 
+#include <filesystem>
 #include <sstream>
 
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_handle.hpp>
+#include <libtorrent/torrent_status.hpp>
 #include <wx/clipbrd.h>
 #include <wx/filedlg.h>
 
+namespace fs = std::experimental::filesystem::v1;
 namespace lt = libtorrent;
 using pt::TorrentContextMenu;
 
 BEGIN_EVENT_TABLE(TorrentContextMenu, wxMenu)
+	EVT_MENU(ptID_PAUSE, TorrentContextMenu::Pause)
+	EVT_MENU(ptID_RESUME, TorrentContextMenu::Resume)
 	EVT_MENU(ptID_QUEUE_UP, TorrentContextMenu::QueueUp)
 	EVT_MENU(ptID_QUEUE_DOWN, TorrentContextMenu::QueueDown)
 	EVT_MENU(ptID_QUEUE_TOP, TorrentContextMenu::QueueTop)
 	EVT_MENU(ptID_QUEUE_BOTTOM, TorrentContextMenu::QueueBottom)
-	//EVT_MENU(ptID_RESUME)
-	//EVT_MENU(ptID_PAUSE
 	EVT_MENU(ptID_MOVE, TorrentContextMenu::Move)
 	EVT_MENU(ptID_REMOVE, TorrentContextMenu::Remove)
 	EVT_MENU(ptID_COPY_INFO_HASH, TorrentContextMenu::CopyInfoHash)
@@ -41,8 +45,39 @@ TorrentContextMenu::TorrentContextMenu(
 	queueMenu->Append(ptID_QUEUE_TOP, i18n(tr, "top"));
 	queueMenu->Append(ptID_QUEUE_BOTTOM, i18n(tr, "bottom"));
 
-	Append(ptID_RESUME, i18n(tr, "resume"));
-	Append(ptID_PAUSE, i18n(tr, "pause"));
+	bool allPaused = std::all_of(
+		m_state->selected_torrents.begin(),
+		m_state->selected_torrents.end(),
+		[this](lt::torrent_handle const& th)
+	{
+		lt::torrent_status ts = th.status();
+		return (ts.flags & (lt::torrent_flags::auto_managed
+			| lt::torrent_flags::paused)) == lt::torrent_flags::paused;
+	});
+
+	bool allNotPaused = std::all_of(
+		m_state->selected_torrents.begin(),
+		m_state->selected_torrents.end(),
+		[this](lt::torrent_handle const& th)
+	{
+		lt::torrent_status ts = th.status();
+		return !((ts.flags & (lt::torrent_flags::auto_managed
+			| lt::torrent_flags::paused)) == lt::torrent_flags::paused);
+	});
+
+	wxMenuItem* resume = Append(ptID_RESUME, i18n(tr, "resume"));
+	wxMenuItem* pause = Append(ptID_PAUSE, i18n(tr, "pause"));
+
+	if (allPaused)
+	{
+		Delete(pause);
+	}
+
+	if (allNotPaused)
+	{
+		Delete(resume);
+	}
+
 	AppendSeparator();
 	Append(ptID_MOVE, i18n(tr, "move"));
 	Append(ptID_REMOVE, i18n(tr, "remove"));
@@ -90,6 +125,22 @@ void TorrentContextMenu::Move(wxCommandEvent& WXUNUSED(event))
 
 void TorrentContextMenu::OpenInExplorer(wxCommandEvent& WXUNUSED(event))
 {
+	lt::torrent_handle const& th = m_state->selected_torrents.front();
+	lt::torrent_status ts = th.status();
+
+	fs::path savePath = ts.save_path;
+	fs::path path = ts.name;
+
+	Utils::OpenAndSelect(path);
+}
+
+void TorrentContextMenu::Pause(wxCommandEvent& WXUNUSED(event))
+{
+	for (lt::torrent_handle& th : m_state->selected_torrents)
+	{
+		th.unset_flags(lt::torrent_flags::auto_managed);
+		th.pause(lt::torrent_handle::graceful_pause);
+	}
 }
 
 void TorrentContextMenu::Remove(wxCommandEvent& WXUNUSED(event))
@@ -99,6 +150,14 @@ void TorrentContextMenu::Remove(wxCommandEvent& WXUNUSED(event))
 	for (lt::torrent_handle& th : m_state->selected_torrents)
 	{
 		m_state->session->remove_torrent(th);
+	}
+}
+
+void TorrentContextMenu::Resume(wxCommandEvent& WXUNUSED(event))
+{
+	for (lt::torrent_handle& th : m_state->selected_torrents)
+	{
+		th.set_flags(lt::torrent_flags::auto_managed);
 	}
 }
 

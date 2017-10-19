@@ -1,12 +1,22 @@
 #include "utils.hpp"
 
 #include <Windows.h>
+#include <ShlObj.h>
 #include <Shlwapi.h>
 
 #include <libtorrent/torrent_status.hpp>
 
+namespace fs = std::experimental::filesystem::v1;
 namespace lt = libtorrent;
 using pt::Utils;
+
+void Utils::OpenAndSelect(fs::path path)
+{
+	// TODO(platform dependent)
+	LPITEMIDLIST il = ILCreateFromPath(path.c_str());
+	SHOpenFolderAndSelectItems(il, 0, 0, 0);
+	ILFree(il);
+}
 
 std::wstring Utils::ToHumanFileSize(int64_t bytes)
 {
@@ -31,6 +41,8 @@ std::string Utils::ToReadableStatus(lt::torrent_status const& ts)
 
 	bool forced = (!(ts.flags & lt::torrent_flags::paused)
 		&& !(ts.flags & lt::torrent_flags::auto_managed));
+
+	// TODO(translations)
 
 	if (paused)
 	{

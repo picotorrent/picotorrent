@@ -39,7 +39,9 @@ namespace pt
 		void CopyInfoHash(wxCommandEvent&);
 		void Move(wxCommandEvent&);
 		void OpenInExplorer(wxCommandEvent&);
+		void Pause(wxCommandEvent&);
 		void Remove(wxCommandEvent&);
+		void Resume(wxCommandEvent&);
 		void QueueUp(wxCommandEvent&);
 		void QueueDown(wxCommandEvent&);
 		void QueueTop(wxCommandEvent&);
