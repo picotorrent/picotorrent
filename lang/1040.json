@@ -198,6 +198,7 @@
         "notification_area": "Area di notifica",
         "show_picotorrent_in_notification_area": "Mostra PicoTorrent nell'area di notifica",
         "minimize_to_notification_area": "Riduci nell'area di notifica",
-        "close_to_notification_area": "Chiudi nell'area di notifica"
+        "close_to_notification_area": "Chiudi nell'area di notifica",
+        "invalid_regex": "Espressione regolare non valida"
     }
 }
