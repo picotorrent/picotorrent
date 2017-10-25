@@ -8,10 +8,10 @@
 #include <memory>
 #include <vector>
 
+class wxDataViewCtrl;
+class wxDataViewEvent;
 class wxDirPickerCtrl;
 class wxFileDirPickerEvent;
-class wxTreeListEvent;
-class wxTreeListCtrl;
 
 namespace libtorrent
 {
@@ -20,6 +20,7 @@ namespace libtorrent
 
 namespace pt
 {
+	class FileStorageViewModel;
 	class Translator;
 
     class AddTorrentDialog : public wxDialog
@@ -30,28 +31,28 @@ namespace pt
 			std::shared_ptr<Translator> translator,
 			std::vector<libtorrent::add_torrent_params>& params);
 
-		~AddTorrentDialog();
-
 	private:
 		enum
 		{
 			ptID_TORRENT_LIST = wxID_HIGHEST,
 			ptID_SAVE_PATH,
-			ptID_TORRENT_FILE_LIST
+			ptID_TORRENT_FILE_LIST,
+			ptID_FILE_LIST
 		};
 
 		void LoadTorrentInfo(int index);
+		void OnFileContextMenu(wxDataViewEvent&);
 		void OnSavePathChanged(wxFileDirPickerEvent&);
+		void OnSetPriority(wxCommandEvent&);
 		void OnTorrentChanged(wxCommandEvent&);
-		void OnTorrentFileContextMenu(wxTreeListEvent&);
 
 		wxDECLARE_EVENT_TABLE();
 
-		wxImageList* m_icons;
 		wxChoice* m_torrents;
 		wxStaticText* m_size;
 		wxDirPickerCtrl* m_savePath;
-		wxTreeListCtrl* m_torrentFiles;
+		wxDataViewCtrl* m_filesView;
+		FileStorageViewModel* m_filesViewModel;
 
 		std::shared_ptr<Translator> m_trans;
 		std::vector<libtorrent::add_torrent_params>& m_params;

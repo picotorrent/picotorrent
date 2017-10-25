@@ -54,6 +54,7 @@ void AddTorrentProcedure::Execute()
 
 		// TODO: save path
 		p.ti = std::make_shared<lt::torrent_info>(filePath.ToStdString(), ec);
+		p.file_priorities.resize(p.ti->num_files(), 4);
 
 		if (ec)
 		{

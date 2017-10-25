@@ -57,6 +57,7 @@ add_executable(
     src/picotorrent/environment
     src/picotorrent/connectionpage
     src/picotorrent/downloadspage
+    src/picotorrent/filecontextmenu
     src/picotorrent/filespage
     src/picotorrent/filestorageviewmodel
     src/picotorrent/generalpage

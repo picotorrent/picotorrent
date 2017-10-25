@@ -18,10 +18,27 @@ namespace libtorrent
 
 namespace pt
 {
+	class Translator;
+
     class FileStorageViewModel : public wxDataViewModel
     {
 	public:
-		FileStorageViewModel(std::shared_ptr<const libtorrent::torrent_info> ti);
+		enum Columns
+		{
+			Name,
+			Size,
+			Progress,
+			Priority
+		};
+
+		FileStorageViewModel(std::shared_ptr<Translator> translator);
+
+		std::vector<int> GetFileIndices(wxDataViewItem&);
+		wxDataViewItem GetRootItem();
+		void RebuildTree(std::shared_ptr<const libtorrent::torrent_info> ti);
+		void UpdatePriorities(std::vector<uint8_t> const& priorities); // TODO: merge these two
+		void UpdatePriorities(std::vector<int> const& priorities);
+		void UpdateProgress(std::vector<int64_t> const& progress);
 
 	private:
 		struct Node
@@ -29,13 +46,15 @@ namespace pt
 			std::string name;
 			int64_t size;
 			int index;
+			uint8_t priority;
+			float progress;
 
 			std::shared_ptr<Node> parent;
 			std::map<std::string, std::shared_ptr<Node>> children;
 		};
 
-		void BuildNodeTree(std::shared_ptr<Node> node, std::vector<std::string> path, libtorrent::file_storage const& files, int index);
-
+		void FillIndices(Node* node, std::vector<int>& indices);
+		wxIcon GetIconForFile(std::string const& fileName) const;
 		unsigned int GetColumnCount() const wxOVERRIDE;
 		wxString GetColumnType(unsigned int col) const wxOVERRIDE;
 		void GetValue(wxVariant &variant, const wxDataViewItem &item, unsigned int col) const wxOVERRIDE;
@@ -44,6 +63,10 @@ namespace pt
 		bool IsContainer(const wxDataViewItem &item) const wxOVERRIDE;
 		unsigned int GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const wxOVERRIDE;
 
+		wxIcon m_folderIcon;
+		std::shared_ptr<Translator> m_trans;
 		std::shared_ptr<Node> m_root;
+		std::map<int, std::shared_ptr<Node>> m_map;
+		std::map<std::string, wxIcon> m_icons;
     };
 }

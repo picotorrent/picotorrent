@@ -7,10 +7,10 @@
 #include <wx/wx.h>
 #endif
 
-#include <libtorrent/sha1_hash.hpp>
 #include <memory>
 
 class wxDataViewCtrl;
+class wxDataViewEvent;
 
 namespace libtorrent
 {
@@ -29,9 +29,21 @@ namespace pt
 		void Update(libtorrent::torrent_status const& ts);
 
 	private:
+		enum {
+			ptID_FILE_LIST = wxID_HIGHEST
+		};
+
+		struct HandleWrapper;
+
+		wxDECLARE_EVENT_TABLE();
+
+		void OnFileContextMenu(wxDataViewEvent&);
+		void OnSetPriority(wxCommandEvent&);
+
+		std::shared_ptr<Translator> m_trans;
+		std::unique_ptr<HandleWrapper> m_wrapper;
 		wxDataViewCtrl* m_filesView;
 		FileStorageViewModel* m_viewModel;
-		libtorrent::sha1_hash m_hash;
     };
 }
 
