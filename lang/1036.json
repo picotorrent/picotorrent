@@ -196,5 +196,10 @@
         "apply": "Appliquer",
         "maximized": "Agrandir",
         "no_magnet_links_found": "Pas de lien(s) magnétique(s) trouvé(s)"
+		"notification_area": "Zone de notification",
+        "show_picotorrent_in_notification_area": "Afficher PicoTorrent dans la zone de notification",
+        "minimize_to_notification_area": "Minimiser dans la zone de notification",
+        "close_to_notification_area": "Afficher dans la zone de notification à la fermeture",
+        "invalid_regex": "Expression regulière invalide"
     }
 }
