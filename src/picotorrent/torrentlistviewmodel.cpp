@@ -59,7 +59,16 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
 	switch (col)
 	{
 	case 0:
-		variant = ts.name;
+        if (ts.name.empty())
+        {
+            std::stringstream ss;
+            ss << ts.info_hash;
+            variant = ss.str();
+        }
+        else
+        {
+            variant = ts.name;
+        }
 		break;
 	case 1:
 		if (ts.queue_position < 0)

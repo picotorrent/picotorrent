@@ -31,6 +31,7 @@ namespace pt
 			std::shared_ptr<SessionState> state);
 		virtual wxSize GetMinSize() const;
 
+        void Clear();
 		void Update();
 
 	private:

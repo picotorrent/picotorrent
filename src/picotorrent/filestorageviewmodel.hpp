@@ -28,10 +28,20 @@ namespace pt
 			Name,
 			Size,
 			Progress,
-			Priority
+			Priority,
+            _Max
 		};
 
 		FileStorageViewModel(std::shared_ptr<Translator> translator);
+
+        // Things we need to override
+        unsigned int GetColumnCount() const wxOVERRIDE;
+        wxString GetColumnType(unsigned int col) const wxOVERRIDE;
+        void GetValue(wxVariant &variant, const wxDataViewItem &item, unsigned int col) const wxOVERRIDE;
+        bool SetValue(const wxVariant &variant, const wxDataViewItem &item, unsigned int col) wxOVERRIDE;
+        wxDataViewItem GetParent(const wxDataViewItem &item) const wxOVERRIDE;
+        bool IsContainer(const wxDataViewItem &item) const wxOVERRIDE;
+        unsigned int GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const wxOVERRIDE;
 
 		std::vector<int> GetFileIndices(wxDataViewItem&);
 		wxDataViewItem GetRootItem();
@@ -55,13 +65,6 @@ namespace pt
 
 		void FillIndices(Node* node, std::vector<int>& indices);
 		wxIcon GetIconForFile(std::string const& fileName) const;
-		unsigned int GetColumnCount() const wxOVERRIDE;
-		wxString GetColumnType(unsigned int col) const wxOVERRIDE;
-		void GetValue(wxVariant &variant, const wxDataViewItem &item, unsigned int col) const wxOVERRIDE;
-		bool SetValue(const wxVariant &variant, const wxDataViewItem &item, unsigned int col) wxOVERRIDE;
-		wxDataViewItem GetParent(const wxDataViewItem &item) const wxOVERRIDE;
-		bool IsContainer(const wxDataViewItem &item) const wxOVERRIDE;
-		unsigned int GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const wxOVERRIDE;
 
 		wxIcon m_folderIcon;
 		std::shared_ptr<Translator> m_trans;

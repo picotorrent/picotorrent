@@ -69,8 +69,19 @@ FilesPage::FilesPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Transl
 	this->SetSizer(sizer);
 }
 
+void FilesPage::Clear()
+{
+    m_wrapper->handle = lt::torrent_handle();
+    m_viewModel->Cleared();
+}
+
 void FilesPage::Update(lt::torrent_status const& ts)
 {
+    if (!ts.handle.is_valid())
+    {
+        return;
+    }
+
 	std::shared_ptr<const lt::torrent_info> tf = ts.torrent_file.lock();
 	if (!tf) { return; }
 

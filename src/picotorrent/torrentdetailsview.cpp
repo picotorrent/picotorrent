@@ -36,6 +36,11 @@ TorrentDetailsView::TorrentDetailsView(wxWindow* parent,
 	this->SetSizer(sizer);
 }
 
+void TorrentDetailsView::Clear()
+{
+    m_files->Clear();
+}
+
 wxSize TorrentDetailsView::GetMinSize() const
 {
 	return wxSize(450, 150);

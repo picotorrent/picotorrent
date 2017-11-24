@@ -61,6 +61,7 @@ add_executable(
     src/picotorrent/filespage
     src/picotorrent/filestorageviewmodel
     src/picotorrent/generalpage
+    src/picotorrent/magnetlinkvalidator
     src/picotorrent/main
     src/picotorrent/mainframe
     src/picotorrent/mainmenu
@@ -71,6 +72,7 @@ add_executable(
     src/picotorrent/proxypage
     src/picotorrent/resources.rc
     src/picotorrent/sessionloader
+    src/picotorrent/sessionstate
     src/picotorrent/sessionunloader
     src/picotorrent/statusbar
     src/picotorrent/string

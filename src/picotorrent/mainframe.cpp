@@ -36,217 +36,248 @@ namespace lt = libtorrent;
 using pt::MainFrame;
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
-	EVT_DATAVIEW_ITEM_CONTEXT_MENU(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentContextMenu)
-	EVT_DATAVIEW_SELECTION_CHANGED(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentSelectionChanged)
-	EVT_TIMER(ptID_MAIN_TIMER, MainFrame::OnTimer)
+    EVT_DATAVIEW_ITEM_CONTEXT_MENU(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentContextMenu)
+    EVT_DATAVIEW_SELECTION_CHANGED(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentSelectionChanged)
+    EVT_TIMER(ptID_MAIN_TIMER, MainFrame::OnTimer)
 wxEND_EVENT_TABLE()
 
 MainFrame::MainFrame(std::shared_ptr<pt::Environment> env,
-	std::shared_ptr<pt::Translator> translator)
-	: wxFrame(NULL, wxID_ANY, "PicoTorrent"),
-	m_env(env),
-	m_splitter(new wxSplitterWindow(this, wxID_ANY)),
-	m_torrentListViewModel(new TorrentListViewModel()),
-	m_trans(translator)
+    std::shared_ptr<pt::Translator> translator)
+    : wxFrame(NULL, wxID_ANY, "PicoTorrent"),
+    m_env(env),
+    m_splitter(new wxSplitterWindow(this, wxID_ANY)),
+    m_torrentListViewModel(new TorrentListViewModel()),
+    m_trans(translator)
 {
-	m_state = SessionLoader::Load(m_env);
-	m_state->session->set_alert_notify(
-		[this]()
-	{
-		this->GetEventHandler()->CallAfter(std::bind(&MainFrame::OnSessionAlert, this));
-	});
+    m_state = SessionLoader::Load(m_env);
+    m_state->session->set_alert_notify(
+        [this]()
+    {
+        this->GetEventHandler()->CallAfter(std::bind(&MainFrame::OnSessionAlert, this));
+    });
 
-	// Create UI
-	m_torrentListView = new TorrentListView(m_splitter, ptID_TORRENT_LIST_VIEW, m_trans);
-	m_torrentListView->AssociateModel(m_torrentListViewModel);
-	m_torrentDetailsView = new TorrentDetailsView(m_splitter, m_trans, m_state);
+    // Create UI
+    m_torrentListView = new TorrentListView(m_splitter, ptID_TORRENT_LIST_VIEW, m_trans);
+    m_torrentListView->AssociateModel(m_torrentListViewModel);
+    m_torrentDetailsView = new TorrentDetailsView(m_splitter, m_trans, m_state);
 
-	// Splitter
-	m_splitter->SetSashGravity(0.5);
-	m_splitter->SplitHorizontally(m_torrentListView, m_torrentDetailsView);
+    // Splitter
+    m_splitter->SetSashGravity(0.5);
+    m_splitter->SplitHorizontally(m_torrentListView, m_torrentDetailsView);
 
-	wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-	mainSizer->Add(m_splitter, 1, wxEXPAND, 0);
-	mainSizer->SetSizeHints(this);
+    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+    mainSizer->Add(m_splitter, 1, wxEXPAND, 0);
+    mainSizer->SetSizeHints(this);
 
-	// Task bar icon
-	m_taskBar = new TaskBarIcon(this, m_trans, m_state);
-	m_taskBar->SetIcon(wxICON(AppIcon), "PicoTorrent");
+    // Task bar icon
+    m_taskBar = new TaskBarIcon(this, m_trans, m_state);
+    m_taskBar->SetIcon(wxICON(AppIcon), "PicoTorrent");
 
-	// Status bar
-	m_status = new StatusBar(this);
+    // Status bar
+    m_status = new StatusBar(this);
 
-	this->SetIcon(wxICON(AppIcon));
-	this->SetMenuBar(new MainMenu(m_state, m_trans));
-	this->SetSizerAndFit(mainSizer);
-	this->SetStatusBar(m_status);
+    this->SetIcon(wxICON(AppIcon));
+    this->SetMenuBar(new MainMenu(m_state, m_trans));
+    this->SetSizerAndFit(mainSizer);
+    this->SetStatusBar(m_status);
 
-	m_timer = new wxTimer(this, ptID_MAIN_TIMER);
-	m_timer->Start(1000);
+    m_timer = new wxTimer(this, ptID_MAIN_TIMER);
+    m_timer->Start(1000);
 }
 
 MainFrame::~MainFrame()
 {
-	delete m_taskBar;
+    delete m_taskBar;
 
-	m_timer->Stop();
+    m_timer->Stop();
 
-	m_state->session->set_alert_notify([] {});
-	SessionUnloader::Unload(m_state, m_env);
+    m_state->session->set_alert_notify([] {});
+    SessionUnloader::Unload(m_state, m_env);
 }
 
 void MainFrame::OnSessionAlert()
 {
-	std::vector<lt::alert*> alerts;
-	m_state->session->pop_alerts(&alerts);
+    std::vector<lt::alert*> alerts;
+    m_state->session->pop_alerts(&alerts);
 
-	for (lt::alert* alert : alerts)
-	{
-		wxLogDebug("%s", alert->message().c_str());
+    for (lt::alert* alert : alerts)
+    {
+        wxLogDebug("%s", alert->message().c_str());
 
-		switch (alert->type())
-		{
-		case lt::add_torrent_alert::alert_type:
-		{
-			lt::add_torrent_alert* ata = lt::alert_cast<lt::add_torrent_alert>(alert);
+        switch (alert->type())
+        {
+        case lt::add_torrent_alert::alert_type:
+        {
+            lt::add_torrent_alert* ata = lt::alert_cast<lt::add_torrent_alert>(alert);
 
-			if (ata->error)
-			{
-				// TODO (logging)
-				break;
-			}
+            if (ata->error)
+            {
+                // TODO (logging)
+                break;
+            }
 
-			if (ata->handle.torrent_file())
-			{
-				fs::path torrentsDirectory = m_env->GetApplicationDataPath() / "Torrents";
-				if (!fs::exists(torrentsDirectory)) { fs::create_directories(torrentsDirectory); }
+            if (ata->handle.torrent_file())
+            {
+                fs::path torrentsDirectory = m_env->GetApplicationDataPath() / "Torrents";
+                if (!fs::exists(torrentsDirectory)) { fs::create_directories(torrentsDirectory); }
 
-				lt::create_torrent ct(*ata->handle.torrent_file());
-				lt::entry entry = ct.generate();
+                lt::create_torrent ct(*ata->handle.torrent_file());
+                lt::entry entry = ct.generate();
 
-				std::stringstream hex;
-				hex << ata->handle.info_hash();
+                std::stringstream hex;
+                hex << ata->handle.info_hash();
 
-				fs::path torrentFile = torrentsDirectory / (hex.str() + ".torrent");
-				std::ofstream out(torrentFile, std::ios::binary | std::ios::out);
-				lt::bencode(std::ostreambuf_iterator<char>(out), entry);
+                fs::path torrentFile = torrentsDirectory / (hex.str() + ".torrent");
+                std::ofstream out(torrentFile, std::ios::binary | std::ios::out);
+                lt::bencode(std::ostreambuf_iterator<char>(out), entry);
 
-				// Generate a save resume data alert to save torrent state
-				ata->handle.save_resume_data();
-			}
+                // Generate a save resume data alert to save torrent state
+                ata->handle.save_resume_data();
+            }
 
-			m_state->torrents.insert({ ata->handle.info_hash(), ata->handle });
-			m_status->UpdateTorrentCount(m_state->torrents.size());
-			m_torrentListViewModel->Add(ata->handle.status());
+            m_state->torrents.insert({ ata->handle.info_hash(), ata->handle });
+            m_status->UpdateTorrentCount(m_state->torrents.size());
+            m_torrentListViewModel->Add(ata->handle.status());
 
-			break;
-		}
-		case lt::save_resume_data_alert::alert_type:
-		{
-			lt::save_resume_data_alert* srda = lt::alert_cast<lt::save_resume_data_alert>(alert);
+            break;
+        }
+        case lt::metadata_received_alert::alert_type:
+        {
+            lt::metadata_received_alert* mra = lt::alert_cast<lt::metadata_received_alert>(alert);
 
-			fs::path torrentsDirectory = m_env->GetApplicationDataPath() / "Torrents";
-			if (!fs::exists(torrentsDirectory)) { fs::create_directories(torrentsDirectory); }
+            fs::path torrentsDirectory = m_env->GetApplicationDataPath() / "Torrents";
+            if (!fs::exists(torrentsDirectory)) { fs::create_directories(torrentsDirectory); }
 
-			std::stringstream hex;
-			hex << srda->handle.info_hash();
+            lt::create_torrent ct(*mra->handle.torrent_file());
+            lt::entry entry = ct.generate();
 
-			lt::entry entry = lt::write_resume_data(srda->params);
-			std::vector<char> buf;
-			lt::bencode(std::back_inserter(buf), entry);
+            std::stringstream hex;
+            hex << mra->handle.info_hash();
 
-			fs::path datFile = torrentsDirectory / (hex.str() + ".dat");
-			std::ofstream out(datFile, std::ios::binary | std::ios::out);
-			std::copy(
-				buf.begin(),
-				buf.end(),
-				std::ostreambuf_iterator<char>(out));
+            fs::path torrentFile = torrentsDirectory / (hex.str() + ".torrent");
+            std::ofstream out(torrentFile, std::ios::binary | std::ios::out);
+            lt::bencode(std::ostreambuf_iterator<char>(out), entry);
 
-			break;
-		}
-		case lt::session_stats_alert::alert_type:
-		{
-			lt::session_stats_alert* ssa = lt::alert_cast<lt::session_stats_alert>(alert);
-			lt::span<const int64_t> counters = ssa->counters();
-			int idx = -1;
+            // Generate a save resume data alert to save torrent state
+            mra->handle.save_resume_data();
 
-			if ((idx = lt::find_metric_idx("dht.dht_nodes")) >= 0)
-			{
-				m_status->UpdateDhtNodesCount(counters[idx]);
-			}
+            m_torrentListViewModel->Update(mra->handle.status());
 
-			break;
-		}
-		case lt::state_update_alert::alert_type:
-		{
-			lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
+            if (m_state->IsSelected(mra->handle.info_hash()))
+            {
+                m_torrentDetailsView->Clear();
+                m_torrentDetailsView->Update();
+            }
 
-			int64_t dl_rate = 0;
-			int64_t ul_rate = 0;
+            break;
+        }
+        case lt::save_resume_data_alert::alert_type:
+        {
+            lt::save_resume_data_alert* srda = lt::alert_cast<lt::save_resume_data_alert>(alert);
 
-			for (lt::torrent_status const& ts : sua->status)
-			{
-				m_torrentListViewModel->Update(ts);
+            fs::path torrentsDirectory = m_env->GetApplicationDataPath() / "Torrents";
+            if (!fs::exists(torrentsDirectory)) { fs::create_directories(torrentsDirectory); }
 
-				dl_rate += ts.download_payload_rate;
-				ul_rate += ts.upload_payload_rate;
-			}
+            std::stringstream hex;
+            hex << srda->handle.info_hash();
 
-			m_status->UpdateTorrentCount(m_state->torrents.size());
-			m_status->UpdateTransferRates(dl_rate, ul_rate);
+            lt::entry entry = lt::write_resume_data(srda->params);
+            std::vector<char> buf;
+            lt::bencode(std::back_inserter(buf), entry);
 
-			break;
-		}
-		case lt::torrent_removed_alert::alert_type:
-		{
-			m_status->UpdateTorrentCount(m_state->torrents.size());
-			break;
-		}
-		}
-	}
+            fs::path datFile = torrentsDirectory / (hex.str() + ".dat");
+            std::ofstream out(datFile, std::ios::binary | std::ios::out);
+            std::copy(
+                buf.begin(),
+                buf.end(),
+                std::ostreambuf_iterator<char>(out));
+
+            break;
+        }
+        case lt::session_stats_alert::alert_type:
+        {
+            lt::session_stats_alert* ssa = lt::alert_cast<lt::session_stats_alert>(alert);
+            lt::span<const int64_t> counters = ssa->counters();
+            int idx = -1;
+
+            if ((idx = lt::find_metric_idx("dht.dht_nodes")) >= 0)
+            {
+                m_status->UpdateDhtNodesCount(counters[idx]);
+            }
+
+            break;
+        }
+        case lt::state_update_alert::alert_type:
+        {
+            lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
+
+            int64_t dl_rate = 0;
+            int64_t ul_rate = 0;
+
+            for (lt::torrent_status const& ts : sua->status)
+            {
+                m_torrentListViewModel->Update(ts);
+
+                dl_rate += ts.download_payload_rate;
+                ul_rate += ts.upload_payload_rate;
+            }
+
+            m_status->UpdateTorrentCount(m_state->torrents.size());
+            m_status->UpdateTransferRates(dl_rate, ul_rate);
+
+            break;
+        }
+        case lt::torrent_removed_alert::alert_type:
+        {
+            m_status->UpdateTorrentCount(m_state->torrents.size());
+            break;
+        }
+        }
+    }
 }
 
 void MainFrame::OnTimer(wxTimerEvent& WXUNUSED(event))
 {
-	m_state->session->post_dht_stats();
-	m_state->session->post_session_stats();
-	m_state->session->post_torrent_updates();
+    m_state->session->post_dht_stats();
+    m_state->session->post_session_stats();
+    m_state->session->post_torrent_updates();
 
-	m_torrentDetailsView->Update();
+    m_torrentDetailsView->Update();
 }
 
 void MainFrame::OnTorrentContextMenu(wxDataViewEvent& event)
 {
-	if (m_state->selected_torrents.empty())
-	{
-		return;
-	}
+    if (m_state->selected_torrents.empty())
+    {
+        return;
+    }
 
-	TorrentContextMenu menu(this, m_trans, m_state);
-	PopupMenu(&menu);
+    TorrentContextMenu menu(this, m_trans, m_state);
+    PopupMenu(&menu);
 }
 
 void MainFrame::OnTorrentSelectionChanged(wxDataViewEvent& event)
 {
-	wxDataViewItemArray items;
-	m_torrentListView->GetSelections(items);
+    wxDataViewItemArray items;
+    m_torrentListView->GetSelections(items);
 
-	m_state->selected_torrents.clear();
-	
-	if (items.IsEmpty())
-	{
-		return;
-	}
+    m_state->selected_torrents.clear();
+    m_torrentDetailsView->Clear();
+    
+    if (items.IsEmpty())
+    {
+        return;
+    }
 
-	for (wxDataViewItem& item : items)
-	{
-		unsigned int row = m_torrentListViewModel->GetRow(item);
+    for (wxDataViewItem& item : items)
+    {
+        unsigned int row = m_torrentListViewModel->GetRow(item);
 
-		lt::sha1_hash hash = m_torrentListViewModel->FindHashByRow(row);
-		lt::torrent_handle th = m_state->torrents.at(hash);
+        lt::sha1_hash hash = m_torrentListViewModel->FindHashByRow(row);
+        lt::torrent_handle th = m_state->torrents.at(hash);
 
-		m_state->selected_torrents.push_back(th);
-	}
+        m_state->selected_torrents.push_back(th);
+    }
 
-	m_torrentDetailsView->Update();
+    m_torrentDetailsView->Update();
 }
