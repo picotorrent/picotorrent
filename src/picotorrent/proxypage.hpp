@@ -9,13 +9,13 @@
 
 namespace pt
 {
-	class Translator;
+    class Translator;
 
     class ProxyPage : public wxPanel
     {
     public:
         ProxyPage(wxWindow* parent, std::shared_ptr<Translator> translator);
 
-	private:
-	};
+    private:
+    };
 }

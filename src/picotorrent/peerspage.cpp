@@ -12,20 +12,20 @@ using pt::PeersPage;
 
 PeersPage::PeersPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Translator> tr)
     : wxPanel(parent, id),
-	m_peersView(new wxDataViewCtrl(this, wxID_ANY)),
-	m_viewModel(new PeersViewModel())
+    m_peersView(new wxDataViewCtrl(this, wxID_ANY)),
+    m_viewModel(new PeersViewModel())
 {
-	m_peersView->AppendTextColumn(i18n(tr, "ip"), 0, wxDATAVIEW_CELL_INERT, 120);
-	m_peersView->AppendTextColumn(i18n(tr, "client"), 1, wxDATAVIEW_CELL_INERT, 120);
-	m_peersView->AssociateModel(m_viewModel);
+    m_peersView->AppendTextColumn(i18n(tr, "ip"), 0, wxDATAVIEW_CELL_INERT, 120);
+    m_peersView->AppendTextColumn(i18n(tr, "client"), 1, wxDATAVIEW_CELL_INERT, 120);
+    m_peersView->AssociateModel(m_viewModel);
 
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(m_peersView, 1, wxEXPAND);
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(m_peersView, 1, wxEXPAND);
 
-	this->SetSizer(sizer);
+    this->SetSizer(sizer);
 }
 
 void PeersPage::Update(lt::torrent_status const& ts)
 {
-	m_viewModel->Update(ts);
+    m_viewModel->Update(ts);
 }

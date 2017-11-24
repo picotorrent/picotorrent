@@ -19,26 +19,26 @@ using pt::SessionLoader;
 
 struct SessionLoadItem
 {
-	SessionLoadItem(fs::path const& p)
-		: path(p)
-	{
-	}
+    SessionLoadItem(fs::path const& p)
+        : path(p)
+    {
+    }
 
-	fs::path path;
+    fs::path path;
 
-	std::vector<char> resume_data;
-	std::string magnet_save_path;
-	std::string magnet_url;
+    std::vector<char> resume_data;
+    std::string magnet_save_path;
+    std::string magnet_url;
 };
 
 std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Environment> env)
 {
     // Paths
-	fs::path dataDirectory = env->GetApplicationDataPath();
+    fs::path dataDirectory = env->GetApplicationDataPath();
     fs::path stateFile = dataDirectory / "Session.dat";
     fs::path torrentsDirectory = dataDirectory / "Torrents";
 
-	lt::settings_pack settings;
+    lt::settings_pack settings;
 
     std::shared_ptr<SessionState> state = std::make_shared<SessionState>();
     state->session = std::make_unique<lt::session>(settings);
@@ -89,12 +89,12 @@ std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Enviro
 
 
             std::ifstream datStream(datFile, std::ios::binary | std::ios::in);
-			
-			SessionLoadItem item(datFile);
-			std::stringstream ss;
-			ss << datStream.rdbuf();
-			std::string c = ss.str();
-			item.resume_data.assign(c.begin(), c.end());
+            
+            SessionLoadItem item(datFile);
+            std::stringstream ss;
+            ss << datStream.rdbuf();
+            std::string c = ss.str();
+            item.resume_data.assign(c.begin(), c.end());
 
             lt::error_code ltec;
             lt::bdecode_node node = lt::bdecode(item.resume_data, ltec);
@@ -141,7 +141,7 @@ std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Enviro
             {
                 lt::error_code ltec;
                 params = lt::read_resume_data(
-					item.resume_data,
+                    item.resume_data,
                     ltec);
 
                 if (ltec)

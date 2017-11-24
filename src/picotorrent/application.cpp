@@ -8,14 +8,14 @@ using pt::Application;
 
 Application::Application()
 {
-	m_mainFrame = new MainFrame(
-		std::make_shared<Environment>(),
-		Translator::Load(GetModuleHandle(NULL))
-	);
+    m_mainFrame = new MainFrame(
+        std::make_shared<Environment>(),
+        Translator::Load(GetModuleHandle(NULL))
+    );
 }
 
 bool Application::OnInit()
 {
-	m_mainFrame->Show(true);
+    m_mainFrame->Show(true);
     return true;
 }

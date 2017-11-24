@@ -14,38 +14,38 @@ class wxDataViewEvent;
 
 namespace libtorrent
 {
-	struct torrent_status;
+    struct torrent_status;
 }
 
 namespace pt
 {
-	class FileStorageViewModel;
-	class Translator;
+    class FileStorageViewModel;
+    class Translator;
 
     class FilesPage : public wxPanel
     {
-	public:
-		FilesPage(wxWindow* parent, wxWindowID id, std::shared_ptr<Translator> translator);
+    public:
+        FilesPage(wxWindow* parent, wxWindowID id, std::shared_ptr<Translator> translator);
 
         void Clear();
-		void Update(libtorrent::torrent_status const& ts);
+        void Update(libtorrent::torrent_status const& ts);
 
-	private:
-		enum {
-			ptID_FILE_LIST = wxID_HIGHEST
-		};
+    private:
+        enum {
+            ptID_FILE_LIST = wxID_HIGHEST
+        };
 
-		struct HandleWrapper;
+        struct HandleWrapper;
 
-		wxDECLARE_EVENT_TABLE();
+        wxDECLARE_EVENT_TABLE();
 
-		void OnFileContextMenu(wxDataViewEvent&);
-		void OnSetPriority(wxCommandEvent&);
+        void OnFileContextMenu(wxDataViewEvent&);
+        void OnSetPriority(wxCommandEvent&);
 
-		std::shared_ptr<Translator> m_trans;
-		std::unique_ptr<HandleWrapper> m_wrapper;
-		wxDataViewCtrl* m_filesView;
-		FileStorageViewModel* m_viewModel;
+        std::shared_ptr<Translator> m_trans;
+        std::unique_ptr<HandleWrapper> m_wrapper;
+        wxDataViewCtrl* m_filesView;
+        FileStorageViewModel* m_viewModel;
     };
 }
 

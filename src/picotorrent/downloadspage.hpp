@@ -9,11 +9,11 @@
 
 namespace pt
 {
-	class Translator;
+    class Translator;
 
     class DownloadsPage : public wxPanel
     {
     public:
         DownloadsPage(wxWindow* parent, std::shared_ptr<Translator> translator);
-	};
+    };
 }

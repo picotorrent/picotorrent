@@ -9,14 +9,14 @@ namespace pt
     class Environment
     {
     public:
-		enum KnownFolder
-		{
-			LocalAppData
-		};
+        enum KnownFolder
+        {
+            LocalAppData
+        };
 
         fs::path GetApplicationDataPath();
-		fs::path Environment::GetKnownFolderPath(KnownFolder knownFolder);
-		bool IsAppContainerProcess();
+        fs::path Environment::GetKnownFolderPath(KnownFolder knownFolder);
+        bool IsAppContainerProcess();
         bool IsInstalled();
     };
 }

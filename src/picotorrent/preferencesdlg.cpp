@@ -11,36 +11,36 @@
 using pt::PreferencesDialog;
 
 wxBEGIN_EVENT_TABLE(PreferencesDialog, wxPropertySheetDialog)
-	EVT_BUTTON(wxID_OK, PreferencesDialog::OnOk)
+    EVT_BUTTON(wxID_OK, PreferencesDialog::OnOk)
 wxEND_EVENT_TABLE()
 
 PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<pt::Translator> tran)
 {
-	SetSheetStyle(wxPROPSHEET_LISTBOOK);
+    SetSheetStyle(wxPROPSHEET_LISTBOOK);
 
-	Create(parent, wxID_ANY, i18n(tran, "preferences"));
+    Create(parent, wxID_ANY, i18n(tran, "preferences"));
 
-	wxBookCtrlBase* book = GetBookCtrl();
-	m_general = new GeneralPage(book, tran);
+    wxBookCtrlBase* book = GetBookCtrl();
+    m_general = new GeneralPage(book, tran);
 
-	book->AddPage(m_general, i18n(tran, "general"), true);
-	book->AddPage(new DownloadsPage(book, tran), i18n(tran, "downloads"), false);
-	book->AddPage(new ConnectionPage(book, tran), i18n(tran, "connection"), false);
-	book->AddPage(new ProxyPage(book, tran), i18n(tran, "proxy"), false);
+    book->AddPage(m_general, i18n(tran, "general"), true);
+    book->AddPage(new DownloadsPage(book, tran), i18n(tran, "downloads"), false);
+    book->AddPage(new ConnectionPage(book, tran), i18n(tran, "connection"), false);
+    book->AddPage(new ProxyPage(book, tran), i18n(tran, "proxy"), false);
 
-	CreateButtons();
-	LayoutDialog();
+    CreateButtons();
+    LayoutDialog();
 }
 
 void PreferencesDialog::OnOk(wxCommandEvent& event)
 {
-	if (!m_general->Validate())
-	{
-		// TODO: translate
-		wxMessageBox("Invalid settings", "Validation error", 5L, this);
-	}
-	else
-	{
-		event.Skip();
-	}
+    if (!m_general->Validate())
+    {
+        // TODO: translate
+        wxMessageBox("Invalid settings", "Validation error", 5L, this);
+    }
+    else
+    {
+        event.Skip();
+    }
 }

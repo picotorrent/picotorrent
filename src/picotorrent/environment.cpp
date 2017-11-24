@@ -8,52 +8,52 @@ using pt::Environment;
 
 fs::path Environment::GetApplicationDataPath()
 {
-	if (IsInstalled() || IsAppContainerProcess())
-	{
-		return fs::path(GetKnownFolderPath(KnownFolder::LocalAppData)) / "PicoTorrent";
-	}
+    if (IsInstalled() || IsAppContainerProcess())
+    {
+        return fs::path(GetKnownFolderPath(KnownFolder::LocalAppData)) / "PicoTorrent";
+    }
 
-	TCHAR path[MAX_PATH];
-	GetCurrentDirectory(MAX_PATH, path);
+    TCHAR path[MAX_PATH];
+    GetCurrentDirectory(MAX_PATH, path);
 
     return fs::path(path) / "Data";
 }
 
 fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
 {
-	KNOWNFOLDERID rfid;
+    KNOWNFOLDERID rfid;
 
-	switch (knownFolder)
-	{
-	case KnownFolder::LocalAppData:
-		rfid = FOLDERID_LocalAppData;
-		break;
-	default:
-		throw std::exception("Unknown folder");
-	}
+    switch (knownFolder)
+    {
+    case KnownFolder::LocalAppData:
+        rfid = FOLDERID_LocalAppData;
+        break;
+    default:
+        throw std::exception("Unknown folder");
+    }
 
-	PWSTR buf;
-	HRESULT hResult = SHGetKnownFolderPath(
-		rfid,
-		0,
-		NULL,
-		&buf);
+    PWSTR buf;
+    HRESULT hResult = SHGetKnownFolderPath(
+        rfid,
+        0,
+        NULL,
+        &buf);
 
-	std::wstring res = buf;
-	CoTaskMemFree(buf);
+    std::wstring res = buf;
+    CoTaskMemFree(buf);
 
-	return res;
+    return res;
 }
 
 bool Environment::IsAppContainerProcess()
 {
-	TCHAR path[MAX_PATH];
-	GetModuleFileName(NULL, path, ARRAYSIZE(path));
-	PathRemoveFileSpec(path);
-	PathCombine(path, path, TEXT("appx.dummy"));
-	DWORD dwAttr = GetFileAttributes(path);
+    TCHAR path[MAX_PATH];
+    GetModuleFileName(NULL, path, ARRAYSIZE(path));
+    PathRemoveFileSpec(path);
+    PathCombine(path, path, TEXT("appx.dummy"));
+    DWORD dwAttr = GetFileAttributes(path);
 
-	return (dwAttr != INVALID_FILE_ATTRIBUTES && !(dwAttr & FILE_ATTRIBUTE_DIRECTORY));
+    return (dwAttr != INVALID_FILE_ATTRIBUTES && !(dwAttr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
 bool Environment::IsInstalled()

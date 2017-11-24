@@ -7,15 +7,15 @@
 
 namespace pt
 {
-	class MainFrame;
+    class MainFrame;
 
     class Application : public wxApp
     {
     public:
-		Application();
+        Application();
         virtual bool OnInit();
 
-	private:
-		MainFrame* m_mainFrame;
+    private:
+        MainFrame* m_mainFrame;
     };
 }

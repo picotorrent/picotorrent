@@ -21,83 +21,83 @@ using pt::SessionUnloader;
 
 void SessionUnloader::Unload(std::shared_ptr<pt::SessionState> state, std::shared_ptr<pt::Environment> env)
 {
-	fs::path dataDirectory = env->GetApplicationDataPath();
-	if (!fs::exists(dataDirectory)) { fs::create_directories(dataDirectory); }
-	fs::path stateFile = dataDirectory / "Session.dat";
+    fs::path dataDirectory = env->GetApplicationDataPath();
+    if (!fs::exists(dataDirectory)) { fs::create_directories(dataDirectory); }
+    fs::path stateFile = dataDirectory / "Session.dat";
 
-	// Save session state
-	lt::entry entry;
-	state->session->save_state(entry);
+    // Save session state
+    lt::entry entry;
+    state->session->save_state(entry);
 
-	std::ofstream stateStream(stateFile, std::ios::binary);
-	lt::bencode(std::ostreambuf_iterator<char>(stateStream), entry);
+    std::ofstream stateStream(stateFile, std::ios::binary);
+    lt::bencode(std::ostreambuf_iterator<char>(stateStream), entry);
 
-	state->session->pause();
+    state->session->pause();
 
-	// Save each torrents resume data
-	int numOutstandingResumeData = 0;
-	int numPaused = 0;
-	int numFailed = 0;
+    // Save each torrents resume data
+    int numOutstandingResumeData = 0;
+    int numPaused = 0;
+    int numFailed = 0;
 
-	std::vector<lt::torrent_status> temp;
-	state->session->get_torrent_status(&temp, [](const lt::torrent_status &st) { return true; });
+    std::vector<lt::torrent_status> temp;
+    state->session->get_torrent_status(&temp, [](const lt::torrent_status &st) { return true; });
 
-	for (lt::torrent_status &st : temp)
-	{
-		if (!st.handle.is_valid()
-			|| !st.has_metadata
-			|| !st.need_save_resume)
-		{
-			continue;
-		}
+    for (lt::torrent_status &st : temp)
+    {
+        if (!st.handle.is_valid()
+            || !st.has_metadata
+            || !st.need_save_resume)
+        {
+            continue;
+        }
 
-		st.handle.save_resume_data();
-		++numOutstandingResumeData;
-	}
+        st.handle.save_resume_data();
+        ++numOutstandingResumeData;
+    }
 
-	// TODO (logging) LOG(Info) << "Saving resume data for " << numOutstandingResumeData << " torrent(s)";
-	fs::path torrentsDirectory = dataDirectory / "Torrents";
-	if (!fs::exists(torrentsDirectory)) { fs::create_directories(torrentsDirectory); }
+    // TODO (logging) LOG(Info) << "Saving resume data for " << numOutstandingResumeData << " torrent(s)";
+    fs::path torrentsDirectory = dataDirectory / "Torrents";
+    if (!fs::exists(torrentsDirectory)) { fs::create_directories(torrentsDirectory); }
 
-	while (numOutstandingResumeData > 0)
-	{
-		lt::alert const* a = state->session->wait_for_alert(lt::seconds(10));
-		if (a == nullptr) { continue; }
+    while (numOutstandingResumeData > 0)
+    {
+        lt::alert const* a = state->session->wait_for_alert(lt::seconds(10));
+        if (a == nullptr) { continue; }
 
-		std::vector<lt::alert*> alerts;
-		state->session->pop_alerts(&alerts);
+        std::vector<lt::alert*> alerts;
+        state->session->pop_alerts(&alerts);
 
-		for (lt::alert *a : alerts)
-		{
-			lt::torrent_paused_alert *tp = lt::alert_cast<lt::torrent_paused_alert>(a);
+        for (lt::alert *a : alerts)
+        {
+            lt::torrent_paused_alert *tp = lt::alert_cast<lt::torrent_paused_alert>(a);
 
-			if (tp)
-			{
-				++numPaused;
-				continue;
-			}
+            if (tp)
+            {
+                ++numPaused;
+                continue;
+            }
 
-			if (lt::alert_cast<lt::save_resume_data_failed_alert>(a))
-			{
-				++numFailed;
-				--numOutstandingResumeData;
-				continue;
-			}
+            if (lt::alert_cast<lt::save_resume_data_failed_alert>(a))
+            {
+                ++numFailed;
+                --numOutstandingResumeData;
+                continue;
+            }
 
-			lt::save_resume_data_alert *rd = lt::alert_cast<lt::save_resume_data_alert>(a);
-			if (!rd) { continue; }
-			--numOutstandingResumeData;
+            lt::save_resume_data_alert *rd = lt::alert_cast<lt::save_resume_data_alert>(a);
+            if (!rd) { continue; }
+            --numOutstandingResumeData;
 
-			// PicoTorrent state
-			lt::entry dat = lt::write_resume_data(rd->params);
-			dat.dict().insert({ "pT-queuePosition", rd->handle.status().queue_position });
+            // PicoTorrent state
+            lt::entry dat = lt::write_resume_data(rd->params);
+            dat.dict().insert({ "pT-queuePosition", rd->handle.status().queue_position });
 
-			std::stringstream hex;
-			hex << rd->handle.info_hash();
-			fs::path datFile = torrentsDirectory / (hex.str() + ".dat");
+            std::stringstream hex;
+            hex << rd->handle.info_hash();
+            fs::path datFile = torrentsDirectory / (hex.str() + ".dat");
 
-			std::ofstream datStream(datFile, std::ios::binary);
-			lt::bencode(std::ostreambuf_iterator<char>(datStream), dat);
-		}
-	}
+            std::ofstream datStream(datFile, std::ios::binary);
+            lt::bencode(std::ostreambuf_iterator<char>(datStream), dat);
+        }
+    }
 }

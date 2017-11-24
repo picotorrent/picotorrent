@@ -10,12 +10,12 @@
 
 namespace pt
 {
-	class Translator;
+    class Translator;
 
     class TorrentListView : public wxDataViewCtrl
     {
     public:
         TorrentListView(wxWindow* parent, wxWindowID id, std::shared_ptr<Translator> translator);
-		virtual wxSize GetMinSize() const;
+        virtual wxSize GetMinSize() const;
     };
 }

@@ -9,25 +9,25 @@
 
 namespace libtorrent
 {
-	struct torrent_status;
+    struct torrent_status;
 }
 
 namespace pt
 {
-	class Translator;
+    class Translator;
 
     class OverviewPage : public wxPanel
     {
-	public:
-		OverviewPage(wxWindow* parent, wxWindowID id, std::shared_ptr<Translator> translator);
-		void Update(libtorrent::torrent_status const& ts);
+    public:
+        OverviewPage(wxWindow* parent, wxWindowID id, std::shared_ptr<Translator> translator);
+        void Update(libtorrent::torrent_status const& ts);
 
-	private:
-		wxStaticText* GetBoldStatic(wxString const& label);
+    private:
+        wxStaticText* GetBoldStatic(wxString const& label);
 
-		wxStaticText* m_name;
-		wxStaticText* m_infoHash;
-		wxStaticText* m_savePath;
-		wxStaticText* m_pieces;
+        wxStaticText* m_name;
+        wxStaticText* m_infoHash;
+        wxStaticText* m_savePath;
+        wxStaticText* m_pieces;
     };
 }

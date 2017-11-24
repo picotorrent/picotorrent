@@ -9,14 +9,14 @@
 
 namespace pt
 {
-	class Translator;
+    class Translator;
 
     class ConnectionPage : public wxPanel
     {
     public:
         ConnectionPage(wxWindow* parent, std::shared_ptr<Translator> translator);
 
-	private:
-		wxTextCtrl* m_listenInterfaces;
-	};
+    private:
+        wxTextCtrl* m_listenInterfaces;
+    };
 }

@@ -10,19 +10,19 @@
 
 namespace pt
 {
-	class GeneralPage;
-	class Translator;
+    class GeneralPage;
+    class Translator;
 
     class PreferencesDialog : public wxPropertySheetDialog
     {
     public:
         PreferencesDialog(wxWindow* parent, std::shared_ptr<Translator> translator);
 
-	private:
-		wxDECLARE_EVENT_TABLE();
+    private:
+        wxDECLARE_EVENT_TABLE();
 
-		void OnOk(wxCommandEvent&);
+        void OnOk(wxCommandEvent&);
 
-		GeneralPage* m_general;
+        GeneralPage* m_general;
     };
 }

@@ -12,27 +12,27 @@
 
 namespace libtorrent
 {
-	class file_storage;
-	class torrent_info;
+    class file_storage;
+    class torrent_info;
 }
 
 namespace pt
 {
-	class Translator;
+    class Translator;
 
     class FileStorageViewModel : public wxDataViewModel
     {
-	public:
-		enum Columns
-		{
-			Name,
-			Size,
-			Progress,
-			Priority,
+    public:
+        enum Columns
+        {
+            Name,
+            Size,
+            Progress,
+            Priority,
             _Max
-		};
+        };
 
-		FileStorageViewModel(std::shared_ptr<Translator> translator);
+        FileStorageViewModel(std::shared_ptr<Translator> translator);
 
         // Things we need to override
         unsigned int GetColumnCount() const wxOVERRIDE;
@@ -43,33 +43,33 @@ namespace pt
         bool IsContainer(const wxDataViewItem &item) const wxOVERRIDE;
         unsigned int GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const wxOVERRIDE;
 
-		std::vector<int> GetFileIndices(wxDataViewItem&);
-		wxDataViewItem GetRootItem();
-		void RebuildTree(std::shared_ptr<const libtorrent::torrent_info> ti);
-		void UpdatePriorities(std::vector<uint8_t> const& priorities); // TODO: merge these two
-		void UpdatePriorities(std::vector<int> const& priorities);
-		void UpdateProgress(std::vector<int64_t> const& progress);
+        std::vector<int> GetFileIndices(wxDataViewItem&);
+        wxDataViewItem GetRootItem();
+        void RebuildTree(std::shared_ptr<const libtorrent::torrent_info> ti);
+        void UpdatePriorities(std::vector<uint8_t> const& priorities); // TODO: merge these two
+        void UpdatePriorities(std::vector<int> const& priorities);
+        void UpdateProgress(std::vector<int64_t> const& progress);
 
-	private:
-		struct Node
-		{
-			std::string name;
-			int64_t size;
-			int index;
-			uint8_t priority;
-			float progress;
+    private:
+        struct Node
+        {
+            std::string name;
+            int64_t size;
+            int index;
+            uint8_t priority;
+            float progress;
 
-			std::shared_ptr<Node> parent;
-			std::map<std::string, std::shared_ptr<Node>> children;
-		};
+            std::shared_ptr<Node> parent;
+            std::map<std::string, std::shared_ptr<Node>> children;
+        };
 
-		void FillIndices(Node* node, std::vector<int>& indices);
-		wxIcon GetIconForFile(std::string const& fileName) const;
+        void FillIndices(Node* node, std::vector<int>& indices);
+        wxIcon GetIconForFile(std::string const& fileName) const;
 
-		wxIcon m_folderIcon;
-		std::shared_ptr<Translator> m_trans;
-		std::shared_ptr<Node> m_root;
-		std::map<int, std::shared_ptr<Node>> m_map;
-		std::map<std::string, wxIcon> m_icons;
+        wxIcon m_folderIcon;
+        std::shared_ptr<Translator> m_trans;
+        std::shared_ptr<Node> m_root;
+        std::map<int, std::shared_ptr<Node>> m_map;
+        std::map<std::string, wxIcon> m_icons;
     };
 }

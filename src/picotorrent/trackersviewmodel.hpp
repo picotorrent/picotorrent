@@ -11,8 +11,8 @@
 
 namespace libtorrent
 {
-	struct announce_entry;
-	struct torrent_status;
+    struct announce_entry;
+    struct torrent_status;
 }
 
 namespace pt
@@ -22,20 +22,20 @@ namespace pt
     public:
         void Update(libtorrent::torrent_status const& ts);
 
-	private:
-		enum Column
-		{
-			Url,
-			Fails,
-			Verified,
-			NextAnnounce
-		};
+    private:
+        enum Column
+        {
+            Url,
+            Fails,
+            Verified,
+            NextAnnounce
+        };
 
-		unsigned int GetColumnCount() const wxOVERRIDE;
-		wxString GetColumnType(unsigned int col) const wxOVERRIDE;
-		void GetValueByRow(wxVariant &variant, unsigned row, unsigned col) const wxOVERRIDE;
-		bool SetValueByRow(const wxVariant &variant, unsigned row, unsigned col) wxOVERRIDE;
+        unsigned int GetColumnCount() const wxOVERRIDE;
+        wxString GetColumnType(unsigned int col) const wxOVERRIDE;
+        void GetValueByRow(wxVariant &variant, unsigned row, unsigned col) const wxOVERRIDE;
+        bool SetValueByRow(const wxVariant &variant, unsigned row, unsigned col) wxOVERRIDE;
 
-		std::vector<libtorrent::announce_entry> m_data;
+        std::vector<libtorrent::announce_entry> m_data;
     };
 }
