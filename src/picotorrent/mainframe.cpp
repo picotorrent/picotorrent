@@ -112,7 +112,7 @@ void MainFrame::OnSessionAlert()
 
             if (ata->error)
             {
-                // TODO (logging)
+                wxLogError("Error when adding torrent: %s", ata->error.message().c_str());
                 break;
             }
 

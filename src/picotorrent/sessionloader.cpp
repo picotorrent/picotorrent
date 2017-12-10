@@ -44,7 +44,6 @@ std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Enviro
     state->session = std::make_unique<lt::session>(settings);
 
     // Load state
-
     if (fs::exists(stateFile))
     {
         std::ifstream state_input(stateFile, std::ios::binary);
@@ -56,11 +55,7 @@ std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Enviro
         lt::error_code ltec;
         lt::bdecode(&buf[0], &buf[0] + buf.size(), node, ltec);
 
-        if (ltec)
-        {
-            // TODO (logging)
-        }
-        else
+        if (!ltec)
         {
             state->session->load_state(node);
         }
@@ -99,15 +94,8 @@ std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Enviro
             lt::error_code ltec;
             lt::bdecode_node node = lt::bdecode(item.resume_data, ltec);
 
-            if (ltec)
+            if (ltec || node.type() != lt::bdecode_node::type_t::dict_t)
             {
-                // TODO (logging) LOG(Debug) << "Unable to decode bencoded file '" << dat_file << ", error: " << ltec;
-                continue;
-            }
-
-            if (node.type() != lt::bdecode_node::type_t::dict_t)
-            {
-                // TODO (logging) LOG(Debug) << "File not a bencoded dictionary, '" << dat_file << "'";
                 continue;
             }
 
@@ -130,7 +118,6 @@ std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Enviro
             if (!fs::exists(torrent_file)
                 && item.magnet_url.empty())
             {
-                // TODO (logging) LOG(Warning) << "Dat file did not have a corresponding torrent file, deleting.";
                 fs::remove(torrent_file);
                 continue;
             }
@@ -143,11 +130,6 @@ std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Enviro
                 params = lt::read_resume_data(
                     item.resume_data,
                     ltec);
-
-                if (ltec)
-                {
-                    // TODO (logging) LOG(Debug) << "Could not decode resume data.";
-                }
             }
 
             if (fs::exists(torrent_file))
@@ -168,7 +150,6 @@ std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Enviro
 
                 if (ltec)
                 {
-                    // TODO (logging) LOG(Info) << "Could not decode torrent file '" << torrent_file << "'";
                     continue;
                 }
 

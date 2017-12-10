@@ -55,7 +55,6 @@ void SessionUnloader::Unload(std::shared_ptr<pt::SessionState> state, std::share
         ++numOutstandingResumeData;
     }
 
-    // TODO (logging) LOG(Info) << "Saving resume data for " << numOutstandingResumeData << " torrent(s)";
     fs::path torrentsDirectory = dataDirectory / "Torrents";
     if (!fs::exists(torrentsDirectory)) { fs::create_directories(torrentsDirectory); }
 

@@ -95,7 +95,7 @@ void AddTorrentProcedure::ExecuteMagnet()
 
     if (ec)
     {
-        // TODO (log fatal error? this should be caught by the validator);
+        wxLogFatalError("Total error when parsing magnet link %s", magnetLink);
         return;
     }
 

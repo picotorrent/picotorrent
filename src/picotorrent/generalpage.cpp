@@ -12,7 +12,7 @@ GeneralPage::GeneralPage(wxWindow* parent, std::shared_ptr<pt::Translator> tr)
     m_language = new wxChoice(uiSizer->GetStaticBox(), wxID_ANY);
     uiGrid->AddGrowableCol(1, 1);
     uiGrid->Add(new wxStaticText(uiSizer->GetStaticBox(), wxID_ANY, i18n(tr, "language")), 0, wxALIGN_CENTER_VERTICAL);
-    uiGrid->Add(m_language, 1, wxALIGN_RIGHT);
+    uiGrid->Add(m_language, 1, wxEXPAND);
     uiSizer->Add(uiGrid, 1, wxEXPAND | wxALL, 5);
 
     wxStaticBoxSizer* miscSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tr, "miscellanneous"));

@@ -56,7 +56,6 @@ BOOL Translator::LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTS
 
     if (!err.empty())
     {
-        // TODO: insert logging here
         return TRUE;
     }
 
