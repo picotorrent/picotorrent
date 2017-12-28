@@ -1,6 +1,7 @@
 #include "taskbaricon.hpp"
 
 #include "addtorrentproc.hpp"
+#include "config.hpp"
 #include "preferencesdlg.hpp"
 #include "sessionstate.hpp"
 #include "translator.hpp"
@@ -15,9 +16,11 @@ wxBEGIN_EVENT_TABLE(TaskBarIcon, wxTaskBarIcon)
 wxEND_EVENT_TABLE()
 
 TaskBarIcon::TaskBarIcon(wxFrame* parent,
+    std::shared_ptr<pt::Configuration> cfg,
     std::shared_ptr<pt::Translator> translator,
     std::shared_ptr<pt::SessionState> state)
     : m_parent(parent),
+    m_cfg(cfg),
     m_trans(translator),
     m_state(state)
 {
@@ -56,6 +59,6 @@ void TaskBarIcon::OnLeftButtonDClick(wxTaskBarIconEvent& WXUNUSED(event))
 
 void TaskBarIcon::OnViewPreferences(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesDialog dlg(m_parent, m_trans);
+    PreferencesDialog dlg(m_parent, m_cfg, m_trans);
     dlg.ShowModal();
 }

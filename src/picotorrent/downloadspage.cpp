@@ -1,19 +1,25 @@
 #include "downloadspage.hpp"
 
+#include "config.hpp"
 #include "translator.hpp"
 
 #include <wx/filepicker.h>
 
 using pt::DownloadsPage;
 
-DownloadsPage::DownloadsPage(wxWindow* parent, std::shared_ptr<pt::Translator> tran)
-    : wxPanel(parent, wxID_ANY)
+DownloadsPage::DownloadsPage(wxWindow* parent, std::shared_ptr<pt::Configuration> cfg, std::shared_ptr<pt::Translator> tran)
+    : wxPanel(parent, wxID_ANY),
+    m_cfg(cfg)
 {
     wxStaticBoxSizer* transfersSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tran, "transfers"));
     wxFlexGridSizer* transfersGrid = new wxFlexGridSizer(2, 10, 10);
+
+    m_savePathCtrl = new wxDirPickerCtrl(transfersSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
+    m_savePathCtrl->SetPath(m_cfg->DefaultSavePath().string());
+
     transfersGrid->AddGrowableCol(1, 1);
     transfersGrid->Add(new wxStaticText(transfersSizer->GetStaticBox(), wxID_ANY, i18n(tran, "save_path")), 0, wxALIGN_CENTER_VERTICAL);
-    transfersGrid->Add(new wxDirPickerCtrl(transfersSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL), 1, wxEXPAND);
+    transfersGrid->Add(m_savePathCtrl, 1, wxEXPAND);
     transfersSizer->Add(transfersGrid, 1, wxEXPAND | wxALL, 5);
 
     wxStaticBoxSizer* limitsSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tran, "limits"));

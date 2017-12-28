@@ -54,6 +54,7 @@ add_executable(
     src/picotorrent/addtorrentdlg
     src/picotorrent/addtorrentproc
     src/picotorrent/application
+    src/picotorrent/config
     src/picotorrent/environment
     src/picotorrent/connectionpage
     src/picotorrent/downloadspage

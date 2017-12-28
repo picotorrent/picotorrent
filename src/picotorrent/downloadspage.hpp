@@ -7,13 +7,21 @@
 
 #include <memory>
 
+class wxDirPickerCtrl;
+
 namespace pt
 {
+    class Configuration;
     class Translator;
 
     class DownloadsPage : public wxPanel
     {
     public:
-        DownloadsPage(wxWindow* parent, std::shared_ptr<Translator> translator);
+        DownloadsPage(wxWindow* parent, std::shared_ptr<Configuration> cfg, std::shared_ptr<Translator> translator);
+
+    private:
+        std::shared_ptr<Configuration> m_cfg;
+
+        wxDirPickerCtrl* m_savePathCtrl;
     };
 }

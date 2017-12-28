@@ -28,6 +28,9 @@ fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
     case KnownFolder::LocalAppData:
         rfid = FOLDERID_LocalAppData;
         break;
+    case KnownFolder::UserDownloads:
+        rfid = FOLDERID_Downloads;
+        break;
     default:
         throw std::exception("Unknown folder");
     }

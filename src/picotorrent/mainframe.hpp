@@ -12,6 +12,7 @@ class wxSplitterWindow;
 
 namespace pt
 {
+    class Configuration;
     class Environment;
     struct SessionState;
     class StatusBar;
@@ -24,8 +25,10 @@ namespace pt
     class MainFrame : public wxFrame
     {
     public:
-        MainFrame(std::shared_ptr<Environment> env, std::shared_ptr<Translator> translator);
-        ~MainFrame();
+        MainFrame(std::shared_ptr<Configuration> config,
+            std::shared_ptr<Environment> env,
+            std::shared_ptr<Translator> translator);
+        virtual ~MainFrame();
 
     private:
         enum
@@ -49,6 +52,7 @@ namespace pt
         TorrentListViewModel* m_torrentListViewModel;
         TorrentDetailsView* m_torrentDetailsView;
 
+        std::shared_ptr<Configuration> m_config;
         std::shared_ptr<Environment> m_env;
         std::shared_ptr<SessionState> m_state;
         std::shared_ptr<Translator> m_trans;

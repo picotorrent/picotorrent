@@ -125,3 +125,11 @@ std::string Utils::ToReadableStatus(lt::torrent_status const& ts)
 
     return "Unknown status";
 }
+
+std::wstring Utils::ToWideString(const char* buffer, int bufferSize)
+{
+    int size = MultiByteToWideChar(CP_UTF8, 0, buffer, bufferSize, NULL, 0);
+    std::wstring result(size, '\0');
+    MultiByteToWideChar(CP_UTF8, 0, buffer, bufferSize, &result[0], size);
+    return result;
+}

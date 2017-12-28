@@ -10,6 +10,7 @@
 
 namespace pt
 {
+    class Configuration;
     struct SessionState;
     class Translator;
 
@@ -17,6 +18,7 @@ namespace pt
     {
     public:
         TaskBarIcon(wxFrame* parent,
+            std::shared_ptr<Configuration> cfg,
             std::shared_ptr<Translator> translator,
             std::shared_ptr<SessionState> state);
 
@@ -38,6 +40,7 @@ namespace pt
         void OnViewPreferences(wxCommandEvent&);
 
         wxFrame* m_parent;
+        std::shared_ptr<Configuration> m_cfg;
         std::shared_ptr<SessionState> m_state;
         std::shared_ptr<Translator> m_trans;
     };

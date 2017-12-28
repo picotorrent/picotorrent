@@ -2,6 +2,7 @@
 
 #include "addtorrentdlg.hpp"
 #include "addtorrentproc.hpp"
+#include "config.hpp"
 #include "preferencesdlg.hpp"
 #include "sessionstate.hpp"
 #include "translator.hpp"
@@ -22,9 +23,11 @@ wxBEGIN_EVENT_TABLE(MainMenu, wxMenuBar)
 wxEND_EVENT_TABLE()
 
 MainMenu::MainMenu(std::shared_ptr<pt::SessionState> state,
+    std::shared_ptr<pt::Configuration> cfg,
     std::shared_ptr<pt::Translator> translator)
     : wxMenuBar(),
     m_state(state),
+    m_cfg(cfg),
     m_trans(translator)
 {
     wxMenu* menuFile = new wxMenu();
@@ -78,6 +81,6 @@ void MainMenu::OnExit(wxCommandEvent& WXUNUSED(event))
 
 void MainMenu::OnViewPreferences(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesDialog dlg(this->GetFrame(), m_trans);
+    PreferencesDialog dlg(this->GetFrame(), m_cfg, m_trans);
     dlg.ShowModal();
 }

@@ -1,14 +1,28 @@
 #include "translator.hpp"
 
+#include "config.hpp"
 #include "picojson.hpp"
+#include "utils.hpp"
 
 namespace pj = picojson;
 using pt::Translator;
 
-Translator::Translator(std::map<int, Language> const& languages)
+Translator::Translator(std::map<int, Language> const& languages, int selectedLanguage)
     : m_languages(languages),
-    m_selectedLanguage(1033)
+    m_selectedLanguage(selectedLanguage)
 {
+}
+
+std::vector<Translator::Language> Translator::GetAvailableLanguages()
+{
+    std::vector<Language> result;
+
+    for (auto& p : m_languages)
+    {
+        result.push_back(p.second);
+    }
+
+    return result;
 }
 
 wxString Translator::Translate(wxString key)
@@ -26,7 +40,7 @@ wxString Translator::Translate(wxString key)
     return translation->second;
 }
 
-std::shared_ptr<Translator> Translator::Load(HINSTANCE hInstance)
+std::shared_ptr<Translator> Translator::Load(HINSTANCE hInstance, std::shared_ptr<pt::Configuration> config)
 {
     // TODO: Very Win32 specific code, enumerating the embedded resources.
     // Should be split into a platform specific layer when making PicoTorrent
@@ -40,7 +54,7 @@ std::shared_ptr<Translator> Translator::Load(HINSTANCE hInstance)
         LoadTranslationResource,
         reinterpret_cast<LONG_PTR>(&languages));
 
-    return std::shared_ptr<Translator>(new Translator(languages));
+    return std::shared_ptr<Translator>(new Translator(languages, config->CurrentLanguageId()));
 }
 
 BOOL Translator::LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
@@ -48,8 +62,11 @@ BOOL Translator::LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTS
     std::map<int, Language>* languages = reinterpret_cast<std::map<int, Language>*>(lParam);
 
     HRSRC rc = FindResource(hModule, lpszName, lpszType);
+    DWORD size = SizeofResource(hModule, rc);
     HGLOBAL data = LoadResource(hModule, rc);
-    std::string json = static_cast<const char*>(LockResource(data));
+    const char* buffer = reinterpret_cast<const char*>(LockResource(data));
+
+    std::string json(buffer, static_cast<size_t>(size));
 
     pj::value v;
     std::string err = pj::parse(v, json);
@@ -66,11 +83,14 @@ BOOL Translator::LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTS
 
     Language l;
     l.code = langId;
-    l.name = langName;
+    l.name = Utils::ToWideString(langName.c_str(), static_cast<int>(langName.size()));
 
     for (auto& p : obj.at("strings").get<pj::object>())
     {
-        l.translations.insert({ p.first, p.second.get<std::string>() });
+        std::string val = p.second.get<std::string>();
+        wxString converted = Utils::ToWideString(val.c_str(), static_cast<int>(val.size()));
+
+        l.translations.insert({ p.first, converted });
     }
 
     languages->insert({ langId, l });

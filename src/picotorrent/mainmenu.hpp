@@ -9,13 +9,16 @@
 
 namespace pt
 {
+    class Configuration;
     struct SessionState;
     class Translator;
 
     class MainMenu : public wxMenuBar
     {
     public:
-        MainMenu(std::shared_ptr<SessionState> state, std::shared_ptr<Translator> translator);
+        MainMenu(std::shared_ptr<SessionState> state,
+            std::shared_ptr<pt::Configuration> cfg,
+            std::shared_ptr<Translator> translator);
 
     private:
         enum
@@ -34,6 +37,7 @@ namespace pt
         void OnViewPreferences(wxCommandEvent&);
 
         std::shared_ptr<SessionState> m_state;
+        std::shared_ptr<Configuration> m_cfg;
         std::shared_ptr<Translator> m_trans;
     };
 }

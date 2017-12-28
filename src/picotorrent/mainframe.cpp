@@ -19,6 +19,7 @@
 #include <wx/notebook.h>
 #include <wx/splitter.h>
 
+#include "config.hpp"
 #include "environment.hpp"
 #include "mainmenu.hpp"
 #include "sessionloader.hpp"
@@ -41,9 +42,11 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_TIMER(ptID_MAIN_TIMER, MainFrame::OnTimer)
 wxEND_EVENT_TABLE()
 
-MainFrame::MainFrame(std::shared_ptr<pt::Environment> env,
+MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
+    std::shared_ptr<pt::Environment> env,
     std::shared_ptr<pt::Translator> translator)
     : wxFrame(NULL, wxID_ANY, "PicoTorrent"),
+    m_config(config),
     m_env(env),
     m_splitter(new wxSplitterWindow(this, wxID_ANY)),
     m_torrentListViewModel(new TorrentListViewModel()),
@@ -70,14 +73,14 @@ MainFrame::MainFrame(std::shared_ptr<pt::Environment> env,
     mainSizer->SetSizeHints(this);
 
     // Task bar icon
-    m_taskBar = new TaskBarIcon(this, m_trans, m_state);
+    m_taskBar = new TaskBarIcon(this, m_config, m_trans, m_state);
     m_taskBar->SetIcon(wxICON(AppIcon), "PicoTorrent");
 
     // Status bar
     m_status = new StatusBar(this);
 
     this->SetIcon(wxICON(AppIcon));
-    this->SetMenuBar(new MainMenu(m_state, m_trans));
+    this->SetMenuBar(new MainMenu(m_state, m_config, m_trans));
     this->SetSizerAndFit(mainSizer);
     this->SetStatusBar(m_status);
 

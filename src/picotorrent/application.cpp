@@ -1,5 +1,6 @@
 #include "application.hpp"
 
+#include "config.hpp"
 #include "environment.hpp"
 #include "mainframe.hpp"
 #include "translator.hpp"
@@ -8,9 +9,14 @@ using pt::Application;
 
 Application::Application()
 {
+    auto env = std::make_shared<Environment>();
+    auto cfg = Configuration::Load(env);
+    auto translator = Translator::Load(GetModuleHandle(NULL), cfg);
+
     m_mainFrame = new MainFrame(
-        std::make_shared<Environment>(),
-        Translator::Load(GetModuleHandle(NULL))
+        cfg,
+        env,
+        translator
     );
 }
 

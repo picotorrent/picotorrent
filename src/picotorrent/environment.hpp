@@ -11,7 +11,8 @@ namespace pt
     public:
         enum KnownFolder
         {
-            LocalAppData
+            LocalAppData,
+            UserDownloads
         };
 
         fs::path GetApplicationDataPath();

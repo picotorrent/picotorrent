@@ -49,6 +49,11 @@ GeneralPage::GeneralPage(wxWindow* parent, std::shared_ptr<pt::Translator> tr)
     sizer->Add(notifSizer, 0, wxEXPAND);
     sizer->AddStretchSpacer();
 
+    for (auto& lang : tr->GetAvailableLanguages())
+    {
+        m_language->AppendString(lang.name);
+    }
+
     this->SetSizerAndFit(sizer);
 }
 

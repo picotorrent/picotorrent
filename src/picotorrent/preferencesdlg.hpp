@@ -10,19 +10,22 @@
 
 namespace pt
 {
+    class Configuration;
+    class DownloadsPage;
     class GeneralPage;
     class Translator;
 
     class PreferencesDialog : public wxPropertySheetDialog
     {
     public:
-        PreferencesDialog(wxWindow* parent, std::shared_ptr<Translator> translator);
+        PreferencesDialog(wxWindow* parent, std::shared_ptr<Configuration> cfg, std::shared_ptr<Translator> translator);
 
     private:
         wxDECLARE_EVENT_TABLE();
 
         void OnOk(wxCommandEvent&);
 
+        DownloadsPage* m_downloads;
         GeneralPage* m_general;
     };
 }

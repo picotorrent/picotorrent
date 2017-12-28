@@ -1,5 +1,6 @@
 #include "preferencesdlg.hpp"
 
+#include "config.hpp"
 #include "connectionpage.hpp"
 #include "downloadspage.hpp"
 #include "generalpage.hpp"
@@ -14,7 +15,7 @@ wxBEGIN_EVENT_TABLE(PreferencesDialog, wxPropertySheetDialog)
     EVT_BUTTON(wxID_OK, PreferencesDialog::OnOk)
 wxEND_EVENT_TABLE()
 
-PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<pt::Translator> tran)
+PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<pt::Configuration> cfg, std::shared_ptr<pt::Translator> tran)
 {
     SetSheetStyle(wxPROPSHEET_LISTBOOK);
 
@@ -22,9 +23,10 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<pt::Trans
 
     wxBookCtrlBase* book = GetBookCtrl();
     m_general = new GeneralPage(book, tran);
+    m_downloads = new DownloadsPage(book, cfg, tran);
 
     book->AddPage(m_general, i18n(tran, "general"), true);
-    book->AddPage(new DownloadsPage(book, tran), i18n(tran, "downloads"), false);
+    book->AddPage(m_downloads, i18n(tran, "downloads"), false);
     book->AddPage(new ConnectionPage(book, tran), i18n(tran, "connection"), false);
     book->AddPage(new ProxyPage(book, tran), i18n(tran, "proxy"), false);
 
