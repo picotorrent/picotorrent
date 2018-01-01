@@ -16,7 +16,7 @@ fs::path Environment::GetApplicationDataPath()
     TCHAR path[MAX_PATH];
     GetCurrentDirectory(MAX_PATH, path);
 
-    return fs::path(path) / "Data";
+    return path;
 }
 
 fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)

@@ -73,14 +73,14 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     mainSizer->SetSizeHints(this);
 
     // Task bar icon
-    m_taskBar = new TaskBarIcon(this, m_config, m_trans, m_state);
+    m_taskBar = new TaskBarIcon(this, m_config, m_env, m_trans, m_state);
     m_taskBar->SetIcon(wxICON(AppIcon), "PicoTorrent");
 
     // Status bar
     m_status = new StatusBar(this);
 
     this->SetIcon(wxICON(AppIcon));
-    this->SetMenuBar(new MainMenu(m_state, m_config, m_trans));
+    this->SetMenuBar(new MainMenu(m_state, m_config, m_env, m_trans));
     this->SetSizerAndFit(mainSizer);
     this->SetStatusBar(m_status);
 

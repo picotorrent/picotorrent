@@ -55,6 +55,9 @@ add_executable(
     src/picotorrent/addtorrentproc
     src/picotorrent/application
     src/picotorrent/config
+    src/picotorrent/config_section
+    src/picotorrent/config_sessionsection
+    src/picotorrent/config_uisection
     src/picotorrent/environment
     src/picotorrent/connectionpage
     src/picotorrent/downloadspage

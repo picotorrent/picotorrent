@@ -9,13 +9,16 @@
 
 namespace pt
 {
+    class Configuration;
     class Translator;
 
     class GeneralPage : public wxPanel
     {
     public:
-        GeneralPage(wxWindow* parent, std::shared_ptr<Translator> translator);
-        bool Validate();
+        GeneralPage(wxWindow* parent, std::shared_ptr<Configuration> config, std::shared_ptr<Translator> translator);
+
+        void ApplyConfiguration();
+        bool ValidateConfiguration(wxString& error);
 
     private:
         wxChoice* m_language;
@@ -24,5 +27,7 @@ namespace pt
         wxCheckBox* m_showNotificationIcon;
         wxCheckBox* m_minimizeNotification;
         wxCheckBox* m_closeNotification;
+
+        std::shared_ptr<Configuration> m_config;
     };
 }

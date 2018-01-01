@@ -11,6 +11,7 @@
 namespace pt
 {
     class Configuration;
+    class Environment;
     struct SessionState;
     class Translator;
 
@@ -19,6 +20,7 @@ namespace pt
     public:
         TaskBarIcon(wxFrame* parent,
             std::shared_ptr<Configuration> cfg,
+            std::shared_ptr<Environment> env,
             std::shared_ptr<Translator> translator,
             std::shared_ptr<SessionState> state);
 
@@ -41,6 +43,7 @@ namespace pt
 
         wxFrame* m_parent;
         std::shared_ptr<Configuration> m_cfg;
+        std::shared_ptr<Environment> m_env;
         std::shared_ptr<SessionState> m_state;
         std::shared_ptr<Translator> m_trans;
     };
