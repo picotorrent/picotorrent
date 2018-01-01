@@ -33,7 +33,7 @@ namespace pt
     private:
         Translator(std::map<int, Language> const& languages, int selectedLanguage);
 
-        static BOOL LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam);
+        static BOOL CALLBACK LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam);
 
         int m_selectedLanguage;
         std::map<int, Language> m_languages;
