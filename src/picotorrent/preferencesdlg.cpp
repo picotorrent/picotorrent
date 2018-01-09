@@ -6,20 +6,32 @@
 #include "environment.hpp"
 #include "generalpage.hpp"
 #include "proxypage.hpp"
+#include "sessionsettings.hpp"
+#include "sessionstate.hpp"
 #include "translator.hpp"
+
+#include <libtorrent/session.hpp>
+#include <libtorrent/settings_pack.hpp>
 
 #include <wx/bookctrl.h>
 #include <wx/listbook.h>
 
+namespace lt = libtorrent;
 using pt::PreferencesDialog;
 
 wxBEGIN_EVENT_TABLE(PreferencesDialog, wxPropertySheetDialog)
     EVT_BUTTON(wxID_OK, PreferencesDialog::OnOk)
 wxEND_EVENT_TABLE()
 
-PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<pt::Environment> env, std::shared_ptr<pt::Configuration> cfg, std::shared_ptr<pt::Translator> tran)
+PreferencesDialog::PreferencesDialog(
+    wxWindow* parent,
+    std::shared_ptr<pt::Environment> env,
+    std::shared_ptr<pt::Configuration> cfg,
+    std::shared_ptr<pt::SessionState> sessionState,
+    std::shared_ptr<pt::Translator> tran)
     : m_cfg(cfg),
-    m_env(env)
+    m_env(env),
+    m_state(sessionState)
 {
     SetSheetStyle(wxPROPSHEET_LISTBOOK);
 
@@ -72,6 +84,10 @@ void PreferencesDialog::OnOk(wxCommandEvent& event)
         m_proxy->ApplyConfiguration();
 
         Configuration::Save(m_env, m_cfg);
+
+        // Reload settings
+        lt::settings_pack settings = SessionSettings::Get(m_cfg);
+        m_state->session->apply_settings(settings);
 
         event.Skip();
     }

@@ -1,6 +1,8 @@
 #include "sessionloader.hpp"
 
+#include "config.hpp"
 #include "environment.hpp"
+#include "sessionsettings.hpp"
 #include "sessionstate.hpp"
 
 #include <filesystem>
@@ -31,14 +33,14 @@ struct SessionLoadItem
     std::string magnet_url;
 };
 
-std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Environment> env)
+std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt::Configuration> cfg)
 {
     // Paths
     fs::path dataDirectory = env->GetApplicationDataPath();
     fs::path stateFile = dataDirectory / "Session.dat";
     fs::path torrentsDirectory = dataDirectory / "Torrents";
 
-    lt::settings_pack settings;
+    lt::settings_pack settings = SessionSettings::Get(cfg);
 
     std::shared_ptr<SessionState> state = std::make_shared<SessionState>();
     state->session = std::make_unique<lt::session>(settings);

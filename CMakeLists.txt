@@ -1,6 +1,28 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 project("PicoTorrent")
 
+# Generate version information file
+file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
+
+# Get the current working branch
+execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash of the working branch
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMITISH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Generate buildinfo file
+configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp" @ONLY)
+
 # Get current architecture
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PICO_ARCH "x64")
@@ -54,6 +76,7 @@ add_executable(
     src/picotorrent/addtorrentdlg
     src/picotorrent/addtorrentproc
     src/picotorrent/application
+    src/picotorrent/buildinfo
     src/picotorrent/config
     src/picotorrent/config_section
     src/picotorrent/config_sessionsection
@@ -76,6 +99,7 @@ add_executable(
     src/picotorrent/proxypage
     src/picotorrent/resources.rc
     src/picotorrent/sessionloader
+    src/picotorrent/sessionsettings
     src/picotorrent/sessionstate
     src/picotorrent/sessionunloader
     src/picotorrent/statusbar

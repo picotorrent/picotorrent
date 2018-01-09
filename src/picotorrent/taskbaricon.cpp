@@ -62,6 +62,6 @@ void TaskBarIcon::OnLeftButtonDClick(wxTaskBarIconEvent& WXUNUSED(event))
 
 void TaskBarIcon::OnViewPreferences(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesDialog dlg(m_parent, m_env, m_cfg, m_trans);
+    PreferencesDialog dlg(m_parent, m_env, m_cfg, m_state, m_trans);
     dlg.ShowModal();
 }

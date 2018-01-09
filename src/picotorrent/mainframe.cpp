@@ -52,7 +52,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     m_torrentListViewModel(new TorrentListViewModel()),
     m_trans(translator)
 {
-    m_state = SessionLoader::Load(m_env);
+    m_state = SessionLoader::Load(m_env, m_config);
     m_state->session->set_alert_notify(
         [this]()
     {

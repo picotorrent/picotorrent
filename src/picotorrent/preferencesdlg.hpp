@@ -18,6 +18,7 @@ namespace pt
     class Environment;
     class GeneralPage;
     class ProxyPage;
+    struct SessionState;
     class Translator;
 
     class PreferencesDialog : public wxPropertySheetDialog
@@ -27,6 +28,7 @@ namespace pt
             wxWindow* parent,
             std::shared_ptr<Environment> env,
             std::shared_ptr<Configuration> cfg,
+            std::shared_ptr<SessionState> sessionState,
             std::shared_ptr<Translator> translator);
 
     private:
@@ -36,6 +38,7 @@ namespace pt
 
         std::shared_ptr<Configuration> m_cfg;
         std::shared_ptr<Environment> m_env;
+        std::shared_ptr<SessionState> m_state;
 
         ConnectionPage* m_connection;
         DownloadsPage* m_downloads;

@@ -84,6 +84,6 @@ void MainMenu::OnExit(wxCommandEvent& WXUNUSED(event))
 
 void MainMenu::OnViewPreferences(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesDialog dlg(this->GetFrame(), m_env, m_cfg, m_trans);
+    PreferencesDialog dlg(this->GetFrame(), m_env, m_cfg, m_state, m_trans);
     dlg.ShowModal();
 }

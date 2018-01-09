@@ -1,0 +1,18 @@
+#include "buildinfo.hpp"
+
+using pt::BuildInfo;
+
+std::string BuildInfo::Branch()
+{
+    return "@GIT_BRANCH@";
+}
+
+std::string BuildInfo::Commitish()
+{
+    return "@GIT_COMMITISH@";
+}
+
+std::string BuildInfo::Version()
+{
+    return "@VERSION@";
+}
