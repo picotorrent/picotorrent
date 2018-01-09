@@ -38,6 +38,7 @@ namespace pt
 
         void OnAddTorrent(wxCommandEvent&);
         void OnAddMagnetLink(wxCommandEvent&);
+        void OnExit(wxCommandEvent&);
         void OnLeftButtonDClick(wxTaskBarIconEvent&);
         void OnViewPreferences(wxCommandEvent&);
 

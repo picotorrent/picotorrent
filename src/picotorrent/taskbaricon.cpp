@@ -13,6 +13,7 @@ wxBEGIN_EVENT_TABLE(TaskBarIcon, wxTaskBarIcon)
     EVT_MENU(ptID_ADD_TORRENT, TaskBarIcon::OnAddTorrent)
     EVT_MENU(ptID_ADD_MAGNET_LINK, TaskBarIcon::OnAddMagnetLink)
     EVT_MENU(ptID_PREFERENCES, TaskBarIcon::OnViewPreferences)
+    EVT_MENU(wxID_EXIT, TaskBarIcon::OnExit)
     EVT_TASKBAR_LEFT_DCLICK(TaskBarIcon::OnLeftButtonDClick)
 wxEND_EVENT_TABLE()
 
@@ -52,6 +53,11 @@ void TaskBarIcon::OnAddMagnetLink(wxCommandEvent& WXUNUSED(event))
 {
     AddTorrentProcedure proc(m_parent, m_trans, m_state);
     proc.ExecuteMagnet();
+}
+
+void TaskBarIcon::OnExit(wxCommandEvent& WXUNUSED(event))
+{
+    m_parent->Close();
 }
 
 void TaskBarIcon::OnLeftButtonDClick(wxTaskBarIconEvent& WXUNUSED(event))
