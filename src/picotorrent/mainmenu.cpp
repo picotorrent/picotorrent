@@ -2,6 +2,7 @@
 
 #include "addtorrentdlg.hpp"
 #include "addtorrentproc.hpp"
+#include "buildinfo.hpp"
 #include "config.hpp"
 #include "environment.hpp"
 #include "preferencesdlg.hpp"
@@ -56,10 +57,10 @@ void MainMenu::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
     wxAboutDialogInfo aboutInfo;
     aboutInfo.SetName("PicoTorrent");
-    aboutInfo.SetVersion("1.0");
+    aboutInfo.SetVersion(BuildInfo::Version());
     aboutInfo.SetDescription(m_trans->Translate("picotorrent_description"));
-    aboutInfo.SetCopyright("(C) 2015-2017");
-    aboutInfo.SetWebSite("http://picotorrent.org");
+    aboutInfo.SetCopyright("(C) 2015-2018");
+    aboutInfo.SetWebSite("https://picotorrent.org");
     aboutInfo.AddDeveloper("Viktor Elofsson");
 
     wxAboutBox(aboutInfo, this->GetFrame());
