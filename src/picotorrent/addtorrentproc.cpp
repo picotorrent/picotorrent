@@ -1,6 +1,7 @@
 #include "addtorrentproc.hpp"
 
 #include "addtorrentdlg.hpp"
+#include "config.hpp"
 #include "magnetlinkvalidator.hpp"
 #include "sessionstate.hpp"
 #include "translator.hpp"
@@ -17,9 +18,11 @@ namespace lt = libtorrent;
 using pt::AddTorrentProcedure;
 
 AddTorrentProcedure::AddTorrentProcedure(wxWindow* parent,
+    std::shared_ptr<pt::Configuration> cfg,
     std::shared_ptr<pt::Translator> translator,
     std::shared_ptr<pt::SessionState> state)
     : m_parent(parent),
+    m_cfg(cfg),
     m_state(state),
     m_trans(translator)
 {
@@ -107,8 +110,7 @@ void AddTorrentProcedure::Execute(std::vector<lt::add_torrent_params>& params)
 {
     for (auto& param : params)
     {
-        // TODO
-        param.save_path = "";
+        param.save_path = m_cfg->DefaultSavePath().string();
     }
 
     AddTorrentDialog addDialog(m_parent, m_trans, params);

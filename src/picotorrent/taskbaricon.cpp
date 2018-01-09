@@ -45,13 +45,13 @@ wxMenu* TaskBarIcon::CreatePopupMenu()
 
 void TaskBarIcon::OnAddTorrent(wxCommandEvent& WXUNUSED(event))
 {
-    AddTorrentProcedure proc(m_parent, m_trans, m_state);
+    AddTorrentProcedure proc(m_parent, m_cfg, m_trans, m_state);
     proc.Execute();
 }
 
 void TaskBarIcon::OnAddMagnetLink(wxCommandEvent& WXUNUSED(event))
 {
-    AddTorrentProcedure proc(m_parent, m_trans, m_state);
+    AddTorrentProcedure proc(m_parent, m_cfg, m_trans, m_state);
     proc.ExecuteMagnet();
 }
 

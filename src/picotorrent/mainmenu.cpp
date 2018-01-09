@@ -68,13 +68,13 @@ void MainMenu::OnAbout(wxCommandEvent& WXUNUSED(event))
 
 void MainMenu::OnAddMagnetLink(wxCommandEvent& event)
 {
-    AddTorrentProcedure proc(this->GetFrame(), m_trans, m_state);
+    AddTorrentProcedure proc(this->GetFrame(), m_cfg, m_trans, m_state);
     proc.ExecuteMagnet();
 }
 
 void MainMenu::OnAddTorrents(wxCommandEvent& event)
 {
-    AddTorrentProcedure proc(this->GetFrame(), m_trans, m_state);
+    AddTorrentProcedure proc(this->GetFrame(), m_cfg, m_trans, m_state);
     proc.Execute();
 }
 
