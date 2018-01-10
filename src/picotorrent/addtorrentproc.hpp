@@ -6,6 +6,7 @@
 #endif
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace libtorrent
@@ -29,7 +30,9 @@ namespace pt
             std::shared_ptr<SessionState> state);
 
         void Execute();
+        void Execute(wxArrayString const& files);
         void ExecuteMagnet();
+        void ExecuteMagnet(wxArrayString const& magnetLinks);
 
     private:
         void Execute(std::vector<libtorrent::add_torrent_params>& params);

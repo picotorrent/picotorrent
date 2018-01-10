@@ -53,6 +53,10 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
         {
             name = p.ti->name();
         }
+        else if (!p.name.empty())
+        {
+            name = p.name;
+        }
         else
         {
             std::stringstream ss;

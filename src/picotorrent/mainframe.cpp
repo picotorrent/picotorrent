@@ -19,6 +19,8 @@
 #include <wx/notebook.h>
 #include <wx/splitter.h>
 
+#include "applicationoptions.hpp"
+#include "addtorrentproc.hpp"
 #include "config.hpp"
 #include "environment.hpp"
 #include "mainmenu.hpp"
@@ -96,6 +98,20 @@ MainFrame::~MainFrame()
 
     m_state->session->set_alert_notify([] {});
     SessionUnloader::Unload(m_state, m_env);
+}
+
+void MainFrame::HandleOptions(std::shared_ptr<pt::ApplicationOptions> options)
+{
+    AddTorrentProcedure addProc(this, m_config, m_trans, m_state);
+
+    if (!options->files.IsEmpty() && options->magnet_links.IsEmpty())
+    {
+        addProc.Execute(options->files);
+    }
+    else if (!options->magnet_links.IsEmpty() && options->files.IsEmpty())
+    {
+        addProc.ExecuteMagnet(options->magnet_links);
+    }
 }
 
 void MainFrame::OnSessionAlert()

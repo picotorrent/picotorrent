@@ -12,6 +12,7 @@ class wxSplitterWindow;
 
 namespace pt
 {
+    struct ApplicationOptions;
     class Configuration;
     class Environment;
     struct SessionState;
@@ -29,6 +30,8 @@ namespace pt
             std::shared_ptr<Environment> env,
             std::shared_ptr<Translator> translator);
         virtual ~MainFrame();
+
+        void HandleOptions(std::shared_ptr<ApplicationOptions> options);
 
     private:
         enum

@@ -52,9 +52,14 @@ void AddTorrentProcedure::Execute()
         return;
     }
 
+    return Execute(paths);
+}
+
+void AddTorrentProcedure::Execute(wxArrayString const& files)
+{
     std::vector<lt::add_torrent_params> params;
 
-    for (wxString& filePath : paths)
+    for (wxString const& filePath : files)
     {
         lt::add_torrent_params p;
         lt::error_code ec;
@@ -103,6 +108,29 @@ void AddTorrentProcedure::ExecuteMagnet()
     }
 
     std::vector<lt::add_torrent_params> params{ p };
+    return Execute(params);
+}
+
+void AddTorrentProcedure::ExecuteMagnet(wxArrayString const& magnetLinks)
+{
+    std::vector<lt::add_torrent_params> params;
+
+    for (wxString const& link : magnetLinks)
+    {
+        lt::add_torrent_params p;
+        lt::error_code ec;
+
+        lt::parse_magnet_uri(link.ToStdString(), p, ec);
+
+        if (ec)
+        {
+            wxLogFatalError("Total error when parsing magnet link %s", link);
+            return;
+        }
+
+        params.push_back(p);
+    }
+
     return Execute(params);
 }
 
