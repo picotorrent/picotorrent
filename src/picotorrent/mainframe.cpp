@@ -14,11 +14,11 @@
 #include <limits>
 
 #include <wx/aboutdlg.h>
-#include <wx/appprogress.h>
 #include <wx/dataview.h>
 #include <wx/filedlg.h>
 #include <wx/notebook.h>
 #include <wx/splitter.h>
+#include <wx/taskbarbutton.h>
 
 #include "applicationoptions.hpp"
 #include "addtorrentproc.hpp"
@@ -40,8 +40,10 @@ namespace lt = libtorrent;
 using pt::MainFrame;
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
+    EVT_CLOSE(MainFrame::OnClose)
     EVT_DATAVIEW_ITEM_CONTEXT_MENU(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentContextMenu)
     EVT_DATAVIEW_SELECTION_CHANGED(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentSelectionChanged)
+    EVT_ICONIZE(MainFrame::OnIconize)
     EVT_TIMER(ptID_MAIN_TIMER, MainFrame::OnTimer)
 wxEND_EVENT_TABLE()
 
@@ -52,13 +54,12 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     m_config(config),
     m_env(env),
     m_splitter(new wxSplitterWindow(this, wxID_ANY)),
-    m_taskBarIndicator(new wxAppProgressIndicator(this)),
+    m_status(new StatusBar(this)),
     m_torrentListViewModel(new TorrentListViewModel()),
     m_trans(translator)
 {
     m_state = SessionLoader::Load(m_env, m_config);
-    m_state->session->set_alert_notify(
-        [this]()
+    m_state->session->set_alert_notify([this]()
     {
         this->GetEventHandler()->CallAfter(std::bind(&MainFrame::OnSessionAlert, this));
     });
@@ -77,14 +78,15 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     mainSizer->SetSizeHints(this);
 
     // Task bar icon
-    m_taskBar = new TaskBarIcon(this, m_config, m_env, m_trans, m_state);
-    m_taskBar->SetIcon(wxICON(AppIcon), "PicoTorrent");
+    m_taskBar = std::make_shared<TaskBarIcon>(this, m_config, m_env, m_trans, m_state);
 
-    // Status bar
-    m_status = new StatusBar(this);
+    if (m_config->UI()->ShowInNotificationArea())
+    {
+        m_taskBar->SetPicoIcon();
+    }
 
     this->SetIcon(wxICON(AppIcon));
-    this->SetMenuBar(new MainMenu(m_state, m_config, m_env, m_trans));
+    this->SetMenuBar(new MainMenu(m_state, m_config, m_env, m_taskBar, m_trans));
     this->SetSizerAndFit(mainSizer);
     this->SetStatusBar(m_status);
 
@@ -94,8 +96,6 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
 
 MainFrame::~MainFrame()
 {
-    delete m_taskBar;
-
     m_timer->Stop();
 
     m_state->session->set_alert_notify([] {});
@@ -113,6 +113,37 @@ void MainFrame::HandleOptions(std::shared_ptr<pt::ApplicationOptions> options)
     else if (!options->magnet_links.IsEmpty() && options->files.IsEmpty())
     {
         addProc.ExecuteMagnet(options->magnet_links);
+    }
+}
+
+void MainFrame::OnClose(wxCloseEvent& ev)
+{
+    if (ev.CanVeto()
+        && m_config->UI()->ShowInNotificationArea()
+        && m_config->UI()->CloseToNotificationArea())
+    {
+        Hide();
+        MSWGetTaskBarButton()->Hide();
+    }
+    else
+    {
+        // We hide early while closing to not occupy the
+        // screen more than necessary. Otherwise the window
+        // would be visible (and unresponsive) for a few seconds
+        // before being destroyed.
+        Hide();
+
+        ev.Skip();
+    }
+}
+
+void MainFrame::OnIconize(wxIconizeEvent& ev)
+{
+    if (ev.IsIconized()
+        && m_config->UI()->ShowInNotificationArea()
+        && m_config->UI()->MinimizeToNotificationArea())
+    {
+        MSWGetTaskBarButton()->Hide();
     }
 }
 
@@ -254,14 +285,17 @@ void MainFrame::OnSessionAlert()
             m_status->UpdateTorrentCount(m_state->torrents.size());
             m_status->UpdateTransferRates(dl_rate, ul_rate);
 
+            wxTaskBarButton* tbb = MSWGetTaskBarButton();
+
             if (dl_progress > 0)
             {
-                m_taskBarIndicator->SetRange(dl_count * 1000);
-                m_taskBarIndicator->SetValue(static_cast<int>(dl_progress * 1000));
+                tbb->SetProgressState(wxTaskBarButtonState::wxTASKBAR_BUTTON_NORMAL);
+                tbb->SetProgressRange(dl_count * 1000);
+                tbb->SetProgressValue(static_cast<int>(dl_progress * 1000));
             }
             else
             {
-                m_taskBarIndicator->SetValue(0);
+                tbb->SetProgressState(wxTaskBarButtonState::wxTASKBAR_BUTTON_NO_PROGRESS);
             }
 
             break;

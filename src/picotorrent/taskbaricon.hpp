@@ -15,7 +15,8 @@ namespace pt
     struct SessionState;
     class Translator;
 
-    class TaskBarIcon : public wxTaskBarIcon
+    class TaskBarIcon : public wxTaskBarIcon,
+        public std::enable_shared_from_this<TaskBarIcon>
     {
     public:
         TaskBarIcon(wxFrame* parent,
@@ -23,6 +24,8 @@ namespace pt
             std::shared_ptr<Environment> env,
             std::shared_ptr<Translator> translator,
             std::shared_ptr<SessionState> state);
+
+        void SetPicoIcon();
 
     private:
         enum

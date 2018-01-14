@@ -1,5 +1,7 @@
 #include "taskbaricon.hpp"
 
+#include <wx/taskbarbutton.h>
+
 #include "addtorrentproc.hpp"
 #include "config.hpp"
 #include "environment.hpp"
@@ -30,6 +32,11 @@ TaskBarIcon::TaskBarIcon(wxFrame* parent,
 {
 }
 
+void TaskBarIcon::SetPicoIcon()
+{
+    SetIcon(wxICON(AppIcon), "PicoTorrent");
+}
+
 wxMenu* TaskBarIcon::CreatePopupMenu()
 {
     wxMenu* menu = new wxMenu();
@@ -57,17 +64,26 @@ void TaskBarIcon::OnAddMagnetLink(wxCommandEvent& WXUNUSED(event))
 
 void TaskBarIcon::OnExit(wxCommandEvent& WXUNUSED(event))
 {
-    m_parent->Close();
+    m_parent->Close(true);
 }
 
 void TaskBarIcon::OnLeftButtonDClick(wxTaskBarIconEvent& WXUNUSED(event))
 {
+    m_parent->MSWGetTaskBarButton()->Show();
+    m_parent->Restore();
     m_parent->Raise();
     m_parent->Show();
 }
 
 void TaskBarIcon::OnViewPreferences(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesDialog dlg(m_parent, m_env, m_cfg, m_state, m_trans);
+    PreferencesDialog dlg(
+        m_parent,
+        m_env,
+        m_cfg,
+        m_state,
+        shared_from_this(),
+        m_trans);
+
     dlg.ShowModal();
 }

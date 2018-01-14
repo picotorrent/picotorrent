@@ -7,6 +7,7 @@
 #include "environment.hpp"
 #include "preferencesdlg.hpp"
 #include "sessionstate.hpp"
+#include "taskbaricon.hpp"
 #include "translator.hpp"
 
 #include <libtorrent/add_torrent_params.hpp>
@@ -27,11 +28,13 @@ wxEND_EVENT_TABLE()
 MainMenu::MainMenu(std::shared_ptr<pt::SessionState> state,
     std::shared_ptr<pt::Configuration> cfg,
     std::shared_ptr<pt::Environment> env,
+    std::shared_ptr<pt::TaskBarIcon> taskBarIcon,
     std::shared_ptr<pt::Translator> translator)
     : wxMenuBar(),
     m_state(state),
     m_cfg(cfg),
     m_env(env),
+    m_taskBarIcon(taskBarIcon),
     m_trans(translator)
 {
     wxMenu* menuFile = new wxMenu();
@@ -80,11 +83,18 @@ void MainMenu::OnAddTorrents(wxCommandEvent& event)
 
 void MainMenu::OnExit(wxCommandEvent& WXUNUSED(event))
 {
-    this->GetFrame()->Close();
+    this->GetFrame()->Close(true);
 }
 
 void MainMenu::OnViewPreferences(wxCommandEvent& WXUNUSED(event))
 {
-    PreferencesDialog dlg(this->GetFrame(), m_env, m_cfg, m_state, m_trans);
+    PreferencesDialog dlg(
+        this->GetFrame(),
+        m_env,
+        m_cfg,
+        m_state,
+        m_taskBarIcon,
+        m_trans);
+
     dlg.ShowModal();
 }

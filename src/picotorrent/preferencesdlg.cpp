@@ -8,6 +8,7 @@
 #include "proxypage.hpp"
 #include "sessionsettings.hpp"
 #include "sessionstate.hpp"
+#include "taskbaricon.hpp"
 #include "translator.hpp"
 
 #include <libtorrent/session.hpp>
@@ -28,10 +29,12 @@ PreferencesDialog::PreferencesDialog(
     std::shared_ptr<pt::Environment> env,
     std::shared_ptr<pt::Configuration> cfg,
     std::shared_ptr<pt::SessionState> sessionState,
+    std::shared_ptr<pt::TaskBarIcon> taskBarIcon,
     std::shared_ptr<pt::Translator> tran)
     : m_cfg(cfg),
     m_env(env),
-    m_state(sessionState)
+    m_state(sessionState),
+    m_taskBarIcon(taskBarIcon)
 {
     SetSheetStyle(wxPROPSHEET_LISTBOOK);
 
@@ -88,6 +91,15 @@ void PreferencesDialog::OnOk(wxCommandEvent& event)
         // Reload settings
         lt::settings_pack settings = SessionSettings::Get(m_cfg);
         m_state->session->apply_settings(settings);
+
+        if (m_cfg->UI()->ShowInNotificationArea() && !m_taskBarIcon->IsIconInstalled())
+        {
+            m_taskBarIcon->SetPicoIcon();
+        }
+        else if (!m_cfg->UI()->ShowInNotificationArea() && m_taskBarIcon->IsIconInstalled())
+        {
+            m_taskBarIcon->RemoveIcon();
+        }
 
         event.Skip();
     }

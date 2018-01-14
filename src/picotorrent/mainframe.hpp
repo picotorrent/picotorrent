@@ -41,6 +41,8 @@ namespace pt
             ptID_MAIN_TIMER
         };
 
+        void OnClose(wxCloseEvent&);
+        void OnIconize(wxIconizeEvent&);
         void OnSessionAlert();
         void OnTimer(wxTimerEvent&);
         void OnTorrentContextMenu(wxDataViewEvent&);
@@ -48,11 +50,9 @@ namespace pt
 
         wxDECLARE_EVENT_TABLE();
 
-        wxAppProgressIndicator* m_taskBarIndicator;
         wxSplitterWindow* m_splitter;
         wxTimer* m_timer;
         StatusBar* m_status;
-        TaskBarIcon* m_taskBar;
         TorrentListView* m_torrentListView;
         TorrentListViewModel* m_torrentListViewModel;
         TorrentDetailsView* m_torrentDetailsView;
@@ -60,6 +60,7 @@ namespace pt
         std::shared_ptr<Configuration> m_config;
         std::shared_ptr<Environment> m_env;
         std::shared_ptr<SessionState> m_state;
+        std::shared_ptr<TaskBarIcon> m_taskBar;
         std::shared_ptr<Translator> m_trans;
     };
 }

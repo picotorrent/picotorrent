@@ -12,14 +12,16 @@ namespace pt
     class Configuration;
     class Environment;
     struct SessionState;
+    class TaskBarIcon;
     class Translator;
 
     class MainMenu : public wxMenuBar
     {
     public:
         MainMenu(std::shared_ptr<SessionState> state,
-            std::shared_ptr<pt::Configuration> cfg,
-            std::shared_ptr<pt::Environment> env,
+            std::shared_ptr<Configuration> cfg,
+            std::shared_ptr<Environment> env,
+            std::shared_ptr<TaskBarIcon> taskBarIcon,
             std::shared_ptr<Translator> translator);
 
     private:
@@ -41,6 +43,7 @@ namespace pt
         std::shared_ptr<SessionState> m_state;
         std::shared_ptr<Configuration> m_cfg;
         std::shared_ptr<Environment> m_env;
+        std::shared_ptr<TaskBarIcon> m_taskBarIcon;
         std::shared_ptr<Translator> m_trans;
     };
 }

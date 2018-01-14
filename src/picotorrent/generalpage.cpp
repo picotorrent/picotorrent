@@ -112,8 +112,8 @@ GeneralPage::GeneralPage(wxWindow* parent, std::shared_ptr<pt::Configuration> co
 
     notifGrid->AddGrowableCol(0, 1);
     notifGrid->Add(m_showNotificationIcon);
-    notifGrid->Add(m_minimizeNotification);
-    notifGrid->Add(m_closeNotification);
+    notifGrid->Add(m_minimizeNotification, 0, wxLEFT, 10);
+    notifGrid->Add(m_closeNotification, 0, wxLEFT, 10);
     notifSizer->Add(notifGrid, 1, wxEXPAND | wxALL, 5);
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -150,6 +150,15 @@ GeneralPage::GeneralPage(wxWindow* parent, std::shared_ptr<pt::Configuration> co
     m_showNotificationIcon->SetValue(m_config->UI()->ShowInNotificationArea());
     m_minimizeNotification->SetValue(m_config->UI()->MinimizeToNotificationArea());
     m_closeNotification->SetValue(m_config->UI()->CloseToNotificationArea());
+
+    m_showNotificationIcon->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&)
+    {
+        m_minimizeNotification->Enable(m_showNotificationIcon->IsChecked());
+        m_closeNotification->Enable(m_showNotificationIcon->IsChecked());
+    });
+
+    m_minimizeNotification->Enable(m_showNotificationIcon->IsChecked());
+    m_closeNotification->Enable(m_showNotificationIcon->IsChecked());
 
     this->SetSizerAndFit(sizer);
 }
