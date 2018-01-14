@@ -6,6 +6,12 @@
 namespace lt = libtorrent;
 using pt::TrackersViewModel;
 
+void TrackersViewModel::Clear()
+{
+    m_data.clear();
+    Reset(0);
+}
+
 void TrackersViewModel::Update(lt::torrent_status const& ts)
 {
     std::vector<lt::announce_entry> trackers = ts.handle.trackers();
@@ -76,9 +82,17 @@ void TrackersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsi
         variant = tracker.url;
         break;
     case Column::Fails:
-        variant = wxString::Format("%d (of %d)",
-            (endp != tracker.endpoints.end() ? endp->fails : 0),
-            tracker.fail_limit);
+        if (tracker.fail_limit == 0)
+        {
+            variant = wxString::Format("%d",
+                (endp != tracker.endpoints.end() ? endp->fails : 0));
+        }
+        else
+        {
+            variant = wxString::Format("%d (of %d)",
+                (endp != tracker.endpoints.end() ? endp->fails : 0),
+                tracker.fail_limit);
+        }
         break;
     case Column::Verified:
         variant = (tracker.verified ? "OK" : "-");

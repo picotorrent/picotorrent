@@ -20,6 +20,7 @@ namespace pt
     class TrackersViewModel : public wxDataViewVirtualListModel
     {
     public:
+        void Clear();
         void Update(libtorrent::torrent_status const& ts);
 
     private:

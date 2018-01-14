@@ -57,9 +57,17 @@ lt::settings_pack SessionSettings::Get(std::shared_ptr<pt::Configuration> cfg)
     // Various
     settings.set_bool(lt::settings_pack::anonymous_mode, cfg->Session()->EnableAnonymousMode());
     settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
-    settings.set_int(lt::settings_pack::download_rate_limit, cfg->Session()->DownloadRateLimit());
     settings.set_int(lt::settings_pack::stop_tracker_timeout, cfg->Session()->StopTrackerTimeout());
-    settings.set_int(lt::settings_pack::upload_rate_limit, cfg->Session()->UploadRateLimit());
+
+    settings.set_int(lt::settings_pack::download_rate_limit,
+        cfg->Session()->EnableDownloadRateLimit()
+        ? cfg->Session()->DownloadRateLimit() * 1024
+        : 0);
+
+    settings.set_int(lt::settings_pack::upload_rate_limit,
+        cfg->Session()->EnableUploadRateLimit()
+        ? cfg->Session()->UploadRateLimit() * 1024
+        : 0);
 
     // Calculate user agent
     std::stringstream user_agent;
@@ -74,15 +82,18 @@ lt::settings_pack SessionSettings::Get(std::shared_ptr<pt::Configuration> cfg)
     settings.set_str(lt::settings_pack::peer_fingerprint, peer_id.str());
 
     // Proxy settings
-    settings.set_int(lt::settings_pack::proxy_type, static_cast<lt::settings_pack::proxy_type_t>(cfg->ProxyType()));
-    settings.set_str(lt::settings_pack::proxy_hostname, cfg->ProxyHost());
-    settings.set_int(lt::settings_pack::proxy_port, cfg->ProxyPort());
-    settings.set_str(lt::settings_pack::proxy_username, cfg->ProxyUsername());
-    settings.set_str(lt::settings_pack::proxy_password, cfg->ProxyPassword());
-    settings.set_bool(lt::settings_pack::force_proxy, cfg->ProxyForce());
-    settings.set_bool(lt::settings_pack::proxy_hostnames, cfg->ProxyHostnames());
-    settings.set_bool(lt::settings_pack::proxy_peer_connections, cfg->ProxyPeers());
-    settings.set_bool(lt::settings_pack::proxy_tracker_connections, cfg->ProxyTrackers());
+    if (cfg->ProxyType() != Configuration::ConnectionProxyType::None)
+    {
+        settings.set_int(lt::settings_pack::proxy_type, static_cast<lt::settings_pack::proxy_type_t>(cfg->ProxyType()));
+        settings.set_str(lt::settings_pack::proxy_hostname, cfg->ProxyHost());
+        settings.set_int(lt::settings_pack::proxy_port, cfg->ProxyPort());
+        settings.set_str(lt::settings_pack::proxy_username, cfg->ProxyUsername());
+        settings.set_str(lt::settings_pack::proxy_password, cfg->ProxyPassword());
+        settings.set_bool(lt::settings_pack::force_proxy, cfg->ProxyForce());
+        settings.set_bool(lt::settings_pack::proxy_hostnames, cfg->ProxyHostnames());
+        settings.set_bool(lt::settings_pack::proxy_peer_connections, cfg->ProxyPeers());
+        settings.set_bool(lt::settings_pack::proxy_tracker_connections, cfg->ProxyTrackers());
+    }
 
     return settings;
 }

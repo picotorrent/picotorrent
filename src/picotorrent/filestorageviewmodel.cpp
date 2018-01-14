@@ -26,6 +26,13 @@ FileStorageViewModel::FileStorageViewModel(std::shared_ptr<pt::Translator> trans
     m_folderIcon.CreateFromHICON(shfi.hIcon);
 }
 
+void FileStorageViewModel::ClearNodes()
+{
+    m_root = nullptr;
+    m_map.clear();
+    m_icons.clear();
+}
+
 std::vector<int> FileStorageViewModel::GetFileIndices(wxDataViewItem& item)
 {
     Node* node = reinterpret_cast<Node*>(item.GetID());

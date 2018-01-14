@@ -23,6 +23,8 @@ namespace pt
     {
     public:
         PeersPage(wxWindow* parent, wxWindowID id, std::shared_ptr<Translator> translator);
+
+        void Clear();
         void Update(libtorrent::torrent_status const& ts);
 
     private:

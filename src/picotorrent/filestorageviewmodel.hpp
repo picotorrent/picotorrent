@@ -43,6 +43,7 @@ namespace pt
         bool IsContainer(const wxDataViewItem &item) const wxOVERRIDE;
         unsigned int GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const wxOVERRIDE;
 
+        void ClearNodes();
         std::vector<int> GetFileIndices(wxDataViewItem&);
         wxDataViewItem GetRootItem();
         void RebuildTree(std::shared_ptr<const libtorrent::torrent_info> ti);

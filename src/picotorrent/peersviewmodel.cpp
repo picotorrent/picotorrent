@@ -5,6 +5,12 @@
 namespace lt = libtorrent;
 using pt::PeersViewModel;
 
+void PeersViewModel::Clear()
+{
+    m_data.clear();
+    Reset(0);
+}
+
 void PeersViewModel::Update(lt::torrent_status const& ts)
 {
     std::vector<lt::peer_info> peers;

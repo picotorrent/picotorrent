@@ -33,6 +33,14 @@ OverviewPage::OverviewPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::
     this->SetSizerAndFit(sz);
 }
 
+void OverviewPage::Clear()
+{
+    m_name->SetLabel("-");
+    m_infoHash->SetLabel("-");
+    m_savePath->SetLabel("-");
+    m_pieces->SetLabel("-");
+}
+
 void OverviewPage::Update(lt::torrent_status const& ts)
 {
     std::stringstream ih;

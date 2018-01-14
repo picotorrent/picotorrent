@@ -25,6 +25,11 @@ PeersPage::PeersPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Transl
     this->SetSizer(sizer);
 }
 
+void PeersPage::Clear()
+{
+    m_viewModel->Clear();
+}
+
 void PeersPage::Update(lt::torrent_status const& ts)
 {
     m_viewModel->Update(ts);

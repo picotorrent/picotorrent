@@ -14,6 +14,7 @@
 #include <limits>
 
 #include <wx/aboutdlg.h>
+#include <wx/appprogress.h>
 #include <wx/dataview.h>
 #include <wx/filedlg.h>
 #include <wx/notebook.h>
@@ -51,6 +52,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     m_config(config),
     m_env(env),
     m_splitter(new wxSplitterWindow(this, wxID_ANY)),
+    m_taskBarIndicator(new wxAppProgressIndicator(this)),
     m_torrentListViewModel(new TorrentListViewModel()),
     m_trans(translator)
 {
@@ -230,6 +232,8 @@ void MainFrame::OnSessionAlert()
         {
             lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
 
+            int dl_count = 0;
+            float dl_progress = 0;
             int64_t dl_rate = 0;
             int64_t ul_rate = 0;
 
@@ -239,10 +243,26 @@ void MainFrame::OnSessionAlert()
 
                 dl_rate += ts.download_payload_rate;
                 ul_rate += ts.upload_payload_rate;
+
+                if (ts.state & lt::torrent_status::state_t::downloading)
+                {
+                    dl_count += 1;
+                    dl_progress = ts.progress;
+                }
             }
 
             m_status->UpdateTorrentCount(m_state->torrents.size());
             m_status->UpdateTransferRates(dl_rate, ul_rate);
+
+            if (dl_progress > 0)
+            {
+                m_taskBarIndicator->SetRange(dl_count * 1000);
+                m_taskBarIndicator->SetValue(static_cast<int>(dl_progress * 1000));
+            }
+            else
+            {
+                m_taskBarIndicator->SetValue(0);
+            }
 
             break;
         }

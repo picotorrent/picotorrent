@@ -7,6 +7,7 @@
 
 #include <memory>
 
+class wxAppProgressIndicator;
 class wxDataViewEvent;
 class wxSplitterWindow;
 
@@ -47,6 +48,7 @@ namespace pt
 
         wxDECLARE_EVENT_TABLE();
 
+        wxAppProgressIndicator* m_taskBarIndicator;
         wxSplitterWindow* m_splitter;
         wxTimer* m_timer;
         StatusBar* m_status;

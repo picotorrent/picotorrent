@@ -30,6 +30,11 @@ TrackersPage::TrackersPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::
     this->SetSizer(sizer);
 }
 
+void TrackersPage::Clear()
+{
+    m_viewModel->Clear();
+}
+
 void TrackersPage::Update(lt::torrent_status const& ts)
 {
     m_viewModel->Update(ts);

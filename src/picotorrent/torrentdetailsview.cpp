@@ -38,7 +38,10 @@ TorrentDetailsView::TorrentDetailsView(wxWindow* parent,
 
 void TorrentDetailsView::Clear()
 {
+    m_overview->Clear();
     m_files->Clear();
+    m_peers->Clear();
+    m_trackers->Clear();
 }
 
 wxSize TorrentDetailsView::GetMinSize() const
@@ -50,7 +53,6 @@ void TorrentDetailsView::Update()
 {
     if (m_state->selected_torrents.size() != 1)
     {
-        // TODO: clear
         return;
     }
 

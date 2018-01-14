@@ -72,6 +72,8 @@ FilesPage::FilesPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Transl
 void FilesPage::Clear()
 {
     m_wrapper->handle = lt::torrent_handle();
+
+    m_viewModel->ClearNodes();
     m_viewModel->Cleared();
 }
 
