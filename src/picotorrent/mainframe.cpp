@@ -57,7 +57,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     m_env(env),
     m_splitter(new wxSplitterWindow(this, wxID_ANY)),
     m_status(new StatusBar(this)),
-    m_torrentListViewModel(new TorrentListViewModel()),
+    m_torrentListViewModel(new TorrentListViewModel(translator)),
     m_trans(translator)
 {
     m_state = SessionLoader::Load(m_env, m_config);

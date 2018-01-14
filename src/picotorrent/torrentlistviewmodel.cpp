@@ -1,11 +1,17 @@
 #include "torrentlistviewmodel.hpp"
 
+#include "translator.hpp"
 #include "utils.hpp"
 
 #include <libtorrent/torrent_status.hpp>
 
 namespace lt = libtorrent;
 using pt::TorrentListViewModel;
+
+TorrentListViewModel::TorrentListViewModel(std::shared_ptr<pt::Translator> translator)
+    : m_translator(translator)
+{
+}
 
 void TorrentListViewModel::Add(lt::torrent_status const& ts)
 {
@@ -84,7 +90,7 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
         variant = Utils::ToHumanFileSize(ts.total_wanted);
         break;
     case 3:
-        variant = Utils::ToReadableStatus(ts);
+        variant = Utils::ToReadableStatus(ts, m_translator);
         break;
     case 4:
         variant = static_cast<long>(ts.progress * 100);

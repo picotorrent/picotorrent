@@ -113,6 +113,7 @@ add_executable(
     src/picotorrent/torrentlistview
     src/picotorrent/torrentlistviewmodel
     src/picotorrent/utils
+    src/picotorrent/utils_win32
 )
 
 target_link_libraries(

@@ -1,10 +1,10 @@
 #include "utils.hpp"
 
-#include <Windows.h>
-#include <ShlObj.h>
-#include <Shlwapi.h>
-
 #include <libtorrent/torrent_status.hpp>
+#include <wx/filename.h>
+
+#include "translator.hpp"
+#include "utils_win32.hpp"
 
 namespace fs = std::experimental::filesystem::v1;
 namespace lt = libtorrent;
@@ -12,20 +12,15 @@ using pt::Utils;
 
 void Utils::OpenAndSelect(fs::path path)
 {
-    // TODO(platform dependent)
-    LPITEMIDLIST il = ILCreateFromPath(path.c_str());
-    SHOpenFolderAndSelectItems(il, 0, 0, 0);
-    ILFree(il);
+    Utils_Win32::OpenAndSelect(path);
 }
 
-std::wstring Utils::ToHumanFileSize(int64_t bytes)
+wxString Utils::ToHumanFileSize(int64_t bytes)
 {
-    TCHAR buffer[1024];
-    StrFormatByteSize64(bytes, buffer, ARRAYSIZE(buffer));
-    return buffer;
+    return wxFileName::GetHumanReadableSize(bytes);
 }
 
-std::string Utils::ToReadableStatus(lt::torrent_status const& ts)
+wxString Utils::ToReadableStatus(lt::torrent_status const& ts, std::shared_ptr<pt::Translator> tr)
 {
     bool paused = ((ts.flags & lt::torrent_flags::paused)
         && !(ts.flags & lt::torrent_flags::auto_managed));
@@ -42,21 +37,21 @@ std::string Utils::ToReadableStatus(lt::torrent_status const& ts)
     bool forced = (!(ts.flags & lt::torrent_flags::paused)
         && !(ts.flags & lt::torrent_flags::auto_managed));
 
-    // TODO(translations)
-
     if (paused)
     {
         if (ts.errc)
         {
-            return "Error";
+            return wxString::Format(
+                i18n(tr, "state_error"),
+                ts.errc.message().c_str());
         }
 
         if (seeding)
         {
-            return "Seeding (paused)";
+            return i18n(tr, "state_uploading_paused");
         }
 
-        return "Downloading (paused)";
+        return i18n(tr, "state_downloading_paused");
     }
     else
     {
@@ -64,10 +59,10 @@ std::string Utils::ToReadableStatus(lt::torrent_status const& ts)
         {
             if (seeding)
             {
-                return "Queued (uploading)";
+                return i18n(tr, "state_uploading_queued");
             }
 
-            return "Queued (downloading)";
+            return i18n(tr, "state_downloading_queued");
         }
         else
         {
@@ -78,52 +73,52 @@ std::string Utils::ToReadableStatus(lt::torrent_status const& ts)
             {
                 if (forced)
                 {
-                    return "Uploading (forced)";
+                    return i18n(tr, "state_uploading_forced");
                 }
 
                 if (paused)
                 {
-                    return "Complete";
+                    return i18n(tr, "state_uploading_paused");
                 }
 
                 if (ts.upload_payload_rate > 0)
                 {
-                    return "Uploading";
+                    return i18n(tr, "state_uploading");
                 }
                 
-                return "Uploading (stalled)";
+                return i18n(tr, "state_uploading_stalled");
             }
             case lt::torrent_status::state_t::checking_resume_data:
             {
-                return "Checking resume data";
+                return i18n(tr, "state_checking_resume_data");
             }
             case lt::torrent_status::state_t::checking_files:
             {
-                return "Downloading (checking files)";
+                return i18n(tr, "state_downloading_checking");
             }
             case lt::torrent_status::state_t::downloading_metadata:
             {
-                return "Downloading metadata";
+                return i18n(tr, "state_downloading_metadata");
             }
             case lt::torrent_status::state_t::downloading:
             {
                 if (forced)
                 {
-                    return "Downloading (forced)";
+                    return i18n(tr, "state_downloading_forced");
                 }
 
                 if (ts.download_payload_rate > 0)
                 {
-                    return "Downloading";
+                    return i18n(tr, "state_downloading");
                 }
 
-                return "Downloading (stalled)";
+                return i18n(tr, "state_downloading_stalled");
             }
             }
         }
     }
 
-    return "Unknown status";
+    return i18n(tr, "unknown");
 }
 
 std::wstring Utils::ToWideString(const char* buffer, int bufferSize)
