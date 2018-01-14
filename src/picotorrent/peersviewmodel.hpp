@@ -20,6 +20,17 @@ namespace pt
     class PeersViewModel : public wxDataViewVirtualListModel
     {
     public:
+        enum Columns
+        {
+            IP,
+            Client,
+            Flags,
+            DownloadRate,
+            UploadRate,
+            Progress,
+            _Max
+        };
+
         void Clear();
         void Update(libtorrent::torrent_status const& ts);
 

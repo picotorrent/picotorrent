@@ -2,6 +2,8 @@
 
 #include <libtorrent/torrent_status.hpp>
 
+#include "utils.hpp"
+
 namespace lt = libtorrent;
 using pt::PeersViewModel;
 
@@ -54,7 +56,7 @@ void PeersViewModel::Update(lt::torrent_status const& ts)
 
 unsigned int PeersViewModel::GetColumnCount() const
 {
-    return -1;
+    return Columns::_Max;
 }
 
 wxString PeersViewModel::GetColumnType(unsigned int col) const
@@ -68,12 +70,134 @@ void PeersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigne
 
     switch (col)
     {
-    case 0:
+    case Columns::IP:
         variant = peer.ip.address().to_string();
         break;
-    case 1:
+    case Columns::Client:
         variant = peer.client;
         break;
+    case Columns::Flags:
+    {
+        std::stringstream flags;
+
+        if (peer.flags & lt::peer_info::interesting)
+        {
+            if (peer.flags & lt::peer_info::remote_choked)
+            {
+                flags << "d ";
+            }
+            else
+            {
+                flags << "D ";
+            }
+        }
+
+        if (peer.flags & lt::peer_info::remote_interested)
+        {
+            if (peer.flags & lt::peer_info::choked)
+            {
+                flags << "u ";
+            }
+            else
+            {
+                flags << "U ";
+            }
+        }
+
+        if (peer.flags & lt::peer_info::optimistic_unchoke)
+        {
+            flags << "O ";
+        }
+
+        if (peer.flags & lt::peer_info::snubbed)
+        {
+            flags << "S ";
+        }
+
+        if (peer.flags & lt::peer_info::local_connection)
+        {
+            flags << "I ";
+        }
+
+        if (!(peer.flags & lt::peer_info::remote_choked) && !(peer.flags & lt::peer_info::interesting))
+        {
+            flags << "K ";
+        }
+
+        if (!(peer.flags & lt::peer_info::choked) && !(peer.flags & lt::peer_info::remote_interested))
+        {
+            flags << "? ";
+        }
+
+        if (peer.source & lt::peer_info::pex)
+        {
+            flags << "X ";
+        }
+
+        if (peer.source & lt::peer_info::dht)
+        {
+            flags << "H ";
+        }
+
+        if (peer.flags & lt::peer_info::rc4_encrypted)
+        {
+            flags << "E ";
+        }
+
+        if (peer.flags & lt::peer_info::plaintext_encrypted)
+        {
+            flags << "e ";
+        }
+
+        if (peer.flags & lt::peer_info::utp_socket)
+        {
+            flags << "P ";
+        }
+
+        if (peer.source & lt::peer_info::lsd)
+        {
+            flags << "L ";
+        }
+
+        variant = flags.str();
+
+        break;
+    }
+    case Columns::DownloadRate:
+    {
+        if (peer.payload_down_speed <= 0)
+        {
+            variant = "-";
+        }
+        else
+        {
+            variant = wxString::Format(
+                "%s/s",
+                Utils::ToHumanFileSize(peer.payload_down_speed));
+        }
+
+        break;
+    }
+    case Columns::UploadRate:
+    {
+        if (peer.payload_up_speed <= 0)
+        {
+            variant = "-";
+        }
+        else
+        {
+            variant = wxString::Format(
+                "%s/s",
+                Utils::ToHumanFileSize(peer.payload_up_speed));
+        }
+
+        break;
+    }
+    case Columns::Progress:
+    {
+        variant = static_cast<long>(peer.progress * 100);
+        break;
+    }
     }
 }
 
