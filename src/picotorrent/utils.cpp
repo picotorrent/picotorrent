@@ -17,7 +17,7 @@ void Utils::OpenAndSelect(fs::path path)
 
 wxString Utils::ToHumanFileSize(int64_t bytes)
 {
-    return wxFileName::GetHumanReadableSize(bytes);
+    return wxFileName::GetHumanReadableSize(bytes, "-");
 }
 
 wxString Utils::ToReadableStatus(lt::torrent_status const& ts, std::shared_ptr<pt::Translator> tr)
