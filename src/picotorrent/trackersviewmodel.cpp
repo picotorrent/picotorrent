@@ -82,6 +82,13 @@ void TrackersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsi
         variant = tracker.url;
         break;
     case Column::Fails:
+    {
+        if (endp != tracker.endpoints.end() && endp->fails == 0)
+        {
+            variant = "-";
+            break;
+        }
+
         if (tracker.fail_limit == 0)
         {
             variant = wxString::Format("%d",
@@ -94,14 +101,20 @@ void TrackersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsi
                 tracker.fail_limit);
         }
         break;
+    }
     case Column::Verified:
         variant = (tracker.verified ? "OK" : "-");
         break;
     case Column::NextAnnounce:
-        variant = wxString::Format("%I64ds",
-            (endp != tracker.endpoints.end()
-                ? lt::total_seconds(endp->next_announce - lt::clock_type::now())
-                : 0L));
+        if (endp == tracker.endpoints.end())
+        {
+            variant = "-";
+            break;
+        }
+
+        int64_t secs = lt::total_seconds(endp->next_announce - lt::clock_type::now());
+        variant = wxString::Format("%s", secs > 0 ? wxString::Format("%I64ds", secs) : "-");
+
         break;
     }
 }
