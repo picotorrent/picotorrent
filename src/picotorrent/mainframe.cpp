@@ -302,7 +302,12 @@ void MainFrame::OnSessionAlert()
         }
         case lt::torrent_removed_alert::alert_type:
         {
+            lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
+
+            m_state->torrents.erase(tra->info_hash);
             m_status->UpdateTorrentCount(m_state->torrents.size());
+            m_torrentListViewModel->Remove(tra->info_hash);
+
             break;
         }
         }

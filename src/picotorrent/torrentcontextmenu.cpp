@@ -145,12 +145,12 @@ void TorrentContextMenu::Pause(wxCommandEvent& WXUNUSED(event))
 
 void TorrentContextMenu::Remove(wxCommandEvent& WXUNUSED(event))
 {
-    // TODO: ask if user wants to remove data files
-
     for (lt::torrent_handle& th : m_state->selected_torrents)
     {
         m_state->session->remove_torrent(th);
     }
+
+    m_state->selected_torrents.clear();
 }
 
 void TorrentContextMenu::Resume(wxCommandEvent& WXUNUSED(event))
