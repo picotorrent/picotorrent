@@ -17,6 +17,8 @@
 #include <wx/dataview.h>
 #include <wx/filedlg.h>
 #include <wx/notebook.h>
+#include <wx/persist.h>
+#include <wx/persist/toplevel.h>
 #include <wx/splitter.h>
 #include <wx/taskbarbutton.h>
 
@@ -87,8 +89,11 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
 
     this->SetIcon(wxICON(AppIcon));
     this->SetMenuBar(new MainMenu(m_state, m_config, m_env, m_taskBar, m_trans));
+    this->SetName("MainFrame");
     this->SetSizerAndFit(mainSizer);
     this->SetStatusBar(m_status);
+
+    wxPersistenceManager::Get().RegisterAndRestore(this);
 
     m_timer = new wxTimer(this, ptID_MAIN_TIMER);
     m_timer->Start(1000);
