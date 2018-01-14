@@ -307,6 +307,19 @@ void MainFrame::OnSessionAlert()
             m_state->torrents.erase(tra->info_hash);
             m_status->UpdateTorrentCount(m_state->torrents.size());
             m_torrentListViewModel->Remove(tra->info_hash);
+            m_torrentDetailsView->Clear();
+
+            // Remove the torrent and dat file from disk
+            std::stringstream hex;
+            hex << tra->info_hash;
+
+            std::string hash = hex.str();
+            fs::path torrents_dir = fs::path(m_env->GetApplicationDataPath() / "Torrents");
+            fs::path torrent_file = torrents_dir / fs::path(hash + ".torrent");
+            fs::path torrent_dat = torrents_dir / fs::path(hash + ".dat");
+
+            if (fs::exists(torrent_file)) { fs::remove(torrent_file); }
+            if (fs::exists(torrent_dat)) { fs::remove(torrent_dat); }
 
             break;
         }
