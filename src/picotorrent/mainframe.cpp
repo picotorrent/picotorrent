@@ -43,6 +43,7 @@ using pt::MainFrame;
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_CLOSE(MainFrame::OnClose)
+    EVT_DATAVIEW_COLUMN_SORTED(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentSorted)
     EVT_DATAVIEW_ITEM_CONTEXT_MENU(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentContextMenu)
     EVT_DATAVIEW_SELECTION_CHANGED(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentSelectionChanged)
     EVT_ICONIZE(MainFrame::OnIconize)
@@ -94,6 +95,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     this->SetStatusBar(m_status);
 
     wxPersistenceManager::Get().RegisterAndRestore(this);
+    wxPersistenceManager::Get().RegisterAndRestore(m_torrentListView);
 
     m_timer = new wxTimer(this, ptID_MAIN_TIMER);
     m_timer->Start(1000);
@@ -196,6 +198,11 @@ void MainFrame::OnSessionAlert()
             m_status->UpdateTorrentCount(m_state->torrents.size());
             m_torrentListViewModel->Add(ata->handle.status());
 
+            if (auto col = m_torrentListView->GetSortingColumn())
+            {
+                m_torrentListViewModel->Sort(m_torrentListView->GetColumnIndex(col), col->IsSortOrderAscending());
+            }
+
             break;
         }
         case lt::metadata_received_alert::alert_type:
@@ -224,6 +231,11 @@ void MainFrame::OnSessionAlert()
             {
                 m_torrentDetailsView->Clear();
                 m_torrentDetailsView->Update();
+            }
+
+            if (auto col = m_torrentListView->GetSortingColumn())
+            {
+                m_torrentListViewModel->Sort(m_torrentListView->GetColumnIndex(col), col->IsSortOrderAscending());
             }
 
             break;
@@ -287,6 +299,14 @@ void MainFrame::OnSessionAlert()
                 }
             }
 
+            if (sua->status.size() > 0)
+            {
+                if (auto col = m_torrentListView->GetSortingColumn())
+                {
+                    m_torrentListViewModel->Sort(m_torrentListView->GetColumnIndex(col), col->IsSortOrderAscending());
+                }
+            }
+
             m_status->UpdateTorrentCount(m_state->torrents.size());
             m_status->UpdateTransferRates(dl_rate, ul_rate);
 
@@ -325,6 +345,11 @@ void MainFrame::OnSessionAlert()
 
             if (fs::exists(torrent_file)) { fs::remove(torrent_file); }
             if (fs::exists(torrent_dat)) { fs::remove(torrent_dat); }
+
+            if (auto col = m_torrentListView->GetSortingColumn())
+            {
+                m_torrentListViewModel->Sort(m_torrentListView->GetColumnIndex(col), col->IsSortOrderAscending());
+            }
 
             break;
         }
@@ -376,4 +401,12 @@ void MainFrame::OnTorrentSelectionChanged(wxDataViewEvent& event)
     }
 
     m_torrentDetailsView->Update();
+}
+
+void MainFrame::OnTorrentSorted(wxDataViewEvent& event)
+{
+    if (auto col = m_torrentListView->GetSortingColumn())
+    {
+        m_torrentListViewModel->Sort(m_torrentListView->GetColumnIndex(col), col->IsSortOrderAscending());
+    }
 }
