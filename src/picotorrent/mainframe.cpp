@@ -46,6 +46,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_DATAVIEW_COLUMN_SORTED(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentSorted)
     EVT_DATAVIEW_ITEM_CONTEXT_MENU(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentContextMenu)
     EVT_DATAVIEW_SELECTION_CHANGED(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentSelectionChanged)
+    EVT_DROP_FILES(MainFrame::OnDropFiles)
     EVT_ICONIZE(MainFrame::OnIconize)
     EVT_TIMER(ptID_MAIN_TIMER, MainFrame::OnTimer)
 wxEND_EVENT_TABLE()
@@ -88,6 +89,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
         m_taskBar->SetPicoIcon();
     }
 
+    this->DragAcceptFiles(true);
     this->SetIcon(wxICON(AppIcon));
     this->SetMenuBar(new MainMenu(m_state, m_config, m_env, m_taskBar, m_trans));
     this->SetName("MainFrame");
@@ -142,6 +144,25 @@ void MainFrame::OnClose(wxCloseEvent& ev)
 
         ev.Skip();
     }
+}
+
+void MainFrame::OnDropFiles(wxDropFilesEvent& ev)
+{
+    if (ev.GetNumberOfFiles() <= 0)
+    {
+        return;
+    }
+
+    wxString* dropped = ev.GetFiles();
+    wxArrayString files;
+
+    for (int i = 0; i < ev.GetNumberOfFiles(); i++)
+    {
+        files.Add(dropped[i]);
+    }
+
+    AddTorrentProcedure proc(this, m_config, m_trans, m_state);
+    proc.Execute(files);
 }
 
 void MainFrame::OnIconize(wxIconizeEvent& ev)

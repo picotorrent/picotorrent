@@ -42,6 +42,7 @@ namespace pt
         };
 
         void OnClose(wxCloseEvent&);
+        void OnDropFiles(wxDropFilesEvent&);
         void OnIconize(wxIconizeEvent&);
         void OnSessionAlert();
         void OnTimer(wxTimerEvent&);
