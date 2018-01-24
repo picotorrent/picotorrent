@@ -74,6 +74,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     m_torrentDetailsView = new TorrentDetailsView(m_splitter, m_trans, m_state);
 
     // Splitter
+    m_splitter->SetMinimumPaneSize(10);
     m_splitter->SetSashGravity(0.5);
     m_splitter->SplitHorizontally(m_torrentListView, m_torrentDetailsView);
 
