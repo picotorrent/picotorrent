@@ -82,9 +82,7 @@ bool PersistentTorrentListView::Restore()
         && RestoreValue("SortAscending", &sortAscending))
     {
         m_tlv->GetColumn(sortIndex)->SetSortOrder(sortAscending);
-
-        auto model = reinterpret_cast<TorrentListViewModel*>(m_tlv->GetModel());
-        model->Sort(sortIndex, sortAscending);
+        m_tlv->Sort();
     }
 
     return true;
@@ -211,4 +209,33 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
 wxSize TorrentListView::GetMinSize() const
 {
     return wxSize(500, 150);
+}
+
+void TorrentListView::Sort()
+{
+    if (GetSortingColumn())
+    {
+        auto sortingColumn = GetSortingColumn();
+        auto model = reinterpret_cast<TorrentListViewModel*>(GetModel());
+
+        if (HasSelection())
+        {
+            wxDataViewItem selection = GetSelection();
+            int row = model->GetRow(selection);
+            lt::sha1_hash& selectedHash = model->FindHashByRow(row);
+
+            model->Sort(
+                GetColumnIndex(sortingColumn),
+                sortingColumn->IsSortOrderAscending());
+
+            int sortedRowIndex = model->GetRowIndex(selectedHash);
+            Select(model->GetItem(sortedRowIndex));
+        }
+        else
+        {
+            model->Sort(
+                GetColumnIndex(sortingColumn),
+                sortingColumn->IsSortOrderAscending());
+        }
+    }
 }

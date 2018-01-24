@@ -218,11 +218,7 @@ void MainFrame::OnSessionAlert()
             m_state->torrents.insert({ ata->handle.info_hash(), ata->handle });
             m_status->UpdateTorrentCount(m_state->torrents.size());
             m_torrentListViewModel->Add(ata->handle.status());
-
-            if (auto col = m_torrentListView->GetSortingColumn())
-            {
-                m_torrentListViewModel->Sort(m_torrentListView->GetColumnIndex(col), col->IsSortOrderAscending());
-            }
+            m_torrentListView->Sort();
 
             break;
         }
@@ -247,16 +243,12 @@ void MainFrame::OnSessionAlert()
             mra->handle.save_resume_data();
 
             m_torrentListViewModel->Update(mra->handle.status());
+            m_torrentListView->Sort();
 
             if (m_state->IsSelected(mra->handle.info_hash()))
             {
                 m_torrentDetailsView->Clear();
                 m_torrentDetailsView->Update();
-            }
-
-            if (auto col = m_torrentListView->GetSortingColumn())
-            {
-                m_torrentListViewModel->Sort(m_torrentListView->GetColumnIndex(col), col->IsSortOrderAscending());
             }
 
             break;
@@ -322,10 +314,7 @@ void MainFrame::OnSessionAlert()
 
             if (sua->status.size() > 0)
             {
-                if (auto col = m_torrentListView->GetSortingColumn())
-                {
-                    m_torrentListViewModel->Sort(m_torrentListView->GetColumnIndex(col), col->IsSortOrderAscending());
-                }
+                m_torrentListView->Sort();
             }
 
             m_status->UpdateTorrentCount(m_state->torrents.size());
@@ -367,10 +356,7 @@ void MainFrame::OnSessionAlert()
             if (fs::exists(torrent_file)) { fs::remove(torrent_file); }
             if (fs::exists(torrent_dat)) { fs::remove(torrent_dat); }
 
-            if (auto col = m_torrentListView->GetSortingColumn())
-            {
-                m_torrentListViewModel->Sort(m_torrentListView->GetColumnIndex(col), col->IsSortOrderAscending());
-            }
+            m_torrentListView->Sort();
 
             break;
         }
@@ -426,8 +412,5 @@ void MainFrame::OnTorrentSelectionChanged(wxDataViewEvent& event)
 
 void MainFrame::OnTorrentSorted(wxDataViewEvent& event)
 {
-    if (auto col = m_torrentListView->GetSortingColumn())
-    {
-        m_torrentListViewModel->Sort(m_torrentListView->GetColumnIndex(col), col->IsSortOrderAscending());
-    }
+    m_torrentListView->Sort();
 }

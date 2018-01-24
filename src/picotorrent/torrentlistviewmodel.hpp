@@ -45,6 +45,7 @@ namespace pt
 
         void Add(libtorrent::torrent_status const& ts);
         libtorrent::sha1_hash FindHashByRow(int row);
+        int GetRowIndex(const libtorrent::sha1_hash& hash);
         void Remove(libtorrent::sha1_hash const& hash);
         void Sort(int columnId, bool ascending);
         void Update(libtorrent::torrent_status const& ts);

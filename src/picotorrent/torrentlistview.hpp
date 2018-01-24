@@ -18,6 +18,7 @@ namespace pt
     public:
         TorrentListView(wxWindow* parent, wxWindowID id, std::shared_ptr<Translator> translator);
         virtual wxSize GetMinSize() const wxOVERRIDE;
+        void Sort();
     };
 
     class PersistentTorrentListView : public wxPersistentWindow<TorrentListView>

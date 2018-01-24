@@ -26,6 +26,11 @@ lt::sha1_hash TorrentListViewModel::FindHashByRow(int row)
     return m_order.at(row);
 }
 
+int TorrentListViewModel::GetRowIndex(const lt::sha1_hash& hash)
+{
+    return std::distance(m_order.begin(), std::find(m_order.begin(), m_order.end(), hash));
+}
+
 void TorrentListViewModel::Remove(lt::sha1_hash const& hash)
 {
     m_status.erase(hash);
