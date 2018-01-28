@@ -19,9 +19,9 @@ struct FilesPage::HandleWrapper
 
 wxBEGIN_EVENT_TABLE(FilesPage, wxPanel)
     EVT_MENU(pt::FileContextMenu::ptID_PRIO_MAXIMUM, FilesPage::OnSetPriority)
-    EVT_MENU(pt::FileContextMenu::ptID_PRIO_HIGH, FilesPage::OnSetPriority)
+    EVT_MENU(pt::FileContextMenu::ptID_PRIO_LOW, FilesPage::OnSetPriority)
     EVT_MENU(pt::FileContextMenu::ptID_PRIO_NORMAL, FilesPage::OnSetPriority)
-    EVT_MENU(pt::FileContextMenu::ptID_PRIO_SKIP, FilesPage::OnSetPriority)
+    EVT_MENU(pt::FileContextMenu::ptID_PRIO_DO_NOT_DOWNLOAD, FilesPage::OnSetPriority)
     EVT_DATAVIEW_ITEM_CONTEXT_MENU(ptID_FILE_LIST, FilesPage::OnFileContextMenu)
 wxEND_EVENT_TABLE()
 
@@ -99,7 +99,7 @@ void FilesPage::Update(lt::torrent_status const& ts)
     std::vector<int64_t> progress;
     ts.handle.file_progress(progress);
 
-    m_viewModel->UpdatePriorities(m_wrapper->handle.file_priorities());
+    m_viewModel->UpdatePriorities(m_wrapper->handle.get_file_priorities());
     m_viewModel->UpdateProgress(progress);
 
     m_filesView->Thaw();
@@ -126,19 +126,19 @@ void FilesPage::OnSetPriority(wxCommandEvent& event)
         switch (event.GetId())
         {
         case FileContextMenu::ptID_PRIO_MAXIMUM:
-            m_wrapper->handle.file_priority(lt::file_index_t(index), 7);
-            break;
-        case FileContextMenu::ptID_PRIO_HIGH:
-            m_wrapper->handle.file_priority(lt::file_index_t(index), 6);
+            m_wrapper->handle.file_priority(lt::file_index_t(index), lt::top_priority);
             break;
         case FileContextMenu::ptID_PRIO_NORMAL:
-            m_wrapper->handle.file_priority(lt::file_index_t(index), 4);
+            m_wrapper->handle.file_priority(lt::file_index_t(index), lt::default_priority);
             break;
-        case FileContextMenu::ptID_PRIO_SKIP:
-            m_wrapper->handle.file_priority(lt::file_index_t(index), 0);
+        case FileContextMenu::ptID_PRIO_LOW:
+            m_wrapper->handle.file_priority(lt::file_index_t(index), lt::low_priority);
+            break;
+        case FileContextMenu::ptID_PRIO_DO_NOT_DOWNLOAD:
+            m_wrapper->handle.file_priority(lt::file_index_t(index), lt::dont_download);
             break;
         }
     }
 
-    m_viewModel->UpdatePriorities(m_wrapper->handle.file_priorities());
+    m_viewModel->UpdatePriorities(m_wrapper->handle.get_file_priorities());
 }

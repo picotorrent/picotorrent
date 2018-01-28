@@ -190,13 +190,13 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
         }
         break;
     case Columns::QueuePosition:
-        if (ts.queue_position < 0)
+        if (ts.queue_position == lt::queue_position_t{ -1 })
         {
             variant = "-";
         }
         else
         {
-            variant = std::to_string(ts.queue_position + 1);
+            variant = std::to_string(int(ts.queue_position) + 1);
         }
         break;
     case Columns::Size:

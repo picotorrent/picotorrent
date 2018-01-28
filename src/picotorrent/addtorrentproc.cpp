@@ -65,7 +65,7 @@ void AddTorrentProcedure::Execute(wxArrayString const& files)
         lt::error_code ec;
 
         p.ti = std::make_shared<lt::torrent_info>(filePath.ToStdString(), ec);
-        p.file_priorities.resize(p.ti->num_files(), 4);
+        p.file_priorities.resize(p.ti->num_files(), lt::default_priority);
 
         if (ec)
         {

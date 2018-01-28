@@ -39,8 +39,7 @@ void SessionUnloader::Unload(std::shared_ptr<pt::SessionState> state, std::share
     int numPaused = 0;
     int numFailed = 0;
 
-    std::vector<lt::torrent_status> temp;
-    state->session->get_torrent_status(&temp, [](const lt::torrent_status &st) { return true; });
+    std::vector<lt::torrent_status> temp = state->session->get_torrent_status([](const lt::torrent_status &st) { return true; });
 
     for (lt::torrent_status &st : temp)
     {
@@ -89,7 +88,7 @@ void SessionUnloader::Unload(std::shared_ptr<pt::SessionState> state, std::share
 
             // PicoTorrent state
             lt::entry dat = lt::write_resume_data(rd->params);
-            dat.dict().insert({ "pT-queuePosition", rd->handle.status().queue_position });
+            dat.dict().insert(std::make_pair("pT-queuePosition", int(rd->handle.status().queue_position)));
 
             std::stringstream hex;
             hex << rd->handle.info_hash();

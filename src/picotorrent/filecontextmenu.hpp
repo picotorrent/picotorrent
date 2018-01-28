@@ -16,9 +16,9 @@ namespace pt
     public:
         enum {
             ptID_PRIO_MAXIMUM = wxID_HIGHEST,
-            ptID_PRIO_HIGH,
             ptID_PRIO_NORMAL,
-            ptID_PRIO_SKIP
+            ptID_PRIO_LOW,
+            ptID_PRIO_DO_NOT_DOWNLOAD
         };
 
         FileContextMenu(std::shared_ptr<Translator> translator);

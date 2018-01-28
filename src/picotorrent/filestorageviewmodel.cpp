@@ -163,26 +163,7 @@ void FileStorageViewModel::RebuildTree(std::shared_ptr<const lt::torrent_info> t
     this->Cleared();
 }
 
-void FileStorageViewModel::UpdatePriorities(std::vector<int> const& priorities)
-{
-    for (size_t i = 0; i < priorities.size(); i++)
-    {
-        std::shared_ptr<Node> const& node = m_map.at(static_cast<int>(i));
-
-        if (node->priority == priorities.at(i))
-        {
-            continue;
-        }
-
-        node->priority = static_cast<uint8_t>(priorities.at(i));
-
-        this->ValueChanged(
-            wxDataViewItem(reinterpret_cast<void*>(node.get())),
-            Columns::Priority);
-    }
-}
-
-void FileStorageViewModel::UpdatePriorities(std::vector<uint8_t> const& priorities)
+void FileStorageViewModel::UpdatePriorities(const std::vector<libtorrent::download_priority_t>& priorities)
 {
     for (size_t i = 0; i < priorities.size(); i++)
     {
@@ -270,24 +251,27 @@ void FileStorageViewModel::GetValue(wxVariant &variant, const wxDataViewItem &it
         variant = static_cast<long>(node->progress * 100);
         break;
     case Columns::Priority:
-        switch (node->priority)
+        if (node->priority == libtorrent::dont_download)
         {
-        case 0:
             variant = i18n(m_trans, "do_not_download");
-            break;
-        case 4:
-            variant = i18n(m_trans, "normal");
-            break;
-        case 6:
-            variant = i18n(m_trans, "high");
-            break;
-        case 7:
-            variant = i18n(m_trans, "maximum");
-            break;
-        default:
-            variant = i18n(m_trans, "unknown");
-            break;
         }
+        else if (node->priority == libtorrent::low_priority)
+        {
+            variant = i18n(m_trans, "low");
+        }
+        else if (node->priority == libtorrent::default_priority)
+        {
+            variant = i18n(m_trans, "normal");
+        }
+        else if (node->priority == libtorrent::top_priority)
+        {
+            variant = i18n(m_trans, "maximum");
+        }
+        else
+        {
+            variant = i18n(m_trans, "unknown");
+        }
+
         break;
     }
 }

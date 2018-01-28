@@ -20,9 +20,9 @@ wxBEGIN_EVENT_TABLE(AddTorrentDialog, wxDialog)
     EVT_DATAVIEW_ITEM_CONTEXT_MENU(ptID_FILE_LIST, OnFileContextMenu)
     EVT_DIRPICKER_CHANGED(ptID_SAVE_PATH, OnSavePathChanged)
     EVT_MENU(pt::FileContextMenu::ptID_PRIO_MAXIMUM, OnSetPriority)
-    EVT_MENU(pt::FileContextMenu::ptID_PRIO_HIGH, OnSetPriority)
+    EVT_MENU(pt::FileContextMenu::ptID_PRIO_LOW, OnSetPriority)
     EVT_MENU(pt::FileContextMenu::ptID_PRIO_NORMAL, OnSetPriority)
-    EVT_MENU(pt::FileContextMenu::ptID_PRIO_SKIP, OnSetPriority)
+    EVT_MENU(pt::FileContextMenu::ptID_PRIO_DO_NOT_DOWNLOAD, OnSetPriority)
 wxEND_EVENT_TABLE()
 
 AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
@@ -163,16 +163,16 @@ void AddTorrentDialog::OnSetPriority(wxCommandEvent& event)
         switch (event.GetId())
         {
         case FileContextMenu::ptID_PRIO_MAXIMUM:
-            params.file_priorities.at(index) = 7;
-            break;
-        case FileContextMenu::ptID_PRIO_HIGH:
-            params.file_priorities.at(index) = 6;
+            params.file_priorities.at(index) = lt::top_priority;
             break;
         case FileContextMenu::ptID_PRIO_NORMAL:
-            params.file_priorities.at(index) = 4;
+            params.file_priorities.at(index) = lt::default_priority;
             break;
-        case FileContextMenu::ptID_PRIO_SKIP:
-            params.file_priorities.at(index) = 0;
+        case FileContextMenu::ptID_PRIO_LOW:
+            params.file_priorities.at(index) = lt::low_priority;
+            break;
+        case FileContextMenu::ptID_PRIO_DO_NOT_DOWNLOAD:
+            params.file_priorities.at(index) = lt::dont_download;
             break;
         }
     }

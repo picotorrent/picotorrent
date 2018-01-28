@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 
+#include <libtorrent/download_priority.hpp>
 #include <wx/dataview.h>
 
 namespace libtorrent
@@ -47,8 +48,7 @@ namespace pt
         std::vector<int> GetFileIndices(wxDataViewItem&);
         wxDataViewItem GetRootItem();
         void RebuildTree(std::shared_ptr<const libtorrent::torrent_info> ti);
-        void UpdatePriorities(std::vector<uint8_t> const& priorities); // TODO: merge these two
-        void UpdatePriorities(std::vector<int> const& priorities);
+        void UpdatePriorities(const std::vector<libtorrent::download_priority_t>& priorities);
         void UpdateProgress(std::vector<int64_t> const& progress);
 
     private:
@@ -57,7 +57,7 @@ namespace pt
             std::string name;
             int64_t size;
             int index;
-            uint8_t priority;
+            libtorrent::download_priority_t priority;
             float progress;
 
             std::shared_ptr<Node> parent;

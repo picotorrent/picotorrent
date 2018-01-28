@@ -1,9 +1,5 @@
 [Files]
-"%{PublishDirectory}/%{BoostSystem}"                  "%{BoostSystem}"
-"%{PublishDirectory}/%{LibCrypto}"                    "%{LibCrypto}"
 "%{PublishDirectory}/PicoTorrent.exe"                 "PicoTorrent.exe"
-"%{PublishDirectory}/%{LibSSL}"                       "%{LibSSL}"
-"%{PublishDirectory}/torrent.dll"                     "torrent.dll"
 "%{ResourceDirectory}/logo150.png"                    "logo150.png"
 "%{ResourceDirectory}/logo44.png"                     "logo44.png"
 "%{PackagingDirectory}/appx.dummy"                    "appx.dummy"

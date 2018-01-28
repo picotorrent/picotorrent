@@ -3,19 +3,9 @@
 <?if $(var.Platform) = "x64" ?>
     <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
     <?define UpgradeCode = "e8ab3252-b12e-4fca-b4c0-ff723283e7dc" ?>
-    <?define LibCrypto = "libcrypto-1_1-x64.dll" ?>
-    <?define LibSSL = "libssl-1_1-x64.dll" ?>
 <?else ?>
     <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
     <?define UpgradeCode = "2611493f-f5d7-4c5d-934a-623c9a7c7b36" ?>
-    <?define LibCrypto = "libcrypto-1_1.dll" ?>
-    <?define LibSSL = "libssl-1_1.dll" ?>
-<?endif ?>
-
-<?if $(var.Configuration) = "Debug" ?>
-    <?define BoostSystemFile = "boost_system-vc141-mt-gd-1_65_1.dll" ?>
-<?else ?>
-    <?define BoostSystemFile = "boost_system-vc141-mt-1_65_1.dll" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
@@ -182,24 +172,6 @@
             <Directory Id="ProgramMenuFolder" />
         </Directory>
 
-        <ComponentGroup Id="CG_Libraries" Directory="INSTALLDIR">
-          <Component Id="C_BoostSystem">
-            <File Name="$(var.BoostSystemFile)" Source="$(var.PublishDirectory)\$(var.BoostSystemFile)" />
-          </Component>
-
-          <Component Id="C_libeay32">
-            <File Name="$(var.LibCrypto)" Source="$(var.PublishDirectory)\$(var.LibCrypto)" />
-          </Component>
-
-          <Component Id="C_ssleay32">
-            <File Name="$(var.LibSSL)" Source="$(var.PublishDirectory)\$(var.LibSSL)" />
-          </Component>
-
-          <Component Id="C_torrent">
-            <File Name="torrent.dll" Source="$(var.PublishDirectory)\torrent.dll" />
-          </Component>
-        </ComponentGroup>
-
         <Feature Id="F_Complete"
                  Title="PicoTorrent"
                  Absent="disallow"
@@ -208,7 +180,6 @@
                  Level="1">
 
             <ComponentRef Id="C_PicoTorrent" />
-            <ComponentGroupRef Id="CG_Libraries" />
         </Feature>
 
         <Property Id="ARPPRODUCTICON" Value="I_PicoTorrent.ico" />
