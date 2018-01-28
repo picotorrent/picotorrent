@@ -26,10 +26,10 @@ configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_S
 # Get current architecture
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PICO_ARCH "x64")
-    set(WXWIDGETS_LIB "${CMAKE_CURRENT_SOURCE_DIR}/tools/wxWidgets/wxWidgets/lib/vc_x64_lib")
+    set(WXWIDGETS_LIB "${CMAKE_CURRENT_SOURCE_DIR}/tools/wxWidgets/lib/vc_x64_lib")
 else(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PICO_ARCH "x86")
-    set(WXWIDGETS_LIB "${CMAKE_CURRENT_SOURCE_DIR}/tools/wxWidgets/wxWidgets/lib/vc_lib")
+    set(WXWIDGETS_LIB "${CMAKE_CURRENT_SOURCE_DIR}/tools/wxWidgets/lib/vc_lib")
 endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 # Shared flags
@@ -61,8 +61,8 @@ add_definitions(
 
 include_directories(
     tools/Rasterbar-libtorrent/Rasterbar-libtorrent/include
-    tools/wxWidgets/wxWidgets/include
-    tools/wxWidgets/wxWidgets/include/msvc
+    tools/wxWidgets/include
+    tools/wxWidgets/include/msvc
 )
 
 link_directories(
