@@ -98,6 +98,7 @@ add_executable(
     src/picotorrent/overviewpage
     src/picotorrent/peerspage
     src/picotorrent/peersviewmodel
+    src/picotorrent/persistenttorrentlistview
     src/picotorrent/preferencesdlg
     src/picotorrent/proxypage
     src/picotorrent/resources.rc

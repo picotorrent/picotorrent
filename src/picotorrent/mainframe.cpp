@@ -27,6 +27,7 @@
 #include "config.hpp"
 #include "environment.hpp"
 #include "mainmenu.hpp"
+#include "persistenttorrentlistview.hpp"
 #include "sessionloader.hpp"
 #include "sessionstate.hpp"
 #include "sessionunloader.hpp"
@@ -48,6 +49,8 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_DATAVIEW_SELECTION_CHANGED(ptID_TORRENT_LIST_VIEW, MainFrame::OnTorrentSelectionChanged)
     EVT_DROP_FILES(MainFrame::OnDropFiles)
     EVT_ICONIZE(MainFrame::OnIconize)
+    EVT_MENU(ptKEY_DELETE, MainFrame::OnDelete)
+    EVT_MENU(ptKEY_SELECT_ALL, MainFrame::OnSelectAll)
     EVT_TIMER(ptID_MAIN_TIMER, MainFrame::OnTimer)
 wxEND_EVENT_TABLE()
 
@@ -89,6 +92,15 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     {
         m_taskBar->SetPicoIcon();
     }
+
+    // Keyboard accelerators
+    wxAcceleratorEntry entries[] =
+    {
+        wxAcceleratorEntry(wxACCEL_CTRL, int('A'), ptKEY_SELECT_ALL),
+        wxAcceleratorEntry(wxACCEL_NORMAL, WXK_DELETE, ptKEY_DELETE),
+    };
+
+    SetAcceleratorTable(wxAcceleratorTable(ARRAYSIZE(entries), entries));
 
     this->DragAcceptFiles(true);
     this->SetIcon(wxICON(AppIcon));
@@ -147,6 +159,16 @@ void MainFrame::OnClose(wxCloseEvent& ev)
     }
 }
 
+void MainFrame::OnDelete(wxCommandEvent& ev)
+{
+    for (lt::torrent_handle& th : m_state->selected_torrents)
+    {
+        m_state->session->remove_torrent(th);
+    }
+
+    m_state->selected_torrents.clear();
+}
+
 void MainFrame::OnDropFiles(wxDropFilesEvent& ev)
 {
     if (ev.GetNumberOfFiles() <= 0)
@@ -174,6 +196,12 @@ void MainFrame::OnIconize(wxIconizeEvent& ev)
     {
         MSWGetTaskBarButton()->Hide();
     }
+}
+
+void MainFrame::OnSelectAll(wxCommandEvent& WXUNUSED(event))
+{
+    m_torrentListView->SelectAll();
+    OnTorrentSelectionChanged();
 }
 
 void MainFrame::OnSessionAlert()
@@ -386,6 +414,11 @@ void MainFrame::OnTorrentContextMenu(wxDataViewEvent& event)
 }
 
 void MainFrame::OnTorrentSelectionChanged(wxDataViewEvent& event)
+{
+    OnTorrentSelectionChanged();
+}
+
+void MainFrame::OnTorrentSelectionChanged()
 {
     wxDataViewItemArray items;
     m_torrentListView->GetSelections(items);

@@ -38,15 +38,20 @@ namespace pt
         enum
         {
             ptID_TORRENT_LIST_VIEW = wxID_HIGHEST + 1,
-            ptID_MAIN_TIMER
+            ptID_MAIN_TIMER,
+            ptKEY_SELECT_ALL = wxID_HIGHEST + 1000,
+            ptKEY_DELETE
         };
 
         void OnClose(wxCloseEvent&);
+        void OnDelete(wxCommandEvent&);
         void OnDropFiles(wxDropFilesEvent&);
         void OnIconize(wxIconizeEvent&);
+        void OnSelectAll(wxCommandEvent&);
         void OnSessionAlert();
         void OnTimer(wxTimerEvent&);
         void OnTorrentContextMenu(wxDataViewEvent&);
+        void OnTorrentSelectionChanged();
         void OnTorrentSelectionChanged(wxDataViewEvent&);
         void OnTorrentSorted(wxDataViewEvent&);
 

@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <wx/dataview.h>
-#include <wx/persist/window.h>
 
 namespace pt
 {
@@ -20,20 +19,4 @@ namespace pt
         virtual wxSize GetMinSize() const wxOVERRIDE;
         void Sort();
     };
-
-    class PersistentTorrentListView : public wxPersistentWindow<TorrentListView>
-    {
-    public:
-        PersistentTorrentListView(TorrentListView* lv);
-        virtual wxString GetKind() const wxOVERRIDE;
-
-    protected:
-        bool Restore() wxOVERRIDE;
-        void Save() const wxOVERRIDE;
-
-    private:
-        TorrentListView* m_tlv;
-    };
-
-    PersistentTorrentListView* wxCreatePersistentObject(TorrentListView* pdvc);
 }
