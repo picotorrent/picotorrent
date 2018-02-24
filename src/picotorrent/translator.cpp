@@ -29,6 +29,7 @@ wxString Translator::Translate(wxString key)
 {
     auto lang = m_languages.find(m_selectedLanguage);
     if (lang == m_languages.end()) { lang = m_languages.find(1033); }
+    if (lang == m_languages.end()) { return key; }
 
     auto translation = lang->second.translations.find(key);
 
@@ -46,20 +47,22 @@ std::shared_ptr<Translator> Translator::Load(HINSTANCE hInstance, std::shared_pt
     // Should be split into a platform specific layer when making PicoTorrent
     // cross platform.
 
-    std::map<int, Language> languages;
+    std::map<int, Language> langs;
 
     EnumResourceNames(
         hInstance,
         TEXT("LANGFILE"),
         LoadTranslationResource,
-        reinterpret_cast<LONG_PTR>(&languages));
+        reinterpret_cast<LONG_PTR>(&langs));
 
-    return std::shared_ptr<Translator>(new Translator(languages, config->CurrentLanguageId()));
+    return std::shared_ptr<Translator>(
+        new Translator(langs,
+            config->CurrentLanguageId()));
 }
 
 BOOL Translator::LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
 {
-    std::map<int, Language>* languages = reinterpret_cast<std::map<int, Language>*>(lParam);
+    std::map<int, Language>* langs = reinterpret_cast<std::map<int, Language>*>(lParam);
 
     HRSRC rc = FindResource(hModule, lpszName, lpszType);
     DWORD size = SizeofResource(hModule, rc);
@@ -93,7 +96,7 @@ BOOL Translator::LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTS
         l.translations.insert({ p.first, converted });
     }
 
-    languages->insert({ langId, l });
+    langs->insert({ langId, l });
 
     return TRUE;
 }

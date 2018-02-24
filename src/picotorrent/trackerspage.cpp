@@ -21,6 +21,7 @@ TrackersPage::TrackersPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::
     m_trackersView->AppendTextColumn(i18n(tr, "verified"), 2, wxDATAVIEW_CELL_INERT, 60, wxALIGN_RIGHT);
     m_trackersView->AppendTextColumn(i18n(tr, "next_announce"), 3, wxDATAVIEW_CELL_INERT, 80, wxALIGN_RIGHT);
     m_trackersView->AssociateModel(m_viewModel);
+    m_viewModel->DecRef();
 
     urlCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
 

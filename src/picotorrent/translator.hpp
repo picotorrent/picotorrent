@@ -25,6 +25,7 @@ namespace pt
             std::map<wxString, wxString> translations;
         };
 
+
         static std::shared_ptr<Translator> Load(HINSTANCE hInstance, std::shared_ptr<Configuration> config);
 
         std::vector<Language> GetAvailableLanguages();

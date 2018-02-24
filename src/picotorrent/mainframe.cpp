@@ -74,6 +74,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     // Create UI
     m_torrentListView = new TorrentListView(m_splitter, ptID_TORRENT_LIST_VIEW, m_trans);
     m_torrentListView->AssociateModel(m_torrentListViewModel);
+    m_torrentListViewModel->DecRef();
     m_torrentDetailsView = new TorrentDetailsView(m_splitter, m_trans, m_state);
 
     // Splitter
@@ -112,7 +113,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     wxPersistenceManager::Get().RegisterAndRestore(this);
     wxPersistenceManager::Get().RegisterAndRestore(m_torrentListView);
 
-    m_timer = new wxTimer(this, ptID_MAIN_TIMER);
+    m_timer = std::make_unique<wxTimer>(this, ptID_MAIN_TIMER);
     m_timer->Start(1000);
 }
 

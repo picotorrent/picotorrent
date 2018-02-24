@@ -23,6 +23,7 @@ PeersPage::PeersPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Transl
     m_peersView->AppendProgressColumn(i18n(tr, "progress"), PeersViewModel::Columns::Progress, wxDATAVIEW_CELL_INERT, 100);
 
     m_peersView->AssociateModel(m_viewModel);
+    m_viewModel->DecRef();
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(m_peersView, 1, wxEXPAND);

@@ -103,6 +103,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     prioCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
 
     m_filesView->AssociateModel(m_filesViewModel);
+    m_filesViewModel->DecRef();
 
     wxBoxSizer* buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
     buttonsSizer->Add(new wxButton(panel, wxID_OK));

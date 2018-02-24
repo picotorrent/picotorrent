@@ -23,7 +23,6 @@ namespace pt
 
     private:
         MainFrame* m_mainFrame;
-
         std::shared_ptr<ApplicationOptions> m_options;
     };
 }

@@ -58,7 +58,7 @@ namespace pt
         wxDECLARE_EVENT_TABLE();
 
         wxSplitterWindow* m_splitter;
-        wxTimer* m_timer;
+        std::unique_ptr<wxTimer> m_timer;
         StatusBar* m_status;
         TorrentListView* m_torrentListView;
         TorrentListViewModel* m_torrentListViewModel;

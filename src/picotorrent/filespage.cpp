@@ -62,6 +62,7 @@ FilesPage::FilesPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Transl
     nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
 
     m_filesView->AssociateModel(m_viewModel);
+    m_viewModel->DecRef();
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(m_filesView, 1, wxEXPAND);
