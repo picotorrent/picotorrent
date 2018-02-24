@@ -116,7 +116,7 @@ PersistentTorrentListView* pt::wxCreatePersistentObject(TorrentListView* lv)
 }
 
 TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Translator> tr)
-    : wxDataViewCtrl(parent, id, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE)
+    : wxDataViewCtrl(parent, id)
 {
     auto nameCol = AppendTextColumn(
         i18n(tr, "name"),
