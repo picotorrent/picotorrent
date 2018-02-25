@@ -370,6 +370,23 @@ void MainFrame::OnSessionAlert()
 
             break;
         }
+        case lt::torrent_checked_alert::alert_type:
+        {
+            lt::torrent_checked_alert* tca = lt::alert_cast<lt::torrent_checked_alert>(alert);
+
+            auto it = std::find(
+                m_state->pause_after_checking.begin(),
+                m_state->pause_after_checking.end(),
+                tca->handle.info_hash());
+
+            if (it != m_state->pause_after_checking.end())
+            {
+                tca->handle.pause();
+                m_state->pause_after_checking.erase(it);
+            }
+
+            break;
+        }
         case lt::torrent_removed_alert::alert_type:
         {
             lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
