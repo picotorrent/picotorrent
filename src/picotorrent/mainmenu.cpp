@@ -40,8 +40,8 @@ MainMenu::MainMenu(std::shared_ptr<pt::SessionState> state,
     wxMenu* menuFile = new wxMenu();
     menuFile->Append(ptID_ADD_TORRENTS, i18n(m_trans, "amp_add_torrent"));
     menuFile->Append(ptID_ADD_MAGNET_LINK, i18n(m_trans, "amp_add_magnet_link_s"));
-    menuFile->AppendSeparator();
-    menuFile->Append(wxID_ANY, i18n(m_trans, "amp_create_torrent"));
+    /*menuFile->AppendSeparator();
+    menuFile->Append(wxID_ANY, i18n(m_trans, "amp_create_torrent"));*/
     menuFile->AppendSeparator();
     menuFile->Append(wxID_EXIT);
 
