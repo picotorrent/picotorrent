@@ -43,7 +43,7 @@ MainMenu::MainMenu(std::shared_ptr<pt::SessionState> state,
     /*menuFile->AppendSeparator();
     menuFile->Append(wxID_ANY, i18n(m_trans, "amp_create_torrent"));*/
     menuFile->AppendSeparator();
-    menuFile->Append(wxID_EXIT);
+    menuFile->Append(wxID_EXIT, i18n(m_trans, "amp_exit"));
 
     wxMenu* menuView = new wxMenu();
     menuView->Append(ptID_VIEW_PREFERENCES, i18n(m_trans, "amp_preferences"));
