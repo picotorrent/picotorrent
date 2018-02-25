@@ -5,23 +5,23 @@
     <?define UpgradeCode = "58903cac-fb00-4335-8149-0e1177cc8cba" ?>
 
     <?define FindVCRedistKey = "Software\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" ?>
-    <?define VCRedistDescription = "Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.24123" ?>
-    <?define VCRedistHash = "ff15c4f5da3c54f88676e6b44f3314b173835c28" ?>
+    <?define VCRedistDescription = "Microsoft Visual C++ 2017 Redistributable (x64) - 14.12.25810" ?>
+    <?define VCRedistHash = "6699383b22f2ad050245866a176c2ede6e348443" ?>
     <?define VCRedistName = "VC_redist.x64.exe" ?>
-    <?define VCRedistSize = "14990824" ?>
-    <?define VCRedistUrl = "https://picotorrent.blob.core.windows.net/public/vcredist/14.0.24123.0/vc_redist.x64.exe" ?>
-    <?define VCRedistVersion = "14.0.24123.0" ?>
+    <?define VCRedistSize = "15328616" ?>
+    <?define VCRedistUrl = "https://picotorrent.blob.core.windows.net/public/vcredist/14.12.25810.0/VC_redist.x64.exe" ?>
+    <?define VCRedistVersion = "14.12.25810.0" ?>
 <?else ?>
     <?define InstallFolder = "[ProgramFilesFolder]PicoTorrent" ?>
     <?define UpgradeCode = "08b52a3a-63eb-47c0-8a75-1df052a99042" ?>
 
     <?define FindVCRedistKey = "Software\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" ?>
-    <?define VCRedistDescription = "Microsoft Visual C++ 2015 Redistributable (x86) - 14.0.24123" ?>
-    <?define VCRedistHash = "e99e5b17b0ad882833bbdc8cf798dc56f9947a5e" ?>
+    <?define VCRedistDescription = "Microsoft Visual C++ 2017 Redistributable (x86) - 14.12.25810" ?>
+    <?define VCRedistHash = "735bfa44d4b475fafd175ba0e1ced21888c7a2db" ?>
     <?define VCRedistName = "VC_redist.x86.exe" ?>
-    <?define VCRedistSize = "14157672" ?>
-    <?define VCRedistUrl = "https://picotorrent.blob.core.windows.net/public/vcredist/14.0.24123.0/vc_redist.x86.exe" ?>
-    <?define VCRedistVersion = "14.0.24123.0" ?>
+    <?define VCRedistSize = "14565944" ?>
+    <?define VCRedistUrl = "https://picotorrent.blob.core.windows.net/public/vcredist/14.12.25810.0/VC_redist.x86.exe" ?>
+    <?define VCRedistVersion = "14.12.25810.0" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"

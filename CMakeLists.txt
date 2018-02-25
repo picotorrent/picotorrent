@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-
 project("PicoTorrent")
 
 # Generate version information file
@@ -7,109 +6,38 @@ file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
 
 # Get the current working branch
 execute_process(
-  COMMAND git rev-parse --abbrev-ref HEAD
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE GIT_BRANCH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 # Get the latest abbreviated commit hash of the working branch
 execute_process(
-  COMMAND git log -1 --format=%h
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE GIT_COMMIT_HASH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMITISH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
+# Generate buildinfo file
+configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp" @ONLY)
 
 # Get current architecture
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(PICO_ARCH "x64" )
+    set(BOOST_ARCH "x64")
+    set(PICO_ARCH "x64")
+    set(WXWIDGETS_LIB "${CMAKE_CURRENT_SOURCE_DIR}/tools/wxWidgets/lib/vc_x64_lib")
 else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(BOOST_ARCH "x32")
     set(PICO_ARCH "x86")
+    set(WXWIDGETS_LIB "${CMAKE_CURRENT_SOURCE_DIR}/tools/wxWidgets/lib/vc_lib")
 endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
-
-configure_file("${CMAKE_SOURCE_DIR}/src/VersionInformation.cpp.in" "${CMAKE_SOURCE_DIR}/src/VersionInformation.cpp" @ONLY)
-
-set(PICOTORRENT_SOURCES
-    src/Clipboard
-    src/CMainFrame
-    src/CommandLine
-    src/Configuration
-    src/Configuration_Section
-    src/Configuration_SessionSection
-    src/Configuration_UISection
-    src/Environment
-    src/Log
-    src/Main
-    src/Scaler
-    src/SleepManager
-    src/Translator
-    src/UIState
-    src/UnhandledExceptionHandler
-    src/VersionInformation
-
-    src/API/LoggerProxy
-    src/API/PicoTorrent
-    src/API/TranslatorProxy
-
-    src/Controllers/AddMagnetLinkController
-    src/Controllers/AddTorrentController
-    src/Controllers/NotifyIconController
-    src/Controllers/RemoveTorrentsController
-    src/Controllers/TorrentDetailsController
-    src/Controllers/ViewPreferencesController
-
-    src/Core/SessionLoader
-    src/Core/SessionSettings
-    src/Core/SessionUnloader
-    src/Core/Torrent
-
-    src/Diagnostics/StackTrace
-
-    src/Dialogs/AboutDialog
-    src/Dialogs/AddMagnetLinkDialog
-    src/Dialogs/AddTorrentDialog
-    src/Dialogs/AddTrackerDialog
-    src/Dialogs/OpenFileDialog
-    src/Dialogs/TextInputDialog
-
-    src/Mapping/TorrentMapper
-
-    src/Models/Peer
-
-    src/PropertySheets/Details/DetailsSheet
-    src/PropertySheets/Details/FilesPage
-    src/PropertySheets/Details/OptionsPage
-    src/PropertySheets/Details/OverviewPage
-    src/PropertySheets/Details/PeersPage
-    src/PropertySheets/Details/TrackersPage
-
-    src/PropertySheets/Preferences/ConnectionPage
-    src/PropertySheets/Preferences/DownloadsPage
-    src/PropertySheets/Preferences/GeneralPage
-    src/PropertySheets/Preferences/PreferencesSheet
-    src/PropertySheets/Preferences/PrivacyPage
-
-    src/UI/CheckBox
-    src/UI/ComboBox
-    src/UI/ListView
-    src/UI/NotifyIcon
-    src/UI/MainMenu
-    src/UI/PeerListView
-    src/UI/StatusBar
-    src/UI/Taskbar
-    src/UI/TextBox
-    src/UI/TorrentFileListView
-    src/UI/TorrentListView
-    src/UI/TrackerListView
-
-    src/resources.rc
-)
 
 # Shared flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /WX")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4099 /WX")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4099 /WX")
 
 # Debug flags
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
@@ -119,22 +47,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
-link_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/tools/PicoTorrent.Libs/bin/${PICO_ARCH}/$(Configuration)
-)
-
-include_directories(
-    c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/atlmfc/include
-    include/
-    tools/PicoTorrent.Libs/include
-)
-
 add_definitions(
-    -D_SCL_SECURE_NO_WARNINGS
     -D_UNICODE
     -D_WIN32
     -D_WIN32_WINNT=0x0600
     -DBOOST_ALL_NO_LIB
+    -DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
     -DNOMINMAX
     -DPICOJSON_USE_INT64
     -DTORRENT_NO_DEPRECATE
@@ -144,33 +62,83 @@ add_definitions(
     -DWIN32_LEAN_AND_MEAN
 )
 
+include_directories(
+    tools/Rasterbar-libtorrent/include
+    tools/wxWidgets/include
+    tools/wxWidgets/include/msvc
+)
+
+link_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/Rasterbar-libtorrent/lib/${PICO_ARCH}
+    ${WXWIDGETS_LIB}
+)
+
 add_executable(
     PicoTorrent
     WIN32
-    ${PICOTORRENT_SOURCES}
+
+    src/picotorrent/ipc/applicationoptionsconnection
+    src/picotorrent/ipc/server
+
+    src/picotorrent/addtorrentdlg
+    src/picotorrent/addtorrentproc
+    src/picotorrent/application
+    src/picotorrent/applicationoptions
+    src/picotorrent/buildinfo
+    src/picotorrent/config
+    src/picotorrent/config_section
+    src/picotorrent/config_sessionsection
+    src/picotorrent/config_uisection
+    src/picotorrent/environment
+    src/picotorrent/connectionpage
+    src/picotorrent/downloadspage
+    src/picotorrent/filecontextmenu
+    src/picotorrent/filespage
+    src/picotorrent/filestorageviewmodel
+    src/picotorrent/generalpage
+    src/picotorrent/magnetlinkvalidator
+    src/picotorrent/main
+    src/picotorrent/mainframe
+    src/picotorrent/mainmenu
+    src/picotorrent/overviewpage
+    src/picotorrent/peerspage
+    src/picotorrent/peersviewmodel
+    src/picotorrent/persistenttorrentlistview
+    src/picotorrent/preferencesdlg
+    src/picotorrent/proxypage
+    src/picotorrent/resources.rc
+    src/picotorrent/sessionloader
+    src/picotorrent/sessionsettings
+    src/picotorrent/sessionstate
+    src/picotorrent/sessionunloader
+    src/picotorrent/statusbar
+    src/picotorrent/string
+    src/picotorrent/taskbaricon
+    src/picotorrent/torrentcontextmenu
+    src/picotorrent/trackerspage
+    src/picotorrent/trackersviewmodel
+    src/picotorrent/translator
+    src/picotorrent/torrentdetailsview
+    src/picotorrent/torrentlistview
+    src/picotorrent/torrentlistviewmodel
+    src/picotorrent/utils
+    src/picotorrent/utils_win32
 )
 
 target_link_libraries(
     PicoTorrent
 
-    dbghelp
+    crypt32
     iphlpapi
-    shlwapi
-    uxtheme
 
     # Rasterbar-libtorrent
-    torrent
+    libtorrent
 
     # OpenSSL
     libssl
     libcrypto
 
     # Boost System
-    debug boost_system-vc140-mt-gd-1_63
-    optimized boost_system-vc140-mt-1_63
+    debug libboost_system-vc141-mt-gd-${BOOST_ARCH}-1_66
+    optimized libboost_system-vc141-mt-${BOOST_ARCH}-1_66
 )
-
-# Include plugins
-include(plugins/importer/CMakeLists.txt)
-include(plugins/updatechecker/CMakeLists.txt)
-include(plugins/websocket/CMakeLists.txt)

@@ -15,12 +15,6 @@ var PackagesDirectory  = BuildDirectory + Directory("packages");
 var PublishDirectory   = BuildDirectory + Directory("publish");
 var ResourceDirectory  = Directory("./res");
 
-var LibraryDirectory   = Directory("./tools")
-                       + Directory("PicoTorrent.Libs")
-                       + Directory("bin")
-                       + Directory(platform)
-                       + Directory(configuration);
-
 var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
 var SigningPublisher   = EnvironmentVariable("PICO_SIGNING_PUBLISHER") ?? "CN=PicoTorrent TESTING";
@@ -31,13 +25,6 @@ var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version, platf
 var AppXPackage        = string.Format("PicoTorrent-{0}-{1}.appx", Version, platform);
 var PortablePackage    = string.Format("PicoTorrent-{0}-{1}.zip", Version, platform);
 var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Version, platform);
-
-bool IsDebug() { return configuration.Equals("Debug"); }
-
-// Boost naming ickiness
-var BoostSystem = IsDebug() ? "boost_system-vc140-mt-gd-1_63.dll" : "boost_system-vc140-mt-1_63.dll";
-var LibCrypto   = platform.Equals("x86") ? "libcrypto-1_1.dll" : "libcrypto-1_1-x64.dll";
-var LibSSL      = platform.Equals("x86") ? "libssl-1_1.dll" : "libssl-1_1-x64.dll";
 
 public void SignFile(FilePath file, string description = "")
 {
@@ -74,8 +61,7 @@ Task("Generate-Project")
 
     CMake("./", new CMakeSettings {
       OutputPath = OutputDirectory,
-      Generator = generator,
-      Toolset = "v140"
+      Generator = generator
     });
 });
 
@@ -100,38 +86,13 @@ Task("Build")
     MSBuild(OutputDirectory + File("PicoTorrent.sln"), settings);
 });
 
-Task("Setup-Library-Files")
-    .Does(() =>
-{
-    var files = new FilePath[]
-    {
-        // 3rd party libraries
-        LibraryDirectory + File(BoostSystem),
-        LibraryDirectory + File(LibCrypto),
-        LibraryDirectory + File(LibSSL),
-        LibraryDirectory + File("torrent.dll")
-    };
-
-    CopyFiles(files, BuildDirectory);
-});
-
 Task("Setup-Publish-Directory")
     .IsDependentOn("Build")
-    .IsDependentOn("Setup-Library-Files")
     .Does(() =>
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.exe"),
-        // Plugins
-        BuildDirectory + File("Importer.dll"),
-        BuildDirectory + File("UpdateChecker.dll"),
-        BuildDirectory + File("WebSocket.dll"),
-        // 3rd party libraries
-        LibraryDirectory + File(BoostSystem),
-        LibraryDirectory + File(LibCrypto),
-        LibraryDirectory + File(LibSSL),
-        LibraryDirectory + File("torrent.dll")
+        BuildDirectory + File("PicoTorrent.exe")
     };
 
     CreateDirectory(PublishDirectory);
@@ -152,9 +113,6 @@ Task("Build-AppX-Package")
     TransformTextFile("./packaging/AppX/PicoTorrent.mapping.template", "%{", "}")
         .WithToken("VCDir", VCDir)
         .WithToken("CRTDir", CRTDir)
-        .WithToken("BoostSystem", BoostSystem)
-        .WithToken("LibCrypto", LibCrypto)
-        .WithToken("LibSSL", LibSSL)
         .WithToken("PublishDirectory", MakeAbsolute(PublishDirectory))
         .WithToken("ResourceDirectory", MakeAbsolute(ResourceDirectory))
         .WithToken("PackagingDirectory", MakeAbsolute(Directory("./packaging/AppX")))
@@ -261,10 +219,7 @@ Task("Build-Symbols-Package")
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.pdb"),
-        BuildDirectory + File("Importer.pdb"),
-        BuildDirectory + File("UpdateChecker.pdb"),
-        BuildDirectory + File("WebSocket.pdb")
+        BuildDirectory + File("PicoTorrent.pdb")
     };
 
     Zip(BuildDirectory, PackagesDirectory + File(SymbolsPackage), files);

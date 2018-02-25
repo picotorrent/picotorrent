@@ -134,7 +134,7 @@
         "prompt_restart": "PicoTorrent behöver startas om för att inställningarna ska slå igenom.",
         "prompt_restart_title": "Omstart krävs",
         "add_torrent": "Lägg till torrent",
-        "exit": "Avsluta"
+        "exit": "Avsluta",
         "details": "Detaljer",
         "global_limits": "Globala begränsningar",
         "amp_add_magnet_link_s": "&Lägg till magnetlänk(ar)",

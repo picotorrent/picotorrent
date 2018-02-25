@@ -6,11 +6,13 @@ packaging/AppX/PicoTorrentManifest.xml
 packaging/Chocolatey/tools/chocolateyinstall.ps1
 src/VersionInformation.cpp
 src/core/version_info.cpp
+src/picotorrent/buildinfo.cpp
 tools/Cake
 tools/Cake.CMake
 tools/nuget.exe
-tools/PicoTorrent.Libs
+tools/Rasterbar-libtorrent
 tools/WiX
+tools/wxWidgets
 .vscode
 [D|d]ebug
 [R|r]elease

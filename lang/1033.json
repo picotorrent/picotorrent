@@ -23,7 +23,7 @@
         "open_in_explorer": "Open in Explorer",
         "amp_file": "&File",
         "amp_add_torrent": "&Add torrent",
-        "amp_exit": "&Exit",
+        "amp_exit": "E&xit",
         "amp_view": "&View",
         "amp_extensions": "&Extensions",
         "amp_preferences": "&Preferences",
@@ -33,6 +33,7 @@
         "maximum": "Maximum",
         "high": "High",
         "normal": "Normal",
+        "low": "Low",
         "do_not_download": "Do not download",
         "priority": "Priority",
         "unknown_name": "Unknown name",
@@ -199,6 +200,9 @@
         "show_picotorrent_in_notification_area": "Show PicoTorrent in notification area",
         "minimize_to_notification_area": "Minimize to notification area",
         "close_to_notification_area": "Close to notification area",
-        "invalid_regex": "Invalid regular expression"
+        "invalid_regex": "Invalid regular expression",
+        "info_hash": "Info hash",
+        "fails": "Fails",
+        "verified": "Verified"
     }
 }
