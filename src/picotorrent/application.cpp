@@ -8,6 +8,7 @@
 
 #include <wx/cmdline.h>
 #include <wx/ipc.h>
+#include <wx/taskbarbutton.h>
 
 using pt::Application;
 
@@ -70,7 +71,37 @@ bool Application::OnInit()
         env,
         translator);
 
-    mainFrame->Show(true);
+    // Configured start-up position
+    switch (cfg->StartPosition())
+    {
+    case Configuration::WindowState::Hidden:
+        // Only valid if we have a notify icon
+        if (cfg->UI()->ShowInNotificationArea())
+        {
+            mainFrame->MSWGetTaskBarButton()->Hide();
+        }
+        else
+        {
+            mainFrame->Show(true);
+        }
+
+        break;
+
+    case Configuration::WindowState::Maximized:
+        mainFrame->Show(true);
+        mainFrame->Maximize();
+        break;
+
+    case Configuration::WindowState::Minimized:
+        mainFrame->Iconize();
+        mainFrame->Show(true);
+        break;
+
+    case Configuration::WindowState::Normal:
+        mainFrame->Show(true);
+        break;
+    }
+
     mainFrame->HandleOptions(m_options);
 
     return true;
