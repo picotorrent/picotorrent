@@ -76,9 +76,14 @@ link_directories(
 add_executable(
     PicoTorrent
     WIN32
+
+    src/picotorrent/ipc/applicationoptionsconnection
+    src/picotorrent/ipc/server
+
     src/picotorrent/addtorrentdlg
     src/picotorrent/addtorrentproc
     src/picotorrent/application
+    src/picotorrent/applicationoptions
     src/picotorrent/buildinfo
     src/picotorrent/config
     src/picotorrent/config_section

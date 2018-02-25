@@ -28,6 +28,7 @@
 #include "environment.hpp"
 #include "mainmenu.hpp"
 #include "persistenttorrentlistview.hpp"
+#include "ipc/server.hpp"
 #include "sessionloader.hpp"
 #include "sessionstate.hpp"
 #include "sessionunloader.hpp"
@@ -60,6 +61,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     : wxFrame(NULL, wxID_ANY, "PicoTorrent"),
     m_config(config),
     m_env(env),
+    m_srv(std::make_shared<ipc::Server>(this)),
     m_splitter(new wxSplitterWindow(this, wxID_ANY)),
     m_status(new StatusBar(this)),
     m_torrentListViewModel(new TorrentListViewModel(translator)),
@@ -93,6 +95,9 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     {
         m_taskBar->SetPicoIcon();
     }
+
+    // IPC server
+    m_srv->Create("PicoTorrent");
 
     // Keyboard accelerators
     wxAcceleratorEntry entries[] =

@@ -7,21 +7,14 @@
 #include "translator.hpp"
 
 #include <wx/cmdline.h>
+#include <wx/ipc.h>
 
 using pt::Application;
 
 Application::Application()
-    : m_options(nullptr)
+    : m_options(nullptr),
+    m_singleInstance(std::make_unique<wxSingleInstanceChecker>())
 {
-    auto env = std::make_shared<Environment>();
-    auto cfg = Configuration::Load(env);
-    auto translator = Translator::Load(GetModuleHandle(NULL), cfg);
-
-    m_mainFrame = new MainFrame(
-        cfg,
-        env,
-        translator
-    );
 }
 
 bool Application::OnCmdLineParsed(wxCmdLineParser& parser)
@@ -52,8 +45,33 @@ bool Application::OnInit()
         return false;
     }
 
-    m_mainFrame->Show(true);
-    m_mainFrame->HandleOptions(m_options);
+    if (m_singleInstance->IsAnotherRunning())
+    {
+        wxString json = ApplicationOptions::JsonEncode(m_options);
+
+        wxClient client;
+        auto conn = client.MakeConnection(
+            "localhost",
+            "PicoTorrent",
+            "ApplicationOptions");
+
+        conn->Execute(json);
+        conn->Disconnect();
+
+        return false;
+    }
+
+    auto env = std::make_shared<Environment>();
+    auto cfg = Configuration::Load(env);
+    auto translator = Translator::Load(GetModuleHandle(NULL), cfg);
+
+    MainFrame* mainFrame = new MainFrame(
+        cfg,
+        env,
+        translator);
+
+    mainFrame->Show(true);
+    mainFrame->HandleOptions(m_options);
 
     return true;
 }

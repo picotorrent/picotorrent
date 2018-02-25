@@ -7,10 +7,11 @@
 
 #include <memory>
 
+#include <wx/snglinst.h>
+
 namespace pt
 {
     struct ApplicationOptions;
-    class MainFrame;
 
     class Application : public wxApp
     {
@@ -22,7 +23,7 @@ namespace pt
         virtual void OnInitCmdLine(wxCmdLineParser&) wxOVERRIDE;
 
     private:
-        MainFrame* m_mainFrame;
+        std::unique_ptr<wxSingleInstanceChecker> m_singleInstance;
         std::shared_ptr<ApplicationOptions> m_options;
     };
 }

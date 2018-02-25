@@ -13,6 +13,11 @@ class wxSplitterWindow;
 
 namespace pt
 {
+    namespace ipc
+    {
+        class Server;
+    }
+
     struct ApplicationOptions;
     class Configuration;
     class Environment;
@@ -66,6 +71,7 @@ namespace pt
 
         std::shared_ptr<Configuration> m_config;
         std::shared_ptr<Environment> m_env;
+        std::shared_ptr<ipc::Server> m_srv;
         std::shared_ptr<SessionState> m_state;
         std::shared_ptr<TaskBarIcon> m_taskBar;
         std::shared_ptr<Translator> m_trans;
