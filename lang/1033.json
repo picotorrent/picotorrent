@@ -33,6 +33,7 @@
         "maximum": "Maximum",
         "high": "High",
         "normal": "Normal",
+        "low": "Low",
         "do_not_download": "Do not download",
         "priority": "Priority",
         "unknown_name": "Unknown name",
