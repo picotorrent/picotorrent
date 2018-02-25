@@ -203,6 +203,7 @@
         "invalid_regex": "Invalid regular expression",
         "info_hash": "Info hash",
         "fails": "Fails",
-        "verified": "Verified"
+        "verified": "Verified",
+        "force_recheck": "Force recheck"
     }
 }

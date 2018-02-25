@@ -28,6 +28,7 @@ BEGIN_EVENT_TABLE(TorrentContextMenu, wxMenu)
     EVT_MENU(ptID_REMOVE, TorrentContextMenu::Remove)
     EVT_MENU(ptID_COPY_INFO_HASH, TorrentContextMenu::CopyInfoHash)
     EVT_MENU(ptID_OPEN_IN_EXPLORER, TorrentContextMenu::OpenInExplorer)
+    EVT_MENU(ptID_FORCE_RECHECK, TorrentContextMenu::ForceRecheck)
 END_EVENT_TABLE()
 
 TorrentContextMenu::TorrentContextMenu(
@@ -79,6 +80,7 @@ TorrentContextMenu::TorrentContextMenu(
     }
 
     AppendSeparator();
+    Append(ptID_FORCE_RECHECK, i18n(tr, "force_recheck"));
     Append(ptID_MOVE, i18n(tr, "move"));
     Append(ptID_REMOVE, i18n(tr, "remove"));
     AppendSeparator();
@@ -101,6 +103,25 @@ void TorrentContextMenu::CopyInfoHash(wxCommandEvent& WXUNUSED(event))
     {
         wxTheClipboard->SetData(new wxTextDataObject(ss.str().substr(1)));
         wxTheClipboard->Close();
+    }
+}
+
+void TorrentContextMenu::ForceRecheck(wxCommandEvent& WXUNUSED(event))
+{
+    for (lt::torrent_handle& th : m_state->selected_torrents)
+    {
+        th.force_recheck();
+
+        lt::torrent_status ts = th.status();
+
+        bool paused = ((ts.flags & lt::torrent_flags::paused)
+            && !(ts.flags & lt::torrent_flags::auto_managed));
+
+        if (paused)
+        {
+            th.resume();
+            m_state->pause_after_checking.push_back(ts.info_hash);
+        }
     }
 }
 
