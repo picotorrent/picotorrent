@@ -77,6 +77,15 @@ add_executable(
     PicoTorrent
     WIN32
 
+    # Breakpad
+    src/breakpad/client_info
+    src/breakpad/crash_generation_client
+    src/breakpad/minidump_generator
+    src/breakpad/exception_handler
+    src/breakpad/crash_report_sender
+    src/breakpad/guid_string
+    src/breakpad/http_upload
+
     src/picotorrent/ipc/applicationoptionsconnection
     src/picotorrent/ipc/server
 
@@ -90,6 +99,7 @@ add_executable(
     src/picotorrent/config_sessionsection
     src/picotorrent/config_uisection
     src/picotorrent/environment
+    src/picotorrent/errorhandler
     src/picotorrent/connectionpage
     src/picotorrent/downloadspage
     src/picotorrent/filecontextmenu
@@ -130,6 +140,7 @@ target_link_libraries(
 
     crypt32
     iphlpapi
+    wininet
 
     # Rasterbar-libtorrent
     libtorrent
