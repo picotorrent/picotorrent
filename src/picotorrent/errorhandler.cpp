@@ -72,10 +72,10 @@ bool ErrorHandler::Report(const wchar_t* path, const wchar_t* id, void* context,
     params.insert({ L"version", Utils::ToWideString(version.c_str(), version.size()) });
 
     fs::path dmpFile = fs::path(path) / fs::path(id).replace_extension(".dmp");
-    files.insert({ id, dmpFile.wstring() });
+    files.insert({ L"minidump", dmpFile.wstring() });
 
     sender.SendCrashReport(
-        L"https://dump.picotorrent.org/report",
+        L"https://api.picotorrent.org/minidump",
         params,
         files,
         nullptr);
