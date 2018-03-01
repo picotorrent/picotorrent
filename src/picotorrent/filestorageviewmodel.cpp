@@ -110,20 +110,28 @@ void FileStorageViewModel::RebuildTree(std::shared_ptr<const lt::torrent_info> t
                     newNode->parent = currentNode;
                     currentNode->children.insert({ newNode->name, newNode });
 
-                    std::string extension = newNode->name.substr(newNode->name.find_last_of("."));
+                    std::size_t pos = newNode->name.find_last_of(".");
 
-                    SHFILEINFO shfi = { 0 };
-                    SHGetFileInfo(
-                        wxString(extension).ToStdWstring().c_str(),
-                        FILE_ATTRIBUTE_NORMAL,
-                        &shfi,
-                        sizeof(SHFILEINFO),
-                        SHGFI_USEFILEATTRIBUTES | SHGFI_ICON | SHGFI_SMALLICON);
+                    if (pos != std::string::npos)
+                    {
+                        std::string extension = newNode->name.substr(pos);
 
-                    wxIcon icon;
-                    icon.CreateFromHICON(shfi.hIcon);
+                        if (m_icons.find(extension) == m_icons.end())
+                        {
+                            SHFILEINFO shfi = { 0 };
+                            SHGetFileInfo(
+                                wxString(extension).ToStdWstring().c_str(),
+                                FILE_ATTRIBUTE_NORMAL,
+                                &shfi,
+                                sizeof(SHFILEINFO),
+                                SHGFI_USEFILEATTRIBUTES | SHGFI_ICON | SHGFI_SMALLICON);
 
-                    m_icons.insert({ extension, icon });
+                            wxIcon icon;
+                            icon.CreateFromHICON(shfi.hIcon);
+
+                            m_icons.insert({ extension, icon });
+                        }
+                    }
 
                     if (j == path.size() - 1)
                     {
