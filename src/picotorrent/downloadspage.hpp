@@ -30,5 +30,8 @@ namespace pt
         wxTextCtrl* m_downloadLimit;
         wxCheckBox* m_enableUploadLimit;
         wxTextCtrl* m_uploadLimit;
+        wxTextCtrl* m_activeLimit;
+        wxTextCtrl* m_activeDownloadsLimit;
+        wxTextCtrl* m_activeSeedsLimit;
     };
 }
