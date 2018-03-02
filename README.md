@@ -6,16 +6,17 @@
 A tiny, hackable BitTorrent client written in modern C++. Based on
 Rasterbar-libtorrent to provide high performance and low memory usage.
 
-![](https://cdn.rawgit.com/picotorrent/picotorrent.github.io/master/img/screenshots/picotorrent1.png)
+<p align="center">
+    <img src="res/screenshot1.png?raw=true" />
+</p>
 
 
 ## Quick facts
 
 - (Azureus-style) peer ID: `-PI-`. Example: `-PI0091-` (major: 0, minor: 09, patch: 1).
 - User agent: `PicoTorrent/x.y.z`.
-- The x86 executable is less than 1.5MB if compressed with UPX.
 - Native look-and-feel across Windows versions.
-- Support for magnet link pre-loading.
+- Easy to use with high performance.
 
 
 ## Building PicoTorrent
