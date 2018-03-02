@@ -73,6 +73,19 @@ link_directories(
     ${WXWIDGETS_LIB}
 )
 
+add_library(
+    breakpad
+    STATIC
+
+    src/breakpad/client_info
+    src/breakpad/crash_generation_client
+    src/breakpad/minidump_generator
+    src/breakpad/exception_handler
+    src/breakpad/crash_report_sender
+    src/breakpad/guid_string
+    src/breakpad/http_upload
+)
+
 add_executable(
     PicoTorrent
     WIN32
@@ -90,6 +103,7 @@ add_executable(
     src/picotorrent/config_sessionsection
     src/picotorrent/config_uisection
     src/picotorrent/environment
+    src/picotorrent/errorhandler
     src/picotorrent/connectionpage
     src/picotorrent/downloadspage
     src/picotorrent/filecontextmenu
@@ -130,6 +144,10 @@ target_link_libraries(
 
     crypt32
     iphlpapi
+    wininet
+
+    # Breakpad
+    breakpad
 
     # Rasterbar-libtorrent
     libtorrent

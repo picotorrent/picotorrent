@@ -1,7 +1,9 @@
 #include "application.hpp"
 
 #include "applicationoptions.hpp"
+#include "buildinfo.hpp"
 #include "config.hpp"
+#include "errorhandler.hpp"
 #include "environment.hpp"
 #include "mainframe.hpp"
 #include "translator.hpp"
@@ -16,6 +18,24 @@ Application::Application()
     : m_options(nullptr),
     m_singleInstance(std::make_unique<wxSingleInstanceChecker>())
 {
+#ifdef NDEBUG
+    m_exceptionHandler = new google_breakpad::ExceptionHandler(
+        ErrorHandler::GetDumpPath(),
+        &ErrorHandler::Filter,
+        &ErrorHandler::Report,
+        this,
+        google_breakpad::ExceptionHandler::HANDLER_ALL,
+        MiniDumpNormal,
+        L"",
+        nullptr);
+#endif
+}
+
+Application::~Application()
+{
+#ifdef NDEBUG
+    delete m_exceptionHandler;
+#endif
 }
 
 bool Application::OnCmdLineParsed(wxCmdLineParser& parser)
