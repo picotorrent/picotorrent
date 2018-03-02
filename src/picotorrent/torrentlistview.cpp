@@ -71,6 +71,14 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
     AppendTextColumn(
+        i18n(tr, "availability"),
+        TorrentListViewModel::Columns::Availability,
+        wxDATAVIEW_CELL_INERT,
+        80,
+        wxALIGN_RIGHT,
+        wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
+
+    AppendTextColumn(
         i18n(tr, "ratio"),
         TorrentListViewModel::Columns::Ratio,
         wxDATAVIEW_CELL_INERT,

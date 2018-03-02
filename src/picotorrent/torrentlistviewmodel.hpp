@@ -35,6 +35,7 @@ namespace pt
             ETA,
             DownloadSpeed,
             UploadSpeed,
+            Availability,
             Ratio,
             Seeds,
             Peers,
