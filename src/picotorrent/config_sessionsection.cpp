@@ -22,9 +22,19 @@ int Configuration::SessionSection::ActiveDownloads()
     return Get("session", "active_downloads", 3);
 }
 
+void Configuration::SessionSection::ActiveDownloads(int value)
+{
+    Set("session", "active_downloads", value);
+}
+
 int Configuration::SessionSection::ActiveLimit()
 {
     return Get("session", "active_limit", 15);
+}
+
+void Configuration::SessionSection::ActiveLimit(int value)
+{
+    Set("session", "active_limit", value);
 }
 
 int Configuration::SessionSection::ActiveLsdLimit()
@@ -35,6 +45,11 @@ int Configuration::SessionSection::ActiveLsdLimit()
 int Configuration::SessionSection::ActiveSeeds()
 {
     return Get("session", "active_seeds", 5);
+}
+
+void Configuration::SessionSection::ActiveSeeds(int value)
+{
+    Set("session", "active_seeds", value);
 }
 
 int Configuration::SessionSection::ActiveTrackerLimit()

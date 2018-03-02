@@ -4,6 +4,7 @@
 #include "translator.hpp"
 
 #include <wx/filepicker.h>
+#include <wx/statline.h>
 
 using pt::DownloadsPage;
 
@@ -22,8 +23,11 @@ DownloadsPage::DownloadsPage(wxWindow* parent, std::shared_ptr<pt::Configuration
     transfersGrid->Add(m_savePathCtrl, 1, wxEXPAND);
     transfersSizer->Add(transfersGrid, 1, wxEXPAND | wxALL, 5);
 
+
     wxStaticBoxSizer* limitsSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tran, "limits"));
-    wxFlexGridSizer* limitsGrid = new wxFlexGridSizer(3, 10, 10);
+
+    /* Rate limits */
+    wxFlexGridSizer* transferLimitsGrid = new wxFlexGridSizer(3, 10, 10);
 
     m_enableDownloadLimit = new wxCheckBox(limitsSizer->GetStaticBox(), wxID_ANY, i18n(tran, "dl_limit"));
     m_enableDownloadLimit->SetValue(m_cfg->Session()->EnableDownloadRateLimit());
@@ -44,14 +48,40 @@ DownloadsPage::DownloadsPage(wxWindow* parent, std::shared_ptr<pt::Configuration
     m_enableDownloadLimit->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { m_downloadLimit->Enable(m_enableDownloadLimit->GetValue()); });
     m_enableUploadLimit->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { m_uploadLimit->Enable(m_enableUploadLimit->GetValue()); });
 
-    limitsGrid->AddGrowableCol(1, 1);
-    limitsGrid->Add(m_enableDownloadLimit, 0, wxALIGN_CENTER_VERTICAL);
-    limitsGrid->Add(m_downloadLimit, 0, wxALIGN_RIGHT);
-    limitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, "KB/s"), 0, wxALIGN_CENTER_VERTICAL);
-    limitsGrid->Add(m_enableUploadLimit, 0, wxALIGN_CENTER_VERTICAL);
-    limitsGrid->Add(m_uploadLimit, 0, wxALIGN_RIGHT);
-    limitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, "KB/s"), 0, wxALIGN_CENTER_VERTICAL);
-    limitsSizer->Add(limitsGrid, 1, wxEXPAND | wxALL, 5);
+    transferLimitsGrid->AddGrowableCol(1, 1);
+    transferLimitsGrid->Add(m_enableDownloadLimit, 0, wxALIGN_CENTER_VERTICAL);
+    transferLimitsGrid->Add(m_downloadLimit, 0, wxALIGN_RIGHT);
+    transferLimitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, "KB/s"), 0, wxALIGN_CENTER_VERTICAL);
+    transferLimitsGrid->Add(m_enableUploadLimit, 0, wxALIGN_CENTER_VERTICAL);
+    transferLimitsGrid->Add(m_uploadLimit, 0, wxALIGN_RIGHT);
+    transferLimitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, "KB/s"), 0, wxALIGN_CENTER_VERTICAL);
+
+    /* Active limits */
+    wxFlexGridSizer* activeLimitsGrid = new wxFlexGridSizer(2, 10, 10);
+
+    m_activeLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
+    m_activeLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
+    m_activeLimit->SetValue(wxString::Format("%i", m_cfg->Session()->ActiveLimit()));
+
+    m_activeDownloadsLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
+    m_activeDownloadsLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
+    m_activeDownloadsLimit->SetValue(wxString::Format("%i", m_cfg->Session()->ActiveDownloads()));
+
+    m_activeSeedsLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
+    m_activeSeedsLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
+    m_activeSeedsLimit->SetValue(wxString::Format("%i", m_cfg->Session()->ActiveSeeds()));
+
+    activeLimitsGrid->AddGrowableCol(0, 1);
+    activeLimitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, i18n(tran, "total_active")));
+    activeLimitsGrid->Add(m_activeLimit, 0, wxALIGN_RIGHT);
+    activeLimitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, i18n(tran, "active_downloads")));
+    activeLimitsGrid->Add(m_activeDownloadsLimit, 0, wxALIGN_RIGHT);
+    activeLimitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, i18n(tran, "active_seeds")));
+    activeLimitsGrid->Add(m_activeSeedsLimit, 0, wxALIGN_RIGHT);
+
+    limitsSizer->Add(transferLimitsGrid, 0, wxEXPAND | wxALL, 5);
+    limitsSizer->Add(new wxStaticLine(limitsSizer->GetStaticBox(), wxID_ANY), 0, wxEXPAND | wxALL, 5);
+    limitsSizer->Add(activeLimitsGrid, 0, wxEXPAND | wxALL, 5);
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(transfersSizer, 0, wxEXPAND);
@@ -75,6 +105,20 @@ void DownloadsPage::ApplyConfiguration()
     m_cfg->Session()->DownloadRateLimit(static_cast<int>(dlLimit));
     m_cfg->Session()->EnableUploadRateLimit(m_enableUploadLimit->GetValue());
     m_cfg->Session()->UploadRateLimit(static_cast<int>(ulLimit));
+
+    // Active limits
+    long activeLimit = 0;
+    m_activeLimit->GetValue().ToLong(&activeLimit);
+
+    long activeDownloads = 0;
+    m_activeDownloadsLimit->GetValue().ToLong(&activeDownloads);
+
+    long activeSeeds = 0;
+    m_activeSeedsLimit->GetValue().ToLong(&activeSeeds);
+
+    m_cfg->Session()->ActiveLimit(static_cast<int>(activeLimit));
+    m_cfg->Session()->ActiveDownloads(static_cast<int>(activeDownloads));
+    m_cfg->Session()->ActiveSeeds(static_cast<int>(activeSeeds));
 }
 
 bool DownloadsPage::ValidateConfiguration(wxString& error)

@@ -204,6 +204,9 @@
         "info_hash": "Info hash",
         "fails": "Fails",
         "verified": "Verified",
-        "force_recheck": "Force recheck"
+        "force_recheck": "Force recheck",
+        "total_active": "Total active",
+        "active_downloads": "Active downloads",
+        "active_seeds": "Active seeds"
     }
 }
