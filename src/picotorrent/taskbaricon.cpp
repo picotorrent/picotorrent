@@ -16,7 +16,7 @@ wxBEGIN_EVENT_TABLE(TaskBarIcon, wxTaskBarIcon)
     EVT_MENU(ptID_ADD_MAGNET_LINK, TaskBarIcon::OnAddMagnetLink)
     EVT_MENU(ptID_PREFERENCES, TaskBarIcon::OnViewPreferences)
     EVT_MENU(wxID_EXIT, TaskBarIcon::OnExit)
-    EVT_TASKBAR_LEFT_DCLICK(TaskBarIcon::OnLeftButtonDClick)
+    EVT_TASKBAR_LEFT_DOWN(TaskBarIcon::OnLeftButtonDown)
 wxEND_EVENT_TABLE()
 
 TaskBarIcon::TaskBarIcon(wxFrame* parent,
@@ -67,7 +67,7 @@ void TaskBarIcon::OnExit(wxCommandEvent& WXUNUSED(event))
     m_parent->Close(true);
 }
 
-void TaskBarIcon::OnLeftButtonDClick(wxTaskBarIconEvent& WXUNUSED(event))
+void TaskBarIcon::OnLeftButtonDown(wxTaskBarIconEvent& WXUNUSED(event))
 {
     m_parent->MSWGetTaskBarButton()->Show();
     m_parent->Restore();
