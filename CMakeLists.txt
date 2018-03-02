@@ -4,6 +4,13 @@ project("PicoTorrent")
 # Generate version information file
 file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
 
+# Build version parts
+set(VERSION_TMP "${VERSION}")
+string(REPLACE "." ";" VERSION_LIST ${VERSION_TMP})
+list(GET VERSION_LIST 0 VERSION_MAJOR)
+list(GET VERSION_LIST 1 VERSION_MINOR)
+list(GET VERSION_LIST 2 VERSION_REVISION)
+
 # Get the current working branch
 execute_process(
     COMMAND git rev-parse --abbrev-ref HEAD
@@ -60,6 +67,11 @@ add_definitions(
     -DUNICODE
     -DWIN32
     -DWIN32_LEAN_AND_MEAN
+
+    -DPICO_GIT_COMMITISH=${GIT_COMMITISH}
+    -DPICO_VERSION_MAJOR=${VERSION_MAJOR}
+    -DPICO_VERSION_MINOR=${VERSION_MINOR}
+    -DPICO_VERSION_REVISION=${VERSION_REVISION}
 )
 
 include_directories(
