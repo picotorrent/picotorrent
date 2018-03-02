@@ -205,6 +205,9 @@
         "fails": "Fails",
         "verified": "Verified",
         "force_recheck": "Force recheck",
-        "availability": "Availability"
+        "availability": "Availability",
+        "total_active": "Total active",
+        "active_downloads": "Active downloads",
+        "active_seeds": "Active seeds"
     }
 }

@@ -60,9 +60,12 @@ namespace pt
             int ActiveChecking();
             int ActiveDhtLimit();
             int ActiveDownloads();
+            void ActiveDownloads(int value);
             int ActiveLimit();
+            void ActiveLimit(int value);
             int ActiveLsdLimit();
             int ActiveSeeds();
+            void ActiveSeeds(int value);
             int ActiveTrackerLimit();
 
             bool EnableAnonymousMode();
