@@ -204,6 +204,7 @@
         "info_hash": "Info hash",
         "fails": "Fails",
         "verified": "Verified",
-        "force_recheck": "Force recheck"
+        "force_recheck": "Force recheck",
+        "availability": "Availability"
     }
 }

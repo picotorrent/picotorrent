@@ -121,6 +121,16 @@ void TorrentListViewModel::Sort(int columnId, bool ascending)
 
         break;
     }
+    case Columns::Availability:
+    {
+        sorter = [this, ascending](lt::torrent_status const& ts1, lt::torrent_status const& ts2)
+        {
+            if (ascending) { return ts1.distributed_copies < ts2.distributed_copies; }
+            return ts1.distributed_copies > ts2.distributed_copies;
+        };
+
+        break;
+    }
     case Columns::Ratio:
     {
         sorter = [this, ascending](lt::torrent_status const& ts1, lt::torrent_status const& ts2)
@@ -254,6 +264,18 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
             variant = wxString::Format(
                 "%s/s",
                 Utils::ToHumanFileSize(ts.upload_payload_rate));
+        }
+        break;
+    }
+    case Columns::Availability:
+    {
+        if (ts.distributed_copies < 0)
+        {
+            variant = "-";
+        }
+        else
+        {
+            variant = wxString::Format("%.3f", ts.distributed_copies);
         }
         break;
     }
