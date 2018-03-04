@@ -78,6 +78,16 @@ bool PersistentTorrentListView::Restore()
         m_tlv->GetColumn(TorrentListViewModel::Columns::Peers)->SetWidth(colWidth);
     }
 
+    if (RestoreValue("Col_AddedOn_Width", &colWidth))
+    {
+        m_tlv->GetColumn(TorrentListViewModel::Columns::AddedOn)->SetWidth(colWidth);
+    }
+
+    if (RestoreValue("Col_CompletedOn_Width", &colWidth))
+    {
+        m_tlv->GetColumn(TorrentListViewModel::Columns::CompletedOn)->SetWidth(colWidth);
+    }
+
     if (RestoreValue("SortIndex", &sortIndex)
         && RestoreValue("SortAscending", &sortAscending))
     {
@@ -108,6 +118,8 @@ void PersistentTorrentListView::Save() const
     SaveValue("Col_Ratio_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::Ratio)->GetWidth());
     SaveValue("Col_Seeds_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::Seeds)->GetWidth());
     SaveValue("Col_Peers_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::Peers)->GetWidth());
+    SaveValue("Col_AddedOn_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::AddedOn)->GetWidth());
+    SaveValue("Col_CompletedOn_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::CompletedOn)->GetWidth());
 }
 
 PersistentTorrentListView* pt::wxCreatePersistentObject(TorrentListView* lv)

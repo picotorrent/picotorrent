@@ -144,6 +144,26 @@ void TorrentListViewModel::Sort(int columnId, bool ascending)
 
         break;
     }
+    case Columns::AddedOn:
+    {
+        sorter = [this, ascending](lt::torrent_status const& ts1, lt::torrent_status const& ts2)
+        {
+            if (ascending) { return ts1.added_time < ts2.added_time; }
+            return ts1.added_time > ts2.added_time;
+        };
+
+        break;
+    }
+    case Columns::CompletedOn:
+    {
+        sorter = [this, ascending](lt::torrent_status const& ts1, lt::torrent_status const& ts2)
+        {
+            if (ascending) { return ts1.completed_time < ts2.completed_time; }
+            return ts1.completed_time > ts2.completed_time;
+        };
+
+        break;
+    }
     }
 
     if (sorter)
@@ -298,6 +318,23 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
             ts.num_peers - ts.num_seeds,
             ts.list_peers - ts.list_seeds);
         break;
+    case Columns::AddedOn:
+    {
+        variant = wxDateTime(ts.added_time).FormatISOCombined(' ');
+        break;
+    }
+    case Columns::CompletedOn:
+    {
+        if (ts.completed_time > 0)
+        {
+            variant = wxDateTime(ts.completed_time).FormatISOCombined(' ');
+        }
+        else
+        {
+            variant = "-";
+        }
+        break;
+    }
     }
 }
 

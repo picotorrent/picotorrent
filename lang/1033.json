@@ -208,6 +208,8 @@
         "availability": "Availability",
         "total_active": "Total active",
         "active_downloads": "Active downloads",
-        "active_seeds": "Active seeds"
+        "active_seeds": "Active seeds",
+        "added_on": "Added on",
+        "completed_on": "Completed on"
     }
 }
