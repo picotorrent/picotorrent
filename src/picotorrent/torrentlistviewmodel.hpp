@@ -39,6 +39,8 @@ namespace pt
             Ratio,
             Seeds,
             Peers,
+            AddedOn,
+            CompletedOn,
             _Max
         };
 

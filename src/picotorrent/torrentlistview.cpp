@@ -100,6 +100,22 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         80,
         wxALIGN_RIGHT);
 
+    AppendTextColumn(
+        i18n(tr, "added_on"),
+        TorrentListViewModel::Columns::AddedOn,
+        wxDATAVIEW_CELL_INERT,
+        120,
+        wxALIGN_RIGHT,
+        wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
+
+    AppendTextColumn(
+        i18n(tr, "completed_on"),
+        TorrentListViewModel::Columns::CompletedOn,
+        wxDATAVIEW_CELL_INERT,
+        120,
+        wxALIGN_RIGHT,
+        wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
+
     nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
     statusCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
 }
