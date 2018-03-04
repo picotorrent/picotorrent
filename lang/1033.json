@@ -210,6 +210,8 @@
         "active_downloads": "Active downloads",
         "active_seeds": "Active seeds",
         "added_on": "Added on",
-        "completed_on": "Completed on"
+        "completed_on": "Completed on",
+        "config_error_s": "Failed to parse configuration file. Default configuration has been loaded.\n---\n%s",
+        "config_error_title": "Config error"
     }
 }
