@@ -82,8 +82,10 @@ bool Application::OnInit()
         return false;
     }
 
+    std::string configurationError;
+
     auto env = std::make_shared<Environment>();
-    auto cfg = Configuration::Load(env);
+    auto cfg = Configuration::Load(env, configurationError);
     auto translator = Translator::Load(GetModuleHandle(NULL), cfg);
 
     MainFrame* mainFrame = new MainFrame(
@@ -120,6 +122,19 @@ bool Application::OnInit()
     case Configuration::WindowState::Normal:
         mainFrame->Show(true);
         break;
+    }
+
+    if (!configurationError.empty())
+    {
+        wxString text = wxString::Format(
+            i18n(translator, "config_error_s"),
+            configurationError.c_str());
+
+        wxMessageBox(
+            text,
+            i18n(translator, "config_error_title"),
+            wxOK | wxICON_ERROR,
+            mainFrame);
     }
 
     mainFrame->HandleOptions(m_options);

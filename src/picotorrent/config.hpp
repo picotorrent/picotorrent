@@ -110,7 +110,7 @@ namespace pt
             using Section::Section;
         };
 
-        static std::shared_ptr<Configuration> Load(std::shared_ptr<Environment> env);
+        static std::shared_ptr<Configuration> Load(std::shared_ptr<Environment> env, std::string& error);
         static void Save(std::shared_ptr<Environment> env, std::shared_ptr<Configuration> config);
 
         std::shared_ptr<SessionSection> Session();

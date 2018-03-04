@@ -8,7 +8,7 @@
 
 using pt::Configuration;
 
-std::shared_ptr<Configuration> Configuration::Load(std::shared_ptr<pt::Environment> env)
+std::shared_ptr<Configuration> Configuration::Load(std::shared_ptr<pt::Environment> env, std::string& error)
 {
     fs::path path = env->GetApplicationDataPath() / "PicoTorrent.json";
 
@@ -21,7 +21,7 @@ std::shared_ptr<Configuration> Configuration::Load(std::shared_ptr<pt::Environme
     std::ifstream cfg_stream(path, std::ios::binary);
 
     picojson::value val;
-    picojson::parse(val, cfg_stream);
+    error = picojson::parse(val, cfg_stream);
 
     if (!val.is<picojson::object>())
     {
