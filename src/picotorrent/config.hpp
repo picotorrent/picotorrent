@@ -119,6 +119,8 @@ namespace pt
         int CurrentLanguageId();
         void CurrentLanguageId(int id);
 
+        fs::path LanguagesPath();
+
         fs::path DefaultSavePath();
         void DefaultSavePath(fs::path path);
 

@@ -63,6 +63,11 @@ void Configuration::CurrentLanguageId(int languageId)
     Set<int>("language_id", languageId);
 }
 
+fs::path Configuration::LanguagesPath()
+{
+    return Get<std::string>("languages_path", (m_env->GetApplicationDataPath() / "Languages").string());
+}
+
 fs::path Configuration::DefaultSavePath()
 {
     return Get<std::string>("default_save_path", m_env->GetKnownFolderPath(Environment::KnownFolder::UserDownloads).string());

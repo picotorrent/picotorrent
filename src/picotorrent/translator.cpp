@@ -1,9 +1,15 @@
 #include "translator.hpp"
 
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+
 #include "config.hpp"
+#include "environment.hpp"
 #include "picojson.hpp"
 #include "utils.hpp"
 
+namespace fs = std::experimental::filesystem::v1;
 namespace pj = picojson;
 using pt::Translator;
 
@@ -55,6 +61,27 @@ std::shared_ptr<Translator> Translator::Load(HINSTANCE hInstance, std::shared_pt
         LoadTranslationResource,
         reinterpret_cast<LONG_PTR>(&langs));
 
+    fs::path translationsDirectory = config->LanguagesPath();
+
+    for (fs::directory_entry const& entry : fs::directory_iterator(translationsDirectory))
+    {
+        if (entry.path().extension() != ".json")
+        {
+            continue;
+        }
+
+        std::ifstream jsonStream(entry.path(), std::ios::binary | std::ios::in);
+        std::stringstream json;
+        json << jsonStream.rdbuf();
+
+        Language lang;
+
+        if (LoadLanguageFromJson(json.str(), lang))
+        {
+            langs[lang.code] = lang;
+        }
+    }
+
     return std::shared_ptr<Translator>(
         new Translator(langs,
             config->CurrentLanguageId()));
@@ -70,13 +97,24 @@ BOOL Translator::LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTS
     const char* buffer = reinterpret_cast<const char*>(LockResource(data));
 
     std::string json(buffer, static_cast<size_t>(size));
+    Language lang;
 
+    if (LoadLanguageFromJson(json, lang))
+    {
+        langs->insert({ lang.code, lang });
+    }
+
+    return TRUE;
+}
+
+bool Translator::LoadLanguageFromJson(std::string const& json, Translator::Language& lang)
+{
     pj::value v;
     std::string err = pj::parse(v, json);
 
     if (!err.empty())
     {
-        return TRUE;
+        return false;
     }
 
     pj::object obj = v.get<pj::object>();
@@ -96,7 +134,7 @@ BOOL Translator::LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTS
         l.translations.insert({ p.first, converted });
     }
 
-    langs->insert({ langId, l });
+    lang = l;
 
-    return TRUE;
+    return true;
 }
