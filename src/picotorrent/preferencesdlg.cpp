@@ -16,6 +16,8 @@
 
 #include <wx/bookctrl.h>
 #include <wx/listbook.h>
+#include <wx/persist.h>
+#include <wx/persist/toplevel.h>
 
 namespace lt = libtorrent;
 using pt::PreferencesDialog;
@@ -36,9 +38,10 @@ PreferencesDialog::PreferencesDialog(
     m_state(sessionState),
     m_taskBarIcon(taskBarIcon)
 {
+    SetName("PreferencesDialog");
     SetSheetStyle(wxPROPSHEET_LISTBOOK);
 
-    Create(parent, wxID_ANY, i18n(tran, "preferences"));
+    Create(parent, wxID_ANY, i18n(tran, "preferences"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
 
     wxBookCtrlBase* book = GetBookCtrl();
     m_general = new GeneralPage(book, cfg, tran);
@@ -53,6 +56,8 @@ PreferencesDialog::PreferencesDialog(
 
     CreateButtons();
     LayoutDialog();
+
+    wxPersistenceManager::Get().RegisterAndRestore(this);
 }
 
 void PreferencesDialog::OnOk(wxCommandEvent& event)
