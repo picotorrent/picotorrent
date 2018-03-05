@@ -14,6 +14,7 @@
 namespace pt
 {
     class Configuration;
+    class Environment;
 
     class Translator
     {
@@ -35,6 +36,7 @@ namespace pt
         Translator(std::map<int, Language> const& languages, int selectedLanguage);
 
         static BOOL CALLBACK LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam);
+        static bool LoadLanguageFromJson(std::string const& json, Language& lang);
 
         int m_selectedLanguage;
         std::map<int, Language> m_languages;
