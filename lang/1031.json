@@ -33,6 +33,7 @@
         "maximum": "Maximum",
         "high": "Hoch",
         "normal": "Normal",
+        "low": "Niedrig",
         "do_not_download": "Nicht herunterladen",
         "priority": "Priorität",
         "unknown_name": "Unbekannter Name",
@@ -199,6 +200,18 @@
         "show_picotorrent_in_notification_area": "PicoTorrent im Benachrichtigungsfeld anzeigen",
         "minimize_to_notification_area": "Ins Benachrichtigungsfeld minimieren",
         "close_to_notification_area": "Ins Benachrichtigungsfeld schließen",
-        "invalid_regex": "Ungültiger regulärer Ausdruck"
+        "invalid_regex": "Ungültiger regulärer Ausdruck",
+        "info_hash": "Infohash",
+        "fails": "Fehlschläge",
+        "verified": "Verifziert",
+        "force_recheck": "Üperprüfung erzwingen",
+        "availability": "Verfügbarkeit",
+        "total_active": "Insgesamt aktiv",
+        "active_downloads": "Aktive Downloads",
+        "active_seeds": "Aktive Seeds",
+        "added_on": "Hinzügefügt am",
+        "completed_on": "Abgeschlossen am",
+        "config_error_s": "Konfigurationsdatei konnte nicht geparsed werden. Standardkonfiguration wurde geladen.\n---\n%s",
+        "config_error_title": "Konfigurationsfehler"
     }
 }
