@@ -3,8 +3,15 @@
 #include <libtorrent/announce_entry.hpp>
 #include <libtorrent/torrent_status.hpp>
 
+#include "translator.hpp"
+
 namespace lt = libtorrent;
 using pt::TrackersViewModel;
+
+TrackersViewModel::TrackersViewModel(std::shared_ptr<pt::Translator> translator)
+    : m_translator(translator)
+{
+}
 
 void TrackersViewModel::Clear()
 {
@@ -52,7 +59,7 @@ void TrackersViewModel::Update(lt::torrent_status const& ts)
         else
         {
             auto distance = std::distance(m_data.begin(), f);
-            m_data.at(distance) = *f;
+            m_data.at(distance) = *it;
             RowChanged(distance);
         }
     }
@@ -60,7 +67,7 @@ void TrackersViewModel::Update(lt::torrent_status const& ts)
 
 unsigned int TrackersViewModel::GetColumnCount() const
 {
-    return 4;
+    return Columns::_Max;
 }
 
 wxString TrackersViewModel::GetColumnType(unsigned int col) const
@@ -78,10 +85,10 @@ void TrackersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsi
 
     switch (col)
     {
-    case Column::Url:
+    case Columns::Url:
         variant = tracker.url;
         break;
-    case Column::Fails:
+    case Columns::Fails:
     {
         if (endp != tracker.endpoints.end() && endp->fails == 0)
         {
@@ -102,18 +109,61 @@ void TrackersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsi
         }
         break;
     }
-    case Column::Verified:
-        variant = (tracker.verified ? "OK" : "-");
-        break;
-    case Column::NextAnnounce:
+    case Columns::Status:
         if (endp == tracker.endpoints.end())
         {
             variant = "-";
             break;
         }
 
+        if (endp->updating)
+        {
+            variant = "Updating...";
+            break;
+        }
+
+        if (endp->last_error)
+        {
+            variant = wxString::Format(
+                i18n(m_translator, "error_s"),
+                endp->last_error.message().c_str());
+            break;
+        }
+
+        if (tracker.verified)
+        {
+            variant = "OK";
+            break;
+        }
+
+        variant = "-";
+        break;
+    case Columns::NextAnnounce:
+        if (endp == tracker.endpoints.end()
+            || endp->updating)
+        {
+            variant = "-";
+            break;
+        }
+
         int64_t secs = lt::total_seconds(endp->next_announce - lt::clock_type::now());
-        variant = wxString::Format("%s", secs > 0 ? wxString::Format("%I64ds", secs) : "-");
+        std::chrono::seconds s(secs);
+
+        if (secs <= 0)
+        {
+            variant = "-";
+            break;
+        }
+
+        std::chrono::hours hours_left = std::chrono::duration_cast<std::chrono::hours>(s);
+        std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(s - hours_left);
+        std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(s - hours_left - min_left);
+
+        variant = wxString::Format(
+            "%dh %dm %I64ds",
+            hours_left.count(),
+            min_left.count(),
+            sec_left.count());
 
         break;
     }

@@ -212,6 +212,11 @@
         "added_on": "Added on",
         "completed_on": "Completed on",
         "config_error_s": "Failed to parse configuration file. Default configuration has been loaded.\n---\n%s",
-        "config_error_title": "Config error"
+        "config_error_title": "Config error",
+        "error_s": "Error: %s",
+        "add_trackers": "Add trackers",
+        "tracker_urls": "Tracker URLs",
+        "force_reannounce": "Force reannounce",
+        "copy_url": "Copy URL"
     }
 }

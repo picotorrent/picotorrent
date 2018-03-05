@@ -8,6 +8,7 @@
 #include <memory>
 
 class wxDataViewCtrl;
+class wxDataViewEvent;
 
 namespace libtorrent
 {
@@ -28,7 +29,29 @@ namespace pt
         void Update(libtorrent::torrent_status const& ts);
 
     private:
+        struct StatusWrap;
+
+        enum
+        {
+            ptID_TRACKERS_LIST = wxID_HIGHEST + 2000,
+            ptID_ADD,
+            ptID_FORCE_REANNOUNCE,
+            ptID_REMOVE,
+            ptID_COPY_URL
+        };
+
+        void OnAddTrackers(wxCommandEvent&);
+        void OnCopyUrl(wxCommandEvent&);
+        void OnForceReannounce(wxCommandEvent&);
+        void OnRemoveTrackers(wxCommandEvent&);
+        void OnTrackersContextMenu(wxDataViewEvent&);
+
+        wxDECLARE_EVENT_TABLE();
+
         wxDataViewCtrl* m_trackersView;
         TrackersViewModel* m_viewModel;
+
+        std::unique_ptr<StatusWrap> m_wrap;
+        std::shared_ptr<Translator> m_translator;
     };
 }
