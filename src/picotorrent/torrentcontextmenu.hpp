@@ -32,12 +32,14 @@ namespace pt
             ptID_QUEUE_BOTTOM,
             ptID_COPY_INFO_HASH,
             ptID_OPEN_IN_EXPLORER,
-            ptID_FORCE_RECHECK
+            ptID_FORCE_RECHECK,
+            ptID_FORCE_REANNOUNCE
         };
 
         wxDECLARE_EVENT_TABLE();
 
         void CopyInfoHash(wxCommandEvent&);
+        void ForceReannounce(wxCommandEvent&);
         void ForceRecheck(wxCommandEvent&);
         void Move(wxCommandEvent&);
         void OpenInExplorer(wxCommandEvent&);
