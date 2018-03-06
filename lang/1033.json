@@ -217,6 +217,11 @@
         "add_trackers": "Add trackers",
         "tracker_urls": "Tracker URLs",
         "force_reannounce": "Force reannounce",
-        "copy_url": "Copy URL"
+        "copy_url": "Copy URL",
+        "enable_dht": "Enable DHT",
+        "enable_lsd": "Enable LSD",
+        "enable_pex": "Enable PeX",
+        "changing_pex_settings_requires_restart": "Changing the PeX setting requires a restart",
+        "restart_required": "Restart required"
     }
 }

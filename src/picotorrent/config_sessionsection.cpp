@@ -62,6 +62,11 @@ bool Configuration::SessionSection::EnableAnonymousMode()
     return Get("session", "anonymous_mode", false);
 }
 
+void Configuration::SessionSection::EnableAnonymousMode(bool value)
+{
+    Set("session", "anonymous_mode", value);
+}
+
 bool Configuration::SessionSection::EnableDht()
 {
     return Get("session", "enable_dht", true);
@@ -80,6 +85,16 @@ bool Configuration::SessionSection::EnableLsd()
 void Configuration::SessionSection::EnableLsd(bool value)
 {
     Set("session", "enable_lsd", value);
+}
+
+bool Configuration::SessionSection::EnablePex()
+{
+    return Get("session", "enable_pex", true);
+}
+
+void Configuration::SessionSection::EnablePex(bool value)
+{
+    Set("session", "enable_pex", value);
 }
 
 bool Configuration::SessionSection::EnableDownloadRateLimit()

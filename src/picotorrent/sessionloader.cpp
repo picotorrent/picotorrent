@@ -8,6 +8,9 @@
 #include <filesystem>
 #include <fstream>
 #include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/extensions/smart_ban.hpp>
+#include <libtorrent/extensions/ut_metadata.hpp>
+#include <libtorrent/extensions/ut_pex.hpp>
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session.hpp>
@@ -43,7 +46,18 @@ std::shared_ptr<pt::SessionState> SessionLoader::Load(std::shared_ptr<pt::Enviro
     lt::settings_pack settings = SessionSettings::Get(cfg);
 
     std::shared_ptr<SessionState> state = std::make_shared<SessionState>();
-    state->session = std::make_unique<lt::session>(settings);
+    state->session = std::make_unique<lt::session>(
+        settings,
+        lt::session_flags_t{ lt::session_handle::start_default_features });
+
+    // Enable plugins
+    state->session->add_extension(lt::create_smart_ban_plugin);
+    state->session->add_extension(lt::create_ut_metadata_plugin);
+
+    if (cfg->Session()->EnablePex())
+    {
+        state->session->add_extension(lt::create_ut_pex_plugin);
+    }
 
     // Load state
     if (fs::exists(stateFile))

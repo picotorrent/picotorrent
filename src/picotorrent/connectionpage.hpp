@@ -21,10 +21,17 @@ namespace pt
         bool ValidateConfiguration(wxString& error);
 
     private:
+        wxWindow* m_parent;
+
         wxTextCtrl* m_listenInterfaces;
         wxCheckBox* m_incomingEncryption;
         wxCheckBox* m_outgoingEncryption;
 
+        wxCheckBox* m_enableDht;
+        wxCheckBox* m_enableLsd;
+        wxCheckBox* m_enablePex;
+
         std::shared_ptr<Configuration> m_cfg;
+        std::shared_ptr<Translator> m_translator;
     };
 }

@@ -317,7 +317,11 @@ void MainFrame::OnSessionAlert()
             lt::span<const int64_t> counters = ssa->counters();
             int idx = -1;
 
-            if ((idx = lt::find_metric_idx("dht.dht_nodes")) >= 0)
+            if (!m_config->Session()->EnableDht())
+            {
+                m_status->UpdateDhtNodesCount(-1);
+            }
+            else if ((idx = lt::find_metric_idx("dht.dht_nodes")) >= 0)
             {
                 m_status->UpdateDhtNodesCount(counters[idx]);
             }
