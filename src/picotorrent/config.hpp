@@ -69,10 +69,13 @@ namespace pt
             int ActiveTrackerLimit();
 
             bool EnableAnonymousMode();
+            void EnableAnonymousMode(bool value);
             bool EnableDht();
             void EnableDht(bool value);
             bool EnableLsd();
             void EnableLsd(bool value);
+            bool EnablePex();
+            void EnablePex(bool value);
 
             bool RequireIncomingEncryption();
             void RequireIncomingEncryption(bool value);

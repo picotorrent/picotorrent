@@ -20,7 +20,14 @@ StatusBar::StatusBar(wxWindow* parent)
 
 void StatusBar::UpdateDhtNodesCount(int64_t nodes)
 {
-    SetStatusText(wxString::Format("DHT: %I64d node(s)", nodes), 1);
+    if (nodes < 0)
+    {
+        SetStatusText("DHT: disabled", 1);
+    }
+    else
+    {
+        SetStatusText(wxString::Format("DHT: %I64d node(s)", nodes), 1);
+    }
 }
 
 void StatusBar::UpdateTorrentCount(int64_t torrents)
