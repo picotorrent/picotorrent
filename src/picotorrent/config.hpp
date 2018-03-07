@@ -102,6 +102,8 @@ namespace pt
         {
             friend class Configuration;
 
+            bool SkipAddTorrentDialog();
+            void SkipAddTorrentDialog(bool value);
             bool ShowInNotificationArea();
             void ShowInNotificationArea(bool value);
             bool CloseToNotificationArea();

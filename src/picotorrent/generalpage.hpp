@@ -22,6 +22,7 @@ namespace pt
 
     private:
         wxChoice* m_language;
+        wxCheckBox* m_skipAddTorrentDialog;
         wxCheckBox* m_autoStart;
         wxChoice* m_startPosition;
         wxCheckBox* m_showNotificationIcon;
