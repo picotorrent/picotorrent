@@ -30,7 +30,7 @@ wxEND_EVENT_TABLE()
 AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     std::shared_ptr<pt::Translator> translator,
     std::vector<lt::add_torrent_params>& params)
-    : wxDialog(parent, wxID_ANY, i18n(translator, "add_torrent_s"), wxDefaultPosition, wxSize(400, 500), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+    : wxDialog(parent, wxID_ANY, i18n(translator, "add_torrent_s"), wxDefaultPosition, wxSize(400, 530), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     m_params(params),
     m_trans(translator),
     m_filesViewModel(new FileStorageViewModel(translator))
@@ -52,12 +52,15 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     m_name = new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
     m_size = new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
     m_comment = new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
+    m_infoHash = new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
 
     torrentGrid->AddGrowableCol(1, 1);
     torrentGrid->Add(new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, m_trans->Translate("name")));
     torrentGrid->Add(m_name, 0, wxEXPAND);
     torrentGrid->Add(new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, m_trans->Translate("size")));
     torrentGrid->Add(m_size, 0, wxEXPAND);
+    torrentGrid->Add(new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, m_trans->Translate("info_hash")));
+    torrentGrid->Add(m_infoHash, 0, wxEXPAND);
     torrentGrid->Add(new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, m_trans->Translate("comment")));
     torrentGrid->Add(m_comment, 0, wxEXPAND);
     torrentSizer->Add(torrentGrid, 1, wxEXPAND | wxALL, 5);
@@ -155,6 +158,7 @@ void AddTorrentDialog::LoadTorrentInfo(int index)
     m_name->SetLabel("-");
     m_size->SetLabel("-");
     m_comment->SetLabel("-");
+    m_infoHash->SetLabel("-");
 
     // Save path
     m_savePath->SetPath(params.save_path);
@@ -163,13 +167,18 @@ void AddTorrentDialog::LoadTorrentInfo(int index)
     {
         m_name->SetLabel(params.ti->name());
 
+        std::stringstream ss;
+        ss << params.ti->info_hash();
+
+        m_infoHash->SetLabel(ss.str());
+
+        // Size
+        m_size->SetLabel(wxString(Utils::ToHumanFileSize(params.ti->total_size())));
+
         if (!params.ti->comment().empty())
         {
             m_comment->SetLabel(params.ti->comment());
         }
-
-        // Size
-        m_size->SetLabel(wxString(Utils::ToHumanFileSize(params.ti->total_size())));
 
         // Files
         m_filesViewModel->RebuildTree(params.ti);
@@ -178,6 +187,14 @@ void AddTorrentDialog::LoadTorrentInfo(int index)
     }
     else
     {
+        if (!params.info_hash.is_all_zeros())
+        {
+            std::stringstream ss;
+            ss << params.info_hash;
+
+            m_infoHash->SetLabel(ss.str());
+        }
+
         m_size->SetLabel("-");
         m_filesViewModel->Cleared();
     }

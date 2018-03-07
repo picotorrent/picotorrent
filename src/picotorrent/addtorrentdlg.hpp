@@ -52,6 +52,7 @@ namespace pt
         wxStaticText* m_name;
         wxStaticText* m_size;
         wxStaticText* m_comment;
+        wxStaticText* m_infoHash;
         wxDirPickerCtrl* m_savePath;
         wxDataViewCtrl* m_filesView;
         FileStorageViewModel* m_filesViewModel;
