@@ -222,6 +222,8 @@
         "enable_lsd": "Enable LSD",
         "enable_pex": "Enable PeX",
         "changing_pex_settings_requires_restart": "Changing the PeX setting requires a restart",
-        "restart_required": "Restart required"
+        "restart_required": "Restart required",
+        "file": "File",
+        "comment": "Comment"
     }
 }

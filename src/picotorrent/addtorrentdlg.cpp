@@ -9,6 +9,8 @@
 #include <libtorrent/torrent_info.hpp>
 #include <wx/dataview.h>
 #include <wx/filepicker.h>
+#include <wx/persist.h>
+#include <wx/persist/toplevel.h>
 
 #include <shellapi.h>
 
@@ -16,6 +18,7 @@ namespace lt = libtorrent;
 using pt::AddTorrentDialog;
 
 wxBEGIN_EVENT_TABLE(AddTorrentDialog, wxDialog)
+    EVT_CHECKBOX(ptID_SEQUENTIAL_DOWNLOAD, OnSequentialDownloadChanged)
     EVT_CHOICE(ptID_TORRENT_LIST, OnTorrentChanged)
     EVT_DATAVIEW_ITEM_CONTEXT_MENU(ptID_FILE_LIST, OnFileContextMenu)
     EVT_DIRPICKER_CHANGED(ptID_SAVE_PATH, OnSavePathChanged)
@@ -28,56 +31,49 @@ wxEND_EVENT_TABLE()
 AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     std::shared_ptr<pt::Translator> translator,
     std::vector<lt::add_torrent_params>& params)
-    : wxDialog(parent, wxID_ANY, i18n(translator, "add_torrent_s"), wxDefaultPosition, wxSize(400, 400)),
+    : wxDialog(parent, wxID_ANY, i18n(translator, "add_torrent_s"), wxDefaultPosition, wxSize(400, 540), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     m_params(params),
     m_trans(translator),
     m_filesViewModel(new FileStorageViewModel(translator))
 {
-    wxPanel* panel = new wxPanel(this, wxID_ANY);
-    m_torrents = new wxChoice(panel, ptID_TORRENT_LIST);
-    m_size = new wxStaticText(panel, wxID_ANY, wxEmptyString);
-    m_savePath = new wxDirPickerCtrl(panel, ptID_SAVE_PATH, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
-    m_filesView = new wxDataViewCtrl(panel, ptID_FILE_LIST);
+    this->SetName("AddTorrentDialog");
+    this->SetMinSize(this->GetSize());
 
-    wxFlexGridSizer* flexGrid = new wxFlexGridSizer(3, 2, 9, 25);
-    flexGrid->AddGrowableCol(1, 1);
+    wxPanel* pnl = new wxPanel(this, wxID_ANY);
+
+    // File
+    wxStaticBoxSizer* fileSizer = new wxStaticBoxSizer(wxVERTICAL, pnl, i18n(translator, "file"));
+    m_torrents = new wxChoice(fileSizer->GetStaticBox(), ptID_TORRENT_LIST);
+    fileSizer->Add(m_torrents, 0, wxEXPAND | wxALL, 5);
 
     // Torrent
-    flexGrid->Add(new wxStaticText(panel, wxID_ANY, m_trans->Translate("torrent")), 0, wxALIGN_CENTER_VERTICAL);
+    wxStaticBoxSizer* torrentSizer = new wxStaticBoxSizer(wxVERTICAL, pnl, i18n(translator, "torrent"));
+    wxFlexGridSizer* torrentGrid = new wxFlexGridSizer(2, 10, 25);
 
-    for (lt::add_torrent_params& p : m_params)
-    {
-        wxString name = "<unknown name>";
+    m_name = new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
+    m_size = new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
+    m_comment = new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
+    m_infoHash = new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
 
-        if (p.ti)
-        {
-            name = p.ti->name();
-        }
-        else if (!p.name.empty())
-        {
-            name = p.name;
-        }
-        else
-        {
-            std::stringstream ss;
-            ss << p.info_hash;
-            name = ss.str();
-        }
+    torrentGrid->AddGrowableCol(1, 1);
+    torrentGrid->Add(new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, m_trans->Translate("name")));
+    torrentGrid->Add(m_name, 0, wxEXPAND);
+    torrentGrid->Add(new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, m_trans->Translate("size")));
+    torrentGrid->Add(m_size, 0, wxEXPAND);
+    torrentGrid->Add(new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, m_trans->Translate("info_hash")));
+    torrentGrid->Add(m_infoHash, 0, wxEXPAND);
+    torrentGrid->Add(new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, m_trans->Translate("comment")));
+    torrentGrid->Add(m_comment, 0, wxEXPAND);
+    torrentSizer->Add(torrentGrid, 1, wxEXPAND | wxALL, 5);
 
-        m_torrents->Insert(name, 0);
-    }
+    // Storage
+    wxStaticBoxSizer* storageSizer = new wxStaticBoxSizer(wxVERTICAL, pnl, i18n(translator, "storage"));
+    wxFlexGridSizer* storageGrid = new wxFlexGridSizer(2, 10, 25);
 
-    flexGrid->Add(m_torrents, 1, wxEXPAND);
+    m_savePath = new wxDirPickerCtrl(storageSizer->GetStaticBox(), ptID_SAVE_PATH, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
+    m_filesView = new wxDataViewCtrl(storageSizer->GetStaticBox(), ptID_FILE_LIST);
+    m_sequentialMode = new wxCheckBox(storageSizer->GetStaticBox(), ptID_SEQUENTIAL_DOWNLOAD, i18n(m_trans, "sequential_download"));
 
-    // Size
-    flexGrid->Add(new wxStaticText(panel, wxID_ANY, m_trans->Translate("size")), 0, wxALIGN_CENTER_VERTICAL);
-    flexGrid->Add(m_size);
-
-    // Save path
-    flexGrid->Add(new wxStaticText(panel, wxID_ANY, m_trans->Translate("save_path")), 0, wxALIGN_CENTER_VERTICAL);
-    flexGrid->Add(m_savePath, 1, wxEXPAND);
-
-    // File tree
     auto nameCol = m_filesView->AppendIconTextColumn(
         i18n(m_trans, "name"),
         FileStorageViewModel::Columns::Name,
@@ -105,16 +101,55 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     m_filesView->AssociateModel(m_filesViewModel);
     m_filesViewModel->DecRef();
 
-    wxBoxSizer* buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
-    buttonsSizer->Add(new wxButton(panel, wxID_OK));
-    buttonsSizer->Add(new wxButton(panel, wxID_CANCEL));
+    storageGrid->AddGrowableCol(1, 1);
+    storageGrid->Add(new wxStaticText(storageSizer->GetStaticBox(), wxID_ANY, m_trans->Translate("save_path")), 0, wxALIGN_CENTER_VERTICAL);
+    storageGrid->Add(m_savePath, 1, wxEXPAND);
+    storageGrid->AddSpacer(0);
+    storageGrid->Add(m_sequentialMode, 1, wxEXPAND);
 
+    storageSizer->Add(storageGrid, 0, wxEXPAND | wxALL, 5);
+    storageSizer->Add(m_filesView, 1, wxEXPAND | wxALL, 5);
+
+    // Buttons
+    wxBoxSizer* buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
+    buttonsSizer->Add(new wxButton(pnl, wxID_OK));
+    buttonsSizer->Add(new wxButton(pnl, wxID_CANCEL));
+
+    // Main sizer
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-    mainSizer->Add(flexGrid, 0, wxALL | wxEXPAND, 5);
-    mainSizer->Add(m_filesView, 1, wxALL | wxEXPAND, 5);
+    mainSizer->Add(fileSizer, 0, wxEXPAND | wxALL, 5);
+    mainSizer->AddSpacer(2);
+    mainSizer->Add(torrentSizer, 0, wxEXPAND | wxALL, 5);
+    mainSizer->AddSpacer(2);
+    mainSizer->Add(storageSizer, 1, wxEXPAND | wxALL, 5);
+    mainSizer->AddSpacer(2);
     mainSizer->Add(buttonsSizer, 0, wxALL | wxALIGN_RIGHT, 5);
 
-    panel->SetSizerAndFit(mainSizer);
+    for (lt::add_torrent_params& p : m_params)
+    {
+        wxString name = "<unknown name>";
+
+        if (p.ti)
+        {
+            name = p.ti->name();
+        }
+        else if (!p.name.empty())
+        {
+            name = p.name;
+        }
+        else
+        {
+            std::stringstream ss;
+            ss << p.info_hash;
+            name = ss.str();
+        }
+
+        m_torrents->Insert(name, 0);
+    }
+
+    pnl->SetSizer(mainSizer);
+
+    wxPersistenceManager::Get().RegisterAndRestore(this);
 
     m_torrents->Select(0);
     LoadTorrentInfo(0);
@@ -124,13 +159,32 @@ void AddTorrentDialog::LoadTorrentInfo(int index)
 {
     lt::add_torrent_params& params = m_params.at(index);
 
+    m_name->SetLabel("-");
+    m_size->SetLabel("-");
+    m_comment->SetLabel("-");
+    m_infoHash->SetLabel("-");
+
     // Save path
     m_savePath->SetPath(params.save_path);
+    m_sequentialMode->SetValue(
+        (params.flags & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download);
 
     if (params.ti)
     {
+        m_name->SetLabel(params.ti->name());
+
+        std::stringstream ss;
+        ss << params.ti->info_hash();
+
+        m_infoHash->SetLabel(ss.str());
+
         // Size
         m_size->SetLabel(wxString(Utils::ToHumanFileSize(params.ti->total_size())));
+
+        if (!params.ti->comment().empty())
+        {
+            m_comment->SetLabel(params.ti->comment());
+        }
 
         // Files
         m_filesViewModel->RebuildTree(params.ti);
@@ -139,6 +193,14 @@ void AddTorrentDialog::LoadTorrentInfo(int index)
     }
     else
     {
+        if (!params.info_hash.is_all_zeros())
+        {
+            std::stringstream ss;
+            ss << params.info_hash;
+
+            m_infoHash->SetLabel(ss.str());
+        }
+
         m_size->SetLabel("-");
         m_filesViewModel->Cleared();
     }
@@ -179,6 +241,21 @@ void AddTorrentDialog::OnSetPriority(wxCommandEvent& event)
     }
 
     m_filesViewModel->UpdatePriorities(params.file_priorities);
+}
+
+void AddTorrentDialog::OnSequentialDownloadChanged(wxCommandEvent&)
+{
+    int idx = m_torrents->GetSelection();
+    lt::add_torrent_params& params = m_params.at(idx);
+
+    if (m_sequentialMode->IsChecked())
+    {
+        params.flags |= lt::torrent_flags::sequential_download;
+    }
+    else
+    {
+        params.flags &= ~lt::torrent_flags::sequential_download;
+    }
 }
 
 void AddTorrentDialog::OnTorrentChanged(wxCommandEvent& event)
