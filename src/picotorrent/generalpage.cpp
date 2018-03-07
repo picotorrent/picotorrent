@@ -93,10 +93,13 @@ GeneralPage::GeneralPage(wxWindow* parent, std::shared_ptr<pt::Configuration> co
     wxStaticBoxSizer* miscSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tr, "miscellaneous"));
     wxFlexGridSizer* miscGrid = new wxFlexGridSizer(2, 10, 10);
 
+    m_skipAddTorrentDialog = new wxCheckBox(miscSizer->GetStaticBox(), wxID_ANY, i18n(tr, "skip_add_torrent_dialog"));
     m_autoStart = new wxCheckBox(miscSizer->GetStaticBox(), wxID_ANY, i18n(tr, "start_with_windows"));
     m_startPosition = new wxChoice(miscSizer->GetStaticBox(), wxID_ANY);
 
     miscGrid->AddGrowableCol(1, 1);
+    miscGrid->Add(m_skipAddTorrentDialog, 0, wxALIGN_CENTER_VERTICAL);
+    miscGrid->Add(0, 0);
     miscGrid->Add(m_autoStart, 0, wxALIGN_CENTER_VERTICAL);
     miscGrid->Add(0, 0);
     miscGrid->Add(new wxStaticText(miscSizer->GetStaticBox(), wxID_ANY, i18n(tr, "start_position")), 0, wxALIGN_CENTER_VERTICAL);
@@ -133,6 +136,8 @@ GeneralPage::GeneralPage(wxWindow* parent, std::shared_ptr<pt::Configuration> co
             m_language->SetSelection(pos);
         }
     }
+
+    m_skipAddTorrentDialog->SetValue(m_config->UI()->SkipAddTorrentDialog());
 
     AutoRunKey key;
     if (key.Exists())
@@ -188,6 +193,7 @@ void GeneralPage::ApplyConfiguration()
         }
     }
 
+    m_config->UI()->SkipAddTorrentDialog(m_skipAddTorrentDialog->GetValue());
     m_config->UI()->ShowInNotificationArea(m_showNotificationIcon->GetValue());
     m_config->UI()->MinimizeToNotificationArea(m_minimizeNotification->GetValue());
     m_config->UI()->CloseToNotificationArea(m_closeNotification->GetValue());

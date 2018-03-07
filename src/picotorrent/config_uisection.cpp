@@ -2,6 +2,16 @@
 
 using pt::Configuration;
 
+bool Configuration::UISection::SkipAddTorrentDialog()
+{
+    return Get("ui", "skip_add_torrent_dialog", false);
+}
+
+void Configuration::UISection::SkipAddTorrentDialog(bool value)
+{
+    Set("ui", "skip_add_torrent_dialog", value);
+}
+
 bool Configuration::UISection::ShowInNotificationArea()
 {
     return Get("ui", "show_in_notification_area", true);

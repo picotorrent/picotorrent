@@ -141,8 +141,13 @@ void AddTorrentProcedure::Execute(std::vector<lt::add_torrent_params>& params)
         param.save_path = m_cfg->DefaultSavePath().string();
     }
 
-    AddTorrentDialog addDialog(m_parent, m_trans, params);
-    int result = addDialog.ShowModal();
+    int result = wxID_OK;
+
+    if (!m_cfg->UI()->SkipAddTorrentDialog())
+    {
+        AddTorrentDialog addDialog(m_parent, m_trans, params);
+        result = addDialog.ShowModal();
+    }
 
     if (result == wxID_OK)
     {
