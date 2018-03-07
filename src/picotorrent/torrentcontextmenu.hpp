@@ -33,7 +33,8 @@ namespace pt
             ptID_COPY_INFO_HASH,
             ptID_OPEN_IN_EXPLORER,
             ptID_FORCE_RECHECK,
-            ptID_FORCE_REANNOUNCE
+            ptID_FORCE_REANNOUNCE,
+            ptID_SEQUENTIAL_DOWNLOAD
         };
 
         wxDECLARE_EVENT_TABLE();
@@ -50,6 +51,7 @@ namespace pt
         void QueueDown(wxCommandEvent&);
         void QueueTop(wxCommandEvent&);
         void QueueBottom(wxCommandEvent&);
+        void SequentialDownload(wxCommandEvent&);
 
         wxWindow* m_parent;
         std::shared_ptr<SessionState> m_state;

@@ -36,6 +36,7 @@ namespace pt
         {
             ptID_TORRENT_LIST = wxID_HIGHEST,
             ptID_SAVE_PATH,
+            ptID_SEQUENTIAL_DOWNLOAD,
             ptID_TORRENT_FILE_LIST,
             ptID_FILE_LIST
         };
@@ -44,6 +45,7 @@ namespace pt
         void OnFileContextMenu(wxDataViewEvent&);
         void OnSavePathChanged(wxFileDirPickerEvent&);
         void OnSetPriority(wxCommandEvent&);
+        void OnSequentialDownloadChanged(wxCommandEvent&);
         void OnTorrentChanged(wxCommandEvent&);
 
         wxDECLARE_EVENT_TABLE();
@@ -54,6 +56,7 @@ namespace pt
         wxStaticText* m_comment;
         wxStaticText* m_infoHash;
         wxDirPickerCtrl* m_savePath;
+        wxCheckBox* m_sequentialMode;
         wxDataViewCtrl* m_filesView;
         FileStorageViewModel* m_filesViewModel;
 

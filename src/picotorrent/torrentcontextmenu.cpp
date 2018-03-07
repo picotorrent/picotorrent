@@ -30,6 +30,7 @@ BEGIN_EVENT_TABLE(TorrentContextMenu, wxMenu)
     EVT_MENU(ptID_OPEN_IN_EXPLORER, TorrentContextMenu::OpenInExplorer)
     EVT_MENU(ptID_FORCE_RECHECK, TorrentContextMenu::ForceRecheck)
     EVT_MENU(ptID_FORCE_REANNOUNCE, TorrentContextMenu::ForceReannounce)
+    EVT_MENU(ptID_SEQUENTIAL_DOWNLOAD, TorrentContextMenu::SequentialDownload)
 END_EVENT_TABLE()
 
 TorrentContextMenu::TorrentContextMenu(
@@ -83,6 +84,18 @@ TorrentContextMenu::TorrentContextMenu(
     AppendSeparator();
     Append(ptID_FORCE_REANNOUNCE, i18n(tr, "force_reannounce"));
     Append(ptID_FORCE_RECHECK, i18n(tr, "force_recheck"));
+
+    if (m_state->selected_torrents.size() == 1)
+    {
+        const lt::torrent_handle& th = m_state->selected_torrents.at(0);
+        bool isSequential = (th.flags() & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download;
+
+        wxMenuItem* item = Append(ptID_SEQUENTIAL_DOWNLOAD, i18n(tr, "sequential_download"));
+        item->SetCheckable(true);
+        item->Check(isSequential);
+    }
+
+    AppendSeparator();
     Append(ptID_MOVE, i18n(tr, "move"));
     Append(ptID_REMOVE, i18n(tr, "remove"));
     AppendSeparator();
@@ -221,5 +234,22 @@ void TorrentContextMenu::QueueBottom(wxCommandEvent& WXUNUSED(event))
     for (lt::torrent_handle& th : m_state->selected_torrents)
     {
         th.queue_position_bottom();
+    }
+}
+
+void TorrentContextMenu::SequentialDownload(wxCommandEvent& WXUNUSED(event))
+{
+    for (lt::torrent_handle& th : m_state->selected_torrents)
+    {
+        bool isSequential = (th.flags() & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download;
+
+        if (isSequential)
+        {
+            th.unset_flags(lt::torrent_flags::sequential_download);
+        }
+        else
+        {
+            th.set_flags(lt::torrent_flags::sequential_download);
+        }
     }
 }
