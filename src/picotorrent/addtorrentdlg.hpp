@@ -49,7 +49,9 @@ namespace pt
         wxDECLARE_EVENT_TABLE();
 
         wxChoice* m_torrents;
+        wxStaticText* m_name;
         wxStaticText* m_size;
+        wxStaticText* m_comment;
         wxDirPickerCtrl* m_savePath;
         wxDataViewCtrl* m_filesView;
         FileStorageViewModel* m_filesViewModel;
