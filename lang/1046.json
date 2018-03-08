@@ -199,7 +199,7 @@
         "notification_area": "Area de notificação",
         "show_picotorrent_in_notification_area": "Mostrar o PicoTorrent na area de notificação",
         "minimize_to_notification_area": "Minimizar para area de notificação",
-        "close_to_notification_area": "Fechar para area de notificação"
+        "close_to_notification_area": "Fechar para area de notificação",
         "invalid_regex": "Expressão regular inválida",
         "info_hash": "Info hash",
         "fails": "Falhas",
@@ -222,6 +222,9 @@
         "enable_lsd": "Habilitar LSD",
         "enable_pex": "Habilitar PeX",
         "changing_pex_settings_requires_restart": "Alterar a configuração do PeX requer reinicialização",
-        "restart_required": "Necessário reiniciar"
+        "restart_required": "Necessário reiniciar",
+        "file": "Arquivo",
+        "comment": "Comentário",
+        "skip_add_torrent_dialog": "Não mostrar diálogo 'Adicionar torrent'"
     }
 }
