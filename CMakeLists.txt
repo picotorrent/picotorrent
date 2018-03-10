@@ -112,8 +112,10 @@ add_executable(
     src/picotorrent/buildinfo
     src/picotorrent/config
     src/picotorrent/config_section
+    src/picotorrent/config_presetssection
     src/picotorrent/config_sessionsection
     src/picotorrent/config_uisection
+    src/picotorrent/editpresetsdlg
     src/picotorrent/environment
     src/picotorrent/errorhandler
     src/picotorrent/connectionpage
@@ -131,6 +133,7 @@ add_executable(
     src/picotorrent/peersviewmodel
     src/picotorrent/persistenttorrentlistview
     src/picotorrent/preferencesdlg
+    src/picotorrent/presetspage
     src/picotorrent/proxypage
     src/picotorrent/resources.rc
     src/picotorrent/sessionloader

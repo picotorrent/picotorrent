@@ -43,6 +43,11 @@ void Configuration::Save(std::shared_ptr<pt::Environment> env, std::shared_ptr<C
     val.serialize(std::ostreambuf_iterator<char>(out), true);
 }
 
+std::shared_ptr<Configuration::PresetsSection> Configuration::Presets()
+{
+    return std::shared_ptr<PresetsSection>(new PresetsSection(m_obj));
+}
+
 std::shared_ptr<Configuration::SessionSection> Configuration::Session()
 {
     return std::shared_ptr<SessionSection>(new SessionSection(m_obj));

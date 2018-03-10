@@ -5,6 +5,7 @@
 #include "downloadspage.hpp"
 #include "environment.hpp"
 #include "generalpage.hpp"
+#include "presetspage.hpp"
 #include "proxypage.hpp"
 #include "sessionsettings.hpp"
 #include "sessionstate.hpp"
@@ -48,11 +49,13 @@ PreferencesDialog::PreferencesDialog(
     m_downloads = new DownloadsPage(book, cfg, tran);
     m_connection = new ConnectionPage(book, cfg, tran);
     m_proxy = new ProxyPage(book, cfg, tran);
+    m_presets = new PresetsPage(book, cfg, tran);
 
     book->AddPage(m_general, i18n(tran, "general"), true);
     book->AddPage(m_downloads, i18n(tran, "downloads"), false);
     book->AddPage(m_connection, i18n(tran, "connection"), false);
     book->AddPage(m_proxy, i18n(tran, "proxy"), false);
+    book->AddPage(m_presets, i18n(tran, "presets"), false);
 
     CreateButtons();
     LayoutDialog();

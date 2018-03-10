@@ -11,6 +11,7 @@ namespace fs = std::experimental::filesystem::v1;
 namespace pt
 {
     class Environment;
+    struct Preset;
 
     class Configuration
     {
@@ -51,6 +52,21 @@ namespace pt
 
         private:
             std::shared_ptr<picojson::object> m_part;
+        };
+
+        struct PresetsSection : public Section
+        {
+            friend class Configuration;
+
+            std::vector<Preset> GetAll();
+            Preset GetByIndex(int index, bool* found);
+
+            size_t Insert(Preset const& preset);
+            void Remove(size_t index);
+            void Update(size_t index, Preset const& preset);
+
+        protected:
+            using Section::Section;
         };
 
         struct SessionSection : public Section
@@ -118,6 +134,7 @@ namespace pt
         static std::shared_ptr<Configuration> Load(std::shared_ptr<Environment> env, std::string& error);
         static void Save(std::shared_ptr<Environment> env, std::shared_ptr<Configuration> config);
 
+        std::shared_ptr<PresetsSection> Presets();
         std::shared_ptr<SessionSection> Session();
         std::shared_ptr<UISection> UI();
 

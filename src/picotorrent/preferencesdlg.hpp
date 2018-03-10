@@ -17,6 +17,7 @@ namespace pt
     class DownloadsPage;
     class Environment;
     class GeneralPage;
+    class PresetsPage;
     class ProxyPage;
     struct SessionState;
     class TaskBarIcon;
@@ -47,5 +48,6 @@ namespace pt
         DownloadsPage* m_downloads;
         GeneralPage* m_general;
         ProxyPage* m_proxy;
+        PresetsPage* m_presets;
     };
 }

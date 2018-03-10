@@ -225,6 +225,8 @@
         "restart_required": "Restart required",
         "file": "File",
         "comment": "Comment",
-        "skip_add_torrent_dialog": "Skip 'Add torrent' dialog"
+        "skip_add_torrent_dialog": "Skip 'Add torrent' dialog",
+        "presets": "Presets",
+        "preset_name": "Preset name"
     }
 }
