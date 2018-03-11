@@ -12,7 +12,7 @@ class wxDataViewListCtrl;
 
 namespace pt
 {
-    class Configuration;
+    struct Preset;
     class Translator;
 
     class EditPresetsDialog : public wxDialog
@@ -20,7 +20,7 @@ namespace pt
     public:
         EditPresetsDialog(
             wxWindow* parent,
-            std::shared_ptr<Configuration> cfg,
+            std::vector<Preset>& presets,
             std::shared_ptr<Translator> translator);
 
     private:
@@ -35,7 +35,7 @@ namespace pt
 
         wxDECLARE_EVENT_TABLE();
 
-        std::shared_ptr<Configuration> m_cfg;
+        std::vector<Preset>& m_presets;
         std::shared_ptr<Translator> m_translator;
 
         wxButton* m_addButton;

@@ -8,10 +8,12 @@
 #include <memory>
 
 class wxDirPickerCtrl;
+class wxFileDirPickerEvent;
 
 namespace pt
 {
     class Configuration;
+    struct Preset;
     class Translator;
 
     class PresetsPage : public wxPanel
@@ -26,21 +28,25 @@ namespace pt
         enum
         {
             ptID_PRESETS = wxID_HIGHEST + 3222,
-            ptID_EDIT_PRESETS
+            ptID_EDIT_PRESETS,
+            ptID_SAVE_PATH,
+            ptID_MOVE_COMPLETED,
+            ptID_MOVE_COMPLETED_PATH
         };
 
         void LoadPreset(size_t index);
         void OnEditPresets(wxCommandEvent&);
+        void OnMoveCompletedChanged(wxCommandEvent&);
+        void OnMoveCompletedPathChanged(wxFileDirPickerEvent&);
         void OnPresetSelectionChanged(wxCommandEvent&);
+        void OnSavePathChanged(wxFileDirPickerEvent&);
         void ReloadPresets();
-        void SaveCurrentPreset();
 
         wxDECLARE_EVENT_TABLE();
 
         std::shared_ptr<Configuration> m_cfg;
         std::shared_ptr<Translator> m_translator;
-
-        size_t m_currentPresetIndex;
+        std::vector<Preset> m_presets;
 
         wxStaticBoxSizer* m_settingsSizer;
         wxChoice* m_preset;

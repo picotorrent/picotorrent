@@ -20,10 +20,9 @@ std::vector<pt::Preset> Configuration::PresetsSection::GetAll()
     {
         picojson::object& stored = p.get<picojson::object>();
 
-        Preset preset;
+        Preset preset(stored["name"].get<std::string>());
         preset.move_completed_downloads = stored["move_completed_downloads"].get<bool>();
         preset.move_completed_path = stored["move_completed_path"].get<std::string>();
-        preset.name = stored["name"].get<std::string>();
         preset.save_path = stored["save_path"].get<std::string>();
 
         presets.push_back(preset);
@@ -32,82 +31,25 @@ std::vector<pt::Preset> Configuration::PresetsSection::GetAll()
     return presets;
 }
 
-pt::Preset Configuration::PresetsSection::GetByIndex(int index, bool* found)
+void Configuration::PresetsSection::SetAll(std::vector<pt::Preset> const& presets)
 {
-    *found = false;
+    picojson::array a;
 
-    if (m_part->find("presets") == m_part->end())
+    for (Preset const& preset : presets)
     {
-        return Preset();
+        picojson::object p;
+        p.insert({ "name", picojson::value(preset.name) });
+        p.insert({ "save_path", picojson::value(preset.save_path.string()) });
+        p.insert({ "move_completed_downloads", picojson::value(preset.move_completed_downloads) });
+        p.insert({ "move_completed_path", picojson::value(preset.move_completed_path.string()) });
+
+        a.push_back(picojson::value(p));
     }
 
-    picojson::value& v = m_part->at("presets");
-    picojson::array& a = v.get<picojson::array>();
-
-    if (index + 1 > a.size())
-    {
-        return Preset();
-    }
-
-    picojson::object& stored = a.at(index).get<picojson::object>();
-
-    Preset preset;
-    preset.move_completed_downloads = stored["move_completed_downloads"].get<bool>();
-    preset.move_completed_path = stored["move_completed_path"].get<std::string>();
-    preset.name = stored["name"].get<std::string>();
-    preset.save_path = stored["save_path"].get<std::string>();
-
-    *found = true;
-    return preset;
-}
-
-size_t Configuration::PresetsSection::Insert(pt::Preset const& preset)
-{
     if (m_part->find("presets") == m_part->end())
     {
         m_part->insert({ "presets", picojson::value(picojson::array()) });
     }
 
-    picojson::value& v = m_part->at("presets");
-    picojson::array& a = v.get<picojson::array>();
-
-    picojson::object p;
-    p.insert({ "name", picojson::value(preset.name) });
-    p.insert({ "save_path", picojson::value(preset.save_path.string()) });
-    p.insert({ "move_completed_downloads", picojson::value(preset.move_completed_downloads) });
-    p.insert({ "move_completed_path", picojson::value(preset.move_completed_path.string()) });
-
-    a.push_back(picojson::value(p));
-
-    return a.size();
-}
-
-void Configuration::PresetsSection::Remove(size_t index)
-{
-    if (m_part->find("presets") == m_part->end())
-    {
-        return;
-    }
-
-    picojson::value& v = m_part->at("presets");
-    picojson::array& arr = v.get<picojson::array>();
-
-    arr.erase(arr.begin() + index);
-}
-
-void Configuration::PresetsSection::Update(size_t index, pt::Preset const& preset)
-{
-    if (m_part->find("presets") == m_part->end())
-    {
-        return;
-    }
-
-    picojson::value& v = m_part->at("presets");
-    picojson::array& arr = v.get<picojson::array>();
-
-    picojson::object& presetObject = arr.at(index).get<picojson::object>();
-    presetObject.at("name") = picojson::value(preset.name);
-    presetObject.at("save_path") = picojson::value(preset.save_path.string());
-    presetObject.at("move_completed_downloads") = picojson::value(preset.move_completed_downloads);
-    presetObject.at("move_completed_path") = picojson::value(preset.move_completed_path.string());
+    (*m_part)["presets"] = picojson::value(a);
 }

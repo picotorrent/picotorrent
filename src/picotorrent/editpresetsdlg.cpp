@@ -2,7 +2,6 @@
 
 #include <wx/dataview.h>
 
-#include "config.hpp"
 #include "preset.hpp"
 #include "translator.hpp"
 
@@ -15,10 +14,10 @@ wxBEGIN_EVENT_TABLE(EditPresetsDialog, wxDialog)
 wxEND_EVENT_TABLE()
 
 EditPresetsDialog::EditPresetsDialog(wxWindow* parent,
-    std::shared_ptr<pt::Configuration> cfg,
+    std::vector<pt::Preset>& presets,
     std::shared_ptr<pt::Translator> tr)
     : wxDialog(parent, wxID_ANY, i18n(tr, "edit_presets"), wxDefaultPosition, wxSize(350, 250), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
-    m_cfg(cfg),
+    m_presets(presets),
     m_translator(tr)
 {
     this->SetName("EditPresetsDialog");
@@ -34,9 +33,7 @@ EditPresetsDialog::EditPresetsDialog(wxWindow* parent,
     m_removeButton = new wxButton(pnl, wxID_REMOVE);
     m_removeButton->Enable(false);
 
-    std::vector<Preset> presets = cfg->Presets()->GetAll();
-
-    for (size_t i = 0; i < presets.size(); i++)
+    for (size_t i = 0; i < m_presets.size(); i++)
     {
         wxVector<wxVariant> item;
         item.push_back(wxVariant(presets.at(i).name));
@@ -67,18 +64,13 @@ void EditPresetsDialog::OnAdd(wxCommandEvent&)
         return;
     }
 
-    Preset p;
-    p.move_completed_downloads = false;
-    p.move_completed_path = "";
-    p.name = dlg.GetValue();
-    p.save_path = m_cfg->DefaultSavePath();
-
-    m_cfg->Presets()->Insert(p);
+    Preset p(dlg.GetValue().ToStdString());
+    m_presets.push_back(p);
 
     wxVector<wxVariant> item;
     item.push_back(wxVariant(p.name));
 
-    m_presetsList->AppendItem(item, m_cfg->Presets()->GetAll().size() - 1);
+    m_presetsList->AppendItem(item, m_presets.size() - 1);
 }
 
 void EditPresetsDialog::OnRemove(wxCommandEvent& e)
@@ -89,7 +81,7 @@ void EditPresetsDialog::OnRemove(wxCommandEvent& e)
     wxDataViewItem& rem = m_presetsList->GetStore()->GetItem(row);
     size_t idx = static_cast<size_t>(m_presetsList->GetItemData(rem));
 
-    m_cfg->Presets()->Remove(idx);
+    m_presets.erase(m_presets.begin() + idx);
     m_presetsList->DeleteItem(row);
     m_removeButton->Enable(false);
 

@@ -87,12 +87,18 @@ void PreferencesDialog::OnOk(wxCommandEvent& event)
         GetBookCtrl()->SetSelection(3);
         wxMessageBox("Invalid settings", error, 5L, this); // TODO: translate
     }
+    else if (!m_presets->ValidateConfiguration(error))
+    {
+        GetBookCtrl()->SetSelection(4);
+        wxMessageBox("Invalid settings", error, 5L, this); // TODO: translate
+    }
     else
     {
         m_general->ApplyConfiguration();
         m_downloads->ApplyConfiguration();
         m_connection->ApplyConfiguration();
         m_proxy->ApplyConfiguration();
+        m_presets->ApplyConfiguration();
 
         Configuration::Save(m_env, m_cfg);
 

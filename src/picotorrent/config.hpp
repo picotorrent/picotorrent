@@ -59,11 +59,7 @@ namespace pt
             friend class Configuration;
 
             std::vector<Preset> GetAll();
-            Preset GetByIndex(int index, bool* found);
-
-            size_t Insert(Preset const& preset);
-            void Remove(size_t index);
-            void Update(size_t index, Preset const& preset);
+            void SetAll(std::vector<Preset> const& preset);
 
         protected:
             using Section::Section;

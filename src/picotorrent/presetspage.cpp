@@ -13,13 +13,17 @@ using pt::PresetsPage;
 
 wxBEGIN_EVENT_TABLE(PresetsPage, wxPanel)
     EVT_BUTTON(ptID_EDIT_PRESETS, PresetsPage::OnEditPresets)
+    EVT_CHECKBOX(ptID_MOVE_COMPLETED, PresetsPage::OnMoveCompletedChanged)
     EVT_CHOICE(ptID_PRESETS, PresetsPage::OnPresetSelectionChanged)
+    EVT_DIRPICKER_CHANGED(ptID_SAVE_PATH, PresetsPage::OnSavePathChanged)
+    EVT_DIRPICKER_CHANGED(ptID_MOVE_COMPLETED_PATH, PresetsPage::OnMoveCompletedPathChanged)
 wxEND_EVENT_TABLE()
 
 PresetsPage::PresetsPage(wxWindow* parent, std::shared_ptr<pt::Configuration> cfg, std::shared_ptr<pt::Translator> tr)
     : wxPanel(parent, wxID_ANY),
     m_cfg(cfg),
-    m_translator(tr)
+    m_translator(tr),
+    m_presets(cfg->Presets()->GetAll())
 {
     wxStaticBoxSizer* presetsSizer = new wxStaticBoxSizer(wxHORIZONTAL, this, i18n(tr, "presets"));
     m_preset = new wxChoice(presetsSizer->GetStaticBox(), ptID_PRESETS);
@@ -30,15 +34,10 @@ PresetsPage::PresetsPage(wxWindow* parent, std::shared_ptr<pt::Configuration> cf
     m_settingsSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tr, "transfers"));
     wxFlexGridSizer* settingsGrid = new wxFlexGridSizer(2, 10, 10);
 
-    m_savePath = new wxDirPickerCtrl(m_settingsSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
-    m_moveCompleted = new wxCheckBox(m_settingsSizer->GetStaticBox(), wxID_ANY, i18n(tr, "move_completed_downloads"));
-    m_moveCompletedPath = new wxDirPickerCtrl(m_settingsSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
+    m_savePath = new wxDirPickerCtrl(m_settingsSizer->GetStaticBox(), ptID_SAVE_PATH, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
+    m_moveCompleted = new wxCheckBox(m_settingsSizer->GetStaticBox(), ptID_MOVE_COMPLETED, i18n(tr, "move_completed_downloads"));
+    m_moveCompletedPath = new wxDirPickerCtrl(m_settingsSizer->GetStaticBox(), ptID_MOVE_COMPLETED_PATH, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
     m_moveCompletedPath->Enable(false);
-
-    m_moveCompleted->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&)
-    {
-        m_moveCompletedPath->Enable(m_moveCompleted->IsChecked());
-    });
 
     settingsGrid->AddGrowableCol(1, 1);
     settingsGrid->Add(new wxStaticText(m_settingsSizer->GetStaticBox(), wxID_ANY, i18n(tr, "save_path")), 0, wxALIGN_CENTER_VERTICAL);
@@ -56,17 +55,11 @@ PresetsPage::PresetsPage(wxWindow* parent, std::shared_ptr<pt::Configuration> cf
     this->SetSizerAndFit(sizer);
 
     ReloadPresets();
-    
-    if (m_preset->GetCount() > 0)
-    {
-        m_preset->SetSelection(0);
-        LoadPreset(0);
-    }
 }
 
 void PresetsPage::ApplyConfiguration()
 {
-    SaveCurrentPreset();
+    m_cfg->Presets()->SetAll(m_presets);
 }
 
 bool PresetsPage::ValidateConfiguration(wxString& error)
@@ -76,48 +69,53 @@ bool PresetsPage::ValidateConfiguration(wxString& error)
 
 void PresetsPage::LoadPreset(size_t index)
 {
-    bool found;
-    Preset& p = m_cfg->Presets()->GetByIndex(index, &found);
+    Preset& p = m_presets.at(index);
 
-    if (found)
-    {
-        m_currentPresetIndex = index;
+    m_settingsSizer->GetStaticBox()->Enable(true);
 
-        m_settingsSizer->GetStaticBox()->Enable(true);
-
-        m_savePath->SetPath(p.save_path.string());
-        m_moveCompleted->SetValue(p.move_completed_downloads);
-        m_moveCompletedPath->Enable(m_moveCompleted->GetValue());
-        m_moveCompletedPath->SetPath(p.move_completed_path.string());
-    }
+    m_savePath->SetPath(p.save_path.string());
+    m_moveCompleted->SetValue(p.move_completed_downloads);
+    m_moveCompletedPath->Enable(m_moveCompleted->GetValue());
+    m_moveCompletedPath->SetPath(p.move_completed_path.string());
 }
 
 void PresetsPage::OnEditPresets(wxCommandEvent&)
 {
-    SaveCurrentPreset();
-
-    EditPresetsDialog dlg(this, m_cfg, m_translator);
+    EditPresetsDialog dlg(this, m_presets, m_translator);
     dlg.ShowModal();
 
     ReloadPresets();
+}
 
-    if (m_preset->GetCount() > 0)
-    {
-        m_preset->SetSelection(0);
-        LoadPreset(0);
-    }
+void PresetsPage::OnMoveCompletedChanged(wxCommandEvent&)
+{
+    Preset& p = m_presets.at(m_preset->GetSelection());
+    p.move_completed_downloads = m_moveCompleted->GetValue();
+
+    m_moveCompletedPath->Enable(p.move_completed_downloads);
+}
+
+void PresetsPage::OnMoveCompletedPathChanged(wxFileDirPickerEvent&)
+{
+    Preset& p = m_presets.at(m_preset->GetSelection());
+    p.move_completed_path = m_moveCompletedPath->GetPath().ToStdString();
 }
 
 void PresetsPage::OnPresetSelectionChanged(wxCommandEvent& e)
 {
-    SaveCurrentPreset();
+    LoadPreset(e.GetInt());
+}
 
-    m_currentPresetIndex = m_preset->GetSelection();
-    LoadPreset(m_currentPresetIndex);
+void PresetsPage::OnSavePathChanged(wxFileDirPickerEvent&)
+{
+    Preset& p = m_presets.at(m_preset->GetSelection());
+    p.save_path = m_savePath->GetPath().ToStdString();
 }
 
 void PresetsPage::ReloadPresets()
 {
+    int selectedIndex = m_preset->GetSelection();
+
     m_preset->Clear();
     m_settingsSizer->GetStaticBox()->Enable(false);
 
@@ -125,25 +123,17 @@ void PresetsPage::ReloadPresets()
     m_moveCompleted->SetValue(false);
     m_moveCompletedPath->SetPath("");
 
-    std::vector<Preset> presets = m_cfg->Presets()->GetAll();
-
-    for (size_t i = 0; i < presets.size(); i++)
+    for (size_t i = 0; i < m_presets.size(); i++)
     {
-        m_preset->Append(presets.at(i).name, new ClientData<size_t>(i));
+        m_preset->Append(m_presets.at(i).name, new ClientData<size_t>(i));
     }
-}
 
-void PresetsPage::SaveCurrentPreset()
-{
-    bool found;
-    Preset& p = m_cfg->Presets()->GetByIndex(m_currentPresetIndex, &found);
-
-    if (found)
+    if (m_presets.size() > 0)
     {
-        p.move_completed_downloads = m_moveCompleted->GetValue();
-        p.move_completed_path = m_moveCompletedPath->GetPath().ToStdString();
-        p.save_path = m_savePath->GetPath().ToStdString();
+        size_t realIndex = (selectedIndex < 0 ? 0 : static_cast<size_t>(selectedIndex));
+        if (realIndex >= m_presets.size()) { realIndex = m_presets.size() - 1; }
 
-        m_cfg->Presets()->Update(m_currentPresetIndex, p);
+        m_preset->SetSelection(realIndex);
+        LoadPreset(realIndex);
     }
 }
