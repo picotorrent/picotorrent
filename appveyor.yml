@@ -22,4 +22,8 @@ artifacts:
  - path: build-*/Release/packages/PicoTorrent-*-*.exe
  - path: build-*/Release/packages/PicoTorrent-*-*.zip
 
+cache:
+  - 'tools/Rasterbar-libtorrent -> tools/packages.config'
+  - 'tools/wxWidgets -> tools/packages.config'
+
 test: off
