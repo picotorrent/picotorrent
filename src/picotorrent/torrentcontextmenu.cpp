@@ -31,6 +31,7 @@ BEGIN_EVENT_TABLE(TorrentContextMenu, wxMenu)
     EVT_MENU(ptID_FORCE_RECHECK, TorrentContextMenu::ForceRecheck)
     EVT_MENU(ptID_FORCE_REANNOUNCE, TorrentContextMenu::ForceReannounce)
     EVT_MENU(ptID_SEQUENTIAL_DOWNLOAD, TorrentContextMenu::SequentialDownload)
+    EVT_MENU(ptID_AUTO_MANAGED, TorrentContextMenu::AutoManaged)
 END_EVENT_TABLE()
 
 TorrentContextMenu::TorrentContextMenu(
@@ -54,8 +55,7 @@ TorrentContextMenu::TorrentContextMenu(
         [this](lt::torrent_handle const& th)
     {
         lt::torrent_status ts = th.status();
-        return (ts.flags & (lt::torrent_flags::auto_managed
-            | lt::torrent_flags::paused)) == lt::torrent_flags::paused;
+        return (ts.flags & lt::torrent_flags::paused) == lt::torrent_flags::paused;
     });
 
     bool allNotPaused = std::all_of(
@@ -64,8 +64,7 @@ TorrentContextMenu::TorrentContextMenu(
         [this](lt::torrent_handle const& th)
     {
         lt::torrent_status ts = th.status();
-        return !((ts.flags & (lt::torrent_flags::auto_managed
-            | lt::torrent_flags::paused)) == lt::torrent_flags::paused);
+        return !((ts.flags & lt::torrent_flags::paused) == lt::torrent_flags::paused);
     });
 
     wxMenuItem* resume = Append(ptID_RESUME, i18n(tr, "resume"));
@@ -82,6 +81,18 @@ TorrentContextMenu::TorrentContextMenu(
     }
 
     AppendSeparator();
+
+    if (m_state->selected_torrents.size() == 1)
+    {
+        wxMenuItem* autoManagedItem = Append(ptID_AUTO_MANAGED, i18n(tr, "auto_managed"));
+
+        if ((m_state->selected_torrents[0].flags() & lt::torrent_flags::auto_managed) == lt::torrent_flags::auto_managed)
+        {
+            autoManagedItem->SetCheckable(true);
+            autoManagedItem->Check();
+        }
+    }    
+
     Append(ptID_FORCE_REANNOUNCE, i18n(tr, "force_reannounce"));
     Append(ptID_FORCE_RECHECK, i18n(tr, "force_recheck"));
 
@@ -103,6 +114,23 @@ TorrentContextMenu::TorrentContextMenu(
     AppendSeparator();
     Append(ptID_COPY_INFO_HASH, i18n(tr, "copy_info_hash"));
     Append(ptID_OPEN_IN_EXPLORER, i18n(tr, "open_in_explorer"));
+}
+
+void TorrentContextMenu::AutoManaged(wxCommandEvent& WXUNUSED(event))
+{
+    for (lt::torrent_handle& th : m_state->selected_torrents)
+    {
+        lt::torrent_flags_t flags = th.flags();
+
+        if ((flags & lt::torrent_flags::auto_managed) == lt::torrent_flags::auto_managed)
+        {
+            th.unset_flags(lt::torrent_flags::auto_managed);
+        }
+        else
+        {
+            th.set_flags(lt::torrent_flags::auto_managed);
+        }
+    }
 }
 
 void TorrentContextMenu::CopyInfoHash(wxCommandEvent& WXUNUSED(event))
@@ -182,7 +210,6 @@ void TorrentContextMenu::Pause(wxCommandEvent& WXUNUSED(event))
 {
     for (lt::torrent_handle& th : m_state->selected_torrents)
     {
-        th.unset_flags(lt::torrent_flags::auto_managed);
         th.pause(lt::torrent_handle::graceful_pause);
     }
 }
@@ -201,7 +228,7 @@ void TorrentContextMenu::Resume(wxCommandEvent& WXUNUSED(event))
 {
     for (lt::torrent_handle& th : m_state->selected_torrents)
     {
-        th.set_flags(lt::torrent_flags::auto_managed);
+        th.resume();
     }
 }
 

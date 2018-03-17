@@ -225,6 +225,8 @@
         "restart_required": "Restart required",
         "file": "File",
         "comment": "Comment",
-        "skip_add_torrent_dialog": "Skip 'Add torrent' dialog"
+        "skip_add_torrent_dialog": "Skip 'Add torrent' dialog",
+        "start_torrent": "Start torrent",
+        "auto_managed": "Auto managed"
     }
 }

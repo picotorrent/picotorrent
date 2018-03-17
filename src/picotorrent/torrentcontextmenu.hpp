@@ -34,11 +34,13 @@ namespace pt
             ptID_OPEN_IN_EXPLORER,
             ptID_FORCE_RECHECK,
             ptID_FORCE_REANNOUNCE,
-            ptID_SEQUENTIAL_DOWNLOAD
+            ptID_SEQUENTIAL_DOWNLOAD,
+            ptID_AUTO_MANAGED
         };
 
         wxDECLARE_EVENT_TABLE();
 
+        void AutoManaged(wxCommandEvent&);
         void CopyInfoHash(wxCommandEvent&);
         void ForceReannounce(wxCommandEvent&);
         void ForceRecheck(wxCommandEvent&);
