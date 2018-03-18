@@ -105,10 +105,13 @@ add_executable(
     src/picotorrent/ipc/applicationoptionsconnection
     src/picotorrent/ipc/server
 
+    src/picotorrent/http/httpclient
+
     src/picotorrent/addtorrentdlg
     src/picotorrent/addtorrentproc
     src/picotorrent/application
     src/picotorrent/applicationoptions
+    src/picotorrent/applicationupdater
     src/picotorrent/buildinfo
     src/picotorrent/config
     src/picotorrent/config_section
@@ -157,6 +160,7 @@ target_link_libraries(
     crypt32
     iphlpapi
     wininet
+    winhttp
 
     # Breakpad
     breakpad

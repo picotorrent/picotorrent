@@ -129,6 +129,9 @@ namespace pt
         fs::path DefaultSavePath();
         void DefaultSavePath(fs::path path);
 
+        std::string IgnoredVersion();
+        void IgnoredVersion(std::string const& version);
+
         std::vector<std::pair<std::string, int>> ListenInterfaces();
         void ListenInterfaces(const std::vector<std::pair<std::string, int>>& interfaces);
 
@@ -158,6 +161,8 @@ namespace pt
 
         bool ProxyTrackers();
         void ProxyTrackers(bool value);
+
+        std::string UpdateUrl();
 
         WindowState StartPosition();
         void StartPosition(WindowState state);
