@@ -103,7 +103,7 @@
         "no_update_available": "No update available",
         "show_on_github": "Show on GitHub",
         "new_version_available": "A newer version of PicoTorrent is available.",
-        "ignore_update": "Ignore this update.",
+        "ignore_update": "Ignore this update",
         "confirm_remove_description": "This will remove any downloaded files for this torrent.",
         "confirm_remove": "Confirm remove",
         "do_not_ask_again": "Do not ask again",

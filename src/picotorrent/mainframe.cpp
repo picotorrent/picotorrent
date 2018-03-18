@@ -23,6 +23,7 @@
 #include <wx/taskbarbutton.h>
 
 #include "applicationoptions.hpp"
+#include "applicationupdater.hpp"
 #include "addtorrentproc.hpp"
 #include "config.hpp"
 #include "environment.hpp"
@@ -65,7 +66,8 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     m_splitter(new wxSplitterWindow(this, wxID_ANY)),
     m_status(new StatusBar(this)),
     m_torrentListViewModel(new TorrentListViewModel(translator)),
-    m_trans(translator)
+    m_trans(translator),
+    m_updater(std::make_shared<ApplicationUpdater>(this, config, translator))
 {
     m_state = SessionLoader::Load(m_env, m_config);
     m_state->session->set_alert_notify([this]()
@@ -110,13 +112,16 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
 
     this->DragAcceptFiles(true);
     this->SetIcon(wxICON(AppIcon));
-    this->SetMenuBar(new MainMenu(m_state, m_config, m_env, m_taskBar, m_trans));
+    this->SetMenuBar(new MainMenu(m_state, m_config, m_env, m_updater, m_taskBar, m_trans));
     this->SetName("MainFrame");
     this->SetSizerAndFit(mainSizer);
     this->SetStatusBar(m_status);
 
     wxPersistenceManager::Get().RegisterAndRestore(this);
     wxPersistenceManager::Get().RegisterAndRestore(m_torrentListView);
+
+    // Check for update
+    m_updater->Check(false);
 
     m_timer = std::make_unique<wxTimer>(this, ptID_MAIN_TIMER);
     m_timer->Start(1000);

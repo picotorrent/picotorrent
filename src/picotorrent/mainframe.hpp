@@ -19,6 +19,7 @@ namespace pt
     }
 
     struct ApplicationOptions;
+    class ApplicationUpdater;
     class Configuration;
     class Environment;
     struct SessionState;
@@ -69,6 +70,7 @@ namespace pt
         TorrentListViewModel* m_torrentListViewModel;
         TorrentDetailsView* m_torrentDetailsView;
 
+        std::shared_ptr<ApplicationUpdater> m_updater;
         std::shared_ptr<Configuration> m_config;
         std::shared_ptr<Environment> m_env;
         std::shared_ptr<ipc::Server> m_srv;

@@ -63,6 +63,16 @@ void Configuration::CurrentLanguageId(int languageId)
     Set<int>("language_id", languageId);
 }
 
+std::string Configuration::IgnoredVersion()
+{
+    return Get<std::string>("ignored_version", "");
+}
+
+void Configuration::IgnoredVersion(std::string const& version)
+{
+    Set("ignored_version", version);
+}
+
 fs::path Configuration::LanguagesPath()
 {
     return Get<std::string>("languages_path", (m_env->GetApplicationDataPath() / "Languages").string());
@@ -223,6 +233,11 @@ Configuration::WindowState Configuration::StartPosition()
 void Configuration::StartPosition(Configuration::WindowState state)
 {
     Set<int>("start_position", static_cast<int>(state));
+}
+
+std::string Configuration::UpdateUrl()
+{
+    return Get<std::string>("update_url", "https://api.picotorrent.org/releases/latest");
 }
 
 Configuration::Configuration(std::shared_ptr<pt::Environment> env, std::shared_ptr<picojson::object> obj)
