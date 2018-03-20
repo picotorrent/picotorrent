@@ -204,6 +204,7 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
 {
     lt::sha1_hash const& hash = m_order.at(row);
     lt::torrent_status const& ts = m_status.at(hash);
+    bool isPaused = (ts.flags & lt::torrent_flags::paused) == lt::torrent_flags::paused;
 
     switch (col)
     {
@@ -240,13 +241,11 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
         break;
     case Columns::ETA:
     {
-        std::chrono::seconds secs = GetETA(ts);
+        variant = "-";
+        if (isPaused) { break; }
 
-        if (secs.count() <= 0)
-        {
-            variant = "-";
-            break;
-        }
+        std::chrono::seconds secs = GetETA(ts);
+        if (secs.count() <= 0) { break; }
 
         std::chrono::hours hours_left = std::chrono::duration_cast<std::chrono::hours>(secs);
         std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(secs - hours_left);
@@ -261,11 +260,9 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
     }
     case Columns::DownloadSpeed:
     {
-        if (ts.download_payload_rate <= 0)
-        {
-            variant = "-";
-        }
-        else
+        variant = "-";
+
+        if (ts.download_payload_rate > 0 && !isPaused)
         {
             variant = wxString::Format(
                 "%s/s",
@@ -275,11 +272,9 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
     }
     case Columns::UploadSpeed:
     {
-        if (ts.upload_payload_rate <= 0)
-        {
-            variant = "-";
-        }
-        else
+        variant = "-";
+
+        if (ts.upload_payload_rate > 0 && !isPaused)
         {
             variant = wxString::Format(
                 "%s/s",
@@ -289,11 +284,9 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
     }
     case Columns::Availability:
     {
-        if (ts.distributed_copies < 0)
-        {
-            variant = "-";
-        }
-        else
+        variant = "-";
+
+        if (ts.distributed_copies >= 0 && !isPaused)
         {
             variant = wxString::Format("%.3f", ts.distributed_copies);
         }
@@ -307,12 +300,24 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
         break;
     }
     case Columns::Seeds:
+        if (isPaused)
+        {
+            variant = "-";
+            break;
+        }
+
         variant = wxString::Format(
             "%d (of %d)",
             ts.num_seeds,
             ts.list_seeds);
         break;
     case Columns::Peers:
+        if (isPaused)
+        {
+            variant = "-";
+            break;
+        }
+
         variant = wxString::Format(
             "%d (of %d)",
             ts.num_peers - ts.num_seeds,
