@@ -2,19 +2,48 @@
 
 #include "translator.hpp"
 
-#include <sstream>
-
 #include <libtorrent/torrent_status.hpp>
+#include <sstream>
+#include <wx/clipbrd.h>
 
 namespace lt = libtorrent;
 using pt::OverviewPage;
 
+class CopyableStaticText : public wxStaticText
+{
+public:
+    CopyableStaticText(wxWindow *parent, std::shared_ptr<pt::Translator> tr)
+        : wxStaticText(parent, wxID_ANY, "-", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END, wxStaticTextNameStr)
+    {
+        this->Bind(wxEVT_RIGHT_DOWN, [this, tr](wxMouseEvent const& ev)
+        {
+            if (this->GetLabel() == "-")
+            {
+                return;
+            }
+
+            wxMenu menu;
+            menu.Append(9999, i18n(tr, "copy"));
+            menu.Bind(wxEVT_MENU, [this](wxCommandEvent const&)
+            {
+                if (wxTheClipboard->Open())
+                {
+                    wxTheClipboard->SetData(new wxTextDataObject(this->GetLabel()));
+                    wxTheClipboard->Close();
+                }
+            });
+
+            PopupMenu(&menu);
+        });
+    }
+};
+
 OverviewPage::OverviewPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Translator> tr)
     : wxPanel(parent, id),
-    m_name(new wxStaticText(this, wxID_ANY, "-", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END)),
-    m_infoHash(new wxStaticText(this, wxID_ANY, "-", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END)),
-    m_savePath(new wxStaticText(this, wxID_ANY, "-", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END)),
-    m_pieces(new wxStaticText(this, wxID_ANY, "-", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END))
+    m_name(new CopyableStaticText(this, tr)),
+    m_infoHash(new CopyableStaticText(this, tr)),
+    m_savePath(new CopyableStaticText(this, tr)),
+    m_pieces(new CopyableStaticText(this, tr))
 {
     wxFlexGridSizer* sz = new wxFlexGridSizer(4, 10, 10);
     sz->AddGrowableCol(1);
