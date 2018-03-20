@@ -48,7 +48,7 @@ void PeersViewModel::Update(lt::torrent_status const& ts)
         else
         {
             auto distance = std::distance(m_data.begin(), f);
-            m_data.at(distance) = *f;
+            m_data.at(distance) = *it;
             RowChanged(distance);
         }
     }
