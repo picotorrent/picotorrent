@@ -30,7 +30,10 @@ OverviewPage::OverviewPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::
     sz->Add(GetBoldStatic(i18n(tr, "pieces")));
     sz->Add(m_pieces, 1, wxEXPAND);
 
-    this->SetSizerAndFit(sz);
+    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+    mainSizer->Add(sz, 1, wxALL | wxEXPAND, 5);
+
+    this->SetSizerAndFit(mainSizer);
 }
 
 void OverviewPage::Clear()
@@ -50,6 +53,8 @@ void OverviewPage::Update(lt::torrent_status const& ts)
     m_infoHash->SetLabel(ih.str());
     m_savePath->SetLabel(ts.save_path);
     m_pieces->SetLabel(wxString::Format("%d (of %d)", ts.pieces.count(), ts.pieces.size()));
+
+    this->SendSizeEvent();
 }
 
 wxStaticText* OverviewPage::GetBoldStatic(wxString const& label)
