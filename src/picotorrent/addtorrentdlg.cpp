@@ -172,7 +172,7 @@ void AddTorrentDialog::LoadTorrentInfo(int index)
     m_infoHash->SetLabel("-");
 
     // Save path
-    m_savePath->SetPath(params.save_path);
+    m_savePath->SetPath(wxString::FromUTF8(params.save_path));
     m_sequentialMode->SetValue(
         (params.flags & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download);
 
@@ -217,7 +217,7 @@ void AddTorrentDialog::OnSavePathChanged(wxFileDirPickerEvent& event)
 {
     int idx = m_torrents->GetSelection();
     lt::add_torrent_params& params = m_params.at(idx);
-    params.save_path = event.GetPath().ToStdString();
+    params.save_path = event.GetPath().ToUTF8();
 }
 
 void AddTorrentDialog::OnSetPriority(wxCommandEvent& event)

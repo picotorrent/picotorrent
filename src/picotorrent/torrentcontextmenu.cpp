@@ -175,7 +175,7 @@ void TorrentContextMenu::OpenInExplorer(wxCommandEvent& WXUNUSED(event))
     lt::torrent_handle const& th = m_state->selected_torrents.front();
     lt::torrent_status ts = th.status();
 
-    fs::path savePath = ts.save_path;
+    fs::path savePath = wxString::FromUTF8(ts.save_path).ToStdWstring();
     fs::path path = savePath / ts.name;
 
     Utils::OpenAndSelect(path);

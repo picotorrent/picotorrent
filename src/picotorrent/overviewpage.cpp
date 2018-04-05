@@ -78,9 +78,12 @@ void OverviewPage::Update(lt::torrent_status const& ts)
     std::stringstream ih;
     ih << ts.info_hash;
 
+    wxString savePath = wxString::FromUTF8(ts.save_path);
+    savePath.Replace("&", "&&");
+
     m_name->SetLabel(ts.name);
     m_infoHash->SetLabel(ih.str());
-    m_savePath->SetLabel(ts.save_path);
+    m_savePath->SetLabel(savePath);
     m_pieces->SetLabel(wxString::Format("%d (of %d)", ts.pieces.count(), ts.pieces.size()));
 
     this->SendSizeEvent();
