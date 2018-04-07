@@ -227,6 +227,7 @@
         "comment": "Comment",
         "skip_add_torrent_dialog": "Skip 'Add torrent' dialog",
         "start_torrent": "Start torrent",
-        "auto_managed": "Auto managed"
+        "auto_managed": "Auto managed",
+        "copy": "Copy"
     }
 }

@@ -81,12 +81,7 @@ wxString Utils::ToReadableStatus(lt::torrent_status const& ts, std::shared_ptr<p
                     return i18n(tr, "state_uploading_paused");
                 }
 
-                if (ts.upload_payload_rate > 0)
-                {
-                    return i18n(tr, "state_uploading");
-                }
-                
-                return i18n(tr, "state_uploading_stalled");
+                return i18n(tr, "state_uploading");
             }
             case lt::torrent_status::state_t::checking_resume_data:
             {
@@ -107,12 +102,7 @@ wxString Utils::ToReadableStatus(lt::torrent_status const& ts, std::shared_ptr<p
                     return i18n(tr, "state_downloading_forced");
                 }
 
-                if (ts.download_payload_rate > 0)
-                {
-                    return i18n(tr, "state_downloading");
-                }
-
-                return i18n(tr, "state_downloading_stalled");
+                return i18n(tr, "state_downloading");
             }
             }
         }

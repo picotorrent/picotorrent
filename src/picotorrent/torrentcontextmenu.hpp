@@ -23,6 +23,7 @@ namespace pt
         enum
         {
             ptID_RESUME = wxID_HIGHEST + 1,
+            ptID_RESUME_FORCE,
             ptID_PAUSE,
             ptID_MOVE,
             ptID_REMOVE,
@@ -34,13 +35,11 @@ namespace pt
             ptID_OPEN_IN_EXPLORER,
             ptID_FORCE_RECHECK,
             ptID_FORCE_REANNOUNCE,
-            ptID_SEQUENTIAL_DOWNLOAD,
-            ptID_AUTO_MANAGED
+            ptID_SEQUENTIAL_DOWNLOAD
         };
 
         wxDECLARE_EVENT_TABLE();
 
-        void AutoManaged(wxCommandEvent&);
         void CopyInfoHash(wxCommandEvent&);
         void ForceReannounce(wxCommandEvent&);
         void ForceRecheck(wxCommandEvent&);

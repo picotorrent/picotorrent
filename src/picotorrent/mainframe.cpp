@@ -396,6 +396,13 @@ void MainFrame::OnSessionAlert()
 
             break;
         }
+        case lt::torrent_paused_alert::alert_type:
+        {
+            lt::torrent_paused_alert* tpa = lt::alert_cast<lt::torrent_paused_alert>(alert);
+            m_torrentListViewModel->Update(tpa->handle.status());
+
+            break;
+        }
         case lt::torrent_removed_alert::alert_type:
         {
             lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
@@ -418,6 +425,13 @@ void MainFrame::OnSessionAlert()
             if (fs::exists(torrent_dat)) { fs::remove(torrent_dat); }
 
             m_torrentListView->Sort();
+
+            break;
+        }
+        case lt::torrent_resumed_alert::alert_type:
+        {
+            lt::torrent_resumed_alert* tra = lt::alert_cast<lt::torrent_resumed_alert>(alert);
+            m_torrentListViewModel->Update(tra->handle.status());
 
             break;
         }

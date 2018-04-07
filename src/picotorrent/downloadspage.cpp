@@ -16,7 +16,7 @@ DownloadsPage::DownloadsPage(wxWindow* parent, std::shared_ptr<pt::Configuration
     wxFlexGridSizer* transfersGrid = new wxFlexGridSizer(2, 10, 10);
 
     m_savePathCtrl = new wxDirPickerCtrl(transfersSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
-    m_savePathCtrl->SetPath(m_cfg->DefaultSavePath().string());
+    m_savePathCtrl->SetPath(wxString::FromUTF8(m_cfg->DefaultSavePath().string()));
 
     transfersGrid->AddGrowableCol(1, 1);
     transfersGrid->Add(new wxStaticText(transfersSizer->GetStaticBox(), wxID_ANY, i18n(tran, "save_path")), 0, wxALIGN_CENTER_VERTICAL);
@@ -100,7 +100,7 @@ void DownloadsPage::ApplyConfiguration()
     long ulLimit = 0;
     m_uploadLimit->GetValue().ToLong(&ulLimit);
 
-    m_cfg->DefaultSavePath(m_savePathCtrl->GetPath().ToStdString());
+    m_cfg->DefaultSavePath(std::string(m_savePathCtrl->GetPath().ToUTF8()));
     m_cfg->Session()->EnableDownloadRateLimit(m_enableDownloadLimit->GetValue());
     m_cfg->Session()->DownloadRateLimit(static_cast<int>(dlLimit));
     m_cfg->Session()->EnableUploadRateLimit(m_enableUploadLimit->GetValue());
