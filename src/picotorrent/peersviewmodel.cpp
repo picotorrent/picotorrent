@@ -74,7 +74,7 @@ void PeersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigne
         variant = peer.ip.address().to_string();
         break;
     case Columns::Client:
-        variant = peer.client;
+        variant = wxString::FromUTF8(peer.client);
         break;
     case Columns::Flags:
     {
