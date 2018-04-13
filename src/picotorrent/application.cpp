@@ -76,8 +76,11 @@ bool Application::OnInit()
             "PicoTorrent",
             "ApplicationOptions");
 
-        conn->Execute(json);
-        conn->Disconnect();
+        if (conn)
+        {
+            conn->Execute(json);
+            conn->Disconnect();
+        }
 
         return false;
     }
