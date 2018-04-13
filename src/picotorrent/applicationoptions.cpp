@@ -57,5 +57,5 @@ wxString ApplicationOptions::JsonEncode(std::shared_ptr<ApplicationOptions> opts
     obj.insert({ "files", picojson::value(files) });
     obj.insert({ "magnet_links", picojson::value(magnets) });
 
-    return picojson::value(obj).serialize();
+    return wxString::FromUTF8(picojson::value(obj).serialize());
 }

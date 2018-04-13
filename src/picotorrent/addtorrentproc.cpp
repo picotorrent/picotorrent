@@ -63,14 +63,15 @@ void AddTorrentProcedure::Execute(wxArrayString const& files)
     {
         lt::add_torrent_params p;
         lt::error_code ec;
-
         p.ti = std::make_shared<lt::torrent_info>(filePath.ToStdString(), ec);
-        p.file_priorities.resize(p.ti->num_files(), lt::default_priority);
 
         if (ec)
         {
+            wxLogWarning("Could not parse torrent file: %s", ec.message());
             continue;
         }
+
+        p.file_priorities.resize(p.ti->num_files(), lt::default_priority);
 
         params.push_back(p);
     }
@@ -136,6 +137,11 @@ void AddTorrentProcedure::ExecuteMagnet(wxArrayString const& magnetLinks)
 
 void AddTorrentProcedure::Execute(std::vector<lt::add_torrent_params>& params)
 {
+    if (params.empty())
+    {
+        return;
+    }
+
     for (auto& param : params)
     {
         param.save_path = m_cfg->DefaultSavePath().string();
