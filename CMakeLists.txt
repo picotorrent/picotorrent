@@ -137,6 +137,7 @@ add_executable(
     src/picotorrent/preferencesdlg
     src/picotorrent/proxypage
     src/picotorrent/resources.rc
+    src/picotorrent/scaler
     src/picotorrent/sessionloader
     src/picotorrent/sessionsettings
     src/picotorrent/sessionstate
