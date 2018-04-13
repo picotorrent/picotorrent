@@ -4,6 +4,7 @@
 #include "filestorageviewmodel.hpp"
 #include "string.hpp"
 #include "translator.hpp"
+#include "scaler.hpp"
 
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
@@ -36,27 +37,27 @@ FilesPage::FilesPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Transl
         i18n(tran, "name"),
         FileStorageViewModel::Columns::Name,
         wxDATAVIEW_CELL_INERT,
-        220,
+        SX(220),
         wxALIGN_LEFT);
 
     m_filesView->AppendTextColumn(
         i18n(tran, "size"),
         FileStorageViewModel::Columns::Size,
         wxDATAVIEW_CELL_INERT,
-        80,
+        SX(80),
         wxALIGN_RIGHT);
 
     m_filesView->AppendProgressColumn(
         i18n(tran, "progress"),
         FileStorageViewModel::Columns::Progress,
         wxDATAVIEW_CELL_INERT,
-        80);
+        SX(80));
 
     m_filesView->AppendTextColumn(
         i18n(tran, "priority"),
         FileStorageViewModel::Columns::Priority,
         wxDATAVIEW_CELL_INERT,
-        80,
+        SX(80),
         wxALIGN_RIGHT);
 
     nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);

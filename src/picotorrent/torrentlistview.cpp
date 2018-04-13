@@ -3,6 +3,8 @@
 #include "torrentlistviewmodel.hpp"
 #include "translator.hpp"
 
+#include "scaler.hpp"
+
 using pt::TorrentListView;
 
 TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Translator> tr)
@@ -12,7 +14,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         i18n(tr, "name"),
         TorrentListViewModel::Columns::Name,
         wxDATAVIEW_CELL_INERT,
-        180,
+        SX(180),
         wxALIGN_NOT,
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
@@ -20,7 +22,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         i18n(tr, "queue_position"),
         TorrentListViewModel::Columns::QueuePosition,
         wxDATAVIEW_CELL_INERT,
-        30,
+        SX(30),
         wxALIGN_RIGHT,
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
@@ -28,7 +30,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         i18n(tr, "size"),
         TorrentListViewModel::Columns::Size,
         wxDATAVIEW_CELL_INERT,
-        80,
+        SX(80),
         wxALIGN_RIGHT,
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
@@ -36,13 +38,13 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         i18n(tr, "status"),
         TorrentListViewModel::Columns::Status,
         wxDATAVIEW_CELL_INERT,
-        120);
+        SX(120));
 
     AppendProgressColumn(
         i18n(tr, "progress"),
         TorrentListViewModel::Columns::Progress,
         wxDATAVIEW_CELL_INERT,
-        100,
+        SX(100),
         wxALIGN_CENTER,
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
@@ -50,7 +52,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         i18n(tr, "eta"),
         TorrentListViewModel::Columns::ETA,
         wxDATAVIEW_CELL_INERT,
-        80,
+        SX(80),
         wxALIGN_RIGHT,
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
@@ -58,7 +60,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         i18n(tr, "dl"),
         TorrentListViewModel::Columns::DownloadSpeed,
         wxDATAVIEW_CELL_INERT,
-        80,
+        SX(80),
         wxALIGN_RIGHT,
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
@@ -66,7 +68,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         i18n(tr, "ul"),
         TorrentListViewModel::Columns::UploadSpeed,
         wxDATAVIEW_CELL_INERT,
-        80,
+        SX(80),
         wxALIGN_RIGHT,
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
@@ -74,7 +76,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         i18n(tr, "availability"),
         TorrentListViewModel::Columns::Availability,
         wxDATAVIEW_CELL_INERT,
-        80,
+        SX(80),
         wxALIGN_RIGHT,
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
@@ -82,7 +84,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         i18n(tr, "ratio"),
         TorrentListViewModel::Columns::Ratio,
         wxDATAVIEW_CELL_INERT,
-        80,
+        SX(80),
         wxALIGN_RIGHT,
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
@@ -90,21 +92,21 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         i18n(tr, "seeds"),
         TorrentListViewModel::Columns::Seeds,
         wxDATAVIEW_CELL_INERT,
-        80,
+        SX(80),
         wxALIGN_RIGHT);
 
     AppendTextColumn(
         i18n(tr, "peers"),
         TorrentListViewModel::Columns::Peers,
         wxDATAVIEW_CELL_INERT,
-        80,
+        SX(80),
         wxALIGN_RIGHT);
 
     AppendTextColumn(
         i18n(tr, "added_on"),
         TorrentListViewModel::Columns::AddedOn,
         wxDATAVIEW_CELL_INERT,
-        120,
+        SX(120),
         wxALIGN_RIGHT,
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
@@ -112,7 +114,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         i18n(tr, "completed_on"),
         TorrentListViewModel::Columns::CompletedOn,
         wxDATAVIEW_CELL_INERT,
-        120,
+        SX(120),
         wxALIGN_RIGHT,
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
@@ -122,7 +124,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
 
 wxSize TorrentListView::GetMinSize() const
 {
-    return wxSize(500, 150);
+    return wxSize(SX(500), SY(150));
 }
 
 void TorrentListView::Sort()
