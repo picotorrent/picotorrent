@@ -7,7 +7,6 @@
 #include "config.hpp"
 #include "environment.hpp"
 #include "picojson.hpp"
-#include "utils.hpp"
 
 namespace fs = std::experimental::filesystem::v1;
 namespace pj = picojson;
@@ -124,14 +123,12 @@ bool Translator::LoadLanguageFromJson(std::string const& json, Translator::Langu
 
     Language l;
     l.code = langId;
-    l.name = Utils::ToWideString(langName.c_str(), static_cast<int>(langName.size()));
+    l.name = wxString::FromUTF8(langName);
 
     for (auto& p : obj.at("strings").get<pj::object>())
     {
         std::string val = p.second.get<std::string>();
-        wxString converted = Utils::ToWideString(val.c_str(), static_cast<int>(val.size()));
-
-        l.translations.insert({ p.first, converted });
+        l.translations.insert({ p.first, wxString::FromUTF8(val) });
     }
 
     lang = l;
