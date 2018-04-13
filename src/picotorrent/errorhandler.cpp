@@ -63,13 +63,13 @@ bool ErrorHandler::Report(const wchar_t* path, const wchar_t* id, void* context,
     std::map<std::wstring, std::wstring> params;
     std::map<std::wstring, std::wstring> files;
 
-    std::string branch = BuildInfo::Branch();
-    std::string commitish = BuildInfo::Commitish();
-    std::string version = BuildInfo::Version();
+    wxString branch = BuildInfo::Branch();
+    wxString commitish = BuildInfo::Commitish();
+    wxString version = BuildInfo::Version();
 
-    params.insert({ L"branch", Utils::ToWideString(branch.c_str(), branch.size()) });
-    params.insert({ L"commitish", Utils::ToWideString(commitish.c_str(), commitish.size()) });
-    params.insert({ L"version", Utils::ToWideString(version.c_str(), version.size()) });
+    params.insert({ L"branch", branch.ToStdWstring() });
+    params.insert({ L"commitish", commitish.ToStdWstring() });
+    params.insert({ L"version", version.ToStdWstring() });
 
     fs::path dmpFile = fs::path(path) / fs::path(id).replace_extension(".dmp");
     files.insert({ L"minidump", dmpFile.wstring() });

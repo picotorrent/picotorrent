@@ -217,7 +217,7 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
         }
         else
         {
-            variant = ts.name;
+            variant = wxString::FromUTF8(ts.name);
         }
         break;
     case Columns::QueuePosition:

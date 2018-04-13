@@ -249,7 +249,10 @@ void FileStorageViewModel::GetValue(wxVariant &variant, const wxDataViewItem &it
             icon = GetIconForFile(node->name);
         }
 
-        variant << wxDataViewIconText(node->name, icon);
+        variant << wxDataViewIconText(
+            wxString::FromUTF8(node->name),
+            icon);
+
         break;
     }
     case Columns::Size:

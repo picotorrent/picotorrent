@@ -26,10 +26,10 @@ ApplicationUpdater::~ApplicationUpdater()
 
 void ApplicationUpdater::Check(bool force)
 {
-    std::string updateUrl = m_config->UpdateUrl();
+    wxString updateUrl = m_config->UpdateUrl();
 
     m_httpClient->GetAsync(
-        Utils::ToWideString(updateUrl.c_str(), static_cast<int>(updateUrl.size())),
+        updateUrl.ToStdWstring(),
         std::bind(&ApplicationUpdater::OnHttpResponse, this, std::placeholders::_1, force));
 }
 
