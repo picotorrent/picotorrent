@@ -176,8 +176,17 @@ void GeneralPage::ApplyConfiguration()
     int startPosIndex = m_startPosition->GetSelection();
     ClientData<Configuration::WindowState>* startPosData = reinterpret_cast<ClientData<Configuration::WindowState>*>(m_startPosition->GetClientObject(startPosIndex));
 
-    m_config->CurrentLanguageId(static_cast<int>(langData->GetValue()));
-    m_config->StartPosition(startPosData->GetValue());
+    if (langData != nullptr)
+    {
+        // Sometimes we see crashes where langData is null. Can't reproduce,
+        // but the simple fix is to null check.
+        m_config->CurrentLanguageId(static_cast<int>(langData->GetValue()));
+    }
+
+    if (startPosData != nullptr)
+    {
+        m_config->StartPosition(startPosData->GetValue());
+    }
 
     {
         AutoRunKey key;
