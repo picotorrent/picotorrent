@@ -225,6 +225,9 @@
         "restart_required": "Necessário reiniciar",
         "file": "Arquivo",
         "comment": "Comentário",
-        "skip_add_torrent_dialog": "Não mostrar diálogo 'Adicionar torrent'"
+        "skip_add_torrent_dialog": "Não mostrar diálogo 'Adicionar torrent'",
+        "start_torrent": "Iniciar Torrent",
+        "auto_managed": "Auto gerenciado",
+        "copy": "Cópia"
     }
 }
