@@ -22,6 +22,9 @@ PeersPage::PeersPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Transl
     m_peersView->AppendTextColumn(i18n(tr, "ul"), PeersViewModel::Columns::UploadRate, wxDATAVIEW_CELL_INERT, 80, wxALIGN_RIGHT);
     m_peersView->AppendProgressColumn(i18n(tr, "progress"), PeersViewModel::Columns::Progress, wxDATAVIEW_CELL_INERT, 100);
 
+    // Ugly hack to prevent the last "real" column from stretching.
+    m_peersView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0));
+
     m_peersView->AssociateModel(m_viewModel);
     m_viewModel->DecRef();
 
