@@ -212,6 +212,22 @@
         "added_on": "Hinzügefügt am",
         "completed_on": "Abgeschlossen am",
         "config_error_s": "Konfigurationsdatei konnte nicht geparsed werden. Standardkonfiguration wurde geladen.\n---\n%s",
-        "config_error_title": "Konfigurationsfehler"
+        "config_error_title": "Konfigurationsfehler",
+        "error_s": "Fehler: %s",
+        "add_trackers": "Tracker hinzufügen",
+        "tracker_urls": "Tracker-URLs",
+        "force_reannounce": "Neue Ankündigung erzwingen",
+        "copy_url": "URL kopieren",
+        "enable_dht": "DHT aktivieren",
+        "enable_lsd": "LSD aktivieren",
+        "enable_pex": "PeX aktivieren",
+        "changing_pex_settings_requires_restart": "Die Änderung der PeX-Einstellung benötigt einen Neustart",
+        "restart_required": "Neustart benötigt",
+        "file": "Datei",
+        "comment": "Kommentar",
+        "skip_add_torrent_dialog": "Dialog 'Torrent hinzufügen' überspringen",
+        "start_torrent": "Torrent starten",
+        "auto_managed": "Automatisch verwaltet",
+        "copy": "Kopieren"
     }
 }
