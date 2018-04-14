@@ -116,6 +116,9 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         wxALIGN_RIGHT,
         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
+    // Ugly hack to prevent the last "real" column from stretching.
+    AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0));
+
     nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
     statusCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
 }
