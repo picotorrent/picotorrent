@@ -10,6 +10,8 @@
 #include "trackersviewmodel.hpp"
 #include "translator.hpp"
 
+#include "scaler.hpp"
+
 namespace lt = libtorrent;
 using pt::TrackersPage;
 
@@ -37,27 +39,27 @@ TrackersPage::TrackersPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::
         i18n(tr, "url"),
         TrackersViewModel::Columns::Url,
         wxDATAVIEW_CELL_INERT,
-        220);
+        SX(220));
 
     auto statusCol = m_trackersView->AppendTextColumn(
         i18n(tr, "status"),
         TrackersViewModel::Columns::Status,
         wxDATAVIEW_CELL_INERT,
-        160);
+        SX(160));
 
     m_trackersView->AppendTextColumn(
         i18n(tr, "fails"),
         TrackersViewModel::Columns::Fails,
         wxDATAVIEW_CELL_INERT,
-        60,
+        SX(60),
         wxALIGN_RIGHT);
 
     m_trackersView->AppendTextColumn(
         i18n(tr, "next_announce"),
         TrackersViewModel::Columns::NextAnnounce,
         wxDATAVIEW_CELL_INERT,
-        100,
-        wxALIGN_RIGHT)->SetMinWidth(100);
+        SX(100),
+        wxALIGN_RIGHT)->SetMinWidth(SX(100));
 
     // Ugly hack to prevent the last "real" column from stretching.
     m_trackersView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0));
@@ -95,7 +97,7 @@ void TrackersPage::OnAddTrackers(wxCommandEvent&)
         wxEmptyString,
         wxTextEntryDialogStyle | wxTE_MULTILINE);
 
-    dlg.SetClientSize(dlg.GetClientSize().GetWidth(), 150);
+    dlg.SetClientSize(dlg.GetClientSize().GetWidth(), SX(150));
     // dlg.SetTextValidator(MagnetLinkValidator());
 
     if (dlg.ShowModal() != wxID_OK)
