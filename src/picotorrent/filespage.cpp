@@ -60,6 +60,9 @@ FilesPage::FilesPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Transl
         SX(80),
         wxALIGN_RIGHT);
 
+    // Ugly hack to prevent the last "real" column from stretching.
+    m_filesView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0));
+
     nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
 
     m_filesView->AssociateModel(m_viewModel);

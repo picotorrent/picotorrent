@@ -59,6 +59,9 @@ TrackersPage::TrackersPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::
         100,
         wxALIGN_RIGHT)->SetMinWidth(100);
 
+    // Ugly hack to prevent the last "real" column from stretching.
+    m_trackersView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0));
+
     m_trackersView->AssociateModel(m_viewModel);
     m_viewModel->DecRef();
 

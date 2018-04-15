@@ -366,15 +366,18 @@ void MainFrame::OnSessionAlert()
 
             wxTaskBarButton* tbb = MSWGetTaskBarButton();
 
-            if (dl_progress > 0)
+            if (tbb != nullptr)
             {
-                tbb->SetProgressState(wxTaskBarButtonState::wxTASKBAR_BUTTON_NORMAL);
-                tbb->SetProgressRange(dl_count * 1000);
-                tbb->SetProgressValue(static_cast<int>(dl_progress * 1000));
-            }
-            else
-            {
-                tbb->SetProgressState(wxTaskBarButtonState::wxTASKBAR_BUTTON_NO_PROGRESS);
+                if (dl_progress > 0)
+                {
+                    tbb->SetProgressState(wxTaskBarButtonState::wxTASKBAR_BUTTON_NORMAL);
+                    tbb->SetProgressRange(dl_count * 1000);
+                    tbb->SetProgressValue(static_cast<int>(dl_progress * 1000));
+                }
+                else
+                {
+                    tbb->SetProgressState(wxTaskBarButtonState::wxTASKBAR_BUTTON_NO_PROGRESS);
+                }
             }
 
             break;
