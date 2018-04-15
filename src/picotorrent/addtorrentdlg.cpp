@@ -138,11 +138,11 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
 
         if (p.ti)
         {
-            name = p.ti->name();
+            name = wxString::FromUTF8(p.ti->name());
         }
         else if (!p.name.empty())
         {
-            name = p.name;
+            name = wxString::FromUTF8(p.name);
         }
         else
         {
@@ -178,7 +178,7 @@ void AddTorrentDialog::LoadTorrentInfo(int index)
 
     if (params.ti)
     {
-        m_name->SetLabel(params.ti->name());
+        m_name->SetLabel(wxString::FromUTF8(params.ti->name()));
 
         std::stringstream ss;
         ss << params.ti->info_hash();
@@ -190,7 +190,7 @@ void AddTorrentDialog::LoadTorrentInfo(int index)
 
         if (!params.ti->comment().empty())
         {
-            m_comment->SetLabel(params.ti->comment());
+            m_comment->SetLabel(wxString::FromUTF8(params.ti->comment()));
         }
 
         // Files

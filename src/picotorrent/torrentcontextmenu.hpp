@@ -27,6 +27,7 @@ namespace pt
             ptID_PAUSE,
             ptID_MOVE,
             ptID_REMOVE,
+            ptID_REMOVE_FILES,
             ptID_QUEUE_UP,
             ptID_QUEUE_DOWN,
             ptID_QUEUE_TOP,
