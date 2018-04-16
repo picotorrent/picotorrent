@@ -119,7 +119,11 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
 
     // Buttons
     wxBoxSizer* buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
-    buttonsSizer->Add(new wxButton(pnl, wxID_OK));
+
+    wxButton* ok = new wxButton(pnl, wxID_OK);
+    ok->SetDefault();
+
+    buttonsSizer->Add(ok);
     buttonsSizer->Add(new wxButton(pnl, wxID_CANCEL));
 
     // Main sizer
