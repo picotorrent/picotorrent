@@ -18,11 +18,20 @@ DownloadsPage::DownloadsPage(wxWindow* parent, std::shared_ptr<pt::Configuration
     m_savePathCtrl = new wxDirPickerCtrl(transfersSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
     m_savePathCtrl->SetPath(wxString::FromUTF8(m_cfg->DefaultSavePath().string()));
 
+    m_moveCompletedEnabled = new wxCheckBox(transfersSizer->GetStaticBox(), wxID_ANY, i18n(tran, "move_completed_downloads"));
+    m_moveCompletedPathCtrl = new wxDirPickerCtrl(transfersSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
+    m_moveCompletedOnlyFromDefault = new wxCheckBox(transfersSizer->GetStaticBox(), wxID_ANY, i18n(tran, "only_move_from_default_save_path"));
+
+    wxBoxSizer* completedSizer = new wxBoxSizer(wxVERTICAL);
+    completedSizer->Add(m_moveCompletedEnabled, 0);
+    completedSizer->Add(m_moveCompletedPathCtrl, 1, wxEXPAND | wxLEFT, 10);
+    completedSizer->Add(m_moveCompletedOnlyFromDefault, 0, wxLEFT, 10);
+
     transfersGrid->AddGrowableCol(1, 1);
     transfersGrid->Add(new wxStaticText(transfersSizer->GetStaticBox(), wxID_ANY, i18n(tran, "save_path")), 0, wxALIGN_CENTER_VERTICAL);
     transfersGrid->Add(m_savePathCtrl, 1, wxEXPAND);
     transfersSizer->Add(transfersGrid, 1, wxEXPAND | wxALL, 5);
-
+    transfersSizer->Add(completedSizer, 1, wxEXPAND);
 
     wxStaticBoxSizer* limitsSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tran, "limits"));
 
