@@ -63,7 +63,7 @@ void AddTorrentProcedure::Execute(wxArrayString const& files)
     {
         lt::add_torrent_params p;
         lt::error_code ec;
-        p.ti = std::make_shared<lt::torrent_info>(filePath.ToStdString(), ec);
+        p.ti = std::make_shared<lt::torrent_info>(std::string(filePath.ToUTF8()), ec);
 
         if (ec)
         {

@@ -337,10 +337,11 @@ void MainFrame::OnSessionAlert()
         {
             lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
 
-            int dl_count = 0;
-            float dl_progress = 0;
+            int64_t total_wanted = 0;
+            int64_t total_wanted_done = 0;
             int64_t dl_rate = 0;
             int64_t ul_rate = 0;
+            bool is_downloading_any = false;
 
             for (lt::torrent_status const& ts : sua->status)
             {
@@ -351,8 +352,9 @@ void MainFrame::OnSessionAlert()
 
                 if (ts.state & lt::torrent_status::state_t::downloading)
                 {
-                    dl_count += 1;
-                    dl_progress = ts.progress;
+                    is_downloading_any = true;
+                    total_wanted += ts.total_wanted;
+                    total_wanted_done += ts.total_wanted_done;
                 }
             }
 
@@ -368,11 +370,13 @@ void MainFrame::OnSessionAlert()
 
             if (tbb != nullptr)
             {
-                if (dl_progress > 0)
+                if (is_downloading_any && total_wanted > 0)
                 {
+                    float total_progress = total_wanted_done / static_cast<float>(total_wanted);
+
                     tbb->SetProgressState(wxTaskBarButtonState::wxTASKBAR_BUTTON_NORMAL);
-                    tbb->SetProgressRange(dl_count * 1000);
-                    tbb->SetProgressValue(static_cast<int>(dl_progress * 1000));
+                    tbb->SetProgressRange(static_cast<int>(100));
+                    tbb->SetProgressValue(static_cast<int>(total_progress * 100));
                 }
                 else
                 {

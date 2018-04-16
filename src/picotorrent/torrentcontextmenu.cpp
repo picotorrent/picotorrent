@@ -27,6 +27,7 @@ BEGIN_EVENT_TABLE(TorrentContextMenu, wxMenu)
     EVT_MENU(ptID_QUEUE_BOTTOM, TorrentContextMenu::QueueBottom)
     EVT_MENU(ptID_MOVE, TorrentContextMenu::Move)
     EVT_MENU(ptID_REMOVE, TorrentContextMenu::Remove)
+    EVT_MENU(ptID_REMOVE_FILES, TorrentContextMenu::Remove)
     EVT_MENU(ptID_COPY_INFO_HASH, TorrentContextMenu::CopyInfoHash)
     EVT_MENU(ptID_OPEN_IN_EXPLORER, TorrentContextMenu::OpenInExplorer)
     EVT_MENU(ptID_FORCE_RECHECK, TorrentContextMenu::ForceRecheck)
@@ -48,6 +49,10 @@ TorrentContextMenu::TorrentContextMenu(
     queueMenu->AppendSeparator();
     queueMenu->Append(ptID_QUEUE_TOP, i18n(tr, "top"));
     queueMenu->Append(ptID_QUEUE_BOTTOM, i18n(tr, "bottom"));
+
+    wxMenu* removeMenu = new wxMenu();
+    removeMenu->Append(ptID_REMOVE, i18n(tr, "remove_torrent"));
+    removeMenu->Append(ptID_REMOVE_FILES, i18n(tr, "remove_torrent_and_files"));
 
     bool allPaused = std::all_of(
         m_state->selected_torrents.begin(),
@@ -100,7 +105,7 @@ TorrentContextMenu::TorrentContextMenu(
 
     AppendSeparator();
     Append(ptID_MOVE, i18n(tr, "move"));
-    Append(ptID_REMOVE, i18n(tr, "remove"));
+    AppendSubMenu(removeMenu, i18n(tr, "remove"));
     AppendSeparator();
     AppendSubMenu(queueMenu, i18n(tr, "queuing"));
     AppendSeparator();
@@ -176,7 +181,7 @@ void TorrentContextMenu::OpenInExplorer(wxCommandEvent& WXUNUSED(event))
     lt::torrent_status ts = th.status();
 
     fs::path savePath = wxString::FromUTF8(ts.save_path).ToStdWstring();
-    fs::path path = savePath / ts.name;
+    fs::path path = savePath / wxString::FromUTF8(ts.name).ToStdWstring();
 
     Utils::OpenAndSelect(path);
 }
@@ -190,11 +195,18 @@ void TorrentContextMenu::Pause(wxCommandEvent& WXUNUSED(event))
     }
 }
 
-void TorrentContextMenu::Remove(wxCommandEvent& WXUNUSED(event))
+void TorrentContextMenu::Remove(wxCommandEvent& event)
 {
     for (lt::torrent_handle& th : m_state->selected_torrents)
     {
-        m_state->session->remove_torrent(th);
+        if (event.GetId() == ptID_REMOVE_FILES)
+        {
+            m_state->session->remove_torrent(th, lt::session_handle::delete_files);
+        }
+        else
+        {
+            m_state->session->remove_torrent(th);
+        }
     }
 
     m_state->selected_torrents.clear();
