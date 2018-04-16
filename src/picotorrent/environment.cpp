@@ -14,7 +14,8 @@ fs::path Environment::GetApplicationDataPath()
     }
 
     TCHAR path[MAX_PATH];
-    GetCurrentDirectory(MAX_PATH, path);
+    GetModuleFileName(NULL, path, ARRAYSIZE(path));
+    PathRemoveFileSpec(path);
 
     return path;
 }
