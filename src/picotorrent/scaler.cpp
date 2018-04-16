@@ -29,3 +29,13 @@ long Scaler::Y(long y)
 {
     return wxMulDivInt32(y, GetInstance().y_, 96);
 }
+
+long Scaler::inverseX(long x)
+{
+    return wxMulDivInt32(x, 96, GetInstance().x_);
+}
+
+long Scaler::inverseY(long y)
+{
+    return wxMulDivInt32(y, 96, GetInstance().y_);
+}

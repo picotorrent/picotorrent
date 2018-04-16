@@ -16,6 +16,7 @@
 
 #include <wx/bookctrl.h>
 #include <wx/listbook.h>
+#include <wx/listctrl.h>
 #include <wx/persist.h>
 #include <wx/persist/toplevel.h>
 
@@ -43,7 +44,7 @@ PreferencesDialog::PreferencesDialog(
 
     Create(parent, wxID_ANY, i18n(tran, "preferences"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
 
-    wxBookCtrlBase* book = GetBookCtrl();
+    wxListbook* book = static_cast<wxListbook*>(GetBookCtrl());
     m_general = new GeneralPage(book, cfg, tran);
     m_downloads = new DownloadsPage(book, cfg, tran);
     m_connection = new ConnectionPage(book, cfg, tran);
@@ -53,6 +54,10 @@ PreferencesDialog::PreferencesDialog(
     book->AddPage(m_downloads, i18n(tran, "downloads"), false);
     book->AddPage(m_connection, i18n(tran, "connection"), false);
     book->AddPage(m_proxy, i18n(tran, "proxy"), false);
+    wxSize size = book->GetSize();
+    // tell the list book underlying list view to scale to text size correctly
+    wxListView *view =  book->GetListView();
+    view->SetMinSize( wxSize(500, -1) );
 
     CreateButtons();
     LayoutDialog();
