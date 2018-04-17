@@ -135,6 +135,36 @@ void Configuration::ListenInterfaces(const std::vector<std::pair<std::string, in
     (*m_obj)["listen_interfaces"] = picojson::value(ifaces);
 }
 
+bool Configuration::MoveCompletedDownloads()
+{
+    return Get("move_completed_downloads", false);
+}
+
+void Configuration::MoveCompletedDownloads(bool enable)
+{
+    Set("move_completed_downloads", enable);
+}
+
+fs::path Configuration::MoveCompletedDownloadsPath()
+{
+    return Get<std::string>("move_completed_downloads_path", "");
+}
+
+void Configuration::MoveCompletedDownloadsPath(fs::path path)
+{
+    Set("move_completed_downloads_path", path.string());
+}
+
+bool Configuration::MoveCompletedDownloadsFromDefaultOnly()
+{
+    return Get("move_completed_downloads_from_default_only", false);
+}
+
+void Configuration::MoveCompletedDownloadsFromDefaultOnly(bool enable)
+{
+    Set("move_completed_downloads_from_default_only", enable);
+}
+
 Configuration::ConnectionProxyType Configuration::ProxyType()
 {
     return static_cast<ConnectionProxyType>(Get("proxy_type", static_cast<int64_t>(ConnectionProxyType::None)));
