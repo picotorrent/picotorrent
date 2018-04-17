@@ -18,11 +18,27 @@ DownloadsPage::DownloadsPage(wxWindow* parent, std::shared_ptr<pt::Configuration
     m_savePathCtrl = new wxDirPickerCtrl(transfersSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
     m_savePathCtrl->SetPath(wxString::FromUTF8(m_cfg->DefaultSavePath().string()));
 
+    m_moveCompletedEnabled = new wxCheckBox(transfersSizer->GetStaticBox(), wxID_ANY, i18n(tran, "move_completed_downloads"));
+    m_moveCompletedPathCtrl = new wxDirPickerCtrl(transfersSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
+    m_moveCompletedOnlyFromDefault = new wxCheckBox(transfersSizer->GetStaticBox(), wxID_ANY, i18n(tran, "only_move_from_default_save_path"));
+
     transfersGrid->AddGrowableCol(1, 1);
     transfersGrid->Add(new wxStaticText(transfersSizer->GetStaticBox(), wxID_ANY, i18n(tran, "save_path")), 0, wxALIGN_CENTER_VERTICAL);
     transfersGrid->Add(m_savePathCtrl, 1, wxEXPAND);
-    transfersSizer->Add(transfersGrid, 1, wxEXPAND | wxALL, 5);
 
+    transfersSizer->Add(transfersGrid, 1, wxEXPAND | wxALL, 5);
+    transfersSizer->Add(m_moveCompletedEnabled, 0, wxALL, 5);
+
+    wxBoxSizer* bs1 = new wxBoxSizer(wxHORIZONTAL);
+    bs1->AddSpacer(15);
+    bs1->Add(m_moveCompletedPathCtrl, 1, wxEXPAND);
+
+    wxBoxSizer* bs2 = new wxBoxSizer(wxHORIZONTAL);
+    bs2->AddSpacer(15);
+    bs2->Add(m_moveCompletedOnlyFromDefault);
+
+    transfersSizer->Add(bs1, 0, wxEXPAND | wxALL, 5);
+    transfersSizer->Add(bs2, 0, wxALL, 5);
 
     wxStaticBoxSizer* limitsSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tran, "limits"));
 
@@ -90,6 +106,19 @@ DownloadsPage::DownloadsPage(wxWindow* parent, std::shared_ptr<pt::Configuration
     sizer->AddStretchSpacer();
 
     this->SetSizerAndFit(sizer);
+
+    m_moveCompletedEnabled->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&)
+    {
+        m_moveCompletedPathCtrl->Enable(m_moveCompletedEnabled->IsChecked());
+        m_moveCompletedOnlyFromDefault->Enable(m_moveCompletedEnabled->IsChecked());
+    });
+
+    m_moveCompletedEnabled->SetValue(cfg->MoveCompletedDownloads());
+    m_moveCompletedPathCtrl->SetPath(wxString::FromUTF8(cfg->MoveCompletedDownloadsPath().string()));
+    m_moveCompletedOnlyFromDefault->SetValue(cfg->MoveCompletedDownloadsFromDefaultOnly());
+
+    m_moveCompletedPathCtrl->Enable(m_moveCompletedEnabled->IsChecked());
+    m_moveCompletedOnlyFromDefault->Enable(m_moveCompletedEnabled->IsChecked());
 }
 
 void DownloadsPage::ApplyConfiguration()
@@ -105,6 +134,11 @@ void DownloadsPage::ApplyConfiguration()
     m_cfg->Session()->DownloadRateLimit(static_cast<int>(dlLimit));
     m_cfg->Session()->EnableUploadRateLimit(m_enableUploadLimit->GetValue());
     m_cfg->Session()->UploadRateLimit(static_cast<int>(ulLimit));
+
+    // Move
+    m_cfg->MoveCompletedDownloads(m_moveCompletedEnabled->IsChecked());
+    m_cfg->MoveCompletedDownloadsFromDefaultOnly(m_moveCompletedOnlyFromDefault->IsChecked());
+    m_cfg->MoveCompletedDownloadsPath(std::string(m_moveCompletedPathCtrl->GetPath().ToUTF8()));
 
     // Active limits
     long activeLimit = 0;

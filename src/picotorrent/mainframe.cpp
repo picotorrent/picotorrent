@@ -403,6 +403,32 @@ void MainFrame::OnSessionAlert()
 
             break;
         }
+        case lt::torrent_finished_alert::alert_type:
+        {
+            lt::torrent_finished_alert* tfa = lt::alert_cast<lt::torrent_finished_alert>(alert);
+            const lt::torrent_status& ts = tfa->handle.status();
+
+            // Only do this if we have downloaded any payload bytes
+            if (ts.total_payload_download <= 0)
+            {
+                break;
+            }
+
+            bool shouldMove = m_config->MoveCompletedDownloads();
+            bool onlyFromDefault = m_config->MoveCompletedDownloadsFromDefaultOnly();
+            fs::path targetPath = m_config->MoveCompletedDownloadsPath();
+
+            if (shouldMove)
+            {
+                if (onlyFromDefault && ts.save_path != m_config->DefaultSavePath())
+                {
+                    break;
+                }
+
+                tfa->handle.move_storage(targetPath.string());
+            }
+            break;
+        }
         case lt::torrent_paused_alert::alert_type:
         {
             lt::torrent_paused_alert* tpa = lt::alert_cast<lt::torrent_paused_alert>(alert);

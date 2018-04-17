@@ -135,6 +135,13 @@ namespace pt
         std::vector<std::pair<std::string, int>> ListenInterfaces();
         void ListenInterfaces(const std::vector<std::pair<std::string, int>>& interfaces);
 
+        bool MoveCompletedDownloads();
+        void MoveCompletedDownloads(bool enable);
+        fs::path MoveCompletedDownloadsPath();
+        void MoveCompletedDownloadsPath(fs::path path);
+        bool MoveCompletedDownloadsFromDefaultOnly();
+        void MoveCompletedDownloadsFromDefaultOnly(bool enable);
+
         ConnectionProxyType ProxyType();
         void ProxyType(ConnectionProxyType type);
 

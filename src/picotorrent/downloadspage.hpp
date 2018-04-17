@@ -26,6 +26,9 @@ namespace pt
         std::shared_ptr<Configuration> m_cfg;
 
         wxDirPickerCtrl* m_savePathCtrl;
+        wxDirPickerCtrl* m_moveCompletedPathCtrl;
+        wxCheckBox* m_moveCompletedEnabled;
+        wxCheckBox* m_moveCompletedOnlyFromDefault;
         wxCheckBox* m_enableDownloadLimit;
         wxTextCtrl* m_downloadLimit;
         wxCheckBox* m_enableUploadLimit;
