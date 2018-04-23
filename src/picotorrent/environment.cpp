@@ -33,7 +33,7 @@ fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
         rfid = FOLDERID_Downloads;
         break;
     default:
-        throw std::exception("Unknown folder");
+        throw std::runtime_error("Unknown folder");
     }
 
     PWSTR buf;
@@ -42,6 +42,11 @@ fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
         0,
         NULL,
         &buf);
+
+    if (hResult != S_OK)
+    {
+        throw std::runtime_error(std::to_string(hResult).c_str());
+    }
 
     std::wstring res = buf;
     CoTaskMemFree(buf);
