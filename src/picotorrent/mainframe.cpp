@@ -64,7 +64,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     m_env(env),
     m_srv(std::make_shared<ipc::Server>(this)),
     m_splitter(new wxSplitterWindow(this, wxID_ANY)),
-    m_status(new StatusBar(this)),
+    m_status(new StatusBar(this, translator)),
     m_torrentListViewModel(new TorrentListViewModel(translator)),
     m_trans(translator),
     m_updater(std::make_shared<ApplicationUpdater>(this, config, translator))

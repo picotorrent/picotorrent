@@ -307,7 +307,7 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
         }
 
         variant = wxString::Format(
-            "%d (of %d)",
+            i18n(m_translator, "d_of_d"),
             ts.num_seeds,
             ts.list_seeds);
         break;
@@ -319,7 +319,7 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
         }
 
         variant = wxString::Format(
-            "%d (of %d)",
+            i18n(m_translator, "d_of_d"),
             ts.num_peers - ts.num_seeds,
             ts.list_peers - ts.list_seeds);
         break;
