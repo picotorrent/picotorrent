@@ -227,7 +227,13 @@
         "comment": "Comentário",
         "skip_add_torrent_dialog": "Não mostrar diálogo 'Adicionar torrent'",
         "start_torrent": "Iniciar Torrent",
-        "auto_managed": "Auto gerenciado",
-        "copy": "Cópia"
+        "auto_managed": "Gerenciado automaticamente",
+        "copy": "Copiar",
+        "d_of_d": "%d (de %d)",
+        "dht_disabled": "DHT: desativado",
+        "dht_i64d_nodes": "DHT: %I64d nó(s)",
+        "i64d_torrents": "%I64d torrent(s)",
+        "dl_s_ul_s": "DL: %s/s, UL: %s/s",
+        "encrypt_config_file": "Criptografar arquivo de configuração"
     }
 }
