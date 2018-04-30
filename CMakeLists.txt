@@ -109,6 +109,7 @@ add_executable(
 
     src/picotorrent/addtorrentdlg
     src/picotorrent/addtorrentproc
+    src/picotorrent/advancedpage
     src/picotorrent/application
     src/picotorrent/applicationoptions
     src/picotorrent/applicationupdater

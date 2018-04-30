@@ -126,6 +126,9 @@ namespace pt
 
         fs::path LanguagesPath();
 
+        bool EncryptConfigurationFile();
+        void EncryptConfigurationFile(bool val);
+
         fs::path DefaultSavePath();
         void DefaultSavePath(fs::path path);
 
