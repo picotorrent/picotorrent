@@ -233,6 +233,7 @@
         "dht_disabled": "DHT: выключен",
         "dht_i64d_nodes": "DHT: %I64d узел(ов)",
         "i64d_torrents": "%I64d торрент(ов)",
-        "dl_s_ul_s": "З: %s/с, О: %s/с"
+        "dl_s_ul_s": "З: %s/с, О: %s/с",
+        "encrypt_config_file": "Зашифровать файл настроек"
     }
 }
