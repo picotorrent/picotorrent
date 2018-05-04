@@ -17,6 +17,7 @@
 
 #include <wx/bookctrl.h>
 #include <wx/listbook.h>
+#include <wx/listctrl.h>
 #include <wx/persist.h>
 #include <wx/persist/toplevel.h>
 
@@ -44,7 +45,7 @@ PreferencesDialog::PreferencesDialog(
 
     Create(parent, wxID_ANY, i18n(tran, "preferences"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
 
-    wxBookCtrlBase* book = GetBookCtrl();
+    wxListbook* book = static_cast<wxListbook*>(GetBookCtrl());
     m_general = new GeneralPage(book, cfg, tran);
     m_downloads = new DownloadsPage(book, cfg, tran);
     m_connection = new ConnectionPage(book, cfg, tran);

@@ -5,6 +5,8 @@
 #include "translator.hpp"
 #include "utils.hpp"
 
+#include "scaler.hpp"
+
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <wx/dataview.h>
@@ -13,6 +15,7 @@
 #include <wx/persist/toplevel.h>
 
 #include <shellapi.h>
+
 
 namespace lt = libtorrent;
 using pt::AddTorrentDialog;
@@ -32,7 +35,7 @@ wxEND_EVENT_TABLE()
 AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     std::shared_ptr<pt::Translator> translator,
     std::vector<lt::add_torrent_params>& params)
-    : wxDialog(parent, wxID_ANY, i18n(translator, "add_torrent_s"), wxDefaultPosition, wxSize(400, 540), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+    : wxDialog(parent, wxID_ANY, i18n(translator, "add_torrent_s"), wxDefaultPosition, wxSize(SX(400), SY(540)), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     m_params(params),
     m_trans(translator),
     m_filesViewModel(new FileStorageViewModel(translator))
@@ -81,21 +84,21 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
         i18n(m_trans, "name"),
         FileStorageViewModel::Columns::Name,
         wxDATAVIEW_CELL_INERT,
-        220,
+        SX(220),
         wxALIGN_LEFT);
 
     m_filesView->AppendTextColumn(
         i18n(m_trans, "size"),
         FileStorageViewModel::Columns::Size,
         wxDATAVIEW_CELL_INERT,
-        80,
+        SX(80),
         wxALIGN_RIGHT);
 
     auto prioCol = m_filesView->AppendTextColumn(
         i18n(m_trans, "priority"),
         FileStorageViewModel::Columns::Priority,
         wxDATAVIEW_CELL_INERT,
-        80,
+        SX(80),
         wxALIGN_RIGHT);
 
     nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);

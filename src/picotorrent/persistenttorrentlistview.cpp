@@ -3,6 +3,8 @@
 #include "torrentlistview.hpp"
 #include "torrentlistviewmodel.hpp"
 
+#include "scaler.hpp"
+
 using pt::PersistentTorrentListView;
 using pt::TorrentListView;
 
@@ -25,67 +27,67 @@ bool PersistentTorrentListView::Restore()
 
     if (RestoreValue("Col_Name_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::Name)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::Name)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("Col_QueuePosition_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::QueuePosition)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::QueuePosition)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("Col_Size_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::Size)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::Size)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("Col_Status_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::Status)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::Status)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("Col_Progress_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::Progress)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::Progress)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("Col_ETA_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::ETA)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::ETA)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("Col_DownloadSpeed_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::DownloadSpeed)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::DownloadSpeed)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("Col_UploadSpeed_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::UploadSpeed)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::UploadSpeed)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("Col_Ratio_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::Ratio)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::Ratio)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("Col_Seeds_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::Seeds)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::Seeds)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("Col_Peers_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::Peers)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::Peers)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("Col_AddedOn_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::AddedOn)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::AddedOn)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("Col_CompletedOn_Width", &colWidth))
     {
-        m_tlv->GetColumn(TorrentListViewModel::Columns::CompletedOn)->SetWidth(colWidth);
+        m_tlv->GetColumn(TorrentListViewModel::Columns::CompletedOn)->SetWidth(SX(colWidth));
     }
 
     if (RestoreValue("SortIndex", &sortIndex)
@@ -106,20 +108,20 @@ void PersistentTorrentListView::Save() const
         SaveValue("SortIndex", sortIndex);
         SaveValue("SortAscending", m_tlv->GetSortingColumn()->IsSortOrderAscending());
     }
-
-    SaveValue("Col_Name_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::Name)->GetWidth());
-    SaveValue("Col_QueuePosition_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::QueuePosition)->GetWidth());
-    SaveValue("Col_Size_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::Size)->GetWidth());
-    SaveValue("Col_Status_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::Status)->GetWidth());
-    SaveValue("Col_Progress_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::Progress)->GetWidth());
-    SaveValue("Col_ETA_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::ETA)->GetWidth());
-    SaveValue("Col_DownloadSpeed_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::DownloadSpeed)->GetWidth());
-    SaveValue("Col_UploadSpeed_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::UploadSpeed)->GetWidth());
-    SaveValue("Col_Ratio_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::Ratio)->GetWidth());
-    SaveValue("Col_Seeds_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::Seeds)->GetWidth());
-    SaveValue("Col_Peers_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::Peers)->GetWidth());
-    SaveValue("Col_AddedOn_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::AddedOn)->GetWidth());
-    SaveValue("Col_CompletedOn_Width", m_tlv->GetColumn(TorrentListViewModel::Columns::CompletedOn)->GetWidth());
+    // before storing values, remove dpi scaling
+    SaveValue("Col_Name_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::Name)->GetWidth()));
+    SaveValue("Col_QueuePosition_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::QueuePosition)->GetWidth()));
+    SaveValue("Col_Size_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::Size)->GetWidth()));
+    SaveValue("Col_Status_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::Status)->GetWidth()));
+    SaveValue("Col_Progress_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::Progress)->GetWidth()));
+    SaveValue("Col_ETA_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::ETA)->GetWidth()));
+    SaveValue("Col_DownloadSpeed_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::DownloadSpeed)->GetWidth()));
+    SaveValue("Col_UploadSpeed_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::UploadSpeed)->GetWidth()));
+    SaveValue("Col_Ratio_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::Ratio)->GetWidth()));
+    SaveValue("Col_Seeds_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::Seeds)->GetWidth()));
+    SaveValue("Col_Peers_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::Peers)->GetWidth()));
+    SaveValue("Col_AddedOn_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::AddedOn)->GetWidth()));
+    SaveValue("Col_CompletedOn_Width", iSX(m_tlv->GetColumn(TorrentListViewModel::Columns::CompletedOn)->GetWidth()));
 }
 
 PersistentTorrentListView* pt::wxCreatePersistentObject(TorrentListView* lv)
