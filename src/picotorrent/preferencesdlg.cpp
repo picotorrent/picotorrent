@@ -1,5 +1,6 @@
 #include "preferencesdlg.hpp"
 
+#include "advancedpage.hpp"
 #include "config.hpp"
 #include "connectionpage.hpp"
 #include "downloadspage.hpp"
@@ -49,15 +50,13 @@ PreferencesDialog::PreferencesDialog(
     m_downloads = new DownloadsPage(book, cfg, tran);
     m_connection = new ConnectionPage(book, cfg, tran);
     m_proxy = new ProxyPage(book, cfg, tran);
+    m_advanced = new AdvancedPage(book, cfg, tran);
 
     book->AddPage(m_general, i18n(tran, "general"), true);
     book->AddPage(m_downloads, i18n(tran, "downloads"), false);
     book->AddPage(m_connection, i18n(tran, "connection"), false);
     book->AddPage(m_proxy, i18n(tran, "proxy"), false);
-    wxSize size = book->GetSize();
-    // tell the list book underlying list view to scale to text size correctly
-    wxListView *view =  book->GetListView();
-    view->SetMinSize( wxSize(500, -1) );
+    book->AddPage(m_advanced, i18n(tran, "advanced"), false);
 
     CreateButtons();
     LayoutDialog();
@@ -89,12 +88,18 @@ void PreferencesDialog::OnOk(wxCommandEvent& event)
         GetBookCtrl()->SetSelection(3);
         wxMessageBox("Invalid settings", error, 5L, this); // TODO: translate
     }
+    else if (!m_advanced->ValidateConfiguration(error))
+    {
+        GetBookCtrl()->SetSelection(4);
+        wxMessageBox("Invalid settings", error, 5L, this); // TODO: translate
+    }
     else
     {
         m_general->ApplyConfiguration();
         m_downloads->ApplyConfiguration();
         m_connection->ApplyConfiguration();
         m_proxy->ApplyConfiguration();
+        m_advanced->ApplyConfiguration();
 
         Configuration::Save(m_env, m_cfg);
 

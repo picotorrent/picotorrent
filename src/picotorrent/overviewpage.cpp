@@ -43,7 +43,8 @@ OverviewPage::OverviewPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::
     m_name(new CopyableStaticText(this, tr)),
     m_infoHash(new CopyableStaticText(this, tr)),
     m_savePath(new CopyableStaticText(this, tr)),
-    m_pieces(new CopyableStaticText(this, tr))
+    m_pieces(new CopyableStaticText(this, tr)),
+    m_translator(tr)
 {
     wxFlexGridSizer* sz = new wxFlexGridSizer(4, 10, 10);
     sz->AddGrowableCol(1);
@@ -84,14 +85,14 @@ void OverviewPage::Update(lt::torrent_status const& ts)
     m_name->SetLabel(wxString::FromUTF8(ts.name));
     m_infoHash->SetLabel(ih.str());
     m_savePath->SetLabel(savePath);
-    m_pieces->SetLabel(wxString::Format("%d (of %d)", ts.pieces.count(), ts.pieces.size()));
+    m_pieces->SetLabel(wxString::Format(i18n(m_translator, "d_of_d"), ts.pieces.count(), ts.pieces.size()));
 
     this->SendSizeEvent();
 }
 
 wxStaticText* OverviewPage::GetBoldStatic(wxString const& label)
 {
-    wxStaticText* ctrl = new wxStaticText(this, wxID_ANY, label);	
+    wxStaticText* ctrl = new wxStaticText(this, wxID_ANY, label);
     wxFont font = ctrl->GetFont();
     font.SetWeight(wxFONTWEIGHT_BOLD);
     ctrl->SetFont(font);

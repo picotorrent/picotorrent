@@ -64,7 +64,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     m_env(env),
     m_srv(std::make_shared<ipc::Server>(this)),
     m_splitter(new wxSplitterWindow(this, wxID_ANY)),
-    m_status(new StatusBar(this)),
+    m_status(new StatusBar(this, translator)),
     m_torrentListViewModel(new TorrentListViewModel(translator)),
     m_trans(translator),
     m_updater(std::make_shared<ApplicationUpdater>(this, config, translator))
@@ -401,6 +401,32 @@ void MainFrame::OnSessionAlert()
                 m_state->pause_after_checking.erase(it);
             }
 
+            break;
+        }
+        case lt::torrent_finished_alert::alert_type:
+        {
+            lt::torrent_finished_alert* tfa = lt::alert_cast<lt::torrent_finished_alert>(alert);
+            const lt::torrent_status& ts = tfa->handle.status();
+
+            // Only do this if we have downloaded any payload bytes
+            if (ts.total_payload_download <= 0)
+            {
+                break;
+            }
+
+            bool shouldMove = m_config->MoveCompletedDownloads();
+            bool onlyFromDefault = m_config->MoveCompletedDownloadsFromDefaultOnly();
+            fs::path targetPath = m_config->MoveCompletedDownloadsPath();
+
+            if (shouldMove)
+            {
+                if (onlyFromDefault && ts.save_path != m_config->DefaultSavePath())
+                {
+                    break;
+                }
+
+                tfa->handle.move_storage(targetPath.string());
+            }
             break;
         }
         case lt::torrent_paused_alert::alert_type:

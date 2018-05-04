@@ -57,7 +57,7 @@ MainMenu::MainMenu(std::shared_ptr<pt::SessionState> state,
     wxMenu* menuHelp = new wxMenu();
     menuHelp->Append(ptID_CHECK_FOR_UPDATES, i18n(m_trans, "amp_check_for_update"));
     menuHelp->AppendSeparator();
-    menuHelp->Append(wxID_ABOUT);
+    menuHelp->Append(wxID_ABOUT, i18n(m_trans, "amp_about"));
 
     Append(menuFile, i18n(m_trans, "amp_file"));
     Append(menuView, i18n(m_trans, "amp_view"));

@@ -27,6 +27,8 @@ namespace pt
     private:
         wxStaticText* GetBoldStatic(wxString const& label);
 
+        std::shared_ptr<Translator> m_translator;
+
         wxStaticText* m_name;
         wxStaticText* m_infoHash;
         wxStaticText* m_savePath;

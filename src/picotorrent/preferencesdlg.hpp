@@ -12,6 +12,7 @@ class wxBookCtrlEvent;
 
 namespace pt
 {
+    class AdvancedPage;
     class Configuration;
     class ConnectionPage;
     class DownloadsPage;
@@ -47,5 +48,6 @@ namespace pt
         DownloadsPage* m_downloads;
         GeneralPage* m_general;
         ProxyPage* m_proxy;
+        AdvancedPage* m_advanced;
     };
 }

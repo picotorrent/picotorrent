@@ -228,6 +228,12 @@
         "skip_add_torrent_dialog": "Skip 'Add torrent' dialog",
         "start_torrent": "Start torrent",
         "auto_managed": "Auto managed",
-        "copy": "Copy"
+        "copy": "Copy",
+        "d_of_d": "%d (of %d)",
+        "dht_disabled": "DHT: disabled",
+        "dht_i64d_nodes": "DHT: %I64d node(s)",
+        "i64d_torrents": "%I64d torrent(s)",
+        "dl_s_ul_s": "DL: %s/s, UL: %s/s",
+        "encrypt_config_file": "Encrypt configuration file"
     }
 }

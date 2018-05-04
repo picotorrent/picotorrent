@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <Windows.h>
+#include <dpapi.h>
 
 #include "environment.hpp"
 
@@ -19,9 +20,32 @@ std::shared_ptr<Configuration> Configuration::Load(std::shared_ptr<pt::Environme
     }
 
     std::ifstream cfg_stream(path, std::ios::binary);
+    std::stringstream ss;
+    ss << cfg_stream.rdbuf();
+    std::string contents = ss.str();
+
+    DATA_BLOB data;
+    data.cbData = static_cast<DWORD>(contents.size());
+    data.pbData = reinterpret_cast<BYTE*>(&contents[0]);
+
+    DATA_BLOB output;
+
+    // Always try to decrypt data
+    if (CryptUnprotectData(
+        &data,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        0,
+        &output))
+    {
+        contents = std::string(reinterpret_cast<const char*>(output.pbData), output.cbData);
+        LocalFree(output.pbData);
+    }
 
     picojson::value val;
-    error = picojson::parse(val, cfg_stream);
+    error = picojson::parse(val, contents);
 
     if (!val.is<picojson::object>())
     {
@@ -39,8 +63,36 @@ void Configuration::Save(std::shared_ptr<pt::Environment> env, std::shared_ptr<C
     fs::path path = env->GetApplicationDataPath() / "PicoTorrent.json";
     picojson::value val(*(config->m_obj.get()));
 
-    std::ofstream out(path, std::ios::binary | std::ios::out);
-    val.serialize(std::ostreambuf_iterator<char>(out), true);
+    if (config->EncryptConfigurationFile())
+    {
+        std::string serialized = val.serialize();
+
+        DATA_BLOB data;
+        data.cbData = static_cast<DWORD>(serialized.size());
+        data.pbData = reinterpret_cast<BYTE*>(&serialized[0]);
+
+        DATA_BLOB output;
+
+        if (CryptProtectData(
+            &data,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            0,
+            &output))
+        {
+            std::ofstream out(path, std::ios::binary | std::ios::out);
+            out.write(reinterpret_cast<const char*>(output.pbData), output.cbData);
+
+            LocalFree(output.pbData);
+        }
+    }
+    else
+    {
+        std::ofstream out(path, std::ios::binary | std::ios::out);
+        val.serialize(std::ostreambuf_iterator<char>(out), true);
+    }
 }
 
 std::shared_ptr<Configuration::SessionSection> Configuration::Session()
@@ -76,6 +128,16 @@ void Configuration::IgnoredVersion(std::string const& version)
 fs::path Configuration::LanguagesPath()
 {
     return Get<std::string>("languages_path", (m_env->GetApplicationDataPath() / "Languages").string());
+}
+
+bool Configuration::EncryptConfigurationFile()
+{
+    return Get("encrypt_config_file", false);
+}
+
+void Configuration::EncryptConfigurationFile(bool val)
+{
+    Set("encrypt_config_file", val);
 }
 
 fs::path Configuration::DefaultSavePath()
@@ -133,6 +195,36 @@ void Configuration::ListenInterfaces(const std::vector<std::pair<std::string, in
     }
 
     (*m_obj)["listen_interfaces"] = picojson::value(ifaces);
+}
+
+bool Configuration::MoveCompletedDownloads()
+{
+    return Get("move_completed_downloads", false);
+}
+
+void Configuration::MoveCompletedDownloads(bool enable)
+{
+    Set("move_completed_downloads", enable);
+}
+
+fs::path Configuration::MoveCompletedDownloadsPath()
+{
+    return Get<std::string>("move_completed_downloads_path", "");
+}
+
+void Configuration::MoveCompletedDownloadsPath(fs::path path)
+{
+    Set("move_completed_downloads_path", path.string());
+}
+
+bool Configuration::MoveCompletedDownloadsFromDefaultOnly()
+{
+    return Get("move_completed_downloads_from_default_only", false);
+}
+
+void Configuration::MoveCompletedDownloadsFromDefaultOnly(bool enable)
+{
+    Set("move_completed_downloads_from_default_only", enable);
 }
 
 Configuration::ConnectionProxyType Configuration::ProxyType()
