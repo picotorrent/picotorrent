@@ -27,6 +27,7 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+
 # Generate buildinfo file
 configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp" @ONLY)
 
@@ -137,6 +138,7 @@ add_executable(
     src/picotorrent/preferencesdlg
     src/picotorrent/proxypage
     src/picotorrent/resources.rc
+    src/picotorrent/scaler
     src/picotorrent/sessionloader
     src/picotorrent/sessionsettings
     src/picotorrent/sessionstate
@@ -177,3 +179,13 @@ target_link_libraries(
     debug libboost_system-vc141-mt-gd-${BOOST_ARCH}-1_66
     optimized libboost_system-vc141-mt-${BOOST_ARCH}-1_66
 )
+
+
+IF (MSVC)
+    ADD_CUSTOM_COMMAND(
+        TARGET PicoTorrent
+        POST_BUILD
+        COMMAND "mt.exe" -manifest \"${CMAKE_CURRENT_SOURCE_DIR}/manifest/dpiaware.manifest\" -inputresource:\"$<TARGET_FILE:PicoTorrent>\"\;\#1 -outputresource:\"$<TARGET_FILE:PicoTorrent>\"\;\#1
+        COMMENT "Adding display aware manifest..."
+    )
+ENDIF(MSVC)

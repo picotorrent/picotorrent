@@ -228,6 +228,12 @@
         "skip_add_torrent_dialog": "Dialog 'Torrent hinzufügen' überspringen",
         "start_torrent": "Torrent starten",
         "auto_managed": "Automatisch verwaltet",
-        "copy": "Kopieren"
+        "copy": "Kopieren",
+        "d_of_d": "%d (von %d)",
+        "dht_disabled": "DHT: deaktiviert",
+        "dht_i64d_nodes": "DHT: %I64d Knoten",
+        "i64d_torrents": "%I64d Torrent(s)",
+        "dl_s_ul_s": "DL: %s/s, UL: %s/s",
+        "encrypt_config_file": "Konfigurationsdatei verschlüsseln"
     }
 }
