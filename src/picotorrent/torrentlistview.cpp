@@ -123,11 +123,6 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
     statusCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
 }
 
-wxSize TorrentListView::GetMinSize() const
-{
-    return wxSize(500, 150);
-}
-
 void TorrentListView::Sort()
 {
     if (GetSortingColumn())

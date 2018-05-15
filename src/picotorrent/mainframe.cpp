@@ -82,7 +82,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     m_torrentDetailsView = new TorrentDetailsView(m_splitter, m_trans, m_state);
 
     // Splitter
-    m_splitter->SetMinimumPaneSize(10);
+    m_splitter->SetMinimumPaneSize(50);
     m_splitter->SetSashGravity(0.5);
     m_splitter->SplitHorizontally(m_torrentListView, m_torrentDetailsView);
 
@@ -112,13 +112,38 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
 
     this->DragAcceptFiles(true);
     this->SetIcon(wxICON(AppIcon));
-    this->SetMenuBar(new MainMenu(m_state, m_config, m_env, m_updater, m_taskBar, m_trans));
+    this->SetMenuBar(new MainMenu(this, m_state, m_config, m_env, m_updater, m_taskBar, m_trans));
     this->SetName("MainFrame");
     this->SetSizerAndFit(mainSizer);
     this->SetStatusBar(m_status);
 
-    wxPersistenceManager::Get().RegisterAndRestore(this);
-    wxPersistenceManager::Get().RegisterAndRestore(m_torrentListView);
+    wxPersistenceManager& persistenceManager = wxPersistenceManager::Get();
+
+    if (auto persistentObject = persistenceManager.Register(this))
+    {
+        persistenceManager.Restore(this);
+
+        int sashPosition = -1;
+        bool detailsVisible = false;
+
+        if (persistenceManager.RestoreValue(*persistentObject, "SashPosition", &sashPosition))
+        {
+            m_splitter->SetSashPosition(sashPosition);
+        }
+
+        if (persistenceManager.RestoreValue(*persistentObject, "DetailsVisible", &detailsVisible))
+        {
+            if (!detailsVisible)
+            {
+                m_splitter->Unsplit(m_torrentDetailsView);
+
+                MainMenu* mainMenu = reinterpret_cast<MainMenu*>(GetMenuBar());
+                mainMenu->SetDetailsToggle(false);
+            }
+        }
+    }
+
+    persistenceManager.RegisterAndRestore(m_torrentListView);
 
     // Check for update
     m_updater->Check(false);
@@ -129,6 +154,14 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
 
 MainFrame::~MainFrame()
 {
+    wxPersistenceManager& persistenceManager = wxPersistenceManager::Get();
+
+    if (auto persistentObject = persistenceManager.Find(this))
+    {
+        persistenceManager.SaveValue(*persistentObject, "DetailsVisible", IsDetailsPanelVisible());
+        persistenceManager.SaveValue(*persistentObject, "SashPosition", m_splitter->GetSashPosition());
+    }
+
     m_timer->Stop();
 
     m_state->session->set_alert_notify([] {});
@@ -146,6 +179,25 @@ void MainFrame::HandleOptions(std::shared_ptr<pt::ApplicationOptions> options)
     else if (!options->magnet_links.IsEmpty() && options->files.IsEmpty())
     {
         addProc.ExecuteMagnet(options->magnet_links);
+    }
+}
+
+bool MainFrame::IsDetailsPanelVisible() const
+{
+    return m_splitter->IsSplit();
+}
+
+void MainFrame::ToggleDetailsPanel()
+{
+    if (m_splitter->IsSplit())
+    {
+        m_splitter->Unsplit(m_torrentDetailsView);
+    }
+    else
+    {
+        m_splitter->SplitHorizontally(
+            m_torrentListView,
+            m_torrentDetailsView);
     }
 }
 

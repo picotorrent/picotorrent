@@ -44,11 +44,6 @@ void TorrentDetailsView::Clear()
     m_trackers->Clear();
 }
 
-wxSize TorrentDetailsView::GetMinSize() const
-{
-    return wxSize(450, 150);
-}
-
 void TorrentDetailsView::Update()
 {
     if (m_state->selected_torrents.size() != 1)

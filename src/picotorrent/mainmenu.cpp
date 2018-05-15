@@ -6,6 +6,7 @@
 #include "buildinfo.hpp"
 #include "config.hpp"
 #include "environment.hpp"
+#include "mainframe.hpp"
 #include "preferencesdlg.hpp"
 #include "sessionstate.hpp"
 #include "taskbaricon.hpp"
@@ -24,12 +25,14 @@ wxBEGIN_EVENT_TABLE(MainMenu, wxMenuBar)
     EVT_MENU(wxID_ABOUT, MainMenu::OnAbout)
     EVT_MENU(ptID_ADD_TORRENTS, MainMenu::OnAddTorrents)
     EVT_MENU(ptID_ADD_MAGNET_LINK, MainMenu::OnAddMagnetLink)
+    EVT_MENU(ptID_VIEW_DETAILS_PANEL, MainMenu::OnViewDetailsPanel)
     EVT_MENU(ptID_VIEW_PREFERENCES, MainMenu::OnViewPreferences)
     EVT_MENU(ptID_CHECK_FOR_UPDATES, MainMenu::OnCheckForUpdates)
     EVT_MENU(wxID_EXIT, MainMenu::OnExit)
 wxEND_EVENT_TABLE()
 
-MainMenu::MainMenu(std::shared_ptr<pt::SessionState> state,
+MainMenu::MainMenu(pt::MainFrame const* mainFrame,
+    std::shared_ptr<pt::SessionState> state,
     std::shared_ptr<pt::Configuration> cfg,
     std::shared_ptr<pt::Environment> env,
     std::shared_ptr<pt::ApplicationUpdater> updater,
@@ -52,6 +55,11 @@ MainMenu::MainMenu(std::shared_ptr<pt::SessionState> state,
     menuFile->Append(wxID_EXIT, i18n(m_trans, "amp_exit"));
 
     wxMenu* menuView = new wxMenu();
+
+    m_detailsToggle = menuView->AppendCheckItem(ptID_VIEW_DETAILS_PANEL, i18n(m_trans, "amp_details_panel"));
+    m_detailsToggle->Check(mainFrame->IsDetailsPanelVisible());
+
+    menuView->AppendSeparator();
     menuView->Append(ptID_VIEW_PREFERENCES, i18n(m_trans, "amp_preferences"));
 
     wxMenu* menuHelp = new wxMenu();
@@ -62,6 +70,11 @@ MainMenu::MainMenu(std::shared_ptr<pt::SessionState> state,
     Append(menuFile, i18n(m_trans, "amp_file"));
     Append(menuView, i18n(m_trans, "amp_view"));
     Append(menuHelp, i18n(m_trans, "amp_help"));
+}
+
+void MainMenu::SetDetailsToggle(bool value)
+{
+    m_detailsToggle->Check(value);
 }
 
 void MainMenu::OnAbout(wxCommandEvent& WXUNUSED(event))
@@ -97,6 +110,13 @@ void MainMenu::OnCheckForUpdates(wxCommandEvent& event)
 void MainMenu::OnExit(wxCommandEvent& WXUNUSED(event))
 {
     this->GetFrame()->Close(true);
+}
+
+void MainMenu::OnViewDetailsPanel(wxCommandEvent& WXUNUSED(event))
+{
+    MainFrame* mf = reinterpret_cast<MainFrame*>(this->GetFrame());
+    mf->ToggleDetailsPanel();
+    m_detailsToggle->Check(mf->IsDetailsPanelVisible());
 }
 
 void MainMenu::OnViewPreferences(wxCommandEvent& WXUNUSED(event))

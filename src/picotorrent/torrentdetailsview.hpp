@@ -29,7 +29,6 @@ namespace pt
         TorrentDetailsView(wxWindow* parent,
             std::shared_ptr<Translator> translator,
             std::shared_ptr<SessionState> state);
-        virtual wxSize GetMinSize() const;
 
         void Clear();
         void Update();
