@@ -39,6 +39,8 @@ namespace pt
         virtual ~MainFrame();
 
         void HandleOptions(std::shared_ptr<ApplicationOptions> options);
+        bool IsDetailsPanelVisible() const;
+        void ToggleDetailsPanel();
 
     private:
         enum

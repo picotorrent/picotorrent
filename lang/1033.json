@@ -234,6 +234,7 @@
         "dht_i64d_nodes": "DHT: %I64d node(s)",
         "i64d_torrents": "%I64d torrent(s)",
         "dl_s_ul_s": "DL: %s/s, UL: %s/s",
-        "encrypt_config_file": "Encrypt configuration file"
+        "encrypt_config_file": "Encrypt configuration file",
+        "amp_details_panel": "&Details panel"
     }
 }
