@@ -169,9 +169,11 @@ void TorrentContextMenu::Move(wxCommandEvent& WXUNUSED(event))
         return;
     }
 
+    std::string path = dlg.GetPath().ToUTF8();
+
     for (lt::torrent_handle& th : m_state->selected_torrents)
     {
-        th.move_storage(dlg.GetPath().ToStdString());
+        th.move_storage(path);
     }
 }
 
