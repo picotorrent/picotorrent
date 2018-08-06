@@ -62,7 +62,7 @@
                         <RegistryValue Root="HKLM"
                                        Key="Software\PicoTorrent\Capabilities"
                                        Name="ApplicationDescription"
-                                       Value="Some description..."
+                                       Value="Tiny, hackable BitTorrent client"
                                        Type="string" />
 
                         <RegistryValue Root="HKLM"
