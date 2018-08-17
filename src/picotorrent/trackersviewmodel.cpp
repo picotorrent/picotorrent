@@ -126,7 +126,7 @@ void TrackersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsi
         {
             variant = wxString::Format(
                 i18n(m_translator, "error_s"),
-                endp->last_error.message().c_str());
+                endp->message.empty() ? endp->last_error.message().c_str() : wxString::Format("%s \"%s\"", endp->last_error.message().c_str(), endp->message.c_str()).c_str());
             break;
         }
 
