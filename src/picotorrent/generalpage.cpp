@@ -4,6 +4,7 @@
 
 #include "clientdata.hpp"
 #include "config.hpp"
+#include "scaler.hpp"
 #include "translator.hpp"
 
 struct AutoRunKey
@@ -83,15 +84,15 @@ GeneralPage::GeneralPage(wxWindow* parent, std::shared_ptr<pt::Configuration> co
     m_config(config)
 {
     wxStaticBoxSizer* uiSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tr, "user_interface"));
-    wxFlexGridSizer* uiGrid = new wxFlexGridSizer(2, 10, 10);
+    wxFlexGridSizer* uiGrid = new wxFlexGridSizer(2, SY(10), SX(10));
     m_language = new wxChoice(uiSizer->GetStaticBox(), wxID_ANY);
     uiGrid->AddGrowableCol(1, 1);
     uiGrid->Add(new wxStaticText(uiSizer->GetStaticBox(), wxID_ANY, i18n(tr, "language")), 0, wxALIGN_CENTER_VERTICAL);
     uiGrid->Add(m_language, 1, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL);
-    uiSizer->Add(uiGrid, 1, wxEXPAND | wxALL, 5);
+    uiSizer->Add(uiGrid, 1, wxEXPAND | wxALL, SX(5));
 
     wxStaticBoxSizer* miscSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tr, "miscellaneous"));
-    wxFlexGridSizer* miscGrid = new wxFlexGridSizer(2, 10, 10);
+    wxFlexGridSizer* miscGrid = new wxFlexGridSizer(2, SY(10), SX(10));
 
     m_skipAddTorrentDialog = new wxCheckBox(miscSizer->GetStaticBox(), wxID_ANY, i18n(tr, "skip_add_torrent_dialog"));
     m_autoStart = new wxCheckBox(miscSizer->GetStaticBox(), wxID_ANY, i18n(tr, "start_with_windows"));
@@ -104,10 +105,10 @@ GeneralPage::GeneralPage(wxWindow* parent, std::shared_ptr<pt::Configuration> co
     miscGrid->Add(0, 0);
     miscGrid->Add(new wxStaticText(miscSizer->GetStaticBox(), wxID_ANY, i18n(tr, "start_position")), 0, wxALIGN_CENTER_VERTICAL);
     miscGrid->Add(m_startPosition, 1, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL);
-    miscSizer->Add(miscGrid, 1, wxEXPAND | wxALL, 5);
+    miscSizer->Add(miscGrid, 1, wxEXPAND | wxALL, SX(5));
 
     wxStaticBoxSizer* notifSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tr, "notification_area"));
-    wxFlexGridSizer* notifGrid = new wxFlexGridSizer(1, 10, 10);
+    wxFlexGridSizer* notifGrid = new wxFlexGridSizer(1, SY(10), SX(10));
 
     m_showNotificationIcon = new wxCheckBox(notifSizer->GetStaticBox(), wxID_ANY, i18n(tr, "show_picotorrent_in_notification_area"));
     m_minimizeNotification = new wxCheckBox(notifSizer->GetStaticBox(), wxID_ANY, i18n(tr, "minimize_to_notification_area"));
@@ -115,16 +116,16 @@ GeneralPage::GeneralPage(wxWindow* parent, std::shared_ptr<pt::Configuration> co
 
     notifGrid->AddGrowableCol(0, 1);
     notifGrid->Add(m_showNotificationIcon);
-    notifGrid->Add(m_minimizeNotification, 0, wxLEFT, 10);
-    notifGrid->Add(m_closeNotification, 0, wxLEFT, 10);
-    notifSizer->Add(notifGrid, 1, wxEXPAND | wxALL, 5);
+    notifGrid->Add(m_minimizeNotification, 0, wxLEFT, SX(10));
+    notifGrid->Add(m_closeNotification, 0, wxLEFT, SX(10));
+    notifSizer->Add(notifGrid, 1, wxEXPAND | wxALL, SX(5));
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(uiSizer, 0, wxEXPAND);
-    sizer->AddSpacer(10);
-    sizer->Add(miscSizer, 0, wxEXPAND);
-    sizer->AddSpacer(10);
-    sizer->Add(notifSizer, 0, wxEXPAND);
+    sizer->Add(uiSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, SX(5));
+    sizer->AddSpacer(SY(10));
+    sizer->Add(miscSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, SX(5));
+    sizer->AddSpacer(SY(10));
+    sizer->Add(notifSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, SX(5));
     sizer->AddStretchSpacer();
 
     for (auto& lang : tr->GetAvailableLanguages())

@@ -1,6 +1,7 @@
 #include "connectionpage.hpp"
 
 #include "config.hpp"
+#include "scaler.hpp"
 #include "string.hpp"
 #include "translator.hpp"
 
@@ -13,7 +14,7 @@ ConnectionPage::ConnectionPage(wxWindow* parent, std::shared_ptr<pt::Configurati
     m_translator(tr)
 {
     wxStaticBoxSizer* listenSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tr, "listen_interface"));
-    wxFlexGridSizer* listenGrid = new wxFlexGridSizer(1, 10, 10);
+    wxFlexGridSizer* listenGrid = new wxFlexGridSizer(1, SY(10), SX(10));
 
     wxString val;
 
@@ -22,14 +23,14 @@ ConnectionPage::ConnectionPage(wxWindow* parent, std::shared_ptr<pt::Configurati
         val << ifs.first << ":" << ifs.second << "\n";
     }
 
-    m_listenInterfaces = new wxTextCtrl(listenSizer->GetStaticBox(), wxID_ANY, val, wxDefaultPosition, wxSize(100, 60), wxTE_MULTILINE);
+    m_listenInterfaces = new wxTextCtrl(listenSizer->GetStaticBox(), wxID_ANY, val, wxDefaultPosition, wxSize(SX(100), SX(60)), wxTE_MULTILINE);
 
     listenGrid->AddGrowableCol(0, 1);
     listenGrid->Add(m_listenInterfaces, 1, wxEXPAND);
     listenSizer->Add(listenGrid, 1, wxEXPAND | wxALL, 5);
 
     wxStaticBoxSizer* encryptionSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tr, "encryption"));
-    wxFlexGridSizer* encryptionGrid = new wxFlexGridSizer(1, 10, 10);
+    wxFlexGridSizer* encryptionGrid = new wxFlexGridSizer(1, SY(10), SX(10));
 
     m_incomingEncryption = new wxCheckBox(encryptionSizer->GetStaticBox(), wxID_ANY, i18n(tr, "require_encryption_incoming"));
     m_incomingEncryption->SetValue(m_cfg->Session()->RequireIncomingEncryption());
@@ -40,10 +41,10 @@ ConnectionPage::ConnectionPage(wxWindow* parent, std::shared_ptr<pt::Configurati
     encryptionGrid->AddGrowableCol(0, 1);
     encryptionGrid->Add(m_incomingEncryption, 1, wxEXPAND);
     encryptionGrid->Add(m_outgoingEncryption, 1, wxEXPAND);
-    encryptionSizer->Add(encryptionGrid, 1, wxEXPAND | wxALL, 5);
+    encryptionSizer->Add(encryptionGrid, 1, wxEXPAND | wxALL, SX(5));
 
     wxStaticBoxSizer* privacySizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tr, "privacy"));
-    wxFlexGridSizer* privacyGrid = new wxFlexGridSizer(3, 10, 10);
+    wxFlexGridSizer* privacyGrid = new wxFlexGridSizer(3, SY(10), SX(10));
 
     m_enableDht = new wxCheckBox(privacySizer->GetStaticBox(), wxID_ANY, i18n(tr, "enable_dht"));
     m_enableDht->SetValue(m_cfg->Session()->EnableDht());
@@ -60,14 +61,14 @@ ConnectionPage::ConnectionPage(wxWindow* parent, std::shared_ptr<pt::Configurati
     privacyGrid->Add(m_enableDht, 1, wxEXPAND);
     privacyGrid->Add(m_enableLsd, 1, wxEXPAND);
     privacyGrid->Add(m_enablePex, 1, wxEXPAND);
-    privacySizer->Add(privacyGrid, 1, wxEXPAND | wxALL, 5);
+    privacySizer->Add(privacyGrid, 1, wxEXPAND | wxALL, SX(5));
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(listenSizer, 0, wxEXPAND);
-    sizer->AddSpacer(10);
-    sizer->Add(encryptionSizer, 0, wxEXPAND);
-    sizer->AddSpacer(10);
-    sizer->Add(privacySizer, 0, wxEXPAND);
+    sizer->Add(listenSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, SX(5));
+    sizer->AddSpacer(SY(10));
+    sizer->Add(encryptionSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, SX(5));
+    sizer->AddSpacer(SY(10));
+    sizer->Add(privacySizer, 0, wxEXPAND | wxLEFT | wxRIGHT, SX(5));
     sizer->AddStretchSpacer();
 
     this->SetSizerAndFit(sizer);

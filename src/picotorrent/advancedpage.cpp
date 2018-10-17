@@ -1,6 +1,7 @@
 #include "advancedpage.hpp"
 
 #include "config.hpp"
+#include "scaler.hpp"
 #include "string.hpp"
 #include "translator.hpp"
 
@@ -19,7 +20,7 @@ AdvancedPage::AdvancedPage(wxWindow* parent, std::shared_ptr<pt::Configuration> 
     m_pg->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(m_pg, 1, wxEXPAND | wxALL, 5);
+    sizer->Add(m_pg, 1, wxEXPAND | wxLEFT | wxRIGHT, SX(5));
 
     this->SetSizerAndFit(sizer);
 }

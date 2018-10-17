@@ -7,6 +7,7 @@
 #include "environment.hpp"
 #include "generalpage.hpp"
 #include "proxypage.hpp"
+#include "scaler.hpp"
 #include "sessionsettings.hpp"
 #include "sessionstate.hpp"
 #include "taskbaricon.hpp"
@@ -60,6 +61,12 @@ PreferencesDialog::PreferencesDialog(
 
     CreateButtons();
     LayoutDialog();
+
+    wxListView* lv = book->GetListView();
+    wxSize lvSize = lv->GetSize();
+
+    lv->SetColumnWidth(0, SX(lv->GetColumnWidth(0)));
+    lv->Refresh();
 
     wxPersistenceManager::Get().RegisterAndRestore(this);
 }

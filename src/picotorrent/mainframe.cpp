@@ -30,6 +30,7 @@
 #include "mainmenu.hpp"
 #include "persistenttorrentlistview.hpp"
 #include "ipc/server.hpp"
+#include "scaler.hpp"
 #include "sessionloader.hpp"
 #include "sessionstate.hpp"
 #include "sessionunloader.hpp"
@@ -82,7 +83,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
     m_torrentDetailsView = new TorrentDetailsView(m_splitter, m_trans, m_state);
 
     // Splitter
-    m_splitter->SetMinimumPaneSize(50);
+    m_splitter->SetMinimumPaneSize(SX(50));
     m_splitter->SetSashGravity(0.5);
     m_splitter->SplitHorizontally(m_torrentListView, m_torrentDetailsView);
 
@@ -121,7 +122,10 @@ MainFrame::MainFrame(std::shared_ptr<pt::Configuration> config,
 
     if (auto persistentObject = persistenceManager.Register(this))
     {
-        persistenceManager.Restore(this);
+        if (!persistenceManager.Restore(this))
+        {
+            this->SetSize(SX(400), SX(300));
+        }
 
         int sashPosition = -1;
         bool detailsVisible = false;
