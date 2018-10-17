@@ -1,5 +1,6 @@
 #include "overviewpage.hpp"
 
+#include "scaler.hpp"
 #include "translator.hpp"
 
 #include <libtorrent/torrent_status.hpp>
@@ -46,7 +47,7 @@ OverviewPage::OverviewPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::
     m_pieces(new CopyableStaticText(this, tr)),
     m_translator(tr)
 {
-    wxFlexGridSizer* sz = new wxFlexGridSizer(4, 10, 10);
+    wxFlexGridSizer* sz = new wxFlexGridSizer(4, SY(10), SX(10));
     sz->AddGrowableCol(1);
     sz->AddGrowableCol(3);
 
@@ -61,7 +62,7 @@ OverviewPage::OverviewPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::
     sz->Add(m_pieces, 1, wxEXPAND);
 
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-    mainSizer->Add(sz, 1, wxALL | wxEXPAND, 5);
+    mainSizer->Add(sz, 1, wxALL | wxEXPAND, SX(5));
 
     this->SetSizerAndFit(mainSizer);
 }

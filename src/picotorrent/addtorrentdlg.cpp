@@ -35,7 +35,7 @@ wxEND_EVENT_TABLE()
 AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     std::shared_ptr<pt::Translator> translator,
     std::vector<lt::add_torrent_params>& params)
-    : wxDialog(parent, wxID_ANY, i18n(translator, "add_torrent_s"), wxDefaultPosition, wxSize(SX(400), SY(540)), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+    : wxDialog(parent, wxID_ANY, i18n(translator, "add_torrent_s"), wxDefaultPosition, wxSize(SX(400), SY(450)), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     m_params(params),
     m_trans(translator),
     m_filesViewModel(new FileStorageViewModel(translator))
@@ -48,11 +48,11 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     // File
     wxStaticBoxSizer* fileSizer = new wxStaticBoxSizer(wxVERTICAL, pnl, i18n(translator, "file"));
     m_torrents = new wxChoice(fileSizer->GetStaticBox(), ptID_TORRENT_LIST);
-    fileSizer->Add(m_torrents, 0, wxEXPAND | wxALL, 5);
+    fileSizer->Add(m_torrents, 0, wxEXPAND | wxALL, SX(5));
 
     // Torrent
     wxStaticBoxSizer* torrentSizer = new wxStaticBoxSizer(wxVERTICAL, pnl, i18n(translator, "torrent"));
-    wxFlexGridSizer* torrentGrid = new wxFlexGridSizer(2, 10, 25);
+    wxFlexGridSizer* torrentGrid = new wxFlexGridSizer(2, SY(10), SY(25));
 
     m_name = new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
     m_size = new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
@@ -68,11 +68,11 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     torrentGrid->Add(m_infoHash, 0, wxEXPAND);
     torrentGrid->Add(new wxStaticText(torrentSizer->GetStaticBox(), wxID_ANY, m_trans->Translate("comment")));
     torrentGrid->Add(m_comment, 0, wxEXPAND);
-    torrentSizer->Add(torrentGrid, 1, wxEXPAND | wxALL, 5);
+    torrentSizer->Add(torrentGrid, 1, wxEXPAND | wxALL, SX(5));
 
     // Storage
     wxStaticBoxSizer* storageSizer = new wxStaticBoxSizer(wxVERTICAL, pnl, i18n(translator, "preferences"));
-    wxFlexGridSizer* storageGrid = new wxFlexGridSizer(2, 10, 25);
+    wxFlexGridSizer* storageGrid = new wxFlexGridSizer(2, SY(10), SX(25));
 
     m_savePath = new wxDirPickerCtrl(storageSizer->GetStaticBox(), ptID_SAVE_PATH, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
     m_filesView = new wxDataViewCtrl(storageSizer->GetStaticBox(), ptID_FILE_LIST, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE);
@@ -117,8 +117,8 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
     storageGrid->AddSpacer(0);
     storageGrid->Add(checkSizer, 1, wxEXPAND);
 
-    storageSizer->Add(storageGrid, 0, wxEXPAND | wxALL, 5);
-    storageSizer->Add(m_filesView, 1, wxEXPAND | wxALL, 5);
+    storageSizer->Add(storageGrid, 0, wxEXPAND | wxALL, SX(5));
+    storageSizer->Add(m_filesView, 1, wxEXPAND | wxALL, SX(5));
 
     // Buttons
     wxBoxSizer* buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -131,13 +131,13 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent,
 
     // Main sizer
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-    mainSizer->Add(fileSizer, 0, wxEXPAND | wxALL, 5);
+    mainSizer->Add(fileSizer, 0, wxEXPAND | wxALL, SX(5));
     mainSizer->AddSpacer(2);
-    mainSizer->Add(torrentSizer, 0, wxEXPAND | wxALL, 5);
+    mainSizer->Add(torrentSizer, 0, wxEXPAND | wxALL, SX(5));
     mainSizer->AddSpacer(2);
-    mainSizer->Add(storageSizer, 1, wxEXPAND | wxALL, 5);
+    mainSizer->Add(storageSizer, 1, wxEXPAND | wxALL, SX(5));
     mainSizer->AddSpacer(2);
-    mainSizer->Add(buttonsSizer, 0, wxALL | wxALIGN_RIGHT, 5);
+    mainSizer->Add(buttonsSizer, 0, wxALL | wxALIGN_RIGHT, SX(5));
 
     for (lt::add_torrent_params& p : m_params)
     {

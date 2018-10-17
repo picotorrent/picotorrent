@@ -1,6 +1,7 @@
 #include "downloadspage.hpp"
 
 #include "config.hpp"
+#include "scaler.hpp"
 #include "translator.hpp"
 
 #include <wx/filepicker.h>
@@ -13,7 +14,7 @@ DownloadsPage::DownloadsPage(wxWindow* parent, std::shared_ptr<pt::Configuration
     m_cfg(cfg)
 {
     wxStaticBoxSizer* transfersSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tran, "transfers"));
-    wxFlexGridSizer* transfersGrid = new wxFlexGridSizer(2, 10, 10);
+    wxFlexGridSizer* transfersGrid = new wxFlexGridSizer(2, SY(10), SX(10));
 
     m_savePathCtrl = new wxDirPickerCtrl(transfersSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
     m_savePathCtrl->SetPath(wxString::FromUTF8(m_cfg->DefaultSavePath().string()));
@@ -26,24 +27,24 @@ DownloadsPage::DownloadsPage(wxWindow* parent, std::shared_ptr<pt::Configuration
     transfersGrid->Add(new wxStaticText(transfersSizer->GetStaticBox(), wxID_ANY, i18n(tran, "save_path")), 0, wxALIGN_CENTER_VERTICAL);
     transfersGrid->Add(m_savePathCtrl, 1, wxEXPAND);
 
-    transfersSizer->Add(transfersGrid, 1, wxEXPAND | wxALL, 5);
-    transfersSizer->Add(m_moveCompletedEnabled, 0, wxALL, 5);
+    transfersSizer->Add(transfersGrid, 1, wxEXPAND | wxALL, SX(5));
+    transfersSizer->Add(m_moveCompletedEnabled, 0, wxALL, SX(5));
 
     wxBoxSizer* bs1 = new wxBoxSizer(wxHORIZONTAL);
-    bs1->AddSpacer(15);
+    bs1->AddSpacer(SY(10));
     bs1->Add(m_moveCompletedPathCtrl, 1, wxEXPAND);
 
     wxBoxSizer* bs2 = new wxBoxSizer(wxHORIZONTAL);
-    bs2->AddSpacer(15);
+    bs2->AddSpacer(SY(10));
     bs2->Add(m_moveCompletedOnlyFromDefault);
 
-    transfersSizer->Add(bs1, 0, wxEXPAND | wxALL, 5);
-    transfersSizer->Add(bs2, 0, wxALL, 5);
+    transfersSizer->Add(bs1, 0, wxEXPAND | wxALL, SX(5));
+    transfersSizer->Add(bs2, 0, wxALL, SX(5));
 
     wxStaticBoxSizer* limitsSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tran, "limits"));
 
     /* Rate limits */
-    wxFlexGridSizer* transferLimitsGrid = new wxFlexGridSizer(3, 10, 10);
+    wxFlexGridSizer* transferLimitsGrid = new wxFlexGridSizer(3, SY(10), SY(10));
 
     m_enableDownloadLimit = new wxCheckBox(limitsSizer->GetStaticBox(), wxID_ANY, i18n(tran, "dl_limit"));
     m_enableDownloadLimit->SetValue(m_cfg->Session()->EnableDownloadRateLimit());
@@ -73,7 +74,7 @@ DownloadsPage::DownloadsPage(wxWindow* parent, std::shared_ptr<pt::Configuration
     transferLimitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, "KB/s"), 0, wxALIGN_CENTER_VERTICAL);
 
     /* Active limits */
-    wxFlexGridSizer* activeLimitsGrid = new wxFlexGridSizer(2, 10, 10);
+    wxFlexGridSizer* activeLimitsGrid = new wxFlexGridSizer(2, SY(10), SX(10));
 
     m_activeLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
     m_activeLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
@@ -95,14 +96,14 @@ DownloadsPage::DownloadsPage(wxWindow* parent, std::shared_ptr<pt::Configuration
     activeLimitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, i18n(tran, "active_seeds")));
     activeLimitsGrid->Add(m_activeSeedsLimit, 0, wxALIGN_RIGHT);
 
-    limitsSizer->Add(transferLimitsGrid, 0, wxEXPAND | wxALL, 5);
-    limitsSizer->Add(new wxStaticLine(limitsSizer->GetStaticBox(), wxID_ANY), 0, wxEXPAND | wxALL, 5);
-    limitsSizer->Add(activeLimitsGrid, 0, wxEXPAND | wxALL, 5);
+    limitsSizer->Add(transferLimitsGrid, 0, wxEXPAND | wxALL, SX(5));
+    limitsSizer->Add(new wxStaticLine(limitsSizer->GetStaticBox(), wxID_ANY), 0, wxEXPAND | wxALL, SX(5));
+    limitsSizer->Add(activeLimitsGrid, 0, wxEXPAND | wxALL, SX(5));
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(transfersSizer, 0, wxEXPAND);
-    sizer->AddSpacer(10);
-    sizer->Add(limitsSizer, 0, wxEXPAND);
+    sizer->Add(transfersSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, SX(5));
+    sizer->AddSpacer(SY(10));
+    sizer->Add(limitsSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, SX(5));
     sizer->AddStretchSpacer();
 
     this->SetSizerAndFit(sizer);

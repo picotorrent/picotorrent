@@ -2,6 +2,7 @@
 
 #include "clientdata.hpp"
 #include "config.hpp"
+#include "scaler.hpp"
 #include "translator.hpp"
 
 using pt::ProxyPage;
@@ -11,7 +12,7 @@ ProxyPage::ProxyPage(wxWindow* parent, std::shared_ptr<pt::Configuration> cfg, s
     m_cfg(cfg)
 {
     wxStaticBoxSizer* proxySizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n(tr, "proxy"));
-    wxFlexGridSizer* proxyGrid = new wxFlexGridSizer(2, 10, 10);
+    wxFlexGridSizer* proxyGrid = new wxFlexGridSizer(2, SY(10), SX(10));
 
     m_type = new wxChoice(proxySizer->GetStaticBox(), wxID_ANY);
     m_host = new wxTextCtrl(proxySizer->GetStaticBox(), wxID_ANY);
@@ -36,17 +37,17 @@ ProxyPage::ProxyPage(wxWindow* parent, std::shared_ptr<pt::Configuration> cfg, s
     proxyGrid->Add(new wxStaticText(proxySizer->GetStaticBox(), wxID_ANY, i18n(tr, "password")), 0, wxALIGN_CENTER_VERTICAL);
     proxyGrid->Add(m_password, 1, wxEXPAND);
 
-    wxFlexGridSizer* proxySettingsGrid = new wxFlexGridSizer(2, 10, 10);
+    wxFlexGridSizer* proxySettingsGrid = new wxFlexGridSizer(2, SY(10), SX(10));
     proxyGrid->Add(m_forceProxy, 1, wxEXPAND);
     proxyGrid->Add(m_proxyHostnames, 1, wxEXPAND);
     proxyGrid->Add(m_proxyPeers, 1, wxEXPAND);
     proxyGrid->Add(m_proxyTrackers, 1, wxEXPAND);
 
-    proxySizer->Add(proxyGrid, 1, wxEXPAND | wxALL, 5);
-    proxySizer->Add(proxySettingsGrid, 1, wxEXPAND | wxALL, 5);
+    proxySizer->Add(proxyGrid, 1, wxEXPAND | wxALL, SX(5));
+    proxySizer->Add(proxySettingsGrid, 1, wxEXPAND | wxALL, SX(5));
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(proxySizer, 0, wxEXPAND);
+    sizer->Add(proxySizer, 0, wxEXPAND | wxLEFT | wxRIGHT, SX(5));
     sizer->AddStretchSpacer();
 
     m_type->Bind(wxEVT_CHOICE, [this](wxCommandEvent&) { UpdateUI(); });

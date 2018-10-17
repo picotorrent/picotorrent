@@ -1,5 +1,6 @@
 #include "statusbar.hpp"
 
+#include "scaler.hpp"
 #include "translator.hpp"
 #include "utils.hpp"
 
@@ -11,8 +12,8 @@ StatusBar::StatusBar(wxWindow* parent, std::shared_ptr<pt::Translator> translato
 {
     int widths[] =
     {
-        120,
-        120,
+        SX(120),
+        SX(120),
         -1
     };
 
