@@ -288,6 +288,11 @@ void MainFrame::OnSessionAlert()
 
             if (ata->error)
             {
+                if (ata->error == lt::errors::duplicate_torrent)
+                {
+                    // TODO: Select the torrent in the list instead of showing an error dialog.
+                }
+
                 wxLogError("Error when adding torrent: %s", ata->error.message().c_str());
                 break;
             }
