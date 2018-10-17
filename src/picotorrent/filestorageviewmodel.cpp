@@ -151,7 +151,13 @@ void FileStorageViewModel::RebuildTree(std::shared_ptr<const lt::torrent_info> t
         m_root->index = 0;
         m_root->size = files.file_size(lt::file_index_t(0));
 
-        std::string extension = m_root->name.substr(m_root->name.find_last_of("."));
+        std::string extension = ".PicoNoExtension";
+        size_t extensionIdx = m_root->name.find_last_of(".");
+
+        if (extensionIdx != std::string::npos)
+        {
+            extension = m_root->name.substr(extensionIdx);
+        }
 
         SHFILEINFO shfi = { 0 };
         SHGetFileInfo(
@@ -212,7 +218,13 @@ void FileStorageViewModel::UpdateProgress(std::vector<int64_t> const& progress)
 
 wxIcon FileStorageViewModel::GetIconForFile(std::string const& fileName) const
 {
-    std::string extension = fileName.substr(fileName.find_last_of("."));
+    std::string extension = ".PicoNoExtension";
+    size_t extensionIdx = m_root->name.find_last_of(".");
+
+    if (extensionIdx != std::string::npos)
+    {
+        extension = m_root->name.substr(extensionIdx);
+    }
 
     if (m_icons.find(extension) != m_icons.end())
     {
