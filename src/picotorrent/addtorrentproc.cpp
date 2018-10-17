@@ -144,6 +144,7 @@ void AddTorrentProcedure::Execute(std::vector<lt::add_torrent_params>& params)
 
     for (auto& param : params)
     {
+        param.flags |= lt::torrent_flags::duplicate_is_error;
         param.save_path = m_cfg->DefaultSavePath().string();
     }
 
