@@ -1,0 +1,129 @@
+[submodule "vendor/boost-array"]
+	path = vendor/boost-array
+	url = https://github.com/boostorg/array
+[submodule "vendor/boost-asio"]
+	path = vendor/boost-asio
+	url = https://github.com/boostorg/asio
+[submodule "vendor/boost-assert"]
+	path = vendor/boost-assert
+	url = https://github.com/boostorg/assert
+[submodule "vendor/boost-bind"]
+	path = vendor/boost-bind
+	url = https://github.com/boostorg/bind
+[submodule "vendor/boost-concept_check"]
+	path = vendor/boost-concept_check
+	url = https://github.com/boostorg/concept_check
+[submodule "vendor/boost-config"]
+	path = vendor/boost-config
+	url = https://github.com/boostorg/config
+[submodule "vendor/boost-container"]
+	path = vendor/boost-container
+	url = https://github.com/boostorg/container
+[submodule "vendor/boost-container_hash"]
+	path = vendor/boost-container_hash
+	url = https://github.com/boostorg/container_hash
+[submodule "vendor/boost-core"]
+	path = vendor/boost-core
+	url = https://github.com/boostorg/core
+[submodule "vendor/boost-crc"]
+	path = vendor/boost-crc
+	url = https://github.com/boostorg/crc
+[submodule "vendor/boost-date_time"]
+	path = vendor/boost-date_time
+	url = https://github.com/boostorg/date_time
+[submodule "vendor/boost-detail"]
+	path = vendor/boost-detail
+	url = https://github.com/boostorg/detail
+[submodule "vendor/boost-exception"]
+	path = vendor/boost-exception
+	url = https://github.com/boostorg/exception
+[submodule "vendor/boost-function"]
+	path = vendor/boost-function
+	url = https://github.com/boostorg/function
+[submodule "vendor/boost-fusion"]
+	path = vendor/boost-fusion
+	url = https://github.com/boostorg/fusion
+[submodule "vendor/boost-integer"]
+	path = vendor/boost-integer
+	url = https://github.com/boostorg/integer
+[submodule "vendor/boost-intrusive"]
+	path = vendor/boost-intrusive
+	url = https://github.com/boostorg/intrusive
+[submodule "vendor/boost-iterator"]
+	path = vendor/boost-iterator
+	url = https://github.com/boostorg/iterator
+[submodule "vendor/boost-lexical_cast"]
+	path = vendor/boost-lexical_cast
+	url = https://github.com/boostorg/lexical_cast
+[submodule "vendor/boost-math"]
+	path = vendor/boost-math
+	url = https://github.com/boostorg/math
+[submodule "vendor/boost-move"]
+	path = vendor/boost-move
+	url = https://github.com/boostorg/move
+[submodule "vendor/boost-mpl"]
+	path = vendor/boost-mpl
+	url = https://github.com/boostorg/mpl
+[submodule "vendor/boost-multiprecision"]
+	path = vendor/boost-multiprecision
+	url = https://github.com/boostorg/multiprecision
+[submodule "vendor/boost-numeric_conversion"]
+	path = vendor/boost-numeric_conversion
+	url = https://github.com/boostorg/numeric_conversion
+[submodule "vendor/boost-optional"]
+	path = vendor/boost-optional
+	url = https://github.com/boostorg/optional
+[submodule "vendor/boost-pool"]
+	path = vendor/boost-pool
+	url = https://github.com/boostorg/pool
+[submodule "vendor/boost-predef"]
+	path = vendor/boost-predef
+	url = https://github.com/boostorg/predef
+[submodule "vendor/boost-preprocessor"]
+	path = vendor/boost-preprocessor
+	url = https://github.com/boostorg/preprocessor
+[submodule "vendor/boost-range"]
+	path = vendor/boost-range
+	url = https://github.com/boostorg/range
+[submodule "vendor/boost-rational"]
+	path = vendor/boost-rational
+	url = https://github.com/boostorg/rational
+[submodule "vendor/boost-scope_exit"]
+	path = vendor/boost-scope_exit
+	url = https://github.com/boostorg/scope_exit
+[submodule "vendor/boost-smart_ptr"]
+	path = vendor/boost-smart_ptr
+	url = https://github.com/boostorg/smart_ptr
+[submodule "vendor/boost-static_assert"]
+	path = vendor/boost-static_assert
+	url = https://github.com/boostorg/static_assert
+[submodule "vendor/boost-system"]
+	path = vendor/boost-system
+	url = https://github.com/boostorg/system
+[submodule "vendor/boost-throw_exception"]
+	path = vendor/boost-throw_exception
+	url = https://github.com/boostorg/throw_exception
+[submodule "vendor/boost-tuple"]
+	path = vendor/boost-tuple
+	url = https://github.com/boostorg/tuple
+[submodule "vendor/boost-typeof"]
+	path = vendor/boost-typeof
+	url = https://github.com/boostorg/typeof
+[submodule "vendor/boost-type_index"]
+	path = vendor/boost-type_index
+	url = https://github.com/boostorg/type_index
+[submodule "vendor/boost-type_traits"]
+	path = vendor/boost-type_traits
+	url = https://github.com/boostorg/type_traits
+[submodule "vendor/boost-utility"]
+	path = vendor/boost-utility
+	url = https://github.com/boostorg/utility
+[submodule "vendor/boost-variant"]
+	path = vendor/boost-variant
+	url = https://github.com/boostorg/variant
+[submodule "vendor/boost-winapi"]
+	path = vendor/boost-winapi
+	url = https://github.com/boostorg/winapi
+[submodule "vendor/libtorrent"]
+	path = vendor/libtorrent
+	url = https://github.com/arvidn/libtorrent

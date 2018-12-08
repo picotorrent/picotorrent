@@ -1,0 +1,53 @@
+#pragma once
+
+#include <memory>
+
+#include <QAbstractItemModel>
+
+#include <libtorrent/fwd.hpp>
+#include <libtorrent/units.hpp>
+
+class QFileIconProvider;
+
+namespace pt
+{
+    class FileStorageItemModel : public QAbstractItemModel
+    {
+    public:
+        enum Columns
+        {
+            Name,
+            Size,
+            Progress,
+            Priority,
+            _Max
+        };
+
+        FileStorageItemModel();
+        ~FileStorageItemModel();
+
+        std::vector<libtorrent::file_index_t> fileIndices(QModelIndexList const& indices);
+
+        int columnCount(QModelIndex const&) const override;
+        QVariant data(QModelIndex const&, int) const override;
+        QModelIndex index(int, int, QModelIndex const&) const override;
+        QVariant headerData(int, Qt::Orientation, int) const override;
+        QModelIndex parent(QModelIndex const&) const override;
+        void rebuildTree(std::shared_ptr<const libtorrent::torrent_info> ti);
+        int rowCount(QModelIndex const&) const override;
+
+    private:
+        struct FileNode
+        {
+            std::vector<std::shared_ptr<FileNode>> children;
+            std::shared_ptr<FileNode> parent;
+
+            libtorrent::file_index_t index;
+            QString name;
+            int64_t size;
+        };
+
+        QFileIconProvider* m_iconProvider;
+        std::shared_ptr<FileNode> m_root;
+    };
+}

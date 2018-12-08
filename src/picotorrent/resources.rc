@@ -1,7 +1,6 @@
-#include "wx/msw/wx.rc"
 #include "version.h"
 
-AppIcon ICON "..\\..\\res\\app.ico"
+IDI_APPICON ICON DISCARDABLE "..\\..\\res\\app.ico"
 
 1027 LANGFILE "..\\..\\lang\\1027.json"
 1031 LANGFILE "..\\..\\lang\\1031.json"

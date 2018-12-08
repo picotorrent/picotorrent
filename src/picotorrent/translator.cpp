@@ -8,7 +8,7 @@
 #include "environment.hpp"
 #include "picojson.hpp"
 
-namespace fs = std::experimental::filesystem::v1;
+namespace fs = std::experimental::filesystem;
 namespace pj = picojson;
 using pt::Translator;
 
@@ -18,7 +18,7 @@ Translator::Translator(std::map<int, Language> const& languages, int selectedLan
 {
 }
 
-std::vector<Translator::Language> Translator::GetAvailableLanguages()
+std::vector<Translator::Language> Translator::getAvailableLanguages()
 {
     std::vector<Language> result;
 
@@ -30,7 +30,7 @@ std::vector<Translator::Language> Translator::GetAvailableLanguages()
     return result;
 }
 
-wxString Translator::Translate(wxString key)
+wxString Translator::translate(QString key)
 {
     auto lang = m_languages.find(m_selectedLanguage);
     if (lang == m_languages.end()) { lang = m_languages.find(1033); }
@@ -46,7 +46,7 @@ wxString Translator::Translate(wxString key)
     return translation->second;
 }
 
-std::shared_ptr<Translator> Translator::Load(HINSTANCE hInstance, std::shared_ptr<pt::Configuration> config)
+std::shared_ptr<Translator> Translator::load(HINSTANCE hInstance, std::shared_ptr<pt::Configuration> config)
 {
     // TODO: Very Win32 specific code, enumerating the embedded resources.
     // Should be split into a platform specific layer when making PicoTorrent
@@ -75,7 +75,7 @@ std::shared_ptr<Translator> Translator::Load(HINSTANCE hInstance, std::shared_pt
 
         Language lang;
 
-        if (LoadLanguageFromJson(json.str(), lang))
+        if (loadLanguageFromJson(json.str(), lang))
         {
             langs[lang.code] = lang;
         }
@@ -86,7 +86,7 @@ std::shared_ptr<Translator> Translator::Load(HINSTANCE hInstance, std::shared_pt
             config->CurrentLanguageId()));
 }
 
-BOOL Translator::LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
+BOOL Translator::loadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
 {
     std::map<int, Language>* langs = reinterpret_cast<std::map<int, Language>*>(lParam);
 
@@ -98,7 +98,7 @@ BOOL Translator::LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTS
     std::string json(buffer, static_cast<size_t>(size));
     Language lang;
 
-    if (LoadLanguageFromJson(json, lang))
+    if (loadLanguageFromJson(json, lang))
     {
         langs->insert({ lang.code, lang });
     }
@@ -106,7 +106,7 @@ BOOL Translator::LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTS
     return TRUE;
 }
 
-bool Translator::LoadLanguageFromJson(std::string const& json, Translator::Language& lang)
+bool Translator::loadLanguageFromJson(std::string const& json, Translator::Language& lang)
 {
     pj::value v;
     std::string err = pj::parse(v, json);
