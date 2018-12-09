@@ -1,9 +1,11 @@
 #pragma once
 
+#include <map>
 #include <memory>
 
 #include <QAbstractItemModel>
 
+#include <libtorrent/download_priority.hpp>
 #include <libtorrent/fwd.hpp>
 #include <libtorrent/units.hpp>
 
@@ -26,7 +28,7 @@ namespace pt
         FileStorageItemModel();
         ~FileStorageItemModel();
 
-        std::vector<libtorrent::file_index_t> fileIndices(QModelIndexList const& indices);
+        std::vector<int> fileIndices(QModelIndexList const& indices);
 
         int columnCount(QModelIndex const&) const override;
         QVariant data(QModelIndex const&, int) const override;
@@ -35,6 +37,7 @@ namespace pt
         QModelIndex parent(QModelIndex const&) const override;
         void rebuildTree(std::shared_ptr<const libtorrent::torrent_info> ti);
         int rowCount(QModelIndex const&) const override;
+        void setPriorities(std::vector<libtorrent::download_priority_t> const& priorities);
 
     private:
         struct FileNode
@@ -42,12 +45,15 @@ namespace pt
             std::vector<std::shared_ptr<FileNode>> children;
             std::shared_ptr<FileNode> parent;
 
-            libtorrent::file_index_t index;
+            int index;
             QString name;
+            libtorrent::download_priority_t priority = libtorrent::default_priority;
             int64_t size;
         };
 
         QFileIconProvider* m_iconProvider;
         std::shared_ptr<FileNode> m_root;
+        std::map<int, std::shared_ptr<FileNode>> m_map;
+        std::map<libtorrent::download_priority_t, QString> m_priorityTexts;
     };
 }

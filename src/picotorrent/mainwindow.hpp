@@ -12,13 +12,15 @@
 
 namespace pt
 {
+    class Configuration;
+    class Environment;
     class TorrentDetailsWidget;
     class TorrentListWidget;
 
     class MainWindow : public QMainWindow, IPluginHost
     {
     public:
-        MainWindow(QApplication& app);
+        MainWindow(std::shared_ptr<Environment> env, std::shared_ptr<Configuration> cfg);
 
         ITorrentDetailsWidget* torrentDetails() override;
         ITorrentListWidget* torrentList() override;
@@ -27,12 +29,16 @@ namespace pt
         void onFileAddTorrent();
         void onFileExit();
 
-        QApplication& m_app;
+        std::shared_ptr<Environment> m_env;
+        std::shared_ptr<Configuration> m_cfg;
 
         std::vector<IPlugin*> m_plugins;
 
         QAction* m_fileAddTorrent;
+        QAction* m_fileAddMagnetLinks;
         QAction* m_fileExit;
+        QAction* m_viewPreferences;
+        QAction* m_helpAbout;
 
         QSplitter* m_splitter;
         TorrentDetailsWidget* m_torrentDetails;

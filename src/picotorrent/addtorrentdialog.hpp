@@ -8,10 +8,13 @@
 #include <libtorrent/fwd.hpp>
 
 class QActionGroup;
+class QCheckBox;
 class QComboBox;
 class QLabel;
+class QLineEdit;
 class QMenu;
 class QPoint;
+class QPushButton;
 class QTreeView;
 
 namespace pt
@@ -24,17 +27,13 @@ namespace pt
         AddTorrentDialog(QWidget* parent, std::vector<libtorrent::add_torrent_params> const& params);
 
     private:
-        enum FilePriority
-        {
-            Skip,
-            Low,
-            Normal,
-            Max
-        };
-
         void onSetTorrentFilePriorities(QAction* action);
         void onTorrentFileContextMenu(QPoint const& point);
         void onTorrentIndexChanged(int index);
+        void onTorrentSavePathBrowse();
+        void onTorrentSavePathChanged(QString const& text);
+        void onTorrentSequentialDownloadChanged(int state);
+        void onTorrentStartChanged(int state);
 
         std::vector<libtorrent::add_torrent_params> m_params;
 
@@ -43,7 +42,13 @@ namespace pt
         QLabel* m_torrentSize;
         QLabel* m_torrentInfoHash;
         QLabel* m_torrentComment;
+        QLineEdit* m_torrentSavePath;
+        QPushButton* m_torrentSavePathBrowse;
+        QCheckBox* m_torrentSequentialDownload;
+        QCheckBox* m_torrentStart;
         QTreeView* m_torrentFiles;
+        QPushButton* m_ok;
+        QPushButton* m_cancel;
 
         QMenu* m_torrentContextMenu;
 

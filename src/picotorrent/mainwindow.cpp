@@ -15,6 +15,8 @@
 #include <QPluginLoader>
 
 #include "addtorrentdialog.hpp"
+#include "configuration.hpp"
+#include "environment.hpp"
 #include "torrentdetailswidget.hpp"
 #include "torrentlistmodel.hpp"
 #include "torrentlistwidget.hpp"
@@ -22,8 +24,9 @@
 namespace fs = std::experimental::filesystem;
 using pt::MainWindow;
 
-MainWindow::MainWindow(QApplication& app)
-    : m_app(app)
+MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt::Configuration> cfg)
+    : m_env(env),
+    m_cfg(cfg)
 {
     m_torrentDetails = new TorrentDetailsWidget();
     m_torrentList = new TorrentListWidget();
@@ -37,15 +40,25 @@ MainWindow::MainWindow(QApplication& app)
 
     /* Create actions */
     m_fileAddTorrent = new QAction("&Add torrent", this);
+    m_fileAddMagnetLinks = new QAction("Add &magnet links", this);
     m_fileExit = new QAction("E&xit", this);
+    m_viewPreferences = new QAction("&Preferences", this);
+    m_helpAbout = new QAction("&About", this);
 
     connect(m_fileAddTorrent, &QAction::triggered, this, &MainWindow::onFileAddTorrent);
     connect(m_fileExit, &QAction::triggered, this, &MainWindow::onFileExit);
 
     auto fileMenu = menuBar()->addMenu("&File");
     fileMenu->addAction(m_fileAddTorrent);
+    fileMenu->addAction(m_fileAddMagnetLinks);
     fileMenu->addSeparator();
     fileMenu->addAction(m_fileExit);
+
+    auto viewMenu = menuBar()->addMenu("&View");
+    viewMenu->addAction(m_viewPreferences);
+
+    auto helpMenu = menuBar()->addMenu("&Help");
+    helpMenu->addAction(m_helpAbout);
 
     this->setCentralWidget(m_splitter);
     this->setMinimumSize(350, 200);
@@ -122,6 +135,7 @@ void MainWindow::onFileAddTorrent()
             lt::error_code ec;
             lt::add_torrent_params param;
 
+            param.save_path = m_cfg->getString("default_save_path");
             param.ti = std::make_shared<lt::torrent_info>(p.string(), ec);
 
             if (ec)

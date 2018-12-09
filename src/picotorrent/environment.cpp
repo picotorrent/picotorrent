@@ -4,18 +4,13 @@
 #include <ShlObj.h>
 #include <Shlwapi.h>
 
-#pragma warning( push )
-#pragma warning( disable : 4996)
-#include <wx/stdpaths.h>
-#pragma warning( pop )
-
 using pt::Environment;
 
-fs::path Environment::GetApplicationDataPath()
+fs::path Environment::getApplicationDataPath()
 {
-    if (IsInstalled() || IsAppContainerProcess())
+    if (isInstalled() || isAppContainerProcess())
     {
-        return fs::path(GetKnownFolderPath(KnownFolder::LocalAppData)) / "PicoTorrent";
+        return fs::path(getKnownFolderPath(KnownFolder::LocalAppData)) / "PicoTorrent";
     }
 
     TCHAR path[MAX_PATH];
@@ -25,25 +20,38 @@ fs::path Environment::GetApplicationDataPath()
     return path;
 }
 
-fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
+fs::path Environment::getKnownFolderPath(Environment::KnownFolder knownFolder)
 {
-    wxStandardPaths& paths = wxStandardPaths::Get();
-    paths.UseAppInfo(wxStandardPaths::AppInfo_None);
+    KNOWNFOLDERID fid = { 0 };
 
     switch (knownFolder)
     {
     case KnownFolder::LocalAppData:
-        return std::string(paths.GetUserLocalDataDir().ToUTF8());
+        fid = FOLDERID_LocalAppData;
+        break;
 
     case KnownFolder::UserDownloads:
-        return std::string(paths.GetUserDir(wxStandardPaths::Dir_Downloads).ToUTF8());
+        fid = FOLDERID_Downloads;
+        break;
 
     default:
         throw std::runtime_error("Unknown folder");
     }
+
+    PWSTR result;
+    HRESULT hr = SHGetKnownFolderPath(fid, 0, nullptr, &result);
+
+    if (SUCCEEDED(hr))
+    {
+        fs::path p(result);
+        CoTaskMemFree(result);
+        return p;
+    }
+
+    throw std::runtime_error("Could not get known folder path");
 }
 
-bool Environment::IsAppContainerProcess()
+bool Environment::isAppContainerProcess()
 {
     TCHAR path[MAX_PATH];
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
@@ -54,7 +62,7 @@ bool Environment::IsAppContainerProcess()
     return (dwAttr != INVALID_FILE_ATTRIBUTES && !(dwAttr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool Environment::IsInstalled()
+bool Environment::isInstalled()
 {
     HKEY hKey = NULL;
 

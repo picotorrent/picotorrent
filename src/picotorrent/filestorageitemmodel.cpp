@@ -14,6 +14,10 @@ using pt::FileStorageItemModel;
 FileStorageItemModel::FileStorageItemModel()
 {
     m_iconProvider = new QFileIconProvider();
+    m_priorityTexts.insert({ lt::dont_download, "Do not download" });
+    m_priorityTexts.insert({ lt::default_priority, "Normal" });
+    m_priorityTexts.insert({ lt::low_priority, "Low" });
+    m_priorityTexts.insert({ lt::top_priority, "Maximum" });
 }
 
 FileStorageItemModel::~FileStorageItemModel()
@@ -21,11 +25,36 @@ FileStorageItemModel::~FileStorageItemModel()
     delete m_iconProvider;
 }
 
-std::vector<lt::file_index_t> FileStorageItemModel::fileIndices(QModelIndexList const& indices)
+std::vector<int> FileStorageItemModel::fileIndices(QModelIndexList const& indices)
 {
-    std::vector<lt::file_index_t> result;
+    std::function<void(FileNode*, std::vector<int>&)> IterateNodes = [&](FileNode* node, std::vector<int>& result)
+    {
+        if (node->children.size() > 0)
+        {
+            for (std::shared_ptr<FileNode> const& child : node->children)
+            {
+                IterateNodes(child.get(), result);
+            }
+        }
+        else
+        {
+            result.push_back(node->index);
+        }
+    };
 
-    return result;
+    std::vector<int> res;
+
+    for (QModelIndex const& idx : indices)
+    {
+        if (!idx.isValid())
+        {
+            continue;
+        }
+
+        IterateNodes(reinterpret_cast<FileNode*>(idx.internalPointer()), res);
+    }
+
+    return res;
 }
 
 int FileStorageItemModel::columnCount(QModelIndex const&) const
@@ -76,6 +105,17 @@ QVariant FileStorageItemModel::data(QModelIndex const& index, int role) const
 
             return Utils::ToHumanFileSize(item->size);
         }
+        case Columns::Progress:
+            break;
+        case Columns::Priority:
+        {
+            if (item->children.size() > 0)
+            {
+                return "";
+            }
+
+            return m_priorityTexts.at(item->priority);
+        }
         }
         break;
     }
@@ -84,7 +124,12 @@ QVariant FileStorageItemModel::data(QModelIndex const& index, int role) const
         switch (index.column())
         {
         case Columns::Size:
-            return Qt::AlignRight;
+        {
+            QFlags<Qt::AlignmentFlag> flag;
+            flag |= Qt::AlignRight;
+            flag |= Qt::AlignVCenter;
+            return QVariant(flag);
+        }
         }
         break;
     }
@@ -199,6 +244,7 @@ void FileStorageItemModel::rebuildTree(std::shared_ptr<const lt::torrent_info> t
 {
     this->beginResetModel();
 
+    m_map.clear();
     m_root = std::make_shared<FileNode>();
 
     lt::file_storage const& files = ti->files();
@@ -212,8 +258,10 @@ void FileStorageItemModel::rebuildTree(std::shared_ptr<const lt::torrent_info> t
         QString path = QString::fromStdString(files.file_path(idx));
         QStringList parts = path.split("\\");
 
-        for (QString const& part : parts)
+        for (int j = 0; j < parts.size(); j++)
         {
+            QString const& part = parts.at(j);
+
             // Find child in current
             auto res = std::find_if(
                 currentNode->children.begin(),
@@ -227,10 +275,16 @@ void FileStorageItemModel::rebuildTree(std::shared_ptr<const lt::torrent_info> t
             if (res == currentNode->children.end())
             {
                 auto node = std::make_shared<FileNode>();
-                node->index = idx;
                 node->name = part;
                 node->parent = currentNode;
-                node->size = files.file_size(idx);
+
+                if (j == parts.size() - 1)
+                {
+                    node->index = i;
+                    node->size = files.file_size(idx);
+
+                    m_map.insert({ i, node });
+                }
 
                 currentNode->children.push_back(node);
                 currentNode = node;
@@ -264,4 +318,21 @@ int FileStorageItemModel::rowCount(QModelIndex const& parent) const
     }
 
     return static_cast<int>(item->children.size());
+}
+
+void FileStorageItemModel::setPriorities(std::vector<lt::download_priority_t> const& priorities)
+{
+    for (int i = 0; i < priorities.size(); i++)
+    {
+        auto const& node = m_map.at(i);
+
+        if (node->priority == priorities.at(i))
+        {
+            continue;
+        }
+
+        node->priority = priorities.at(i);
+    }
+    
+    emit dataChanged(QModelIndex{}, QModelIndex{});
 }

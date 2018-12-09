@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-namespace fs = std::experimental::filesystem::v1;
+namespace fs = std::experimental::filesystem;
 
 namespace pt
 {
@@ -15,9 +15,9 @@ namespace pt
             UserDownloads
         };
 
-        fs::path GetApplicationDataPath();
-        fs::path Environment::GetKnownFolderPath(KnownFolder knownFolder);
-        bool IsAppContainerProcess();
-        bool IsInstalled();
+        fs::path getApplicationDataPath();
+        fs::path getKnownFolderPath(KnownFolder knownFolder);
+        bool isAppContainerProcess();
+        bool isInstalled();
     };
 }

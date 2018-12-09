@@ -69,10 +69,19 @@ target_compile_definitions(
     -DWIN32_LEAN_AND_MEAN
 )
 
+add_library(
+    sqlite
+    STATIC
+    src/sqlite/sqlite3
+)
+
 add_executable(
     PicoTorrent
     WIN32
     src/picotorrent/addtorrentdialog
+    src/picotorrent/configuration
+    src/picotorrent/database
+    src/picotorrent/environment
     src/picotorrent/filestorageitemmodel
     src/picotorrent/main
     src/picotorrent/mainwindow
@@ -129,6 +138,9 @@ target_link_libraries(
 
     # Breakpad
     breakpad
+
+    # sqlite
+    sqlite
 
     # Rasterbar-libtorrent
     libtorrent-rasterbar

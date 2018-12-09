@@ -21,6 +21,10 @@ IDI_APPICON ICON DISCARDABLE "..\\..\\res\\app.ico"
 1062 LANGFILE "..\\..\\lang\\1062.json"
 1079 LANGFILE "..\\..\\lang\\1079.json"
 
+// SQL migrations
+20181208115043_create_setting_table    DBMIGRATION "..\\..\\res\\dbmigrations\\20181208115043_create_setting_table.sql"
+20181208115732_insert_default_settings DBMIGRATION "..\\..\\res\\dbmigrations\\20181208115732_insert_default_settings.sql"
+
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION        VER_FILE_VERSION
  PRODUCTVERSION     VER_PRODUCT_VERSION
