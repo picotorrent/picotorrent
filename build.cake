@@ -92,7 +92,10 @@ Task("Setup-Publish-Directory")
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.exe")
+        BuildDirectory + File("PicoTorrent.exe"),
+        BuildDirectory + File("Qt5Core.dll"),
+        BuildDirectory + File("Qt5Gui.dll"),
+        BuildDirectory + File("Qt5Widgets.dll"),
     };
 
     CreateDirectory(PublishDirectory);
@@ -104,8 +107,8 @@ Task("Build-AppX-Package")
     .IsDependentOn("Setup-Publish-Directory")
     .Does(() =>
 {
-    var VCRedist = Directory("C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\redist");
-    var VCDir = VCRedist + Directory(platform) + Directory("Microsoft.VC140.CRT");
+    var VCRedist = Directory("C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Redist\\MSVC\\14.16.27012");
+    var VCDir = VCRedist + Directory(platform) + Directory("Microsoft.VC141.CRT");
 
     var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs");
     var CRTDir = CRTRedist + Directory(platform);
@@ -130,7 +133,7 @@ Task("Build-AppX-Package")
     argsBuilder.Append("/f {0}", MakeAbsolute(File("./packaging/AppX/PicoTorrent.mapping")));
     argsBuilder.Append("/p {0}", MakeAbsolute(PackagesDirectory + File(AppXPackage)));
 
-    var makeAppXTool = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.15063.0\\x86\\makeappx.exe";
+    var makeAppXTool = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.17763.0\\x86\\makeappx.exe";
     int exitCode = StartProcess(makeAppXTool, new ProcessSettings
     {
         Arguments = argsBuilder

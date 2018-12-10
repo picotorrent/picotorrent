@@ -33,6 +33,10 @@
                     <Component Id="C_PicoTorrent" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205">
                         <File Id="F_PicoTorrent.exe" Name="PicoTorrent.exe" Source="$(var.PublishDirectory)\PicoTorrent.exe" KeyPath="yes" />
 
+                        <File Id="F_Qt5Core.dll" Name="Qt5Core.dll" Source="$(var.PublishDirectory)\Qt5Core.dll" />
+                        <File Id="F_Qt5Gui.dll" Name="Qt5Gui.dll" Source="$(var.PublishDirectory)\Qt5Gui.dll" />
+                        <File Id="F_Qt5Widgets" Name="Qt5Widgets.dll" Source="$(var.PublishDirectory)\Qt5Widgets.dll" />
+
                         <!-- Shortcut -->
                         <Shortcut Id="S_PicoTorrent"
                                   Directory="ProgramMenuFolder"
