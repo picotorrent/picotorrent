@@ -87,8 +87,9 @@ add_executable(
     src/picotorrent/mainwindow
     src/picotorrent/resources.qrc
     src/picotorrent/resources.rc
-    #src/picotorrent/sessionloader
+    src/picotorrent/sessionloader
     src/picotorrent/torrentdetailswidget
+    src/picotorrent/torrentitemdelegate
     src/picotorrent/torrentlistmodel
     src/picotorrent/torrentlistwidget
     #src/picotorrent/translator

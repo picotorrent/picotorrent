@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 typedef struct sqlite3 sqlite3;
 typedef struct sqlite3_context sqlite3_context;
@@ -18,10 +19,15 @@ namespace pt
             friend class Database;
 
             ~Statement();
+            void bind(int idx, int value);
             void bind(int idx, std::string const& value);
+            void bind(int idx, std::vector<char> const& value);
             void execute();
+            void getBlob(int idx, std::vector<char>& res);
+            bool getBool(int idx);
             int getInt(int idx);
             std::string getString(int idx);
+            bool read();
 
         private:
             Statement(sqlite3_stmt* stmt);

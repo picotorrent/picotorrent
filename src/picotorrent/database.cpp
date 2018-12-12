@@ -45,14 +45,54 @@ Database::Statement::~Statement()
     sqlite3_finalize(m_stmt);
 }
 
+void Database::Statement::bind(int idx, int value)
+{
+    sqlite3_bind_int(m_stmt, idx, value);
+}
+
 void Database::Statement::bind(int idx, std::string const& value)
 {
     sqlite3_bind_text(m_stmt, idx, value.c_str(), -1, SQLITE_TRANSIENT);
 }
 
+void Database::Statement::bind(int idx, std::vector<char> const& value)
+{
+    int res = sqlite3_bind_blob(
+        m_stmt,
+        idx,
+        reinterpret_cast<const void*>(value.data()),
+        static_cast<int>(value.size()),
+        SQLITE_TRANSIENT);
+
+    if (res != SQLITE_OK)
+    {
+        printf("%d", res);
+    }
+}
+
 void Database::Statement::execute()
 {
-    sqlite3_step(m_stmt);
+    int res = sqlite3_step(m_stmt);
+
+    if (res != SQLITE_ROW && res != SQLITE_DONE)
+    {
+        const char* err = sqlite3_errmsg(sqlite3_db_handle(m_stmt));
+        throw std::runtime_error(err);
+    }
+}
+
+void Database::Statement::getBlob(int idx, std::vector<char>& result)
+{
+    int len = sqlite3_column_bytes(m_stmt, idx);
+    const char* buf = reinterpret_cast<const char*>(sqlite3_column_blob(m_stmt, idx));
+
+    result.clear();
+    result.insert(result.begin(), buf, buf + len);
+}
+
+bool Database::Statement::getBool(int idx)
+{
+    return (sqlite3_column_int(m_stmt, idx) > 0);
 }
 
 int Database::Statement::getInt(int idx)
@@ -65,9 +105,21 @@ std::string Database::Statement::getString(int idx)
     return reinterpret_cast<const char*>(sqlite3_column_text(m_stmt, idx));
 }
 
+bool Database::Statement::read()
+{
+    if (sqlite3_step(m_stmt) == SQLITE_ROW)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 Database::Database(std::string const& fileName)
 {
     sqlite3_open(fileName.c_str(), &m_db);
+
+    execute("PRAGMA foreign_keys = ON;");
 
     sqlite3_create_function(
         m_db,
@@ -143,7 +195,13 @@ bool Database::migrate()
 std::shared_ptr<Database::Statement> Database::statement(std::string const& sql)
 {
     sqlite3_stmt* stmt;
-    sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr);
+
+    if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_ERROR)
+    {
+        const char* err = sqlite3_errmsg(m_db);
+        throw std::runtime_error(err);
+    }
+
     return std::shared_ptr<Statement>(new Statement(stmt));
 }
 

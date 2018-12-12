@@ -23,7 +23,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    pt::MainWindow wnd(env, cfg);
+    pt::MainWindow wnd(env, db, cfg);
     wnd.show();
 
     return app.exec();

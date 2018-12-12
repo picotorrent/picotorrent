@@ -1,4 +1,4 @@
-insert into setting (key, int_value, string_value) values
+INSERT INTO setting (key, int_value, string_value) VALUES
 
 ('default_save_path',                          NULL, get_known_folder_path('FOLDERID_Downloads')),
 ('language_id',                                NULL, get_user_default_ui_language()),

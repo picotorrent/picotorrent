@@ -5,12 +5,12 @@
 namespace pt
 {
     class Configuration;
-    class Environment;
+    class Database;
     struct SessionState;
 
     class SessionLoader
     {
     public:
-        static std::shared_ptr<SessionState> Load(std::shared_ptr<Environment> env, std::shared_ptr<Configuration> cfg);
+        static std::shared_ptr<SessionState> load(std::shared_ptr<Database> db, std::shared_ptr<Configuration> cfg);
     };
 }
