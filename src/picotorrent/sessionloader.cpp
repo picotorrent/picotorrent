@@ -35,29 +35,29 @@ std::shared_ptr<pt::SessionState> SessionLoader::load(std::shared_ptr<pt::Databa
         state->session->add_extension(lt::create_ut_pex_plugin);
     }
 
-    // Load state
-    /*if (fs::exists(stateFile))
+    auto stmt = db->statement("SELECT state_data FROM session_state ORDER BY timestamp DESC LIMIT 1");
+
+    if (stmt->read())
     {
-        std::ifstream state_input(stateFile, std::ios::binary);
-        std::stringstream ss;
-        ss << state_input.rdbuf();
-        std::string buf = ss.str();
+        std::vector<char> stateData;
+        stmt->getBlob(0, stateData);
 
-        lt::bdecode_node node;
-        lt::error_code ltec;
-        lt::bdecode(&buf[0], &buf[0] + buf.size(), node, ltec);
+        lt::error_code ec;
+        lt::bdecode_node node = lt::bdecode(stateData, ec);
 
-        if (!ltec)
+        if (ec)
+        {
+            // TODO(log)
+        }
+        else
         {
             state->session->load_state(node);
         }
-    }*/
+    }
 
-    const char* sql = "SELECT trd.resume_data AS resume_data FROM torrent t\n"
+    stmt = db->statement("SELECT trd.resume_data AS resume_data FROM torrent t\n"
         "LEFT JOIN torrent_resume_data trd ON t.info_hash = trd.info_hash\n"
-        "ORDER BY t.queue_position ASC";
-
-    auto stmt = db->statement(sql);
+        "ORDER BY t.queue_position ASC");
 
     while (stmt->read())
     {

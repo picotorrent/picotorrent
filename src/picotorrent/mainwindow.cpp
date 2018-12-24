@@ -13,6 +13,7 @@
 #include <picotorrent.hpp>
 
 #include <QAction>
+#include <QDebug>
 #include <QDir>
 #include <QFileDialog>
 #include <QHeaderView>
@@ -29,6 +30,7 @@
 #include "environment.hpp"
 #include "sessionloader.hpp"
 #include "sessionstate.hpp"
+#include "sessionunloader.hpp"
 #include "torrentdetailswidget.hpp"
 #include "torrentlistmodel.hpp"
 #include "torrentlistwidget.hpp"
@@ -127,6 +129,14 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_updateTimer->start(1000);
 }
 
+MainWindow::~MainWindow()
+{
+    m_updateTimer->stop();
+    m_sessionState->session->set_alert_notify([]{});
+
+    SessionUnloader::unload(m_sessionState, m_db);
+}
+
 pt::ITorrentDetailsWidget* MainWindow::torrentDetails()
 {
     return m_torrentDetails;
@@ -194,6 +204,8 @@ void MainWindow::readAlerts()
 
     for (lt::alert* alert : alerts)
     {
+        qDebug() << alert->message().c_str();
+
         switch (alert->type())
         {
         case lt::add_torrent_alert::alert_type:

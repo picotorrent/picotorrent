@@ -4,12 +4,12 @@
 
 namespace pt
 {
-    class Environment;
+    class Database;
     struct SessionState;
 
     class SessionUnloader
     {
     public:
-        static void Unload(std::shared_ptr<SessionState> state, std::shared_ptr<Environment> env);
+        static void unload(std::shared_ptr<SessionState> state, std::shared_ptr<Database> db);
     };
 }

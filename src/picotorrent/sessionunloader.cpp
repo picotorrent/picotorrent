@@ -1,12 +1,11 @@
 #include "sessionunloader.hpp"
 
-#include "environment.hpp"
+#include "database.hpp"
 #include "sessionstate.hpp"
 
-#include <filesystem>
-#include <fstream>
 #include <queue>
 #include <sstream>
+#include <vector>
 
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/alert_types.hpp>
@@ -19,18 +18,18 @@
 
 using pt::SessionUnloader;
 
-void SessionUnloader::Unload(std::shared_ptr<pt::SessionState> state, std::shared_ptr<pt::Environment> env)
+void SessionUnloader::unload(std::shared_ptr<pt::SessionState> state, std::shared_ptr<pt::Database> db)
 {
-    fs::path dataDirectory = env->GetApplicationDataPath();
-    if (!fs::exists(dataDirectory)) { fs::create_directories(dataDirectory); }
-    fs::path stateFile = dataDirectory / "Session.dat";
-
     // Save session state
     lt::entry entry;
     state->session->save_state(entry);
 
-    std::ofstream stateStream(stateFile, std::ios::binary);
-    lt::bencode(std::ostreambuf_iterator<char>(stateStream), entry);
+    std::vector<char> stateBuffer;
+    lt::bencode(std::back_inserter(stateBuffer), entry);
+
+    auto stmt = db->statement("INSERT INTO session_state (state_data, timestamp) VALUES (?, strftime('%s'))");
+    stmt->bind(1, stateBuffer);
+    stmt->execute();
 
     state->session->pause();
 
@@ -50,12 +49,12 @@ void SessionUnloader::Unload(std::shared_ptr<pt::SessionState> state, std::share
             continue;
         }
 
-        st.handle.save_resume_data();
+        st.handle.save_resume_data(
+            lt::torrent_handle::flush_disk_cache
+            | lt::torrent_handle::save_info_dict);
+
         ++numOutstandingResumeData;
     }
-
-    fs::path torrentsDirectory = dataDirectory / "Torrents";
-    if (!fs::exists(torrentsDirectory)) { fs::create_directories(torrentsDirectory); }
 
     while (numOutstandingResumeData > 0)
     {
@@ -86,16 +85,23 @@ void SessionUnloader::Unload(std::shared_ptr<pt::SessionState> state, std::share
             if (!rd) { continue; }
             --numOutstandingResumeData;
 
-            // PicoTorrent state
-            lt::entry dat = lt::write_resume_data(rd->params);
-            dat.dict().insert(std::make_pair("pT-queuePosition", int(rd->handle.status().queue_position)));
+            std::vector<char> buffer = lt::write_resume_data_buf(rd->params);
 
-            std::stringstream hex;
-            hex << rd->handle.info_hash();
-            fs::path datFile = torrentsDirectory / (hex.str() + ".dat");
+            std::stringstream ss;
+            ss << rd->handle.info_hash();
+            std::string ih = ss.str();
 
-            std::ofstream datStream(datFile, std::ios::binary);
-            lt::bencode(std::ostreambuf_iterator<char>(datStream), dat);
+            // Store state
+            stmt = db->statement("REPLACE INTO torrent (info_hash, queue_position) VALUES (?, ?)");
+            stmt->bind(1, ih);
+            stmt->bind(2, static_cast<int>(rd->handle.status().queue_position));
+            stmt->execute();
+
+            // Store the data
+            stmt = db->statement("REPLACE INTO torrent_resume_data (info_hash, resume_data) VALUES (?, ?);");
+            stmt->bind(1, ih);
+            stmt->bind(2, buffer);
+            stmt->execute();
         }
     }
 }
