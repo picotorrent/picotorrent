@@ -164,6 +164,17 @@ void TorrentListViewModel::Sort(int columnId, bool ascending)
 
         break;
     }
+	case Columns::Status:
+	{
+		sorter = [this, ascending](lt::torrent_status const& ts1, lt::torrent_status const& ts2)
+		{
+			wxString firstStatus = Utils::ToReadableStatus(ts1, m_translator);
+			wxString secondStatus = Utils::ToReadableStatus(ts2, m_translator);
+			if (ascending) { return firstStatus < secondStatus; }
+			return firstStatus > secondStatus;
+		};
+		break;
+	}
     }
 
     if (sorter)
