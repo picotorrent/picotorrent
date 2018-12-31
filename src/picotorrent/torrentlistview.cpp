@@ -39,8 +39,8 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, std::shared_pt
         TorrentListViewModel::Columns::Status,
         wxDATAVIEW_CELL_INERT,
         SX(120),
-		wxALIGN_CENTER,
-		wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
+        wxALIGN_CENTER,
+        wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE);
 
     AppendProgressColumn(
         i18n(tr, "progress"),
