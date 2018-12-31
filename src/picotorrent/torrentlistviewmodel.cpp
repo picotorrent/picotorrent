@@ -174,7 +174,7 @@ void TorrentListViewModel::Sort(int columnId, bool ascending)
             return firstStatus > secondStatus;
         };
         break;
-	}
+    }
     }
 
     if (sorter)
