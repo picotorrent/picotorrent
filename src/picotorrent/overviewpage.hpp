@@ -33,5 +33,6 @@ namespace pt
         wxStaticText* m_infoHash;
         wxStaticText* m_savePath;
         wxStaticText* m_pieces;
+        wxStaticText* m_downloaded;
     };
 }

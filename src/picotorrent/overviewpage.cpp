@@ -2,6 +2,7 @@
 
 #include "scaler.hpp"
 #include "translator.hpp"
+#include "utils.hpp"
 
 #include <libtorrent/torrent_status.hpp>
 #include <sstream>
@@ -45,6 +46,7 @@ OverviewPage::OverviewPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::
     m_infoHash(new CopyableStaticText(this, tr)),
     m_savePath(new CopyableStaticText(this, tr)),
     m_pieces(new CopyableStaticText(this, tr)),
+    m_downloaded(new CopyableStaticText(this, tr)),
     m_translator(tr)
 {
     wxFlexGridSizer* sz = new wxFlexGridSizer(4, SY(10), SX(10));
@@ -61,6 +63,9 @@ OverviewPage::OverviewPage(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::
     sz->Add(GetBoldStatic(i18n(tr, "pieces")));
     sz->Add(m_pieces, 1, wxEXPAND);
 
+    sz->Add(GetBoldStatic(i18n(tr, "downloaded_size")));
+    sz->Add(m_downloaded, 1, wxEXPAND);
+
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     mainSizer->Add(sz, 1, wxALL | wxEXPAND, SX(5));
 
@@ -73,6 +78,7 @@ void OverviewPage::Clear()
     m_infoHash->SetLabel("-");
     m_savePath->SetLabel("-");
     m_pieces->SetLabel("-");
+    m_downloaded->SetLabel("-");
 }
 
 void OverviewPage::Update(lt::torrent_status const& ts)
@@ -87,6 +93,7 @@ void OverviewPage::Update(lt::torrent_status const& ts)
     m_infoHash->SetLabel(ih.str());
     m_savePath->SetLabel(savePath);
     m_pieces->SetLabel(wxString::Format(i18n(m_translator, "d_of_d"), ts.pieces.count(), ts.pieces.size()));
+    m_downloaded->SetLabel(wxString::Format(i18n(m_translator, "s_of_s"), Utils::ToHumanFileSize(ts.total_wanted_done), Utils::ToHumanFileSize(ts.total_wanted)));
 
     this->SendSizeEvent();
 }
