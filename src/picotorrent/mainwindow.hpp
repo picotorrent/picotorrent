@@ -28,6 +28,7 @@ namespace pt
 
     public:
         MainWindow(std::shared_ptr<Environment> env, std::shared_ptr<Database> db, std::shared_ptr<Configuration> cfg);
+        ~MainWindow();
 
         ITorrentDetailsWidget* torrentDetails() override;
         ITorrentListWidget* torrentList() override;

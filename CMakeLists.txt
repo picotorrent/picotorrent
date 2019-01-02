@@ -91,6 +91,7 @@ add_executable(
     src/picotorrent/resources.rc
     src/picotorrent/sessionloader
     src/picotorrent/systemtrayicon
+    src/picotorrent/sessionunloader
     src/picotorrent/torrentdetailswidget
     src/picotorrent/torrentitemdelegate
     src/picotorrent/torrentlistmodel

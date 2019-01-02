@@ -28,6 +28,8 @@ IDI_APPICON ICON DISCARDABLE "..\\..\\res\\app.ico"
 20181211212324_create_torrent_table             DBMIGRATION "..\\..\\res\\dbmigrations\\20181211212324_create_torrent_table.sql"
 20181211212637_create_torrent_resume_data_table DBMIGRATION "..\\..\\res\\dbmigrations\\20181211212637_create_torrent_resume_data_table.sql"
 20181211213708_create_column_state_table        DBMIGRATION "..\\..\\res\\dbmigrations\\20181211213708_create_column_state_table.sql"
+20181212205212_create_session_state_table       DBMIGRATION "..\\..\\res\\dbmigrations\\20181212205212_create_session_state_table.sql"
+20181212213425_create_log_table                 DBMIGRATION "..\\..\\res\\dbmigrations\\20181212213425_create_log_table.sql"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION        VER_FILE_VERSION
