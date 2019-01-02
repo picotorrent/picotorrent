@@ -132,6 +132,7 @@ add_executable(
     src/picotorrent/mainframe
     src/picotorrent/mainmenu
     src/picotorrent/overviewpage
+    src/picotorrent/peerslistview
     src/picotorrent/peerspage
     src/picotorrent/peersviewmodel
     src/picotorrent/persistenttorrentlistview
