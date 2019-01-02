@@ -23,15 +23,19 @@
 #include <QSplitter>
 #include <QTimer>
 
+#include "aboutdialog.hpp"
 #include "addtorrentdialog.hpp"
 #include "configuration.hpp"
 #include "database.hpp"
 #include "environment.hpp"
+#include "preferencesdialog.hpp"
 #include "sessionloader.hpp"
 #include "sessionstate.hpp"
+#include "systemtrayicon.hpp"
 #include "torrentdetailswidget.hpp"
 #include "torrentlistmodel.hpp"
 #include "torrentlistwidget.hpp"
+#include "translator.hpp"
 
 namespace fs = std::experimental::filesystem;
 using pt::MainWindow;
@@ -58,29 +62,36 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_splitter->setCollapsible(0, false);
     m_splitter->setOrientation(Qt::Vertical);
 
+    m_trayIcon = new SystemTrayIcon(this);
+
     m_updateTimer = new QTimer(this);
 
     /* Create actions */
-    m_fileAddTorrent = new QAction("&Add torrent", this);
-    m_fileAddMagnetLinks = new QAction("Add &magnet links", this);
-    m_fileExit = new QAction("E&xit", this);
-    m_viewPreferences = new QAction("&Preferences", this);
-    m_helpAbout = new QAction("&About", this);
+    m_fileAddTorrent = new QAction(i18n("amp_add_torrent"), this);
+    m_fileAddMagnetLinks = new QAction(i18n("amp_add_magnet_link_s"), this);
+    m_fileExit = new QAction(i18n("amp_exit"), this);
+    m_viewPreferences = new QAction(i18n("amp_preferences"), this);
+    m_helpAbout = new QAction(i18n("amp_about"), this);
 
     connect(m_fileAddTorrent, &QAction::triggered, this, &MainWindow::onFileAddTorrent);
     connect(m_fileExit, &QAction::triggered, this, &MainWindow::onFileExit);
+    connect(m_viewPreferences, &QAction::triggered, this, &MainWindow::onViewPreferences);
+    connect(m_helpAbout, &QAction::triggered, this, &MainWindow::onHelpAbout);
     connect(m_updateTimer, &QTimer::timeout, this, &MainWindow::postUpdates);
 
-    auto fileMenu = menuBar()->addMenu("&File");
+    // System tray
+    connect(m_trayIcon, &SystemTrayIcon::addTorrentInvoked, this, &MainWindow::onFileAddTorrent);
+
+    auto fileMenu = menuBar()->addMenu(i18n("amp_file"));
     fileMenu->addAction(m_fileAddTorrent);
     fileMenu->addAction(m_fileAddMagnetLinks);
     fileMenu->addSeparator();
     fileMenu->addAction(m_fileExit);
 
-    auto viewMenu = menuBar()->addMenu("&View");
+    auto viewMenu = menuBar()->addMenu(i18n("amp_view"));
     viewMenu->addAction(m_viewPreferences);
 
-    auto helpMenu = menuBar()->addMenu("&Help");
+    auto helpMenu = menuBar()->addMenu(i18n("amp_help"));
     helpMenu->addAction(m_helpAbout);
 
     this->setCentralWidget(m_splitter);
@@ -185,6 +196,18 @@ void MainWindow::onFileAddTorrent()
 
 void MainWindow::onFileExit()
 {
+}
+
+void MainWindow::onHelpAbout()
+{
+    AboutDialog dlg(this);
+    dlg.exec();
+}
+
+void MainWindow::onViewPreferences()
+{
+    PreferencesDialog dlg(this);
+    dlg.exec();
 }
 
 void MainWindow::readAlerts()

@@ -1,17 +1,17 @@
 #pragma once
 
+#include <Windows.h>
+
 #include <map>
 #include <memory>
 #include <vector>
 
 #include <QString>
 
-#define i18n(t, s) t->Translate(##s)
+#define i18n(key) Translator::instance().translate(key)
 
 namespace pt
 {
-    class Configuration;
-
     class Translator
     {
     public:
@@ -22,16 +22,21 @@ namespace pt
             std::map<QString, QString> translations;
         };
 
-        static std::shared_ptr<Translator> load(HINSTANCE hInstance, std::shared_ptr<Configuration> config);
+        static Translator& instance();
 
-        std::vector<Language> getAvailableLanguages();
-        QString translate(QString key);
+        Translator(Translator const&) = delete;
+        void operator=(Translator const&) = delete;
+
+        std::vector<Language> languages();
+        void loadEmbedded(HINSTANCE hInstance);
+        void loadFile(QString const& fileName);
+        void setLanguage(int languageCode);
+        QString translate(QString const& key);
 
     private:
-        Translator(std::map<int, Language> const& languages, int selectedLanguage);
+        Translator();
 
-        static BOOL CALLBACK loadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam);
-        static bool loadLanguageFromJson(std::string const& json, Language& lang);
+        static BOOL CALLBACK enumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam);
 
         int m_selectedLanguage;
         std::map<int, Language> m_languages;

@@ -4,6 +4,7 @@
 #include <ShlObj.h>
 #include <Shlwapi.h>
 
+namespace fs = std::experimental::filesystem;
 using pt::Environment;
 
 fs::path Environment::getApplicationDataPath()

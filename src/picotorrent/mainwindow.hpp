@@ -17,6 +17,7 @@ namespace pt
     class Database;
     class Environment;
     struct SessionState;
+    class SystemTrayIcon;
     class TorrentDetailsWidget;
     class TorrentListModel;
     class TorrentListWidget;
@@ -37,6 +38,9 @@ namespace pt
     private:
         void onFileAddTorrent();
         void onFileExit();
+        void onHelpAbout();
+        void onViewPreferences();
+
         void postUpdates();
 
         std::shared_ptr<Environment> m_env;
@@ -55,6 +59,7 @@ namespace pt
         QSplitter* m_splitter;
         QTimer* m_updateTimer;
 
+        SystemTrayIcon* m_trayIcon;
         TorrentDetailsWidget* m_torrentDetails;
         TorrentListModel* m_torrentListModel;
         TorrentListWidget* m_torrentList;

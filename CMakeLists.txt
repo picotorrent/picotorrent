@@ -78,6 +78,7 @@ add_library(
 add_executable(
     PicoTorrent
     WIN32
+    src/picotorrent/aboutdialog
     src/picotorrent/addtorrentdialog
     src/picotorrent/configuration
     src/picotorrent/database
@@ -85,14 +86,16 @@ add_executable(
     src/picotorrent/filestorageitemmodel
     src/picotorrent/main
     src/picotorrent/mainwindow
+    src/picotorrent/preferencesdialog
     src/picotorrent/resources.qrc
     src/picotorrent/resources.rc
     src/picotorrent/sessionloader
+    src/picotorrent/systemtrayicon
     src/picotorrent/torrentdetailswidget
     src/picotorrent/torrentitemdelegate
     src/picotorrent/torrentlistmodel
     src/picotorrent/torrentlistwidget
-    #src/picotorrent/translator
+    src/picotorrent/translator
     src/picotorrent/utils
 )
 

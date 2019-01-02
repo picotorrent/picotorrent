@@ -6,6 +6,7 @@
 #include "database.hpp"
 #include "environment.hpp"
 #include "mainwindow.hpp"
+#include "translator.hpp"
 
 int main(int argc, char **argv)
 {
@@ -14,6 +15,10 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
 
     // Load environment and database
+    pt::Translator& translator = pt::Translator::instance();
+    translator.loadEmbedded(GetModuleHandle(NULL));
+    translator.setLanguage(2052);
+
     auto env = std::make_shared<pt::Environment>();
     auto db = std::make_shared<pt::Database>("PicoTorrent.sqlite");
     auto cfg = std::make_shared<pt::Configuration>(db);

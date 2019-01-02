@@ -200,7 +200,7 @@
         "show_picotorrent_in_notification_area": "Visa PicoTorrent i notifikationsområdet",
         "minimize_to_notification_area": "Minimera till notifikationsområdet",
         "close_to_notification_area": "Stäng till notifikationsområde",
-        "invalid_regex": "Felaktigt vanligt uttryck"
+        "invalid_regex": "Felaktigt reguljärt uttryck",
         "info_hash": "Infohash",
         "fails": "Misslyckas",
         "verified": "Verifierad",

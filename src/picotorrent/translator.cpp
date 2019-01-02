@@ -1,24 +1,73 @@
 #include "translator.hpp"
 
-#include <filesystem>
-#include <fstream>
-#include <sstream>
-
 #include "config.hpp"
 #include "environment.hpp"
 #include "picojson.hpp"
 
-namespace fs = std::experimental::filesystem;
 namespace pj = picojson;
 using pt::Translator;
 
-Translator::Translator(std::map<int, Language> const& languages, int selectedLanguage)
-    : m_languages(languages),
-    m_selectedLanguage(selectedLanguage)
+Translator::Translator()
 {
+    printf("");
 }
 
-std::vector<Translator::Language> Translator::getAvailableLanguages()
+Translator& Translator::instance()
+{
+    static Translator translator;
+    return translator;
+}
+
+void Translator::loadEmbedded(HINSTANCE hInstance)
+{
+    EnumResourceNames(
+        hInstance,
+        TEXT("LANGFILE"),
+        enumLanguageFiles,
+        reinterpret_cast<LONG_PTR>(this));
+}
+
+BOOL Translator::enumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
+{
+    Translator* translator = reinterpret_cast<Translator*>(lParam);
+
+    HRSRC rc = FindResource(hModule, lpszName, lpszType);
+    DWORD size = SizeofResource(hModule, rc);
+    HGLOBAL data = LoadResource(hModule, rc);
+    const char* buffer = reinterpret_cast<const char*>(LockResource(data));
+
+    std::string json(buffer, static_cast<size_t>(size));
+
+    pj::value v;
+    std::string err = pj::parse(v, json);
+
+    if (!err.empty())
+    {
+        // TODO(logging)
+        return TRUE;
+    }
+
+    pj::object obj = v.get<pj::object>();
+
+    int langId = static_cast<int>(obj.at("lang_id").get<int64_t>());
+    std::string langName = obj.at("lang_name").get<std::string>();
+
+    Language l;
+    l.code = langId;
+    l.name = QString::fromStdString(langName);
+
+    for (auto& p : obj.at("strings").get<pj::object>())
+    {
+        QString val = QString::fromStdString(p.second.get<std::string>());
+        l.translations.insert({ QString::fromStdString(p.first), val });
+    }
+
+    translator->m_languages.insert({ l.code, l });
+
+    return TRUE;
+}
+
+std::vector<Translator::Language> Translator::languages()
 {
     std::vector<Language> result;
 
@@ -30,7 +79,7 @@ std::vector<Translator::Language> Translator::getAvailableLanguages()
     return result;
 }
 
-wxString Translator::translate(QString key)
+QString Translator::translate(QString const& key)
 {
     auto lang = m_languages.find(m_selectedLanguage);
     if (lang == m_languages.end()) { lang = m_languages.find(1033); }
@@ -46,92 +95,7 @@ wxString Translator::translate(QString key)
     return translation->second;
 }
 
-std::shared_ptr<Translator> Translator::load(HINSTANCE hInstance, std::shared_ptr<pt::Configuration> config)
+void Translator::setLanguage(int langCode)
 {
-    // TODO: Very Win32 specific code, enumerating the embedded resources.
-    // Should be split into a platform specific layer when making PicoTorrent
-    // cross platform.
-
-    std::map<int, Language> langs;
-
-    EnumResourceNames(
-        hInstance,
-        TEXT("LANGFILE"),
-        LoadTranslationResource,
-        reinterpret_cast<LONG_PTR>(&langs));
-
-    fs::path translationsDirectory = config->LanguagesPath();
-
-    for (fs::directory_entry const& entry : fs::directory_iterator(translationsDirectory))
-    {
-        if (entry.path().extension() != ".json")
-        {
-            continue;
-        }
-
-        std::ifstream jsonStream(entry.path(), std::ios::binary | std::ios::in);
-        std::stringstream json;
-        json << jsonStream.rdbuf();
-
-        Language lang;
-
-        if (loadLanguageFromJson(json.str(), lang))
-        {
-            langs[lang.code] = lang;
-        }
-    }
-
-    return std::shared_ptr<Translator>(
-        new Translator(langs,
-            config->CurrentLanguageId()));
-}
-
-BOOL Translator::loadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
-{
-    std::map<int, Language>* langs = reinterpret_cast<std::map<int, Language>*>(lParam);
-
-    HRSRC rc = FindResource(hModule, lpszName, lpszType);
-    DWORD size = SizeofResource(hModule, rc);
-    HGLOBAL data = LoadResource(hModule, rc);
-    const char* buffer = reinterpret_cast<const char*>(LockResource(data));
-
-    std::string json(buffer, static_cast<size_t>(size));
-    Language lang;
-
-    if (loadLanguageFromJson(json, lang))
-    {
-        langs->insert({ lang.code, lang });
-    }
-
-    return TRUE;
-}
-
-bool Translator::loadLanguageFromJson(std::string const& json, Translator::Language& lang)
-{
-    pj::value v;
-    std::string err = pj::parse(v, json);
-
-    if (!err.empty())
-    {
-        return false;
-    }
-
-    pj::object obj = v.get<pj::object>();
-
-    int langId = static_cast<int>(obj.at("lang_id").get<int64_t>());
-    std::string langName = obj.at("lang_name").get<std::string>();
-
-    Language l;
-    l.code = langId;
-    l.name = wxString::FromUTF8(langName);
-
-    for (auto& p : obj.at("strings").get<pj::object>())
-    {
-        std::string val = p.second.get<std::string>();
-        l.translations.insert({ p.first, wxString::FromUTF8(val) });
-    }
-
-    lang = l;
-
-    return true;
+    m_selectedLanguage = langCode;
 }

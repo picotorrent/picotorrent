@@ -20,6 +20,7 @@ IDI_APPICON ICON DISCARDABLE "..\\..\\res\\app.ico"
 1057 LANGFILE "..\\..\\lang\\1057.json"
 1062 LANGFILE "..\\..\\lang\\1062.json"
 1079 LANGFILE "..\\..\\lang\\1079.json"
+2052 LANGFILE "..\\..\\lang\\2052.json"
 
 // SQL migrations
 20181208115043_create_setting_table             DBMIGRATION "..\\..\\res\\dbmigrations\\20181208115043_create_setting_table.sql"
