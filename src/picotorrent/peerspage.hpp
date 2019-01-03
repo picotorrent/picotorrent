@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "peerslistview.hpp"
+
 class wxDataViewCtrl;
 
 namespace libtorrent
@@ -28,7 +30,10 @@ namespace pt
         void Update(libtorrent::torrent_status const& ts);
 
     private:
-        wxDataViewCtrl* m_peersView;
+        enum {
+            ptID_TORRENT_LIST_VIEW = wxID_HIGHEST + 2
+        };
+        PeersListView* m_peersView;
         PeersViewModel* m_viewModel;
     };
 }

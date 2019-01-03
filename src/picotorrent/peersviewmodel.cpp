@@ -7,6 +7,12 @@
 namespace lt = libtorrent;
 using pt::PeersViewModel;
 
+PeersViewModel::PeersViewModel()
+    : m_sortOrder{IP, Client, DownloadRate, UploadRate, Progress}
+{
+
+}
+
 void PeersViewModel::Clear()
 {
     m_data.clear();
@@ -52,6 +58,75 @@ void PeersViewModel::Update(lt::torrent_status const& ts)
             RowChanged(distance);
         }
     }
+}
+
+void PeersViewModel::Sort(int columnId, bool ascending)
+{
+    m_sortOrder.remove(static_cast<Columns>(columnId));
+    m_sortOrder.push_front(static_cast<Columns>(columnId));
+    std::sort(m_data.begin(), m_data.end(), [this, ascending](const lt::peer_info& left, const lt::peer_info& right) {
+        bool result;
+        bool equal=true;
+        for(auto cid : m_sortOrder)
+        {
+            if(equal)
+            {
+                switch(cid)
+                {
+                case Columns::IP:
+                    if(left.ip==right.ip)
+                        equal=true;
+                    else
+                    {
+                        equal=false;
+                        result=left.ip<right.ip;
+                    }
+                    break;
+                case Columns::Client:
+                    if(left.client==right.client)
+                        equal=true;
+                    else
+                    {
+                        equal=false;
+                        result=left.client<right.client;
+                    }
+                    break;
+                case Columns::DownloadRate:
+                    if(left.payload_down_speed==right.payload_down_speed)
+                        equal=true;
+                    else
+                    {
+                        equal=false;
+                        result=left.payload_down_speed<right.payload_down_speed;
+                    }
+                    break;
+                case Columns::UploadRate:
+                    if(left.payload_up_speed==right.payload_up_speed)
+                        equal=true;
+                    else
+                    {
+                        equal=false;
+                        result=left.payload_up_speed<right.payload_up_speed;
+                    }
+                    break;
+                case Columns::Progress:
+                    if(left.progress==right.progress)
+                        equal=true;
+                    else
+                    {
+                        equal=false;
+                        result=left.progress<right.progress;
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+            else
+                break;
+        }
+        return result ^ (!ascending);
+    });
 }
 
 unsigned int PeersViewModel::GetColumnCount() const
