@@ -14,6 +14,7 @@ namespace pt
         };
 
         std::experimental::filesystem::path getApplicationDataPath();
+        std::experimental::filesystem::path getDatabaseFilePath();
         std::experimental::filesystem::path getKnownFolderPath(KnownFolder knownFolder);
         bool isAppContainerProcess();
         bool isInstalled();

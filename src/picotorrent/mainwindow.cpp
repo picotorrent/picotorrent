@@ -45,7 +45,8 @@ using pt::MainWindow;
 MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt::Database> db, std::shared_ptr<pt::Configuration> cfg)
     : m_env(env),
     m_db(db),
-    m_cfg(cfg)
+    m_cfg(cfg),
+    m_preferencesDialog(nullptr)
 {
     m_sessionState = SessionLoader::load(db, cfg);
     m_sessionState->session->set_alert_notify([this]()
@@ -216,8 +217,21 @@ void MainWindow::onHelpAbout()
 
 void MainWindow::onViewPreferences()
 {
-    PreferencesDialog dlg(this);
-    dlg.exec();
+    if (m_preferencesDialog == nullptr)
+    {
+        m_preferencesDialog = new PreferencesDialog(
+            this,
+            m_cfg);
+
+        connect(
+            m_preferencesDialog,
+            &QDialog::accepted,
+            this,
+            &MainWindow::reloadConfig);
+    }
+
+    m_preferencesDialog->load();
+    m_preferencesDialog->open();
 }
 
 void MainWindow::readAlerts()
@@ -227,8 +241,6 @@ void MainWindow::readAlerts()
 
     for (lt::alert* alert : alerts)
     {
-        qDebug() << alert->message().c_str();
-
         switch (alert->type())
         {
         case lt::add_torrent_alert::alert_type:
@@ -290,6 +302,11 @@ void MainWindow::readAlerts()
         }
         }
     }
+}
+
+void MainWindow::reloadConfig()
+{
+    printf("");
 }
 
 void MainWindow::postUpdates()

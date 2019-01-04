@@ -9,7 +9,6 @@ using pt::Translator;
 
 Translator::Translator()
 {
-    printf("");
 }
 
 Translator& Translator::instance()

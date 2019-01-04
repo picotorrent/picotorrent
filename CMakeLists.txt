@@ -80,13 +80,17 @@ add_executable(
     WIN32
     src/picotorrent/aboutdialog
     src/picotorrent/addtorrentdialog
+    src/picotorrent/connectionsectionwidget
     src/picotorrent/configuration
     src/picotorrent/database
+    src/picotorrent/downloadssectionwidget
     src/picotorrent/environment
     src/picotorrent/filestorageitemmodel
+    src/picotorrent/generalsectionwidget
     src/picotorrent/main
     src/picotorrent/mainwindow
     src/picotorrent/preferencesdialog
+    src/picotorrent/proxysectionwidget
     src/picotorrent/resources.qrc
     src/picotorrent/resources.rc
     src/picotorrent/sessionloader

@@ -21,6 +21,11 @@ fs::path Environment::getApplicationDataPath()
     return path;
 }
 
+fs::path Environment::getDatabaseFilePath()
+{
+    return getApplicationDataPath() / "PicoTorrent.sqlite";
+}
+
 fs::path Environment::getKnownFolderPath(Environment::KnownFolder knownFolder)
 {
     KNOWNFOLDERID fid = { 0 };

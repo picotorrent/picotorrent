@@ -102,7 +102,14 @@ int Database::Statement::getInt(int idx)
 
 std::string Database::Statement::getString(int idx)
 {
-    return reinterpret_cast<const char*>(sqlite3_column_text(m_stmt, idx));
+    const unsigned char* res = sqlite3_column_text(m_stmt, idx);
+
+    if (res == nullptr)
+    {
+        return std::string();
+    }
+
+    return reinterpret_cast<const char*>(res);
 }
 
 bool Database::Statement::read()

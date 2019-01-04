@@ -43,6 +43,11 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, pt::TorrentListModel* mode
 
         header->moveSection(header->visualIndex(columnId), position);
         header->resizeSection(columnId, width);
+
+        if (!visible)
+        {
+            header->hideSection(columnId);
+        }
     }
 
     connect(
@@ -60,18 +65,28 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, pt::TorrentListModel* mode
 
 TorrentListWidget::~TorrentListWidget()
 {
-    const char* sql = "INSERT INTO column_state (list_id, column_id, position, width) VALUES (?, ?, ?, ?)\n"
-        "ON CONFLICT(list_id, column_id) DO UPDATE SET position = excluded.position, width = excluded.width;";
+    const char* sql = "INSERT INTO column_state (list_id, column_id, position, width, is_visible) VALUES (?, ?, ?, ?, ?)\n"
+        "ON CONFLICT(list_id, column_id) DO UPDATE SET position = excluded.position, width = excluded.width, is_visible = excluded.is_visible;";
 
     auto header = this->header();
 
     for (int i = 0; i < header->count(); i++)
     {
+        bool sectionHidden = header->isSectionHidden(i);
+        int sectionSize = header->sectionSize(i);
+
+        if (sectionHidden)
+        {
+            header->showSection(i);
+            sectionSize = header->sectionSize(i);
+        }
+
         auto stmt = m_db->statement(sql);
         stmt->bind(1, "torrent_list");
         stmt->bind(2, i);
         stmt->bind(3, header->visualIndex(i));
-        stmt->bind(4, header->sectionSize(i));
+        stmt->bind(4, sectionSize);
+        stmt->bind(5, !sectionHidden);
         stmt->execute();
     }
 }

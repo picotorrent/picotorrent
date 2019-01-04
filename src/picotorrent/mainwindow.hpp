@@ -16,6 +16,7 @@ namespace pt
     class Configuration;
     class Database;
     class Environment;
+    class PreferencesDialog;
     struct SessionState;
     class SystemTrayIcon;
     class TorrentDetailsWidget;
@@ -43,6 +44,7 @@ namespace pt
         void onViewPreferences();
 
         void postUpdates();
+        void reloadConfig();
 
         std::shared_ptr<Environment> m_env;
         std::shared_ptr<Database> m_db;
@@ -56,6 +58,9 @@ namespace pt
         QAction* m_fileExit;
         QAction* m_viewPreferences;
         QAction* m_helpAbout;
+
+        // Dialogs
+        PreferencesDialog* m_preferencesDialog;
 
         QSplitter* m_splitter;
         QTimer* m_updateTimer;

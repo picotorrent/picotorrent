@@ -10,6 +10,24 @@ namespace pt
     class Configuration
     {
     public:
+        enum ConnectionProxyType
+        {
+            None,
+            SOCKS4,
+            SOCKS5,
+            SOCKS5_Password,
+            HTTP,
+            HTTP_Password
+        };
+
+        enum WindowState
+        {
+            Normal,
+            Minimized,
+            Hidden,
+            Maximized
+        };
+
         Configuration(std::shared_ptr<Database> db);
         ~Configuration();
 
