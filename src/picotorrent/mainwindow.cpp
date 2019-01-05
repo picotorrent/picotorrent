@@ -243,7 +243,7 @@ void MainWindow::onFileExit()
 
 void MainWindow::onHelpAbout()
 {
-    AboutDialog dlg(this);
+    AboutDialog dlg(this, m_cfg->getString("version"));
     dlg.exec();
 }
 

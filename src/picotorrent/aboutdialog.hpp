@@ -9,6 +9,9 @@ namespace pt
     class AboutDialog : public QDialog
     {
     public:
-        AboutDialog(QWidget* parent);
+        AboutDialog(QWidget* parent, std::string version);
+
+    private:
+        std::string m_version;
     };
 }
