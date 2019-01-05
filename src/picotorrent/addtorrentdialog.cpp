@@ -28,7 +28,7 @@ namespace fs = std::experimental::filesystem;
 namespace lt = libtorrent;
 using pt::AddTorrentDialog;
 
-AddTorrentDialog::AddTorrentDialog(QWidget* parent, std::vector<lt::add_torrent_params> const& params)
+AddTorrentDialog::AddTorrentDialog(QWidget* parent, std::vector<lt::add_torrent_params>& params)
     : QDialog(parent),
     m_params(params)
 {

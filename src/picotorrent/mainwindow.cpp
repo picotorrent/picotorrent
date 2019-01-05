@@ -34,6 +34,7 @@
 #include "sessionstate.hpp"
 #include "systemtrayicon.hpp"
 #include "sessionunloader.hpp"
+#include "torrentcontextmenu.hpp"
 #include "torrentdetailswidget.hpp"
 #include "torrentlistmodel.hpp"
 #include "torrentlistwidget.hpp"
@@ -54,6 +55,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
         QMetaObject::invokeMethod(this, "readAlerts", Qt::QueuedConnection);
     });
 
+    m_torrentContextMenu = new TorrentContextMenu(this, m_sessionState);
     m_torrentDetails = new TorrentDetailsWidget();
 
     m_torrentListModel = new TorrentListModel();
@@ -81,6 +83,18 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     connect(m_viewPreferences, &QAction::triggered, this, &MainWindow::onViewPreferences);
     connect(m_helpAbout, &QAction::triggered, this, &MainWindow::onHelpAbout);
     connect(m_updateTimer, &QTimer::timeout, this, &MainWindow::postUpdates);
+
+    connect(
+        m_torrentList->selectionModel(),
+        &QItemSelectionModel::selectionChanged,
+        this,
+        &MainWindow::onTorrentSelectionChanged);
+
+    connect(
+        m_torrentList,
+        &QTreeView::customContextMenuRequested,
+        this,
+        &MainWindow::onTorrentContextMenu);
 
     // System tray
     connect(m_trayIcon, &SystemTrayIcon::addTorrentInvoked, this, &MainWindow::onFileAddTorrent);
@@ -159,6 +173,24 @@ pt::ITorrentListWidget* MainWindow::torrentList()
     return m_torrentList;
 }
 
+bool MainWindow::nativeEvent(QByteArray const& eventType, void* message, long* result)
+{
+    MSG* msg = static_cast<MSG*>(message);
+
+    if (msg->message == WM_COPYDATA)
+    {
+        COPYDATASTRUCT* cds = reinterpret_cast<COPYDATASTRUCT*>(msg->lParam);
+        LPTSTR str = reinterpret_cast<LPTSTR>(cds->lpData);
+        QString cmd = QString::fromWCharArray(str, cds->cbData);
+
+        // TODO(handle)
+
+        return true;
+    }
+
+    return false;
+}
+
 /* Actions */
 void MainWindow::onFileAddTorrent()
 {
@@ -215,6 +247,25 @@ void MainWindow::onHelpAbout()
     dlg.exec();
 }
 
+void MainWindow::onTorrentSelectionChanged(QItemSelection const& selected, QItemSelection const& deselected)
+{
+    m_sessionState->selectedTorrents.clear();
+
+    m_torrentListModel->appendInfoHashes(
+        selected.indexes(),
+        m_sessionState->selectedTorrents);
+}
+
+void MainWindow::onTorrentContextMenu(QPoint const& point)
+{
+    QModelIndex idx = m_torrentList->indexAt(point);
+
+    if (idx.isValid())
+    {
+        m_torrentContextMenu->popup(m_torrentList->viewport()->mapToGlobal(point));
+    }
+}
+
 void MainWindow::onViewPreferences()
 {
     if (m_preferencesDialog == nullptr)
@@ -257,16 +308,19 @@ void MainWindow::readAlerts()
             ss << ata->handle.info_hash();
             std::string ih = ss.str();
 
+            lt::torrent_status ts = ata->handle.status();
+
             auto stmt = m_db->statement("REPLACE INTO torrent (info_hash, queue_position) VALUES (?, ?)");
             stmt->bind(1, ih);
-            stmt->bind(2, static_cast<int>(ata->handle.status().queue_position));
+            stmt->bind(2, static_cast<int>(ts.queue_position));
             stmt->execute();
 
             ata->handle.save_resume_data(
                 lt::torrent_handle::flush_disk_cache
                 | lt::torrent_handle::save_info_dict);
 
-            m_torrentListModel->addTorrent(ata->handle.status());
+            m_sessionState->torrents.insert({ ts.info_hash, ts.handle });
+            m_torrentListModel->addTorrent(ts);
 
             break;
         }
@@ -297,6 +351,13 @@ void MainWindow::readAlerts()
             {
                 m_torrentListModel->updateTorrent(status);
             }
+
+            break;
+        }
+
+        case lt::torrent_removed_alert::alert_type:
+        {
+            lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
 
             break;
         }

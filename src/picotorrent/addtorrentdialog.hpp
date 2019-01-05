@@ -24,7 +24,7 @@ namespace pt
     class AddTorrentDialog : public QDialog
     {
     public:
-        AddTorrentDialog(QWidget* parent, std::vector<libtorrent::add_torrent_params> const& params);
+        AddTorrentDialog(QWidget* parent, std::vector<libtorrent::add_torrent_params>& params);
 
     private:
         void onSetTorrentFilePriorities(QAction* action);
@@ -35,7 +35,7 @@ namespace pt
         void onTorrentSequentialDownloadChanged(int state);
         void onTorrentStartChanged(int state);
 
-        std::vector<libtorrent::add_torrent_params> m_params;
+        std::vector<libtorrent::add_torrent_params>& m_params;
 
         QComboBox* m_paramsList;
         QLabel* m_torrentName;

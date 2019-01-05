@@ -25,11 +25,12 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, pt::TorrentListModel* mode
     header->setContextMenuPolicy(Qt::CustomContextMenu);
     header->setFirstSectionMovable(true);
     header->setSectionsMovable(true);
+    header->setStretchLastSection(false);
 
     // These are default sizes for the columns. Real values are set from the database.
-    header->resizeSection(TorrentListModel::Columns::Name, 160);
+    header->resizeSection(TorrentListModel::Columns::Name,          160);
     header->resizeSection(TorrentListModel::Columns::QueuePosition, 30);
-    header->resizeSection(TorrentListModel::Columns::Size, 60);
+    header->resizeSection(TorrentListModel::Columns::Size,          60);
 
     auto torrentListQ = m_db->statement("SELECT column_id, width, position, is_visible FROM column_state WHERE list_id = ?");
     torrentListQ->bind(1, "torrent_list");

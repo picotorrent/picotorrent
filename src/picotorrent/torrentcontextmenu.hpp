@@ -1,62 +1,54 @@
 #pragma once
 
-#include <wx/wxprec.h>
-#ifndef WX_PRECOMP
-#include <wx/wx.h>
-#endif
+#include <QMenu>
 
 #include <memory>
+
+class QAction;
+class QWidget;
 
 namespace pt
 {
     struct SessionState;
     class Translator;
 
-    class TorrentContextMenu : public wxMenu
+    class TorrentContextMenu : public QMenu
     {
     public:
-        TorrentContextMenu(wxWindow* parent,
-            std::shared_ptr<Translator> translator,
+        TorrentContextMenu(QWidget* parent,
             std::shared_ptr<SessionState> state);
 
     private:
-        enum
-        {
-            ptID_RESUME = wxID_HIGHEST + 1,
-            ptID_RESUME_FORCE,
-            ptID_PAUSE,
-            ptID_MOVE,
-            ptID_REMOVE,
-            ptID_REMOVE_FILES,
-            ptID_QUEUE_UP,
-            ptID_QUEUE_DOWN,
-            ptID_QUEUE_TOP,
-            ptID_QUEUE_BOTTOM,
-            ptID_COPY_INFO_HASH,
-            ptID_OPEN_IN_EXPLORER,
-            ptID_FORCE_RECHECK,
-            ptID_FORCE_REANNOUNCE,
-            ptID_SEQUENTIAL_DOWNLOAD
-        };
+        void copyInfoHash();
+        void openExplorer();
+        void queueUp();
+        void queueDown();
+        void queueTop();
+        void queueBottom();
+        void remove();
+        void removeFiles();
 
-        wxDECLARE_EVENT_TABLE();
-
-        void CopyInfoHash(wxCommandEvent&);
-        void ForceReannounce(wxCommandEvent&);
-        void ForceRecheck(wxCommandEvent&);
-        void Move(wxCommandEvent&);
-        void OpenInExplorer(wxCommandEvent&);
-        void Pause(wxCommandEvent&);
-        void Remove(wxCommandEvent&);
-        void Resume(wxCommandEvent&);
-        void QueueUp(wxCommandEvent&);
-        void QueueDown(wxCommandEvent&);
-        void QueueTop(wxCommandEvent&);
-        void QueueBottom(wxCommandEvent&);
-        void SequentialDownload(wxCommandEvent&);
-
-        wxWindow* m_parent;
+        QWidget* m_parent;
         std::shared_ptr<SessionState> m_state;
-        std::shared_ptr<Translator> m_trans;
+
+        QMenu* m_queueMenu;
+        QMenu* m_removeMenu;
+
+        // Actions
+        QAction* m_pause;
+        QAction* m_resume;
+        QAction* m_resumeForce;
+        QAction* m_move;
+        QAction* m_remove;
+        QAction* m_removeFiles;
+        QAction* m_queueUp;
+        QAction* m_queueDown;
+        QAction* m_queueTop;
+        QAction* m_queueBottom;
+        QAction* m_copyHash;
+        QAction* m_openExplorer;
+        QAction* m_forceRecheck;
+        QAction* m_forceReannounce;
+        QAction* m_sequentialDownload;
     };
 }

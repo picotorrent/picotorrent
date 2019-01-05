@@ -1,11 +1,27 @@
 #include "torrentlistmodel.hpp"
 
+#include <QDateTime>
+
 #include <libtorrent/torrent_status.hpp>
 
+#include "translator.hpp"
 #include "utils.hpp"
 
 namespace lt = libtorrent;
 using pt::TorrentListModel;
+
+void TorrentListModel::appendInfoHashes(QModelIndexList const& indexes, std::unordered_set<lt::sha1_hash>& hashes)
+{
+    for (QModelIndex const& idx : indexes)
+    {
+        if (idx.column() > 0)
+        {
+            continue;
+        }
+
+        hashes.insert(m_status.at(idx.row()).info_hash);
+    }
+}
 
 void TorrentListModel::addTorrent(lt::torrent_status const& status)
 {
@@ -54,6 +70,7 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
     }
 
     lt::torrent_status const& status = m_status.at(index.row());
+    bool paused = (status.flags & lt::torrent_flags::paused) == lt::torrent_flags::paused;
 
     switch (role)
     {
@@ -62,7 +79,16 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         switch (index.column())
         {
         case Columns::Name:
+        {
+            if (status.name.empty())
+            {
+                std::stringstream ss;
+                ss << status.info_hash;
+                return QString::fromStdString(ss.str());
+            }
+
             return QString::fromStdString(status.name);
+        }
 
         case Columns::QueuePosition:
         {
@@ -81,6 +107,107 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
 
         case Columns::Progress:
             return status.progress;
+
+        case Columns::ETA:
+        {
+            if (paused)
+            {
+                return "-";
+            }
+
+            std::chrono::seconds secs = getEta(status);
+
+            if (secs.count() <= 0)
+            {
+                return "-";
+            }
+
+            std::chrono::hours hours_left = std::chrono::duration_cast<std::chrono::hours>(secs);
+            std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(secs - hours_left);
+            std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(secs - hours_left - min_left);
+
+            return QString("%1h %2m %3s").arg(
+                QString::number(hours_left.count()),
+                QString::number(min_left.count()),
+                QString::number(sec_left.count()));
+        }
+        case Columns::DownloadSpeed:
+        {
+            if (status.download_payload_rate > 0 && !paused)
+            {
+                return QString("%1/s").arg(Utils::ToHumanFileSize(status.download_payload_rate));
+            }
+
+            return "-";
+        }
+        case Columns::UploadSpeed:
+        {
+            if (status.upload_payload_rate > 0 && !paused)
+            {
+                return QString("%1/s").arg(Utils::ToHumanFileSize(status.upload_payload_rate));
+            }
+
+            return "-";
+        }
+        case Columns::Availability:
+        {
+            if (status.distributed_copies >= 0 && !paused)
+            {
+                QString str;
+                str.sprintf("%.3f", status.distributed_copies);
+                return str;
+            }
+
+            return "-";
+        }
+        case Columns::Ratio:
+        {
+            float ratio = getRatio(status);
+            QString str;
+            str.sprintf("%.3f", ratio);
+            return str;
+        }
+        case Columns::Seeds:
+        {
+            if (paused)
+            {
+                return "-";
+            }
+
+            QString str;
+            str.sprintf(
+                i18n("d_of_d").toLocal8Bit().data(),
+                status.num_seeds,
+                status.list_seeds);
+            return str;
+        }
+        case Columns::Peers:
+        {
+            if (paused)
+            {
+                return "-";
+            }
+
+            QString str;
+            str.sprintf(
+                i18n("d_of_d").toLocal8Bit().data(),
+                status.num_peers - status.num_seeds,
+                status.list_peers - status.list_seeds);
+            return str;
+        }
+        case Columns::AddedOn:
+        {
+            return QDateTime::fromSecsSinceEpoch(status.added_time);
+        }
+        case Columns::CompletedOn:
+        {
+            if (status.completed_time > 0)
+            {
+                return QDateTime::fromSecsSinceEpoch(status.completed_time);
+            }
+
+            return "-";
+        }
         }
     }
     case Qt::TextAlignmentRole:
@@ -89,6 +216,15 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         {
         case Columns::QueuePosition:
         case Columns::Size:
+        case Columns::ETA:
+        case Columns::DownloadSpeed:
+        case Columns::UploadSpeed:
+        case Columns::Availability:
+        case Columns::Ratio:
+        case Columns::Seeds:
+        case Columns::Peers:
+        case Columns::AddedOn:
+        case Columns::CompletedOn:
         {
             QFlags<Qt::AlignmentFlag> flag;
             flag |= Qt::AlignRight;
@@ -112,16 +248,43 @@ QVariant TorrentListModel::headerData(int section, Qt::Orientation, int role) co
         switch (section)
         {
         case Columns::Name:
-            return QString("Name");
+            return i18n("name");
 
         case Columns::QueuePosition:
-            return QString("#");
+            return i18n("queue_position");
 
         case Columns::Size:
-            return QString("Size");
+            return i18n("size");
 
         case Columns::Progress:
-            return QString("Progress");
+            return i18n("progress");
+
+        case Columns::ETA:
+            return i18n("eta");
+
+        case Columns::DownloadSpeed:
+            return i18n("dl");
+
+        case Columns::UploadSpeed:
+            return i18n("ul");
+
+        case Columns::Availability:
+            return i18n("availability");
+
+        case Columns::Ratio:
+            return i18n("ratio");
+
+        case Columns::Seeds:
+            return i18n("seeds");
+
+        case Columns::Peers:
+            return i18n("peers");
+
+        case Columns::AddedOn:
+            return i18n("added_on");
+
+        case Columns::CompletedOn:
+            return i18n("completed_on");
         }
 
         break;
@@ -133,6 +296,15 @@ QVariant TorrentListModel::headerData(int section, Qt::Orientation, int role) co
         {
         case Columns::QueuePosition:
         case Columns::Size:
+        case Columns::ETA:
+        case Columns::DownloadSpeed:
+        case Columns::UploadSpeed:
+        case Columns::Availability:
+        case Columns::Ratio:
+        case Columns::Seeds:
+        case Columns::Peers:
+        case Columns::AddedOn:
+        case Columns::CompletedOn:
             return Qt::AlignRight;
         }
         break;
@@ -151,3 +323,27 @@ int TorrentListModel::rowCount(const QModelIndex&) const
 {
     return static_cast<int>(m_status.size());
 }
+
+
+std::chrono::seconds TorrentListModel::getEta(const lt::torrent_status& ts) const
+{
+    int64_t remaining_bytes = ts.total_wanted - ts.total_wanted_done;
+
+    if (remaining_bytes > 0 && ts.download_payload_rate > 0)
+    {
+        return std::chrono::seconds(remaining_bytes / ts.download_payload_rate);
+    }
+
+    return std::chrono::seconds(0);
+}
+
+float TorrentListModel::getRatio(const lt::torrent_status& ts) const
+{
+    if (ts.all_time_download > 0)
+    {
+        return static_cast<float>(ts.all_time_upload) / static_cast<float>(ts.all_time_download);
+    }
+
+    return 0;
+}
+

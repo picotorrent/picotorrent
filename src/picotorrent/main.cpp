@@ -1,8 +1,6 @@
-#include <QApplication>
-#include <QtGlobal>
-
 #include <memory>
 
+#include "application.hpp"
 #include "configuration.hpp"
 #include "database.hpp"
 #include "environment.hpp"
@@ -13,7 +11,13 @@ int main(int argc, char **argv)
 {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-    QApplication app(argc, argv);
+    pt::Application app(argc, argv);
+
+    if (!app.isSingleInstance())
+    {
+        app.activateOtherInstance();
+        return 0;
+    }
 
     auto env = std::make_shared<pt::Environment>();
     auto db = std::make_shared<pt::Database>(env->getDatabaseFilePath().string());

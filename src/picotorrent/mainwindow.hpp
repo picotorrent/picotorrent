@@ -8,6 +8,7 @@
 #include <vector>
 
 class QAction;
+class QItemSelection;
 class QSplitter;
 class QTimer;
 
@@ -19,6 +20,7 @@ namespace pt
     class PreferencesDialog;
     struct SessionState;
     class SystemTrayIcon;
+    class TorrentContextMenu;
     class TorrentDetailsWidget;
     class TorrentListModel;
     class TorrentListWidget;
@@ -34,6 +36,9 @@ namespace pt
         ITorrentDetailsWidget* torrentDetails() override;
         ITorrentListWidget* torrentList() override;
 
+    protected:
+        bool nativeEvent(QByteArray const& eventType, void* message, long* result) override;
+
     private slots:
         void readAlerts();
 
@@ -41,6 +46,8 @@ namespace pt
         void onFileAddTorrent();
         void onFileExit();
         void onHelpAbout();
+        void onTorrentSelectionChanged(QItemSelection const& selected, QItemSelection const& deselected);
+        void onTorrentContextMenu(QPoint const& point);
         void onViewPreferences();
 
         void postUpdates();
@@ -52,6 +59,9 @@ namespace pt
         std::shared_ptr<SessionState> m_sessionState;
 
         std::vector<IPlugin*> m_plugins;
+
+        // Menus
+        TorrentContextMenu* m_torrentContextMenu;
 
         QAction* m_fileAddTorrent;
         QAction* m_fileAddMagnetLinks;
