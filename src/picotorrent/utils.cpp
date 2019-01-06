@@ -15,6 +15,31 @@ void Utils::OpenAndSelect(fs::path path)
     Utils_Win32::OpenAndSelect(path);
 }
 
+fs::path Utils::SaveResourceToFile(const std::string& resourceName, fs::path path, std::wstring resourceType)
+{
+    int loadLength=0;
+    char* res=nullptr;
+
+    if(!path.has_filename() || path.filename()==".")
+    {
+        path.append(resourceName);
+    }
+    if(resourceType.empty() || resourceType=="RCDATA")
+    {
+        res=wxLoadUserResource(resourceName, RT_RCDATA, &loadLength);
+    }
+    else
+    {
+        res=wxLoadUserResource(resourceName, resourceType.c_str(), &loadLength);
+    }
+    std::ofstream writer(path.wstring(), std::ofstream::out|std::ofstream::binary);
+    writer.write(res, loadLength);
+    writer.flush();
+    writer.close();
+    wxDELETE(res);
+    return path;
+}
+
 wxString Utils::ToHumanFileSize(int64_t bytes)
 {
     return wxFileName::GetHumanReadableSize(bytes, "-");

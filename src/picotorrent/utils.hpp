@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <fstream>
 
 namespace libtorrent
 {
@@ -22,6 +23,11 @@ namespace pt
     {
     public:
         static void OpenAndSelect(std::experimental::filesystem::v1::path path);
+        static std::experimental::filesystem::v1::path 
+            SaveResourceToFile(
+                const std::string& resourceName,
+                std::experimental::filesystem::v1::path path = std::experimental::filesystem::v1::temp_directory_path(),
+                std::wstring resourceType = std::wstring());
         static wxString ToHumanFileSize(int64_t bytes);
         static wxString ToReadableStatus(libtorrent::torrent_status const& ts, std::shared_ptr<Translator> translator);
     };

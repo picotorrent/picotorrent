@@ -22,6 +22,8 @@ AppIcon ICON "..\\..\\res\\app.ico"
 1062 LANGFILE "..\\..\\lang\\1062.json"
 1079 LANGFILE "..\\..\\lang\\1079.json"
 
+MMDB RCDATA "..\\..\\tools\\GeoLite2\\GeoLite2-Country.mmdb"
+
 AD BITMAP "..\\..\\res\\flags-mini\\ad.bmp"
 AE BITMAP "..\\..\\res\\flags-mini\\ae.bmp"
 AF BITMAP "..\\..\\res\\flags-mini\\af.bmp"

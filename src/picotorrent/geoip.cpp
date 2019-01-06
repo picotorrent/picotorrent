@@ -1,11 +1,18 @@
 #include "geoip.hpp"
 
+#include <filesystem>
+#include <fstream>
+
+#include "utils.hpp"
+
+namespace fs = std::experimental::filesystem::v1;
+
 using pt::Geoip;
 
 MMDB_s Geoip::m_mmdb={};
 bool Geoip::m_dbOpen=[]()->bool {
-    const char* mmdbFileName=R"(U:\Projects\picotorrent\tools\GeoLite2\GeoLite2-Country.mmdb)";
-    int openStatus=MMDB_open(mmdbFileName, MMDB_MODE_MMAP, &Geoip::m_mmdb);
+    const std::string mmdbFileName=pt::Utils::SaveResourceToFile("MMDB").string();
+    int openStatus=MMDB_open(mmdbFileName.c_str(), MMDB_MODE_MMAP, &Geoip::m_mmdb);
     if(MMDB_SUCCESS != openStatus) {
         wxLogWarning("Can't open MMDB %s - %s\nGeoip is unavailable.\n",
             mmdbFileName, MMDB_strerror(openStatus));
