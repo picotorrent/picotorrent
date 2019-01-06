@@ -6,6 +6,7 @@
 #endif
 
 #include <string>
+#include <set>
 
 #include <maxminddb.h>
 
@@ -15,9 +16,10 @@ namespace pt
     {
     public:
         static std::string GetCode(const std::string& ipAddress);
-
+        static bool HasFlag(const std::string& code);
     private:
-        static MMDB_s m_mmdb;
         static bool m_dbOpen;
+        static std::set<std::string> m_noImageCountry;
+        static MMDB_s m_mmdb;
     };
 }
