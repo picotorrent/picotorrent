@@ -150,16 +150,19 @@ void PeersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigne
     {
         wxBitmap * bm;
         std::string countryCode=pt::Geoip::GetCode(peer.ip.address().to_string());
-        bm=new wxBitmap(countryCode, wxBITMAP_TYPE_BMP_RESOURCE);
-        if(bm->IsOk())
+        if(!countryCode.empty())
         {
-            variant =wxVariant(*bm);
+            bm=new wxBitmap(countryCode, wxBITMAP_TYPE_BMP_RESOURCE);
+            if(bm->IsOk())
+            {
+                variant =wxVariant(*bm);
+            }
+            else
+            {
+                wxLogVerbose("No Country Flag for Code \"%s\" with IP \"%s\"", countryCode.c_str(), peer.ip.address().to_string());
+            }
+            delete bm;
         }
-        else
-        {
-            wxLogWarning("No Country Flag for Code %s", countryCode.c_str());
-        }
-        delete bm;
     }
         break;
     case Columns::IP:

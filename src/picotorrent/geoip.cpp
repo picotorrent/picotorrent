@@ -29,12 +29,12 @@ std::string Geoip::GetCode(const std::string & ipAddress)
         int gai_error, mmdb_error;
         MMDB_lookup_result_s result = MMDB_lookup_string(&m_mmdb, ipAddress.c_str(), &gai_error, &mmdb_error);
         if(0 != gai_error) {
-            wxLogWarning("Error from getaddrinfo for %s - %s\n\n", ipAddress, gai_strerrorA(gai_error));
+            wxLogVerbose("Error from getaddrinfo for %s - %s\n\n", ipAddress, gai_strerrorA(gai_error));
         }
         else
         {
             if(MMDB_SUCCESS != mmdb_error) {
-                wxLogWarning("Got an error from libmaxminddb: %s\n\n", MMDB_strerror(mmdb_error));
+                wxLogVerbose("Got an error from libmaxminddb: %s\n\n", MMDB_strerror(mmdb_error));
             }
             else
             {
@@ -43,7 +43,7 @@ std::string Geoip::GetCode(const std::string & ipAddress)
                     int status;
                     status=MMDB_get_value(&result.entry, &entry_data, "country", "iso_code", NULL);
                     if(MMDB_SUCCESS != status) {
-                        wxLogWarning("Got an error looking up the entry data - %s\n", MMDB_strerror(status));
+                        wxLogVerbose("Got an error looking up the entry data - %s\n", MMDB_strerror(status));
                     }
                     else
                     {
@@ -53,7 +53,7 @@ std::string Geoip::GetCode(const std::string & ipAddress)
                     }
                 }
                 else {
-                    wxLogWarning("No entry for this IP address (%s) was found\n", ipAddress);
+                    wxLogVerbose("No entry for this IP address (%s) was found\n", ipAddress);
                 }
             }
         }
