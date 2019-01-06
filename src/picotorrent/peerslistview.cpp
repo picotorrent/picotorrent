@@ -10,6 +10,7 @@ using pt::PeersListView;
 PeersListView::PeersListView(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Translator> tr)
     : wxDataViewCtrl(parent, id)
 {
+    AppendBitmapColumn(wxEmptyString, PeersViewModel::Columns::IPCountry, wxDATAVIEW_CELL_INERT, SX(40), wxALIGN_CENTER, wxDATAVIEW_COL_RESIZABLE);
     AppendTextColumn(i18n(tr, "ip"), PeersViewModel::Columns::IP, wxDATAVIEW_CELL_INERT, SX(110), wxALIGN_NOT, wxDATAVIEW_COL_RESIZABLE|wxDATAVIEW_COL_SORTABLE);
     AppendTextColumn(i18n(tr, "client"), PeersViewModel::Columns::Client, wxDATAVIEW_CELL_INERT, SX(140), wxALIGN_NOT, wxDATAVIEW_COL_RESIZABLE|wxDATAVIEW_COL_SORTABLE);
     AppendTextColumn(i18n(tr, "flags"), PeersViewModel::Columns::Flags, wxDATAVIEW_CELL_INERT, SX(80), wxALIGN_NOT, wxDATAVIEW_COL_RESIZABLE);

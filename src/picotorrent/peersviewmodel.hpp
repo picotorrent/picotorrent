@@ -23,6 +23,7 @@ namespace pt
     public:
         enum Columns
         {
+            IPCountry,
             IP,
             Client,
             Flags,

@@ -2,6 +2,7 @@
 
 #include <libtorrent/torrent_status.hpp>
 
+#include "geoip.hpp"
 #include "utils.hpp"
 
 namespace lt = libtorrent;
@@ -145,6 +146,22 @@ void PeersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigne
 
     switch (col)
     {
+    case Columns::IPCountry:
+    {
+        wxBitmap * bm;
+        std::string countryCode=pt::Geoip::GetCode(peer.ip.address().to_string());
+        bm=new wxBitmap(countryCode, wxBITMAP_TYPE_BMP_RESOURCE);
+        if(bm->IsOk())
+        {
+            variant =wxVariant(*bm);
+        }
+        else
+        {
+            wxLogWarning("No Country Flag for Code %s", countryCode.c_str());
+        }
+        delete bm;
+    }
+        break;
     case Columns::IP:
         variant = peer.ip.address().to_string();
         break;

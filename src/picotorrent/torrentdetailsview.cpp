@@ -30,7 +30,7 @@ TorrentDetailsView::TorrentDetailsView(wxWindow* parent,
     m_notebook->AddPage(m_peers, i18n(tran, "peers"));
     m_notebook->AddPage(m_trackers, i18n(tran, "trackers"));
 
-    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);	
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);    
     sizer->Add(m_notebook, 1, wxEXPAND, 0);
 
     this->SetSizer(sizer);

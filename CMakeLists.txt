@@ -78,11 +78,13 @@ include_directories(
     tools/Rasterbar-libtorrent/include
     tools/wxWidgets/include
     tools/wxWidgets/include/msvc
+    tools/GeoLite2/include
 )
 
 link_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/tools/Rasterbar-libtorrent/lib/${PICO_ARCH}
     ${WXWIDGETS_LIB}
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/GeoLite2/lib/${PICO_ARCH}
 )
 
 add_library(
@@ -127,6 +129,7 @@ add_executable(
     src/picotorrent/filespage
     src/picotorrent/filestorageviewmodel
     src/picotorrent/generalpage
+    src/picotorrent/geoip
     src/picotorrent/magnetlinkvalidator
     src/picotorrent/main
     src/picotorrent/mainframe
@@ -179,4 +182,8 @@ target_link_libraries(
     # Boost System
     debug libboost_system-vc141-mt-gd-${BOOST_ARCH}-1_66
     optimized libboost_system-vc141-mt-${BOOST_ARCH}-1_66
+
+    #GeoLite2
+    debug libmaxminddbd
+    optimized libmaxminddb
 )
