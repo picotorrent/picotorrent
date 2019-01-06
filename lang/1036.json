@@ -202,7 +202,7 @@
     "close_to_notification_area": "Afficher dans la zone de notification à la fermeture",
     "invalid_regex": "Expression regulière invalide",
     "info_hash": "Info de hashage",
-    "fails": "Echecs",
+    "fails": "Échecs",
     "verified": "Verifié",
     "force_recheck": "Forcer la vérification",
     "availability": "Disponibilité",
@@ -234,6 +234,9 @@
     "dht_i64d_nodes": "DHT: %I64d noeuds(s)",
     "i64d_torrents": "%I64d torrent(s)",
     "dl_s_ul_s": "DL: %s/s, UL: %s/s",
-    "encrypt_config_file": "Crypter le fichier de configuration"
+    "encrypt_config_file": "Chiffrer le fichier de configuration",
+    "amp_details_panel": "&Panneau des détails",
+    "s_of_s": "%s (sur %s)",
+    "downloaded_size": "Téléchargé"
   }
 }
