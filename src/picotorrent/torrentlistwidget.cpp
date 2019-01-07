@@ -92,6 +92,11 @@ TorrentListWidget::~TorrentListWidget()
     }
 }
 
+QSize TorrentListWidget::sizeHint() const
+{
+    return QSize(-1, 120);
+}
+
 void TorrentListWidget::showHeaderContextMenu(QPoint const& point)
 {
     auto header = this->header();

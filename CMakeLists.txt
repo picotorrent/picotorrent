@@ -85,11 +85,13 @@ add_executable(
     src/picotorrent/configuration
     src/picotorrent/database
     src/picotorrent/downloadssectionwidget
+    src/picotorrent/elidedlabel
     src/picotorrent/environment
     src/picotorrent/filestorageitemmodel
     src/picotorrent/generalsectionwidget
     src/picotorrent/main
     src/picotorrent/mainwindow
+    src/picotorrent/peerlistmodel
     src/picotorrent/preferencesdialog
     src/picotorrent/proxysectionwidget
     src/picotorrent/resources.qrc
@@ -98,12 +100,17 @@ add_executable(
     src/picotorrent/systemtrayicon
     src/picotorrent/sessionunloader
     src/picotorrent/torrentcontextmenu
-    src/picotorrent/torrentdetailswidget
     src/picotorrent/torrentitemdelegate
     src/picotorrent/torrentlistmodel
     src/picotorrent/torrentlistwidget
     src/picotorrent/translator
     src/picotorrent/utils
+
+    src/picotorrent/torrentdetails/torrentdetailswidget
+    src/picotorrent/torrentdetails/torrentfileswidget
+    src/picotorrent/torrentdetails/torrentoverviewwidget
+    src/picotorrent/torrentdetails/torrentpeerswidget
+    src/picotorrent/torrentdetails/torrenttrackerswidget
 )
 
 target_compile_definitions(

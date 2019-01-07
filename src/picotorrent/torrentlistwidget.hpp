@@ -20,6 +20,8 @@ namespace pt
         TorrentListWidget(QWidget* parent, TorrentListModel* model, std::shared_ptr<Database> db);
         ~TorrentListWidget();
 
+        QSize sizeHint() const override;
+
     private:
         void showHeaderContextMenu(QPoint const& point);
         void showTorrentContextMenu(QPoint const& point);

@@ -16,6 +16,7 @@
 #include "downloadssectionwidget.hpp"
 #include "generalsectionwidget.hpp"
 #include "proxysectionwidget.hpp"
+#include "translator.hpp"
 
 using pt::PreferencesDialog;
 
@@ -70,24 +71,15 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, std::shared_ptr<pt::Config
     createUi();
 
     auto model = new SectionListModel();
-    model->addItem("General");
-    model->addItem("Downloads");
-    model->addItem("Connection");
-    model->addItem("Proxy");
+    model->addItem(i18n("general"));
+    model->addItem(i18n("downloads"));
+    model->addItem(i18n("connection"));
+    model->addItem(i18n("proxy"));
 
     m_sections->setModel(model);
 
-    connect(
-        m_sections,
-        &QListView::clicked,
-        this,
-        &PreferencesDialog::onSectionActivated);
-
-    connect(
-        m_buttons,
-        &QDialogButtonBox::accepted,
-        this,
-        &PreferencesDialog::onOk);
+    connect(m_sections, &QListView::clicked,         this, &PreferencesDialog::onSectionActivated);
+    connect(m_buttons,  &QDialogButtonBox::accepted, this, &PreferencesDialog::onOk);
 
     Qt::WindowFlags flags = windowFlags();
     flags |= Qt::CustomizeWindowHint;
@@ -95,7 +87,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, std::shared_ptr<pt::Config
     flags &= ~Qt::WindowSystemMenuHint;
 
     this->setWindowFlags(flags);
-    this->setWindowTitle("Preferences");
+    this->setWindowTitle(i18n("preferences"));
 }
 
 void PreferencesDialog::load()

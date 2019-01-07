@@ -6,6 +6,7 @@
 #include <QFileIconProvider>
 #include <QFileInfo>
 
+#include "translator.hpp"
 #include "utils.hpp"
 
 namespace lt = libtorrent;
@@ -14,10 +15,10 @@ using pt::FileStorageItemModel;
 FileStorageItemModel::FileStorageItemModel()
 {
     m_iconProvider = new QFileIconProvider();
-    m_priorityTexts.insert({ lt::dont_download, "Do not download" });
-    m_priorityTexts.insert({ lt::default_priority, "Normal" });
-    m_priorityTexts.insert({ lt::low_priority, "Low" });
-    m_priorityTexts.insert({ lt::top_priority, "Maximum" });
+    m_priorityTexts.insert({ lt::dont_download,    i18n("do_not_download") });
+    m_priorityTexts.insert({ lt::default_priority, i18n("normal") });
+    m_priorityTexts.insert({ lt::low_priority,     i18n("low") });
+    m_priorityTexts.insert({ lt::top_priority,     i18n("maximum") });
 }
 
 FileStorageItemModel::~FileStorageItemModel()
@@ -177,6 +178,9 @@ QVariant FileStorageItemModel::headerData(int section, Qt::Orientation orientati
 
         case Columns::Size:
             return QString("Size");
+
+        case Columns::Progress:
+            return "Progress";
 
         case Columns::Priority:
             return QString("Priority");

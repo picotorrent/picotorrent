@@ -35,7 +35,7 @@
 #include "systemtrayicon.hpp"
 #include "sessionunloader.hpp"
 #include "torrentcontextmenu.hpp"
-#include "torrentdetailswidget.hpp"
+#include "torrentdetails/torrentdetailswidget.hpp"
 #include "torrentlistmodel.hpp"
 #include "torrentlistwidget.hpp"
 #include "translator.hpp"
@@ -56,10 +56,11 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     });
 
     m_torrentContextMenu = new TorrentContextMenu(this, m_sessionState);
-    m_torrentDetails = new TorrentDetailsWidget();
+    m_torrentDetails = new TorrentDetailsWidget(this, m_sessionState);
 
     m_torrentListModel = new TorrentListModel();
     m_torrentList = new TorrentListWidget(this, m_torrentListModel, m_db);
+    m_torrentList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
 
     m_splitter = new QSplitter();
     m_splitter->addWidget(m_torrentList);
@@ -112,45 +113,9 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     helpMenu->addAction(m_helpAbout);
 
     this->setCentralWidget(m_splitter);
-    this->setMinimumSize(350, 200);
+    this->setMinimumSize(400, 300);
     this->setWindowIcon(QIcon(":res/app.ico"));  
     this->setWindowTitle("PicoTorrent");
-
-    fs::path pluginsDir = env->getApplicationDataPath() / "plugins";
-
-    for (auto& p : fs::directory_iterator(pluginsDir))
-    {
-        if (!fs::is_directory(p.path()))
-        {
-            continue;
-        }
-
-        fs::path pluginName = p.path().filename();
-
-        fs::path pluginFile = p.path().filename();
-        pluginFile.replace_extension(".dll");
-
-        fs::path pluginFilePath = p.path() / pluginFile;
-
-        if (!fs::is_regular_file(pluginFilePath))
-        {
-            continue;
-        }
-
-        QPluginLoader pluginLoader(QString::fromStdWString(pluginFilePath.wstring()));
-        QObject* plugin = pluginLoader.instance();
-
-        if (plugin)
-        {
-            IPlugin* pl = qobject_cast<IPlugin*>(plugin);
-
-            if (pl)
-            {
-                m_plugins.push_back(pl);
-                pl->load(this);
-            }
-        }
-    }
 
     m_updateTimer->start(1000);
 }
@@ -254,6 +219,15 @@ void MainWindow::onTorrentSelectionChanged(QItemSelection const& selected, QItem
     m_torrentListModel->appendInfoHashes(
         selected.indexes(),
         m_sessionState->selectedTorrents);
+
+    m_torrentDetails->clear();
+
+    if (m_sessionState->selectedTorrents.empty())
+    {
+        return;
+    }
+
+    m_torrentDetails->refresh();
 }
 
 void MainWindow::onTorrentContextMenu(QPoint const& point)
