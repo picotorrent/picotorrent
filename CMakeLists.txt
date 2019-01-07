@@ -81,6 +81,7 @@ add_executable(
     src/picotorrent/aboutdialog
     src/picotorrent/addtorrentdialog
     src/picotorrent/application
+    src/picotorrent/buildinfo
     src/picotorrent/connectionsectionwidget
     src/picotorrent/configuration
     src/picotorrent/database
