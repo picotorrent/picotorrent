@@ -9,7 +9,10 @@ branches:
 environment:
   matrix:
    - platform: x86
+     CMAKE_PREFIX_PATH: C:\Qt\5.11.2\msvc2015
+
    - platform: x64
+     CMAKE_PREFIX_PATH: C:\Qt\5.11.2\msvc2017_64
 
 # Build script
 build_script:
@@ -21,9 +24,5 @@ artifacts:
  - path: build-*/Release/packages/PicoTorrent-*-*.appx
  - path: build-*/Release/packages/PicoTorrent-*-*.exe
  - path: build-*/Release/packages/PicoTorrent-*-*.zip
-
-cache:
-  - 'tools/Rasterbar-libtorrent -> tools/packages.config'
-  - 'tools/wxWidgets -> tools/packages.config'
 
 test: off
