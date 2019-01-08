@@ -11,7 +11,8 @@ using pt::Geoip;
 
 MMDB_s Geoip::m_mmdb={};
 //ulgy hack to prevent loading non-existing country flags;
-std::set<std::string> Geoip::m_noImageCountry={"AX","BL","BQ","BV","CC","CW","EH","EU","GF","GG","GP","HM","IM","IO","JE","ME","MF","MP","NC","PS","RE","SH","SJ","SS","SX","TF","TK","UM","XK"};
+//"" for intranet ip address
+std::set<std::string> Geoip::m_noImageCountry={"","AX","BL","BQ","BV","CC","CW","EH","EU","GF","GG","GP","HM","IM","IO","JE","ME","MF","MP","NC","PS","RE","SH","SJ","SS","SX","TF","TK","UM","XK"};
 bool Geoip::m_dbOpen=[]()->bool {
     const std::string mmdbFileName=pt::Utils::SaveResourceToFile("MMDB").string();
     int openStatus=MMDB_open(mmdbFileName.c_str(), MMDB_MODE_MMAP, &Geoip::m_mmdb);
