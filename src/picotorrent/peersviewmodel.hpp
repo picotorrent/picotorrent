@@ -7,6 +7,7 @@
 
 #include <wx/dataview.h>
 
+#include <list>
 #include <vector>
 
 namespace libtorrent
@@ -31,8 +32,11 @@ namespace pt
             _Max
         };
 
+        PeersViewModel();
+
         void Clear();
         void Update(libtorrent::torrent_status const& ts);
+        void Sort(int columnId, bool ascending);
 
     private:
         unsigned int GetColumnCount() const wxOVERRIDE;
@@ -41,5 +45,6 @@ namespace pt
         bool SetValueByRow(const wxVariant &variant, unsigned row, unsigned col) wxOVERRIDE;
 
         std::vector<libtorrent::peer_info> m_data;
+        std::list<Columns> m_sortOrder;
     };
 }
