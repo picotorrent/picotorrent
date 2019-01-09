@@ -14,6 +14,11 @@ fs::path Environment::getApplicationDataPath()
         return fs::path(getKnownFolderPath(KnownFolder::LocalAppData)) / "PicoTorrent";
     }
 
+    return getApplicationPath();
+}
+
+fs::path Environment::getApplicationPath()
+{
     TCHAR path[MAX_PATH];
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
     PathRemoveFileSpec(path);
