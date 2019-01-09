@@ -4,8 +4,6 @@
 
 #include <QTreeView>
 
-#include <picotorrent.hpp>
-
 class QAction;
 class QPoint;
 
@@ -14,7 +12,7 @@ namespace pt
     class Database;
     class TorrentListModel;
 
-    class TorrentListWidget : public QTreeView, public ITorrentListWidget
+    class TorrentListWidget : public QTreeView
     {
     public:
         TorrentListWidget(QWidget* parent, TorrentListModel* model, std::shared_ptr<Database> db);
