@@ -11,6 +11,8 @@ typedef struct sqlite3_value sqlite3_value;
 
 namespace pt
 {
+    class Environment;
+
     class Database
     {
     public:
@@ -34,7 +36,7 @@ namespace pt
             sqlite3_stmt* m_stmt;
         };
 
-        Database(std::string const& fileName);
+        Database(std::shared_ptr<Environment> env);
         ~Database();
 
         void execute(std::string const& sql);
@@ -48,5 +50,6 @@ namespace pt
         bool migrationExists(std::string const& name);
 
         sqlite3* m_db;
+        std::shared_ptr<Environment> m_env;
     };
 }

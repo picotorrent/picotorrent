@@ -20,7 +20,7 @@ int main(int argc, char **argv)
     }
 
     auto env = std::make_shared<pt::Environment>();
-    auto db = std::make_shared<pt::Database>(env->getDatabaseFilePath().string());
+    auto db = std::make_shared<pt::Database>(env);
 
     if (!db->migrate())
     {

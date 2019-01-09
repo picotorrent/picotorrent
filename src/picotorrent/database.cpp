@@ -7,6 +7,7 @@
 #include <vector>
 #include <QString>
 
+#include "environment.hpp"
 #include "../sqlite/sqlite3.h"
 
 using pt::Database;
@@ -122,9 +123,10 @@ bool Database::Statement::read()
     return false;
 }
 
-Database::Database(std::string const& fileName)
+Database::Database(std::shared_ptr<pt::Environment> env)
+    : m_env(env)
 {
-    sqlite3_open(fileName.c_str(), &m_db);
+    sqlite3_open(env->getDatabaseFilePath().string().c_str(), &m_db);
 
     execute("PRAGMA foreign_keys = ON;");
 
