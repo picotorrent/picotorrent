@@ -1,7 +1,8 @@
 #include "translator.hpp"
 
+#include <picotorrent/core/environment.hpp>
+
 #include "config.hpp"
-#include "environment.hpp"
 #include "picojson.hpp"
 
 namespace pj = picojson;

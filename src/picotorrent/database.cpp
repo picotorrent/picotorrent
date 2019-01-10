@@ -7,7 +7,8 @@
 #include <vector>
 #include <QString>
 
-#include "environment.hpp"
+#include <picotorrent/core/environment.hpp>
+
 #include "../sqlite/sqlite3.h"
 
 using pt::Database;

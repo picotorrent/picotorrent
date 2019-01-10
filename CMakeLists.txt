@@ -15,6 +15,7 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 
 include("cmake/boost.cmake")
 include("cmake/libtorrent.cmake")
+add_subdirectory(vendor/zlib)
 
 # Generate version information file
 file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
@@ -75,6 +76,91 @@ add_library(
     src/sqlite/sqlite3
 )
 
+# MaxMind DB library
+add_library(
+    maxminddb
+    STATIC
+    vendor/libmaxminddb/src/data-pool
+    vendor/libmaxminddb/src/maxminddb
+)
+
+target_include_directories(
+    maxminddb
+    PRIVATE
+    vendor/libmaxminddb/include
+    vendor/libmaxminddb/projects/VS12
+)
+
+target_link_libraries(
+    maxminddb
+    Ws2_32
+)
+
+# PicoTorrent GeoIP library
+add_library(
+    PicoTorrent-GeoIP
+    SHARED
+    src/picotorrent-geoip/geoip
+    src/picotorrent-geoip/gzipdecompressor
+)
+
+target_compile_definitions(
+    PicoTorrent-GeoIP
+    PRIVATE
+    -DPICO_BUILDING_DLL
+    -DZLIB_CONST
+)
+
+target_include_directories(
+    PicoTorrent-GeoIP
+    PRIVATE
+    include/
+
+    # libmaxminddb
+    vendor/libmaxminddb/include
+    vendor/libmaxminddb/projects/VS12
+
+    # zlib
+    vendor/zlib
+    "$<TARGET_FILE_DIR:zlibstatic>/../"
+)
+
+target_link_libraries(
+    PicoTorrent-GeoIP
+    PRIVATE
+    maxminddb
+    zlibstatic
+)
+
+add_library(
+    PicoTorrent-Core
+    SHARED
+    src/picotorrent-core/environment
+)
+
+target_compile_definitions(
+    PicoTorrent-Core
+    PRIVATE
+    -DPICO_BUILDING_DLL
+    -D_UNICODE
+    -D_WIN32
+    -D_WIN32_WINNT=0x0600
+    -DWIN32
+    -DWIN32_LEAN_AND_MEAN
+)
+
+target_include_directories(
+    PicoTorrent-Core
+    PRIVATE
+    include/
+)
+
+target_link_libraries(
+    PicoTorrent-Core
+    PRIVATE
+    shlwapi
+)
+
 add_executable(
     PicoTorrent
     WIN32
@@ -87,7 +173,6 @@ add_executable(
     src/picotorrent/database
     src/picotorrent/downloadssectionwidget
     src/picotorrent/elidedlabel
-    src/picotorrent/environment
     src/picotorrent/filestorageitemdelegate
     src/picotorrent/filestorageitemmodel
     src/picotorrent/generalsectionwidget
@@ -145,6 +230,7 @@ target_compile_definitions(
 target_include_directories(
     PicoTorrent
     PRIVATE
+    include/
     "${BOOST_INCLUDE_DIRS}"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
 )
@@ -152,6 +238,11 @@ target_include_directories(
 target_link_libraries(
     PicoTorrent
 
+    # Own libraries
+    PicoTorrent-Core
+    PicoTorrent-GeoIP
+
+    # Windows
     crypt32
     iphlpapi
     legacy_stdio_definitions
@@ -174,6 +265,7 @@ target_link_libraries(
     OpenSSL::Crypto
     OpenSSL::SSL
 
+    # Qt
     Qt5::Widgets
 )
 

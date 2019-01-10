@@ -11,6 +11,8 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/write_resume_data.hpp>
 
+#include <picotorrent/core/environment.hpp>
+
 #include <QAction>
 #include <QDebug>
 #include <QDir>
@@ -28,7 +30,6 @@
 #include "addtorrentdialog.hpp"
 #include "configuration.hpp"
 #include "database.hpp"
-#include "environment.hpp"
 #include "http/httpclient.hpp"
 #include "preferencesdialog.hpp"
 #include "sessionloader.hpp"

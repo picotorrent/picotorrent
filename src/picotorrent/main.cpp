@@ -1,9 +1,11 @@
 #include <memory>
 
+#include <picotorrent/core/environment.hpp>
+#include <picotorrent/geoip/geoip.hpp>
+
 #include "application.hpp"
 #include "configuration.hpp"
 #include "database.hpp"
-#include "environment.hpp"
 #include "mainwindow.hpp"
 #include "translator.hpp"
 

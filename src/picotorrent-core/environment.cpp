@@ -1,4 +1,4 @@
-#include "environment.hpp"
+#include <picotorrent/core/environment.hpp>
 
 #include <Windows.h>
 #include <ShlObj.h>
