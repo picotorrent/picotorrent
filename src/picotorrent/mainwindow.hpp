@@ -1,7 +1,5 @@
 #pragma once
 
-#include <picotorrent.hpp>
-
 #include <QMainWindow>
 
 #include <memory>
@@ -9,6 +7,7 @@
 
 class QAction;
 class QItemSelection;
+class QLabel;
 class QSplitter;
 class QTimer;
 
@@ -19,22 +18,20 @@ namespace pt
     class Environment;
     class PreferencesDialog;
     struct SessionState;
+    class StatusBar;
     class SystemTrayIcon;
     class TorrentContextMenu;
     class TorrentDetailsWidget;
     class TorrentListModel;
     class TorrentListWidget;
 
-    class MainWindow : public QMainWindow, IPluginHost
+    class MainWindow : public QMainWindow
     {
         Q_OBJECT
 
     public:
         MainWindow(std::shared_ptr<Environment> env, std::shared_ptr<Database> db, std::shared_ptr<Configuration> cfg);
         ~MainWindow();
-
-        ITorrentDetailsWidget* torrentDetails() override;
-        ITorrentListWidget* torrentList() override;
 
     protected:
         bool nativeEvent(QByteArray const& eventType, void* message, long* result) override;
@@ -58,8 +55,6 @@ namespace pt
         std::shared_ptr<Configuration> m_cfg;
         std::shared_ptr<SessionState> m_sessionState;
 
-        std::vector<IPlugin*> m_plugins;
-
         // Menus
         TorrentContextMenu* m_torrentContextMenu;
 
@@ -76,6 +71,7 @@ namespace pt
         QTimer* m_updateTimer;
 
         SystemTrayIcon* m_trayIcon;
+        StatusBar* m_statusBar;
         TorrentDetailsWidget* m_torrentDetails;
         TorrentListModel* m_torrentListModel;
         TorrentListWidget* m_torrentList;

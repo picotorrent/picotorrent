@@ -4,9 +4,12 @@
 
 #include "detailstab.hpp"
 
+class QTreeView;
+
 namespace pt
 {
     struct SessionState;
+    class TrackersListModel;
 
     class TorrentTrackersWidget : public DetailsTab
     {
@@ -18,5 +21,8 @@ namespace pt
 
     private:
         std::shared_ptr<SessionState> m_state;
+
+        QTreeView* m_trackersView;
+        TrackersListModel* m_trackersModel;
     };
 }

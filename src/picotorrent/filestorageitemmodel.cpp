@@ -107,7 +107,18 @@ QVariant FileStorageItemModel::data(QModelIndex const& index, int role) const
             return Utils::ToHumanFileSize(item->size);
         }
         case Columns::Progress:
-            break;
+        {
+            if (item->children.size() > 0)
+            {
+                return -99;
+            }
+
+            if (item->progress > 0)
+            {
+                return static_cast<float>(item->progress) / item->size;
+            }
+            return 0;
+        }
         case Columns::Priority:
         {
             if (item->children.size() > 0)
@@ -174,16 +185,16 @@ QVariant FileStorageItemModel::headerData(int section, Qt::Orientation orientati
         switch (section)
         {
         case Columns::Name:
-            return QString("Name");
+            return i18n("name");
 
         case Columns::Size:
-            return QString("Size");
+            return i18n("size");
 
         case Columns::Progress:
-            return "Progress";
+            return i18n("progress");
 
         case Columns::Priority:
-            return QString("Priority");
+            return i18n("priority");
         }
 
         break;
@@ -336,6 +347,23 @@ void FileStorageItemModel::setPriorities(std::vector<lt::download_priority_t> co
         }
 
         node->priority = priorities.at(i);
+    }
+    
+    emit dataChanged(QModelIndex{}, QModelIndex{});
+}
+
+void FileStorageItemModel::setProgress(std::vector<int64_t> const& progress)
+{
+    for (int i = 0; i < progress.size(); i++)
+    {
+        auto const& node = m_map.at(i);
+
+        if (node->progress == progress.at(i))
+        {
+            continue;
+        }
+
+        node->progress = progress.at(i);
     }
     
     emit dataChanged(QModelIndex{}, QModelIndex{});

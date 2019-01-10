@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include <libtorrent/sha1_hash.hpp>
+
 #include "detailstab.hpp"
 
 class QTreeView;
@@ -22,6 +24,7 @@ namespace pt
     private:
         std::shared_ptr<SessionState> m_state;
 
+        libtorrent::sha1_hash m_currentSelection;
         QTreeView* m_filesView;
         FileStorageItemModel* m_filesModel;
     };

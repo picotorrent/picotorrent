@@ -32,10 +32,6 @@ TorrentDetailsWidget::TorrentDetailsWidget(QWidget* parent, std::shared_ptr<pt::
     connect(this, &QTabWidget::currentChanged, [=] { this->refresh(); });
 }
 
-void TorrentDetailsWidget::addTab(pt::Tab const& tab)
-{
-}
-
 void TorrentDetailsWidget::clear()
 {
     QWidget* currWidget = this->currentWidget();

@@ -78,6 +78,7 @@ add_library(
 add_executable(
     PicoTorrent
     WIN32
+
     src/picotorrent/aboutdialog
     src/picotorrent/addtorrentdialog
     src/picotorrent/application
@@ -87,6 +88,7 @@ add_executable(
     src/picotorrent/downloadssectionwidget
     src/picotorrent/elidedlabel
     src/picotorrent/environment
+    src/picotorrent/filestorageitemdelegate
     src/picotorrent/filestorageitemmodel
     src/picotorrent/generalsectionwidget
     src/picotorrent/main
@@ -97,14 +99,19 @@ add_executable(
     src/picotorrent/resources.qrc
     src/picotorrent/resources.rc
     src/picotorrent/sessionloader
-    src/picotorrent/systemtrayicon
     src/picotorrent/sessionunloader
+    src/picotorrent/statusbar
+    src/picotorrent/systemtrayicon
     src/picotorrent/torrentcontextmenu
     src/picotorrent/torrentitemdelegate
     src/picotorrent/torrentlistmodel
     src/picotorrent/torrentlistwidget
     src/picotorrent/translator
     src/picotorrent/utils
+
+    src/picotorrent/http/httpclient
+
+    src/picotorrent/models/trackerslistmodel
 
     src/picotorrent/torrentdetails/torrentdetailswidget
     src/picotorrent/torrentdetails/torrentfileswidget
@@ -128,7 +135,7 @@ target_compile_definitions(
     -DUNICODE
     -DWIN32
     -DWIN32_LEAN_AND_MEAN
-
+    -DPICO_API_EXPORT
     -DPICO_GIT_COMMITISH=${GIT_COMMITISH}
     -DPICO_VERSION_MAJOR=${VERSION_MAJOR}
     -DPICO_VERSION_MINOR=${VERSION_MINOR}
@@ -139,7 +146,6 @@ target_include_directories(
     PicoTorrent
     PRIVATE
     "${BOOST_INCLUDE_DIRS}"
-    "${CMAKE_SOURCE_DIR}/include"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
 )
 
@@ -150,6 +156,7 @@ target_link_libraries(
     iphlpapi
     legacy_stdio_definitions
     shlwapi
+    winhttp
 
     # Boost
     boost-system
@@ -178,7 +185,3 @@ add_custom_command(
         $<TARGET_FILE:Qt5::Widgets>
         $<TARGET_FILE_DIR:PicoTorrent>
 )
-
-add_subdirectory(plugins/torrent-details-files)
-add_subdirectory(plugins/torrent-details-overview)
-add_subdirectory(plugins/torrent-details-peers)

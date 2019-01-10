@@ -7,10 +7,9 @@
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/entry.hpp>
 #include <libtorrent/session.hpp>
+#include <libtorrent/session_stats.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/write_resume_data.hpp>
-
-#include <picotorrent.hpp>
 
 #include <QAction>
 #include <QDebug>
@@ -22,6 +21,7 @@
 #include <QMessageBox>
 #include <QPluginLoader>
 #include <QSplitter>
+#include <QStatusBar>
 #include <QTimer>
 
 #include "aboutdialog.hpp"
@@ -29,9 +29,11 @@
 #include "configuration.hpp"
 #include "database.hpp"
 #include "environment.hpp"
+#include "http/httpclient.hpp"
 #include "preferencesdialog.hpp"
 #include "sessionloader.hpp"
 #include "sessionstate.hpp"
+#include "statusbar.hpp"
 #include "systemtrayicon.hpp"
 #include "sessionunloader.hpp"
 #include "torrentcontextmenu.hpp"
@@ -68,8 +70,8 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_splitter->setCollapsible(0, false);
     m_splitter->setOrientation(Qt::Vertical);
 
+    m_statusBar = new StatusBar(this);
     m_trayIcon = new SystemTrayIcon(this);
-
     m_updateTimer = new QTimer(this);
 
     /* Create actions */
@@ -114,9 +116,11 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
 
     this->setCentralWidget(m_splitter);
     this->setMinimumSize(400, 300);
+    this->setStatusBar(m_statusBar);
     this->setWindowIcon(QIcon(":res/app.ico"));  
     this->setWindowTitle("PicoTorrent");
 
+    m_statusBar->updateTorrentCount(0);
     m_updateTimer->start(1000);
 }
 
@@ -126,16 +130,6 @@ MainWindow::~MainWindow()
     m_sessionState->session->set_alert_notify([]{});
 
     SessionUnloader::unload(m_sessionState, m_db);
-}
-
-pt::ITorrentDetailsWidget* MainWindow::torrentDetails()
-{
-    return m_torrentDetails;
-}
-
-pt::ITorrentListWidget* MainWindow::torrentList()
-{
-    return m_torrentList;
 }
 
 bool MainWindow::nativeEvent(QByteArray const& eventType, void* message, long* result)
@@ -294,6 +288,7 @@ void MainWindow::readAlerts()
                 | lt::torrent_handle::save_info_dict);
 
             m_sessionState->torrents.insert({ ts.info_hash, ts.handle });
+            m_statusBar->updateTorrentCount(m_sessionState->torrents.size());
             m_torrentListModel->addTorrent(ts);
 
             break;
@@ -317,6 +312,24 @@ void MainWindow::readAlerts()
             break;
         }
 
+        case lt::session_stats_alert::alert_type:
+        {
+            lt::session_stats_alert* ssa = lt::alert_cast<lt::session_stats_alert>(alert);
+            lt::span<const int64_t> counters = ssa->counters();
+            int idx = -1;
+
+            if (!m_cfg->getBool("enable_dht"))
+            {
+                m_statusBar->updateDhtNodesCount(-1);
+            }
+            else if ((idx = lt::find_metric_idx("dht.dht_nodes")) >= 0)
+            {
+                m_statusBar->updateDhtNodesCount(counters[idx]);
+            }
+
+            break;
+        }
+
         case lt::state_update_alert::alert_type:
         {
             lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
@@ -324,6 +337,11 @@ void MainWindow::readAlerts()
             for (lt::torrent_status const& status : sua->status)
             {
                 m_torrentListModel->updateTorrent(status);
+
+                if (m_sessionState->selectedTorrents.find(status.info_hash) != m_sessionState->selectedTorrents.end())
+                {
+                    m_torrentDetails->refresh();
+                }
             }
 
             break;
@@ -332,7 +350,7 @@ void MainWindow::readAlerts()
         case lt::torrent_removed_alert::alert_type:
         {
             lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
-
+            m_statusBar->updateTorrentCount(m_sessionState->torrents.size());
             break;
         }
         }

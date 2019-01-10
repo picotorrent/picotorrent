@@ -37,7 +37,9 @@ namespace pt
         QModelIndex parent(QModelIndex const&) const override;
         void rebuildTree(std::shared_ptr<const libtorrent::torrent_info> ti);
         int rowCount(QModelIndex const&) const override;
+
         void setPriorities(std::vector<libtorrent::download_priority_t> const& priorities);
+        void setProgress(std::vector<int64_t> const& progress);
 
     private:
         struct FileNode
@@ -49,6 +51,7 @@ namespace pt
             QString name;
             libtorrent::download_priority_t priority = libtorrent::default_priority;
             int64_t size;
+            int64_t progress;
         };
 
         QFileIconProvider* m_iconProvider;

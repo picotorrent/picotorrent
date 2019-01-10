@@ -3,6 +3,8 @@
 #include <QTreeView>
 #include <QVBoxLayout>
 
+#include <libtorrent/torrent_handle.hpp>
+
 #include "../peerlistmodel.hpp"
 #include "../sessionstate.hpp"
 #include "../translator.hpp"
@@ -24,6 +26,7 @@ TorrentPeersWidget::TorrentPeersWidget(std::shared_ptr<pt::SessionState> state)
     m_peersModel = new PeerListModel();
     m_peersView = new MinimumTreeView();
     m_peersView->setModel(m_peersModel);
+    m_peersView->setRootIsDecorated(false);
 
     auto layout = new QVBoxLayout();
     layout->addWidget(m_peersView);
@@ -39,4 +42,13 @@ void TorrentPeersWidget::clear()
 
 void TorrentPeersWidget::refresh()
 {
+    if (m_state->selectedTorrents.size() != 1)
+    {
+        return;
+    }
+
+    auto hash = (*m_state->selectedTorrents.begin());
+    auto th = m_state->torrents.at(hash);
+
+    m_peersModel->update(th);
 }

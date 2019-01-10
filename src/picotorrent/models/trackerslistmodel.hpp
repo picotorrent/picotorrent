@@ -8,24 +8,20 @@
 
 namespace pt
 {
-    class PeerListModel : public QAbstractListModel
+    class TrackersListModel : public QAbstractListModel
     {
     public:
         enum Columns
         {
-            IP,
-            Client,
-            Flags,
-            DownloadRate,
-            UploadRate,
-            Progress,
+            Url,
+            Status,
+            Fails,
+            NextAnnounce,
             _Max
         };
 
-        PeerListModel();
-        virtual ~PeerListModel();
-
-        void update(libtorrent::torrent_handle const& th);
+        TrackersListModel();
+        virtual ~TrackersListModel();
 
         int columnCount(const QModelIndex&) const override;
         QVariant data(const QModelIndex&, int role) const override;
@@ -34,6 +30,6 @@ namespace pt
         int rowCount(const QModelIndex&) const override;
 
     private:
-        std::vector<libtorrent::peer_info> m_peers;
+        std::vector<libtorrent::announce_entry> m_peers;
     };
 }

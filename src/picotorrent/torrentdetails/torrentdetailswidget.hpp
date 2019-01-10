@@ -2,8 +2,6 @@
 
 #include <QTabWidget>
 
-#include <picotorrent.hpp>
-
 #include <memory>
 #include <vector>
 
@@ -17,12 +15,11 @@ namespace pt
     class TorrentPeersWidget;
     class TorrentTrackersWidget;
 
-    class TorrentDetailsWidget : public QTabWidget, public ITorrentDetailsWidget
+    class TorrentDetailsWidget : public QTabWidget
     {
     public:
         TorrentDetailsWidget(QWidget* parent, std::shared_ptr<SessionState> state);
 
-        void addTab(Tab const& tab) override;
         void clear();
         void refresh();
 
