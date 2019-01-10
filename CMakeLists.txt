@@ -102,6 +102,7 @@ add_library(
     SHARED
     src/picotorrent-geoip/geoip
     src/picotorrent-geoip/gzipdecompressor
+    src/picotorrent-geoip/maxminddatabase
 )
 
 target_compile_definitions(
