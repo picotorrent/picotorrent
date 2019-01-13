@@ -2,5 +2,6 @@
 <RCC version="1.0">
     <qresource>
         <file>../../res/app.ico</file>
+        <file alias="flags.svg">../../res/flags.svg</file>
     </qresource>
 </RCC>

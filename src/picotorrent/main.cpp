@@ -1,17 +1,18 @@
 #include <memory>
 
+#include <picotorrent/core/configuration.hpp>
+#include <picotorrent/core/database.hpp>
 #include <picotorrent/core/environment.hpp>
 #include <picotorrent/geoip/geoip.hpp>
 
 #include "application.hpp"
-#include "configuration.hpp"
-#include "database.hpp"
 #include "mainwindow.hpp"
 #include "translator.hpp"
 
 int main(int argc, char **argv)
 {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
     pt::Application app(argc, argv);
 

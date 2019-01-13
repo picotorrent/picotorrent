@@ -48,4 +48,9 @@ INSERT INTO setting (key, int_value, string_value) VALUES
 ('require_incoming_encryption',                0,                              NULL),
 ('require_outgoing_encryption',                0,                              NULL),
 ('stop_tracker_timeout',                       1,                              NULL),
-('upload_rate_limit',                          1024,                           NULL);
+('upload_rate_limit',                          1024,                           NULL),
+
+/* GeoIP */
+('geoip.database_url',                         0,                              'https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.mmdb.gz'),
+('geoip.enabled',                              1,                              NULL)
+;

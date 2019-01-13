@@ -3,11 +3,12 @@
 #include <libtorrent/file_storage.hpp>
 #include <libtorrent/torrent_info.hpp>
 
+#include <picotorrent/core/utils.hpp>
+
 #include <QFileIconProvider>
 #include <QFileInfo>
 
 #include "translator.hpp"
-#include "utils.hpp"
 
 namespace lt = libtorrent;
 using pt::FileStorageItemModel;
@@ -104,7 +105,7 @@ QVariant FileStorageItemModel::data(QModelIndex const& index, int role) const
                 return "";
             }
 
-            return Utils::ToHumanFileSize(item->size);
+            return QString::fromStdWString(Utils::toHumanFileSize(item->size));
         }
         case Columns::Progress:
         {

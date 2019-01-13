@@ -93,7 +93,7 @@ void OverviewPage::Update(lt::torrent_status const& ts)
     m_infoHash->SetLabel(ih.str());
     m_savePath->SetLabel(savePath);
     m_pieces->SetLabel(wxString::Format(i18n(m_translator, "d_of_d"), ts.pieces.count(), ts.pieces.size()));
-    m_downloaded->SetLabel(wxString::Format(i18n(m_translator, "s_of_s"), Utils::ToHumanFileSize(ts.total_wanted_done), Utils::ToHumanFileSize(ts.total_wanted)));
+    m_downloaded->SetLabel(wxString::Format(i18n(m_translator, "s_of_s"), Utils::toHumanFileSize(ts.total_wanted_done), Utils::toHumanFileSize(ts.total_wanted)));
 
     this->SendSizeEvent();
 }

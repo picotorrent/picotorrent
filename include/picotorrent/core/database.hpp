@@ -1,5 +1,7 @@
 #pragma once
 
+#include <picotorrent/export.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -13,10 +15,10 @@ namespace pt
 {
     class Environment;
 
-    class Database
+    class PICO_CORE_API Database
     {
     public:
-        struct Statement
+        struct PICO_CORE_API Statement
         {
             friend class Database;
 

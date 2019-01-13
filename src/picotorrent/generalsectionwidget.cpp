@@ -1,5 +1,7 @@
 #include "generalsectionwidget.hpp"
 
+#include <picotorrent/core/configuration.hpp>
+
 #include <QCheckBox>
 #include <QComboBox>
 #include <QGridLayout>
@@ -9,7 +11,6 @@
 
 #include <strsafe.h>
 
-#include "configuration.hpp"
 #include "translator.hpp"
 
 using pt::GeneralSectionWidget;

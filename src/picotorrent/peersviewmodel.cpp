@@ -248,7 +248,7 @@ void PeersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigne
         {
             variant = wxString::Format(
                 "%s/s",
-                Utils::ToHumanFileSize(peer.payload_down_speed));
+                Utils::toHumanFileSize(peer.payload_down_speed));
         }
 
         break;
@@ -263,7 +263,7 @@ void PeersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigne
         {
             variant = wxString::Format(
                 "%s/s",
-                Utils::ToHumanFileSize(peer.payload_up_speed));
+                Utils::toHumanFileSize(peer.payload_up_speed));
         }
 
         break;

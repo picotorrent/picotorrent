@@ -2,12 +2,17 @@
 
 #include <QAbstractListModel>
 
+#include <memory>
 #include <vector>
 
 #include <libtorrent/fwd.hpp>
 
+class QPixmap;
+
 namespace pt
 {
+    class GeoIP;
+
     class PeerListModel : public QAbstractListModel
     {
     public:
@@ -22,7 +27,7 @@ namespace pt
             _Max
         };
 
-        PeerListModel();
+        PeerListModel(std::shared_ptr<GeoIP> geo);
         virtual ~PeerListModel();
 
         void update(libtorrent::torrent_handle const& th);
@@ -35,5 +40,8 @@ namespace pt
 
     private:
         std::vector<libtorrent::peer_info> m_peers;
+        std::shared_ptr<GeoIP> m_geo;
+
+        QPixmap* m_flags;
     };
 }

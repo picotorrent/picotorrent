@@ -16,6 +16,7 @@ namespace pt
     class Configuration;
     class Database;
     class Environment;
+    class GeoIP;
     class PreferencesDialog;
     struct SessionState;
     class StatusBar;
@@ -53,6 +54,7 @@ namespace pt
         std::shared_ptr<Environment> m_env;
         std::shared_ptr<Database> m_db;
         std::shared_ptr<Configuration> m_cfg;
+        std::shared_ptr<GeoIP> m_geo;
         std::shared_ptr<SessionState> m_sessionState;
 
         // Menus

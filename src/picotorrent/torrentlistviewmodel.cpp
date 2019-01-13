@@ -242,7 +242,7 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
         }
         break;
     case Columns::Size:
-        variant = Utils::ToHumanFileSize(ts.total_wanted);
+        variant = Utils::toHumanFileSize(ts.total_wanted);
         break;
     case Columns::Status:
         variant = Utils::ToReadableStatus(ts, m_translator);
@@ -277,7 +277,7 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
         {
             variant = wxString::Format(
                 "%s/s",
-                Utils::ToHumanFileSize(ts.download_payload_rate));
+                Utils::toHumanFileSize(ts.download_payload_rate));
         }
         break;
     }
@@ -289,7 +289,7 @@ void TorrentListViewModel::GetValueByRow(wxVariant &variant, unsigned int row, u
         {
             variant = wxString::Format(
                 "%s/s",
-                Utils::ToHumanFileSize(ts.upload_payload_rate));
+                Utils::toHumanFileSize(ts.upload_payload_rate));
         }
         break;
     }

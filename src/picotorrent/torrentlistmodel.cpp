@@ -1,11 +1,10 @@
 #include "torrentlistmodel.hpp"
 
+#include <libtorrent/torrent_status.hpp>
+#include <picotorrent/core/utils.hpp>
 #include <QDateTime>
 
-#include <libtorrent/torrent_status.hpp>
-
 #include "translator.hpp"
-#include "utils.hpp"
 
 namespace lt = libtorrent;
 using pt::TorrentListModel;
@@ -103,7 +102,7 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         }
 
         case Columns::Size:
-            return Utils::ToHumanFileSize(status.total_wanted);
+            return QString::fromStdWString(Utils::toHumanFileSize(status.total_wanted));
 
         case Columns::Progress:
             return status.progress;
@@ -135,7 +134,7 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         {
             if (status.download_payload_rate > 0 && !paused)
             {
-                return QString("%1/s").arg(Utils::ToHumanFileSize(status.download_payload_rate));
+                return QString("%1/s").arg(Utils::toHumanFileSize(status.download_payload_rate));
             }
 
             return "-";
@@ -144,7 +143,7 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         {
             if (status.upload_payload_rate > 0 && !paused)
             {
-                return QString("%1/s").arg(Utils::ToHumanFileSize(status.upload_payload_rate));
+                return QString("%1/s").arg(Utils::toHumanFileSize(status.upload_payload_rate));
             }
 
             return "-";

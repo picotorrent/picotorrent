@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(OPENSSL_USE_STATIC_LIBS TRUE)
 
 find_package(OpenSSL)
-find_package(Qt5Widgets CONFIG REQUIRED)
+find_package(Qt5 REQUIRED COMPONENTS Core Gui Svg Widgets)
 
 include("cmake/boost.cmake")
 include("cmake/libtorrent.cmake")
@@ -98,22 +98,25 @@ target_link_libraries(
 
 # PicoTorrent GeoIP library
 add_library(
-    PicoTorrent-GeoIP
+    PicoTorrent.GeoIP
     SHARED
     src/picotorrent-geoip/geoip
     src/picotorrent-geoip/gzipdecompressor
     src/picotorrent-geoip/maxminddatabase
+
+    # Headers (for MOC Q_OBJECT detection)
+    include/picotorrent/geoip/geoip
 )
 
 target_compile_definitions(
-    PicoTorrent-GeoIP
+    PicoTorrent.GeoIP
     PRIVATE
-    -DPICO_BUILDING_DLL
+    -DPICO_BUILDING_GEOIP_API
     -DZLIB_CONST
 )
 
 target_include_directories(
-    PicoTorrent-GeoIP
+    PicoTorrent.GeoIP
     PRIVATE
     include/
 
@@ -127,22 +130,62 @@ target_include_directories(
 )
 
 target_link_libraries(
-    PicoTorrent-GeoIP
+    PicoTorrent.GeoIP
     PRIVATE
+
     maxminddb
     zlibstatic
+
+    PicoTorrent.Core
+    PicoTorrent.Http
+
+    Qt5::Core
 )
 
+# PicoTorrent HTTP library
 add_library(
-    PicoTorrent-Core
+    PicoTorrent.Http
     SHARED
-    src/picotorrent-core/environment
+    src/picotorrent-http/httpclient
+    src/picotorrent-http/httprequest
+    src/picotorrent-http/httpresponse
+
+    # Headers (for MOC Q_OBJECT detection)
+    include/picotorrent/http/httprequest
+    include/picotorrent/http/httpresponse
 )
 
 target_compile_definitions(
-    PicoTorrent-Core
+    PicoTorrent.Http
     PRIVATE
-    -DPICO_BUILDING_DLL
+    -DPICO_BUILDING_HTTP_API
+)
+
+target_include_directories(
+    PicoTorrent.Http
+    PRIVATE
+    include/
+)
+
+target_link_libraries(
+    PicoTorrent.Http
+    Qt5::Core
+    winhttp
+)
+
+add_library(
+    PicoTorrent.Core
+    SHARED
+    src/picotorrent-core/configuration
+    src/picotorrent-core/database
+    src/picotorrent-core/environment
+    src/picotorrent-core/utils
+)
+
+target_compile_definitions(
+    PicoTorrent.Core
+    PRIVATE
+    -DPICO_BUILDING_CORE_API
     -D_UNICODE
     -D_WIN32
     -D_WIN32_WINNT=0x0600
@@ -151,15 +194,18 @@ target_compile_definitions(
 )
 
 target_include_directories(
-    PicoTorrent-Core
+    PicoTorrent.Core
     PRIVATE
     include/
 )
 
 target_link_libraries(
-    PicoTorrent-Core
+    PicoTorrent.Core
     PRIVATE
     shlwapi
+    
+    # sqlite
+    sqlite
 )
 
 add_executable(
@@ -170,8 +216,6 @@ add_executable(
     src/picotorrent/addtorrentdialog
     src/picotorrent/application
     src/picotorrent/connectionsectionwidget
-    src/picotorrent/configuration
-    src/picotorrent/database
     src/picotorrent/downloadssectionwidget
     src/picotorrent/elidedlabel
     src/picotorrent/filestorageitemdelegate
@@ -193,9 +237,6 @@ add_executable(
     src/picotorrent/torrentlistmodel
     src/picotorrent/torrentlistwidget
     src/picotorrent/translator
-    src/picotorrent/utils
-
-    src/picotorrent/http/httpclient
 
     src/picotorrent/models/trackerslistmodel
 
@@ -240,24 +281,21 @@ target_link_libraries(
     PicoTorrent
 
     # Own libraries
-    PicoTorrent-Core
-    PicoTorrent-GeoIP
+    PicoTorrent.Core
+    PicoTorrent.GeoIP
+    PicoTorrent.Http
 
     # Windows
     crypt32
     iphlpapi
     legacy_stdio_definitions
     shlwapi
-    winhttp
 
     # Boost
     boost-system
 
     # Breakpad
     breakpad
-
-    # sqlite
-    sqlite
 
     # Rasterbar-libtorrent
     libtorrent-rasterbar
@@ -267,14 +305,41 @@ target_link_libraries(
     OpenSSL::SSL
 
     # Qt
+    Qt5::Svg
     Qt5::Widgets
 )
 
+# Copy base Qt dependencies
 add_custom_command(
     TARGET PicoTorrent POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:Qt5::Core>
         $<TARGET_FILE:Qt5::Gui>
+        $<TARGET_FILE:Qt5::Svg>
         $<TARGET_FILE:Qt5::Widgets>
         $<TARGET_FILE_DIR:PicoTorrent>
+)
+
+# Copy image format plugins
+add_custom_command(
+    TARGET PicoTorrent POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:Qt5::QICOPlugin>
+        "$<TARGET_FILE_DIR:PicoTorrent>/imageformats/$<TARGET_FILE_NAME:Qt5::QICOPlugin>"
+)
+
+# Copy platform plugins
+add_custom_command(
+    TARGET PicoTorrent POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:Qt5::QWindowsIntegrationPlugin>
+        "$<TARGET_FILE_DIR:PicoTorrent>/platforms/$<TARGET_FILE_NAME:Qt5::QWindowsIntegrationPlugin>"
+)
+
+# Copy style plugins
+add_custom_command(
+    TARGET PicoTorrent POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:Qt5::QWindowsVistaStylePlugin>
+        "$<TARGET_FILE_DIR:PicoTorrent>/styles/$<TARGET_FILE_NAME:Qt5::QWindowsVistaStylePlugin>"
 )

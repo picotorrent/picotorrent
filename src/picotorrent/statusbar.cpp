@@ -1,9 +1,10 @@
 #include "statusbar.hpp"
 
+#include <picotorrent/core/utils.hpp>
+
 #include <QLabel>
 
 #include "translator.hpp"
-#include "utils.hpp"
 
 using pt::StatusBar;
 
@@ -50,6 +51,6 @@ void StatusBar::updateTransferRates(int64_t downSpeed, int64_t upSpeed)
     m_transferSpeeds->setText(
         QString::asprintf(
             i18n("dl_s_ul_s").toLocal8Bit().data(),
-            Utils::ToHumanFileSize(downSpeed),
-            Utils::ToHumanFileSize(upSpeed)));
+            Utils::toStdString(Utils::toHumanFileSize(downSpeed)).c_str(),
+            Utils::toStdString(Utils::toHumanFileSize(upSpeed)).c_str()));
 }

@@ -6,6 +6,8 @@
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/torrent_info.hpp>
 
+#include <picotorrent/core/utils.hpp>
+
 #include <QBoxLayout>
 #include <QCheckBox>
 #include <QComboBox>
@@ -22,7 +24,6 @@
 #include <QVBoxLayout>
 
 #include "filestorageitemmodel.hpp"
-#include "utils.hpp"
 
 namespace fs = std::experimental::filesystem;
 namespace lt = libtorrent;
@@ -225,7 +226,7 @@ void AddTorrentDialog::onTorrentIndexChanged(int index)
     hash << param.ti->info_hash();
 
     m_torrentName->setText(QString::fromStdString(param.ti->name()));
-    m_torrentSize->setText(Utils::ToHumanFileSize(param.ti->total_size()));
+    m_torrentSize->setText(QString::fromStdWString(Utils::toHumanFileSize(param.ti->total_size())));
     m_torrentInfoHash->setText(QString::fromStdString(hash.str()));
     m_torrentComment->setText(QString::fromStdString(param.ti->comment()));
     m_torrentSavePath->setText(QString::fromStdString(param.save_path));

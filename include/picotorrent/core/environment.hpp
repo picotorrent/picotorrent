@@ -6,7 +6,7 @@
 
 namespace pt
 {
-    class Environment
+    class PICO_CORE_API Environment
     {
     public:
         enum KnownFolder
@@ -15,11 +15,11 @@ namespace pt
             UserDownloads
         };
 
-        std::experimental::filesystem::path PICO_API getApplicationDataPath();
-        std::experimental::filesystem::path PICO_API getApplicationPath();
-        std::experimental::filesystem::path PICO_API getDatabaseFilePath();
-        std::experimental::filesystem::path PICO_API getKnownFolderPath(KnownFolder knownFolder);
-        bool PICO_API isAppContainerProcess();
-        bool PICO_API isInstalled();
+        std::experimental::filesystem::path getApplicationDataPath();
+        std::experimental::filesystem::path getApplicationPath();
+        std::experimental::filesystem::path getDatabaseFilePath();
+        std::experimental::filesystem::path getKnownFolderPath(KnownFolder knownFolder);
+        bool isAppContainerProcess();
+        bool isInstalled();
     };
 }

@@ -193,7 +193,7 @@ void AddTorrentDialog::LoadTorrentInfo(int index)
         m_infoHash->SetLabel(ss.str());
 
         // Size
-        m_size->SetLabel(wxString(Utils::ToHumanFileSize(params.ti->total_size())));
+        m_size->SetLabel(wxString(Utils::toHumanFileSize(params.ti->total_size())));
 
         if (!params.ti->comment().empty())
         {

@@ -9,6 +9,7 @@ class QWidget;
 
 namespace pt
 {
+    class GeoIP;
     struct SessionState;
     class TorrentFilesWidget;
     class TorrentOverviewWidget;
@@ -18,7 +19,7 @@ namespace pt
     class TorrentDetailsWidget : public QTabWidget
     {
     public:
-        TorrentDetailsWidget(QWidget* parent, std::shared_ptr<SessionState> state);
+        TorrentDetailsWidget(QWidget* parent, std::shared_ptr<SessionState> state, std::shared_ptr<GeoIP> geo);
 
         void clear();
         void refresh();

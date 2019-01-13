@@ -20,10 +20,10 @@ public:
 
 using pt::TorrentPeersWidget;
 
-TorrentPeersWidget::TorrentPeersWidget(std::shared_ptr<pt::SessionState> state)
+TorrentPeersWidget::TorrentPeersWidget(std::shared_ptr<pt::SessionState> state, std::shared_ptr<pt::GeoIP> geo)
     : m_state(state)
 {
-    m_peersModel = new PeerListModel();
+    m_peersModel = new PeerListModel(geo);
     m_peersView = new MinimumTreeView();
     m_peersView->setModel(m_peersModel);
     m_peersView->setRootIsDecorated(false);

@@ -1,9 +1,10 @@
 #include "torrentlistwidget.hpp"
 
+#include <picotorrent/core/database.hpp>
+
 #include <QHeaderView>
 #include <QMenu>
 
-#include "database.hpp"
 #include "torrentitemdelegate.hpp"
 #include "torrentlistmodel.hpp"
 

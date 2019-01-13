@@ -1,5 +1,7 @@
 #include "connectionsectionwidget.hpp"
 
+#include <picotorrent/core/configuration.hpp>
+
 #include <QCheckBox>
 #include <QComboBox>
 #include <QGridLayout>
@@ -14,7 +16,6 @@
 #include <WS2tcpip.h>
 #include <iphlpapi.h>
 
-#include "configuration.hpp"
 #include "translator.hpp"
 
 struct NetworkAdapter

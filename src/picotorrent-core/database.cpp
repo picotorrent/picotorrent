@@ -1,13 +1,13 @@
-#include "database.hpp"
+#include <picotorrent/core/database.hpp>
 
 #include <Windows.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
 
 #include <vector>
-#include <QString>
 
 #include <picotorrent/core/environment.hpp>
+#include <picotorrent/core/utils.hpp>
 
 #include "../sqlite/sqlite3.h"
 
@@ -29,8 +29,8 @@ static BOOL EnumMigrations(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, L
     const char* buffer = reinterpret_cast<const char*>(LockResource(data));
 
     Migration m;
-    m.name = QString::fromStdWString(lpszName).toStdString();
-    m.sql  = std::string(buffer);
+    m.name = pt::Utils::toStdString(lpszName);
+    m.sql  = std::string(buffer, size);
 
     migrations->push_back(m);
 
@@ -236,7 +236,7 @@ void Database::getKnownFolderPath(sqlite3_context* ctx, int argc, sqlite3_value*
 
         if (SUCCEEDED(hr))
         {
-            std::string res = QString::fromStdWString(result).toStdString();
+            std::string res = Utils::toStdString(result);
             sqlite3_result_text(ctx, res.c_str(), -1, SQLITE_TRANSIENT);
         }
     }

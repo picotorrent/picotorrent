@@ -11,7 +11,10 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/write_resume_data.hpp>
 
+#include <picotorrent/core/configuration.hpp>
+#include <picotorrent/core/database.hpp>
 #include <picotorrent/core/environment.hpp>
+#include <picotorrent/geoip/geoip.hpp>
 
 #include <QAction>
 #include <QDebug>
@@ -28,9 +31,6 @@
 
 #include "aboutdialog.hpp"
 #include "addtorrentdialog.hpp"
-#include "configuration.hpp"
-#include "database.hpp"
-#include "http/httpclient.hpp"
 #include "preferencesdialog.hpp"
 #include "sessionloader.hpp"
 #include "sessionstate.hpp"
@@ -52,6 +52,8 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_cfg(cfg),
     m_preferencesDialog(nullptr)
 {
+    m_geo = std::make_shared<pt::GeoIP>(m_env, m_cfg);
+
     m_sessionState = SessionLoader::load(db, cfg);
     m_sessionState->session->set_alert_notify([this]()
     {
@@ -59,7 +61,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     });
 
     m_torrentContextMenu = new TorrentContextMenu(this, m_sessionState);
-    m_torrentDetails = new TorrentDetailsWidget(this, m_sessionState);
+    m_torrentDetails = new TorrentDetailsWidget(this, m_sessionState, m_geo);
 
     m_torrentListModel = new TorrentListModel();
     m_torrentList = new TorrentListWidget(this, m_torrentListModel, m_db);
@@ -100,6 +102,10 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
         this,
         &MainWindow::onTorrentContextMenu);
 
+    // GeoIP
+    connect(m_geo.get(), &GeoIP::updateRequired,
+            m_geo.get(), &GeoIP::update);
+
     // System tray
     connect(m_trayIcon, &SystemTrayIcon::addTorrentInvoked, this, &MainWindow::onFileAddTorrent);
 
@@ -120,6 +126,11 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     this->setStatusBar(m_statusBar);
     this->setWindowIcon(QIcon(":res/app.ico"));  
     this->setWindowTitle("PicoTorrent");
+
+    if (m_cfg->getBool("geoip.enabled"))
+    {
+        m_geo->load();
+    }
 
     m_statusBar->updateTorrentCount(0);
     m_updateTimer->start(1000);

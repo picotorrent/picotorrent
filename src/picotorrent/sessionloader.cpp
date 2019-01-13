@@ -12,8 +12,9 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 
-#include "configuration.hpp"
-#include "database.hpp"
+#include <picotorrent/core/configuration.hpp>
+#include <picotorrent/core/database.hpp>
+
 #include "sessionsettings.hpp"
 #include "sessionstate.hpp"
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <picotorrent/export.hpp>
+
 #include <memory>
 #include <string>
 
@@ -7,7 +9,7 @@ namespace pt
 {
     class Database;
 
-    class Configuration
+    class PICO_CORE_API Configuration
     {
     public:
         enum ConnectionProxyType

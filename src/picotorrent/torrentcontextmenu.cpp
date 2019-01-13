@@ -1,15 +1,16 @@
 #include "torrentcontextmenu.hpp"
 
+#include <libtorrent/session.hpp>
+#include <libtorrent/torrent_handle.hpp>
+#include <libtorrent/torrent_status.hpp>
+
+#include <picotorrent/core/utils.hpp>
+
 #include <QClipboard>
 #include <QGuiApplication>
 
 #include "sessionstate.hpp"
 #include "translator.hpp"
-#include "utils.hpp"
-
-#include <libtorrent/session.hpp>
-#include <libtorrent/torrent_handle.hpp>
-#include <libtorrent/torrent_status.hpp>
 
 namespace fs = std::experimental::filesystem;
 namespace lt = libtorrent;

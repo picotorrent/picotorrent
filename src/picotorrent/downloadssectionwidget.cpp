@@ -1,5 +1,7 @@
 #include "downloadssectionwidget.hpp"
 
+#include <picotorrent/core/configuration.hpp>
+
 #include <QCheckBox>
 #include <QGridLayout>
 #include <QGroupBox>
@@ -10,7 +12,6 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-#include "configuration.hpp"
 #include "translator.hpp"
 
 using pt::DownloadsSectionWidget;

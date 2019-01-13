@@ -11,13 +11,13 @@
 
 using pt::TorrentDetailsWidget;
 
-TorrentDetailsWidget::TorrentDetailsWidget(QWidget* parent, std::shared_ptr<pt::SessionState> state)
+TorrentDetailsWidget::TorrentDetailsWidget(QWidget* parent, std::shared_ptr<pt::SessionState> state, std::shared_ptr<pt::GeoIP> geo)
     : QTabWidget(parent),
     m_state(state)
 {
     m_overview = new TorrentOverviewWidget(state);
     m_files = new TorrentFilesWidget(state);
-    m_peers = new TorrentPeersWidget(state);
+    m_peers = new TorrentPeersWidget(state, geo);
     m_trackers = new TorrentTrackersWidget(state);
 
     QTabWidget::addTab(m_overview, i18n("overview"));

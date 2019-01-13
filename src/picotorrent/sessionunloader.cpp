@@ -1,8 +1,4 @@
 #include "sessionunloader.hpp"
-
-#include "database.hpp"
-#include "sessionstate.hpp"
-
 #include <queue>
 #include <sstream>
 #include <vector>
@@ -15,6 +11,10 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 #include <libtorrent/write_resume_data.hpp>
+
+#include <picotorrent/core/database.hpp>
+
+#include "sessionstate.hpp"
 
 using pt::SessionUnloader;
 
