@@ -5,7 +5,7 @@
 
 #include <libtorrent/torrent_handle.hpp>
 
-#include "../peerlistmodel.hpp"
+#include "../models/peerlistmodel.hpp"
 #include "../sessionstate.hpp"
 #include "../translator.hpp"
 

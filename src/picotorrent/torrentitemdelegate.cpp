@@ -1,17 +1,30 @@
 #include "torrentitemdelegate.hpp"
 
 #include <QApplication>
+#include <QPainter>
 
 #include "torrentlistmodel.hpp"
 
 using pt::TorrentItemDelegate;
 
-TorrentItemDelegate::TorrentItemDelegate()
+TorrentItemDelegate::TorrentItemDelegate(QObject* parent)
+    : QStyledItemDelegate(parent)
 {
+    m_font = new QFont(QApplication::font());
+    m_font->setPointSize(8);
+    m_fontMetrics = new QFontMetrics(*m_font);
+}
+
+TorrentItemDelegate::~TorrentItemDelegate()
+{
+    delete m_fontMetrics;
+    delete m_font;
 }
 
 void TorrentItemDelegate::paint(QPainter* painter, QStyleOptionViewItem const& option, QModelIndex const& index) const
 {
+    QStyledItemDelegate::paint(painter, option, index);
+
     switch (index.column())
     {
     case TorrentListModel::Columns::Progress:
@@ -21,8 +34,8 @@ void TorrentItemDelegate::paint(QPainter* painter, QStyleOptionViewItem const& o
         QStyleOptionProgressBar progressBarOption;
         progressBarOption.state = QStyle::State_Enabled;
         progressBarOption.direction = QApplication::layoutDirection();
-        progressBarOption.rect = option.rect;
-        progressBarOption.fontMetrics = QApplication::fontMetrics();
+        progressBarOption.rect = option.rect - QMargins(1, 1, 1, 1);
+        progressBarOption.fontMetrics = *m_fontMetrics;
         progressBarOption.minimum = 0;
         progressBarOption.maximum = 100;
         progressBarOption.textAlignment = Qt::AlignCenter;
@@ -38,7 +51,5 @@ void TorrentItemDelegate::paint(QPainter* painter, QStyleOptionViewItem const& o
 
         break;
     }
-    default:
-        return QItemDelegate::paint(painter, option, index);
     }
 }

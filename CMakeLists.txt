@@ -223,7 +223,6 @@ add_executable(
     src/picotorrent/generalsectionwidget
     src/picotorrent/main
     src/picotorrent/mainwindow
-    src/picotorrent/peerlistmodel
     src/picotorrent/preferencesdialog
     src/picotorrent/proxysectionwidget
     src/picotorrent/resources.qrc
@@ -238,6 +237,7 @@ add_executable(
     src/picotorrent/torrentlistwidget
     src/picotorrent/translator
 
+    src/picotorrent/models/peerlistmodel
     src/picotorrent/models/trackerslistmodel
 
     src/picotorrent/torrentdetails/torrentdetailswidget

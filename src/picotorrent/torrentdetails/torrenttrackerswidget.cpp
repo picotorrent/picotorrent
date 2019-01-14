@@ -1,5 +1,7 @@
 #include "torrenttrackerswidget.hpp"
 
+#include <libtorrent/torrent_handle.hpp>
+
 #include <QTreeView>
 #include <QVBoxLayout>
 
@@ -23,6 +25,7 @@ TorrentTrackersWidget::TorrentTrackersWidget(std::shared_ptr<pt::SessionState> s
     m_trackersModel = new TrackersListModel();
     m_trackersView = new MinimumTreeView();
     m_trackersView->setModel(m_trackersModel);
+    m_trackersView->setRootIsDecorated(false);
 
     auto layout = new QVBoxLayout();
     layout->addWidget(m_trackersView);
@@ -38,4 +41,13 @@ void TorrentTrackersWidget::clear()
 
 void TorrentTrackersWidget::refresh()
 {
+    if (m_state->selectedTorrents.size() != 1)
+    {
+        return;
+    }
+
+    auto hash = (*m_state->selectedTorrents.begin());
+    auto th = m_state->torrents.at(hash);
+
+    m_trackersModel->update(th);
 }

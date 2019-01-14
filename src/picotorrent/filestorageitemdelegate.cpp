@@ -22,6 +22,8 @@ FileStorageItemDelegate::~FileStorageItemDelegate()
 
 void FileStorageItemDelegate::paint(QPainter* painter, QStyleOptionViewItem const& option, QModelIndex const& index) const
 {
+    QStyledItemDelegate::paint(painter, option, index);
+
     switch (index.column())
     {
     case FileStorageItemModel::Columns::Progress:
@@ -54,7 +56,5 @@ void FileStorageItemDelegate::paint(QPainter* painter, QStyleOptionViewItem cons
 
         break;
     }
-    default:
-        return QItemDelegate::paint(painter, option, index);
     }
 }

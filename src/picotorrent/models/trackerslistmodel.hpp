@@ -23,6 +23,8 @@ namespace pt
         TrackersListModel();
         virtual ~TrackersListModel();
 
+        void update(libtorrent::torrent_handle const& th);
+
         int columnCount(const QModelIndex&) const override;
         QVariant data(const QModelIndex&, int role) const override;
         QVariant headerData(int section, Qt::Orientation, int role) const override;
@@ -30,6 +32,6 @@ namespace pt
         int rowCount(const QModelIndex&) const override;
 
     private:
-        std::vector<libtorrent::announce_entry> m_peers;
+        std::vector<libtorrent::announce_entry> m_trackers;
     };
 }

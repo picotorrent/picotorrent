@@ -1,13 +1,13 @@
 #pragma once
 
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 
 class QFont;
 class QFontMetrics;
 
 namespace pt
 {
-    class FileStorageItemDelegate : public QItemDelegate
+    class FileStorageItemDelegate : public QStyledItemDelegate
     {
     public:
         FileStorageItemDelegate();

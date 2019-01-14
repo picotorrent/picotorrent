@@ -12,7 +12,7 @@
 #include <QImageReader>
 #include <QPixmap>
 
-#include "translator.hpp"
+#include "../translator.hpp"
 
 namespace lt = libtorrent;
 using pt::PeerListModel;

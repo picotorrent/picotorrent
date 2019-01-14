@@ -11,14 +11,12 @@
 using pt::TorrentListWidget;
 
 TorrentListWidget::TorrentListWidget(QWidget* parent, pt::TorrentListModel* model, std::shared_ptr<pt::Database> db)
-    : QTreeView(parent),
-    m_db(db),
+    : m_db(db),
     m_model(model)
 {
     this->setModel(model);
-    this->setAllColumnsShowFocus(true);
     this->setContextMenuPolicy(Qt::CustomContextMenu);
-    this->setItemDelegate(new TorrentItemDelegate());
+    this->setItemDelegate(new TorrentItemDelegate(this));
     this->setRootIsDecorated(false);
     this->setSortingEnabled(true);
 

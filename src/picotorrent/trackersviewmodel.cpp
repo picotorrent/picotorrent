@@ -139,33 +139,7 @@ void TrackersViewModel::GetValueByRow(wxVariant &variant, unsigned int row, unsi
         variant = "-";
         break;
     case Columns::NextAnnounce:
-        if (endp == tracker.endpoints.end()
-            || endp->updating)
-        {
-            variant = "-";
-            break;
-        }
-
-        int64_t secs = lt::total_seconds(endp->next_announce - lt::clock_type::now());
-        std::chrono::seconds s(secs);
-
-        if (secs <= 0)
-        {
-            variant = "-";
-            break;
-        }
-
-        std::chrono::hours hours_left = std::chrono::duration_cast<std::chrono::hours>(s);
-        std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(s - hours_left);
-        std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(s - hours_left - min_left);
-
-        variant = wxString::Format(
-            "%dh %dm %I64ds",
-            hours_left.count(),
-            min_left.count(),
-            sec_left.count());
-
-        break;
+        
     }
 }
 
