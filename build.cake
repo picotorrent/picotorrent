@@ -26,6 +26,8 @@ var AppXPackage        = string.Format("PicoTorrent-{0}-{1}.appx", Version, plat
 var PortablePackage    = string.Format("PicoTorrent-{0}-{1}.zip", Version, platform);
 var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Version, platform);
 
+var LibrarySuffix      = configuration == "Release" ? "" : "d";
+
 public void SignFile(FilePath file, string description = "")
 {
     Sign(file,
@@ -92,14 +94,27 @@ Task("Setup-Publish-Directory")
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.exe"),
-        BuildDirectory + File("Qt5Core.dll"),
-        BuildDirectory + File("Qt5Gui.dll"),
-        BuildDirectory + File("Qt5Widgets.dll"),
+        MakeAbsolute(BuildDirectory + File("PicoTorrent.exe")),
+        MakeAbsolute(BuildDirectory + File("PicoTorrent.Core.dll")),
+        MakeAbsolute(BuildDirectory + File("PicoTorrent.GeoIP.dll")),
+        MakeAbsolute(BuildDirectory + File("PicoTorrent.Http.dll")),
+
+        MakeAbsolute(BuildDirectory + File("Qt5Core.dll")),
+        MakeAbsolute(BuildDirectory + File("Qt5Gui.dll")),
+        MakeAbsolute(BuildDirectory + File("Qt5Svg.dll")),
+        MakeAbsolute(BuildDirectory + File("Qt5Widgets.dll")),
+
+        MakeAbsolute(BuildDirectory + Directory("imageformats") + File("qico.dll")),
+        MakeAbsolute(BuildDirectory + Directory("platforms")    + File("qwindows.dll")),
+        MakeAbsolute(BuildDirectory + Directory("styles")       + File("qwindowsvistastyle.dll")),
     };
 
     CreateDirectory(PublishDirectory);
-    CopyFiles(files, PublishDirectory);
+
+    CopyFiles(
+        files,            // Source
+        PublishDirectory, // Target
+        true);            // Preserve folder structure
 });
 
 Task("Build-AppX-Package")
@@ -157,7 +172,21 @@ Task("Build-Installer")
         arch = Architecture.X86;
     }
 
-    WiXCandle("./packaging/WiX/PicoTorrent.wxs", new CandleSettings
+    var sourceFiles = new FilePath[]
+    {
+        "./packaging/WiX/PicoTorrent.wxs",
+        "./packaging/WiX/PicoTorrent.Components.wxs",
+        "./packaging/WiX/PicoTorrent.Directories.wxs"
+    };
+
+    var objFiles = new FilePath[]
+    {
+        BuildDirectory + File("PicoTorrent.wixobj"),
+        BuildDirectory + File("PicoTorrent.Components.wixobj"),
+        BuildDirectory + File("PicoTorrent.Directories.wixobj")
+    };
+
+    WiXCandle(sourceFiles, new CandleSettings
     {
         Architecture = arch,
         Defines = new Dictionary<string, string>
@@ -171,7 +200,7 @@ Task("Build-Installer")
         OutputDirectory = BuildDirectory
     });
 
-    WiXLight(BuildDirectory + File("PicoTorrent.wixobj"), new LightSettings
+    WiXLight(objFiles, new LightSettings
     {
         OutputFile = PackagesDirectory + File(Installer)
     });
