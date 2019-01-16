@@ -35,6 +35,7 @@ namespace pt
         QModelIndex index(int, int, QModelIndex const&) const override;
         QVariant headerData(int, Qt::Orientation, int) const override;
         QModelIndex parent(QModelIndex const&) const override;
+        void clearTree();
         void rebuildTree(std::shared_ptr<const libtorrent::torrent_info> ti);
         int rowCount(QModelIndex const&) const override;
 

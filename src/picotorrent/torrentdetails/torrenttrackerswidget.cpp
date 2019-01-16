@@ -37,6 +37,7 @@ TorrentTrackersWidget::TorrentTrackersWidget(std::shared_ptr<pt::SessionState> s
 
 void TorrentTrackersWidget::clear()
 {
+    m_trackersModel->clear();
 }
 
 void TorrentTrackersWidget::refresh()

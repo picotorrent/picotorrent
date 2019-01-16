@@ -150,6 +150,13 @@ PeerListModel::~PeerListModel()
     delete m_flags;
 }
 
+void PeerListModel::clear()
+{
+    this->beginResetModel();
+    m_peers.clear();
+    this->endResetModel();
+}
+
 void PeerListModel::update(lt::torrent_handle const& th)
 {
     std::vector<lt::peer_info> peers;

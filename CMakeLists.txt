@@ -10,6 +10,10 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_CXX_STANDARD 14)
 set(OPENSSL_USE_STATIC_LIBS TRUE)
 
+if(DEFINED ENV{OPENSSL_ROOT_DIR})
+    set(OPENSSL_ROOT_DIR ENV{OPENSSL_ROOT_DIR})
+endif()
+
 find_package(OpenSSL)
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Svg Widgets)
 
@@ -228,6 +232,7 @@ add_executable(
     src/picotorrent/resources.qrc
     src/picotorrent/resources.rc
     src/picotorrent/sessionloader
+    src/picotorrent/sessionstate
     src/picotorrent/sessionunloader
     src/picotorrent/statusbar
     src/picotorrent/systemtrayicon

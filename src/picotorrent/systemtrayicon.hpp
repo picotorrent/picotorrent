@@ -16,11 +16,12 @@ namespace pt
         SystemTrayIcon(QObject* parent);
 
     signals:
-        void addTorrentInvoked();
+        void addTorrentRequested();
+        void addMagnetLinkRequested();
+        void viewPreferencesRequested();
+        void exitRequested();
 
     private:
-        void onAddTorrent();
-
         QMenu* m_menu;
         QAction* m_addTorrentAction;
         QAction* m_addMagnetLinkAction;

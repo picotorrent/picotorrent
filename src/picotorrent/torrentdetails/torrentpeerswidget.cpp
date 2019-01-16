@@ -38,6 +38,7 @@ TorrentPeersWidget::TorrentPeersWidget(std::shared_ptr<pt::SessionState> state, 
 
 void TorrentPeersWidget::clear()
 {
+    m_peersModel->clear();
 }
 
 void TorrentPeersWidget::refresh()

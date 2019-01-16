@@ -7,6 +7,7 @@
 #include <picotorrent/core/utils.hpp>
 
 #include <QClipboard>
+#include <QFileDialog>
 #include <QGuiApplication>
 
 #include "sessionstate.hpp"
@@ -70,14 +71,20 @@ TorrentContextMenu::TorrentContextMenu(QWidget* parent, std::shared_ptr<pt::Sess
     this->addAction(m_copyHash);
     this->addAction(m_openExplorer);
 
-    connect(m_remove,       &QAction::triggered, this, &TorrentContextMenu::remove);
-    connect(m_removeFiles,  &QAction::triggered, this, &TorrentContextMenu::removeFiles);
-    connect(m_queueUp,      &QAction::triggered, this, &TorrentContextMenu::queueUp);
-    connect(m_queueDown,    &QAction::triggered, this, &TorrentContextMenu::queueDown);
-    connect(m_queueTop,     &QAction::triggered, this, &TorrentContextMenu::queueTop);
-    connect(m_queueBottom,  &QAction::triggered, this, &TorrentContextMenu::queueBottom);
-    connect(m_copyHash,     &QAction::triggered, this, &TorrentContextMenu::copyInfoHash);
-    connect(m_openExplorer, &QAction::triggered, this, &TorrentContextMenu::openExplorer);
+    connect(m_pause,           &QAction::triggered, this, &TorrentContextMenu::pause);
+    connect(m_resume,          &QAction::triggered, this, &TorrentContextMenu::resume);
+    connect(m_resumeForce,     &QAction::triggered, this, &TorrentContextMenu::resumeForce);
+    connect(m_forceReannounce, &QAction::triggered, this, &TorrentContextMenu::forceReannounce);
+    connect(m_forceRecheck,    &QAction::triggered, this, &TorrentContextMenu::forceRecheck);
+    connect(m_move,            &QAction::triggered, this, &TorrentContextMenu::move);
+    connect(m_remove,          &QAction::triggered, this, &TorrentContextMenu::remove);
+    connect(m_removeFiles,     &QAction::triggered, this, &TorrentContextMenu::removeFiles);
+    connect(m_queueUp,         &QAction::triggered, this, &TorrentContextMenu::queueUp);
+    connect(m_queueDown,       &QAction::triggered, this, &TorrentContextMenu::queueDown);
+    connect(m_queueTop,        &QAction::triggered, this, &TorrentContextMenu::queueTop);
+    connect(m_queueBottom,     &QAction::triggered, this, &TorrentContextMenu::queueBottom);
+    connect(m_copyHash,        &QAction::triggered, this, &TorrentContextMenu::copyInfoHash);
+    connect(m_openExplorer,    &QAction::triggered, this, &TorrentContextMenu::openExplorer);
 }
 
 void TorrentContextMenu::copyInfoHash()
@@ -93,19 +100,19 @@ void TorrentContextMenu::copyInfoHash()
     clipboard->setText(QString::fromStdString(ss.str().substr(1)));
 }
 
-/*
-void TorrentContextMenu::ForceReannounce(wxCommandEvent& WXUNUSED(event))
+void TorrentContextMenu::forceReannounce()
 {
-    for (lt::torrent_handle& th : m_state->selected_torrents)
+    for (lt::sha1_hash const& hash : m_state->selectedTorrents)
     {
-        th.force_reannounce();
+        m_state->torrents.at(hash).force_reannounce();
     }
 }
 
-void TorrentContextMenu::ForceRecheck(wxCommandEvent& WXUNUSED(event))
+void TorrentContextMenu::forceRecheck()
 {
-    for (lt::torrent_handle& th : m_state->selected_torrents)
+    for (lt::sha1_hash const& hash : m_state->selectedTorrents)
     {
+        lt::torrent_handle& th = m_state->torrents.at(hash);
         th.force_recheck();
 
         lt::torrent_status ts = th.status();
@@ -116,32 +123,36 @@ void TorrentContextMenu::ForceRecheck(wxCommandEvent& WXUNUSED(event))
         if (paused)
         {
             th.resume();
-            m_state->pause_after_checking.push_back(ts.info_hash);
+            m_state->pauseAfterChecking.insert(hash);
         }
     }
 }
 
-void TorrentContextMenu::Move(wxCommandEvent& WXUNUSED(event))
+void TorrentContextMenu::move()
 {
-    wxDirDialog dlg(
-        m_parent,
-        i18n(m_trans, "select_destination"),
-        wxEmptyString,
-        wxDD_DIR_MUST_EXIST);
+    auto dlg = new QFileDialog(m_parent);
+    dlg->setFileMode(QFileDialog::Directory);
+    dlg->setOption(QFileDialog::ShowDirsOnly);
+    dlg->open();
 
-    if (dlg.ShowModal() != wxID_OK)
-    {
-        return;
-    }
+    QObject::connect(
+        dlg, &QDialog::finished,
+        [dlg, this](int result)
+        {
+            if (result)
+            {
+                std::string path = dlg->selectedFiles().first().toStdString();
 
-    std::string path = dlg.GetPath().ToUTF8();
+                for (lt::sha1_hash const& hash : m_state->selectedTorrents)
+                {
+                    m_state->torrents.at(hash).move_storage(path);
+                }
+            }
 
-    for (lt::torrent_handle& th : m_state->selected_torrents)
-    {
-        th.move_storage(path);
-    }
+            dlg->deleteLater();
+        });
 }
-*/
+
 void TorrentContextMenu::openExplorer()
 {
     lt::sha1_hash const& hash = (*m_state->selectedTorrents.begin());
@@ -153,16 +164,17 @@ void TorrentContextMenu::openExplorer()
 
     Utils::openAndSelect(path);
 }
-/*
-void TorrentContextMenu::Pause(wxCommandEvent& WXUNUSED(event))
+
+void TorrentContextMenu::pause()
 {
-    for (lt::torrent_handle& th : m_state->selected_torrents)
+    for (lt::sha1_hash const& hash : m_state->selectedTorrents)
     {
+        lt::torrent_handle& th = m_state->torrents.at(hash);
         th.unset_flags(lt::torrent_flags::auto_managed);
         th.pause(lt::torrent_handle::graceful_pause);
     }
 }
-*/
+
 void TorrentContextMenu::remove()
 {
     for (lt::sha1_hash const& hash : m_state->selectedTorrents)
@@ -185,26 +197,28 @@ void TorrentContextMenu::removeFiles()
     // m_state->selectedTorrents.clear();
 }
 
-/*
-void TorrentContextMenu::Resume(wxCommandEvent& event)
+void TorrentContextMenu::resume()
 {
-    for (lt::torrent_handle& th : m_state->selected_torrents)
+    for (lt::sha1_hash const& hash : m_state->selectedTorrents)
     {
-        switch (event.GetId())
-        {
-        case ptID_RESUME:
-            th.set_flags(lt::torrent_flags::auto_managed);
-            break;
-        case ptID_RESUME_FORCE:
-            th.unset_flags(lt::torrent_flags::auto_managed);
-            break;
-        }
-
+        lt::torrent_handle& th = m_state->torrents.at(hash);
+        th.set_flags(lt::torrent_flags::auto_managed);
         th.clear_error();
         th.resume();
     }
 }
-*/
+
+void TorrentContextMenu::resumeForce()
+{
+    for (lt::sha1_hash const& hash : m_state->selectedTorrents)
+    {
+        lt::torrent_handle& th = m_state->torrents.at(hash);
+        th.unset_flags(lt::torrent_flags::auto_managed);
+        th.clear_error();
+        th.resume();
+    }
+}
+
 void TorrentContextMenu::queueUp()
 {
     for (lt::sha1_hash const& hash : m_state->selectedTorrents)

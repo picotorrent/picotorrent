@@ -5,6 +5,7 @@
 #include <memory>
 
 class QAction;
+class QFileDialog;
 class QWidget;
 
 namespace pt
@@ -20,13 +21,19 @@ namespace pt
 
     private:
         void copyInfoHash();
+        void forceReannounce();
+        void forceRecheck();
+        void move();
         void openExplorer();
+        void pause();
         void queueUp();
         void queueDown();
         void queueTop();
         void queueBottom();
         void remove();
         void removeFiles();
+        void resume();
+        void resumeForce();
 
         QWidget* m_parent;
         std::shared_ptr<SessionState> m_state;

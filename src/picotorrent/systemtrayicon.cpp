@@ -21,13 +21,11 @@ SystemTrayIcon::SystemTrayIcon(QObject* parent)
     m_menu->addSeparator();
     m_menu->addAction(m_exitAction);
 
-    connect(m_addTorrentAction, &QAction::triggered, this, &SystemTrayIcon::onAddTorrent);
+    connect(m_addTorrentAction,    &QAction::triggered, this, &SystemTrayIcon::addTorrentRequested);
+    connect(m_addMagnetLinkAction, &QAction::triggered, this, &SystemTrayIcon::addMagnetLinkRequested);
+    connect(m_preferencesAction,   &QAction::triggered, this, &SystemTrayIcon::viewPreferencesRequested);
+    connect(m_exitAction,          &QAction::triggered, this, &SystemTrayIcon::exitRequested);
 
     this->setContextMenu(m_menu);
     this->setIcon(QIcon(":res/app.ico"));
-}
-
-void SystemTrayIcon::onAddTorrent()
-{
-    emit addTorrentInvoked();
 }

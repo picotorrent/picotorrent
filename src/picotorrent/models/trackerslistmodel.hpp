@@ -23,6 +23,7 @@ namespace pt
         TrackersListModel();
         virtual ~TrackersListModel();
 
+        void clear();
         void update(libtorrent::torrent_handle const& th);
 
         int columnCount(const QModelIndex&) const override;

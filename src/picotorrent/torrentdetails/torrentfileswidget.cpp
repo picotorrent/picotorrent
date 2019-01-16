@@ -48,6 +48,7 @@ TorrentFilesWidget::TorrentFilesWidget(std::shared_ptr<pt::SessionState> state)
 
 void TorrentFilesWidget::clear()
 {
+    m_filesModel->clearTree();
 }
 
 void TorrentFilesWidget::refresh()

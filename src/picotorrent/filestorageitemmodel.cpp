@@ -256,6 +256,14 @@ QModelIndex FileStorageItemModel::parent(QModelIndex const& index) const
     return createIndex(distance, 0, parent);
 }
 
+void FileStorageItemModel::clearTree()
+{
+    this->beginResetModel();
+    m_map.clear();
+    m_root = std::make_shared<FileNode>();
+    this->endResetModel();
+}
+
 void FileStorageItemModel::rebuildTree(std::shared_ptr<const lt::torrent_info> ti)
 {
     this->beginResetModel();

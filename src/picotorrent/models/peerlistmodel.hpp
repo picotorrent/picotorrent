@@ -30,6 +30,7 @@ namespace pt
         PeerListModel(std::shared_ptr<GeoIP> geo);
         virtual ~PeerListModel();
 
+        void clear();
         void update(libtorrent::torrent_handle const& th);
 
         int columnCount(const QModelIndex&) const override;

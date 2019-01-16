@@ -107,7 +107,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
             m_geo.get(), &GeoIP::update);
 
     // System tray
-    connect(m_trayIcon, &SystemTrayIcon::addTorrentInvoked, this, &MainWindow::onFileAddTorrent);
+    connect(m_trayIcon, &SystemTrayIcon::addTorrentRequested, this, &MainWindow::onFileAddTorrent);
 
     auto fileMenu = menuBar()->addMenu(i18n("amp_file"));
     fileMenu->addAction(m_fileAddTorrent);
@@ -350,7 +350,7 @@ void MainWindow::readAlerts()
             {
                 m_torrentListModel->updateTorrent(status);
 
-                if (m_sessionState->selectedTorrents.find(status.info_hash) != m_sessionState->selectedTorrents.end())
+                if (m_sessionState->isSelected(status.info_hash))
                 {
                     m_torrentDetails->refresh();
                 }
@@ -362,6 +362,18 @@ void MainWindow::readAlerts()
         case lt::torrent_removed_alert::alert_type:
         {
             lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
+
+            // If this torrent is selected, remove selection
+            if (m_sessionState->isSelected(tra->info_hash))
+            {
+                m_sessionState->selectedTorrents.erase(tra->info_hash);
+                m_torrentDetails->clear();
+            }
+
+            // TODO: remove from database
+
+            m_torrentListModel->removeTorrent(tra->info_hash);
+            m_sessionState->torrents.erase(tra->info_hash);
             m_statusBar->updateTorrentCount(m_sessionState->torrents.size());
             break;
         }

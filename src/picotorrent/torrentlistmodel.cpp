@@ -31,6 +31,29 @@ void TorrentListModel::addTorrent(lt::torrent_status const& status)
     endInsertRows();
 }
 
+void TorrentListModel::removeTorrent(lt::sha1_hash const& infoHash)
+{
+    auto res = std::find_if(
+        m_status.begin(),
+        m_status.end(),
+        [=](lt::torrent_status const& st)
+        {
+            return st.info_hash == infoHash;
+        });
+
+    if (res == m_status.end())
+    {
+        // Torrent not in model? How?
+        throw std::runtime_error("how?");
+    }
+
+    auto idx = std::distance(m_status.begin(), res);
+
+    beginRemoveRows(QModelIndex(), idx, idx);
+    m_status.erase(res);
+    endRemoveRows();
+}
+
 void TorrentListModel::updateTorrent(lt::torrent_status const& status)
 {
     auto res = std::find_if(

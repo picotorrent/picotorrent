@@ -15,6 +15,13 @@ TrackersListModel::~TrackersListModel()
 {
 }
 
+void TrackersListModel::clear()
+{
+    this->beginResetModel();
+    m_trackers.clear();
+    this->endResetModel();
+}
+
 void TrackersListModel::update(lt::torrent_handle const& th)
 {
     std::vector<lt::announce_entry> trackers = th.trackers();

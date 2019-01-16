@@ -32,6 +32,7 @@ namespace pt
         };
 
         void addTorrent(libtorrent::torrent_status const& status);
+        void removeTorrent(libtorrent::sha1_hash const& infoHash);
         void updateTorrent(libtorrent::torrent_status const& status);
         void appendInfoHashes(QModelIndexList const& indexes, std::unordered_set<libtorrent::sha1_hash>& hashes);
 
