@@ -50,17 +50,16 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, pt::TorrentListModel* mode
         }
     }
 
-    connect(
-        header,
-        &QHeaderView::customContextMenuRequested,
-        this,
-        &TorrentListWidget::showHeaderContextMenu);
+    auto sm = this->selectionModel();
 
-    connect(
-        this,
-        &QTreeView::customContextMenuRequested,
-        this,
-        &TorrentListWidget::showTorrentContextMenu);
+    QObject::connect(header, &QHeaderView::customContextMenuRequested,
+                     this,   &TorrentListWidget::showHeaderContextMenu);
+
+    QObject::connect(this,   &QTreeView::customContextMenuRequested,
+                     this,   &TorrentListWidget::showTorrentContextMenu);
+
+    QObject::connect(sm,     &QItemSelectionModel::selectionChanged,
+                     this,   &TorrentListWidget::torrentSelectionChanged);
 }
 
 TorrentListWidget::~TorrentListWidget()
@@ -132,6 +131,26 @@ void TorrentListWidget::showTorrentContextMenu(QPoint const& point)
     {
         printf("hej");
     }
+}
+
+void TorrentListWidget::torrentSelectionChanged(QItemSelection const& selected, QItemSelection const& deselected)
+{
+    QList<Torrent*> torrents;
+
+    for (QModelIndex const& idx : selected.indexes())
+    {
+        if (idx.column() > 0)
+        {
+            continue;
+        }
+
+        auto variant = this->model()->data(idx, Qt::UserRole);
+        auto torrent = static_cast<Torrent*>(variant.value<void*>());
+
+        torrents.append(torrent);
+    }
+
+    emit torrentsSelected(torrents);
 }
 
 void TorrentListWidget::toggleColumnVisibility(QAction* action)

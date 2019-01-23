@@ -9,19 +9,18 @@ class QTreeView;
 namespace pt
 {
     struct SessionState;
+    class Torrent;
     class TrackersListModel;
 
     class TorrentTrackersWidget : public DetailsTab
     {
     public:
-        TorrentTrackersWidget(std::shared_ptr<SessionState> state);
+        TorrentTrackersWidget();
 
         virtual void clear() override;
-        virtual void refresh() override;
+        virtual void refresh(QList<Torrent*> const& torrents) override;
 
     private:
-        std::shared_ptr<SessionState> m_state;
-
         QTreeView* m_trackersView;
         TrackersListModel* m_trackersModel;
     };

@@ -27,7 +27,7 @@ namespace pt
             _Max
         };
 
-        PeerListModel(std::shared_ptr<GeoIP> geo);
+        PeerListModel(GeoIP* geo);
         virtual ~PeerListModel();
 
         void clear();
@@ -41,8 +41,8 @@ namespace pt
 
     private:
         std::vector<libtorrent::peer_info> m_peers;
-        std::shared_ptr<GeoIP> m_geo;
 
+        GeoIP* m_geo;
         QPixmap* m_flags;
     };
 }

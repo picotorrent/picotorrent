@@ -10,6 +10,7 @@
 #include "../filestorageitemdelegate.hpp"
 #include "../filestorageitemmodel.hpp"
 #include "../sessionstate.hpp"
+#include "../torrent.hpp"
 #include "../translator.hpp"
 
 class MinimumTreeView : public QTreeView
@@ -24,8 +25,7 @@ public:
 namespace lt = libtorrent;
 using pt::TorrentFilesWidget;
 
-TorrentFilesWidget::TorrentFilesWidget(std::shared_ptr<pt::SessionState> state)
-    : m_state(state)
+TorrentFilesWidget::TorrentFilesWidget()
 {
     m_filesModel = new FileStorageItemModel();
 
@@ -51,17 +51,15 @@ void TorrentFilesWidget::clear()
     m_filesModel->clearTree();
 }
 
-void TorrentFilesWidget::refresh()
+void TorrentFilesWidget::refresh(QList<pt::Torrent*> const& torrents)
 {
-    if (m_state->selectedTorrents.size() != 1)
+    if (torrents.count() != 1)
     {
         return;
     }
 
-    auto hash = (*m_state->selectedTorrents.begin());
-    auto th = m_state->torrents.at(hash);
-    auto ts = th.status();
-
+    Torrent* torrent = torrents.at(0);
+/*
     std::shared_ptr<const lt::torrent_info> ti = ts.torrent_file.lock();
 
     if (!ti)
@@ -114,4 +112,5 @@ void TorrentFilesWidget::refresh()
 
         m_currentSelection = hash;
     }
+    */
 }

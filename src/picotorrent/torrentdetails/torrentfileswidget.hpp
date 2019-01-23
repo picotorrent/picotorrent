@@ -16,14 +16,12 @@ namespace pt
     class TorrentFilesWidget : public DetailsTab
     {
     public:
-        TorrentFilesWidget(std::shared_ptr<SessionState> state);
+        TorrentFilesWidget();
 
         virtual void clear() override;
-        virtual void refresh() override;
+        virtual void refresh(QList<Torrent*> const& torrents) override;
 
     private:
-        std::shared_ptr<SessionState> m_state;
-
         libtorrent::sha1_hash m_currentSelection;
         QTreeView* m_filesView;
         FileStorageItemModel* m_filesModel;

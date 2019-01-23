@@ -9,6 +9,7 @@
 
 #include "../elidedlabel.hpp"
 #include "../sessionstate.hpp"
+#include "../torrent.hpp"
 #include "../translator.hpp"
 
 class BoldLabel : public QLabel
@@ -24,8 +25,7 @@ public:
 namespace lt = libtorrent;
 using pt::TorrentOverviewWidget;
 
-TorrentOverviewWidget::TorrentOverviewWidget(std::shared_ptr<pt::SessionState> state)
-    : m_state(state)
+TorrentOverviewWidget::TorrentOverviewWidget()
 {
     m_name = new ElidedLabel();
     m_infoHash = new ElidedLabel();
@@ -60,28 +60,23 @@ void TorrentOverviewWidget::clear()
     m_pieces->setText("-");
 }
 
-void TorrentOverviewWidget::refresh()
+void TorrentOverviewWidget::refresh(QList<pt::Torrent*> const& torrents)
 {
-    if (m_state->selectedTorrents.size() != 1)
+    if (torrents.count() != 1)
     {
         return;
     }
 
-    auto hash = (*m_state->selectedTorrents.begin());
-    auto th = m_state->torrents.at(hash);
-    auto ts = th.status();
+    Torrent* torrent = torrents.at(0);
 
-    std::stringstream ss;
-    ss << hash;
-
-    QString pieces;
+    /*QString pieces;
     pieces.sprintf(
         i18n("d_of_d").toLocal8Bit().data(),
         ts.pieces.count(),
-        ts.pieces.size());
+        ts.pieces.size());*/
 
-    m_name->setText(QString::fromStdString(ts.name));
-    m_savePath->setText(QString::fromStdString(ts.save_path));
-    m_infoHash->setText(QString::fromStdString(ss.str()));
-    m_pieces->setText(pieces);
+    m_name->setText(torrent->name());
+    // TOOD m_savePath->setText(torrent->savePath());
+    m_infoHash->setText(torrent->infoHash());
+    // TODO m_pieces->setText(pieces);
 }

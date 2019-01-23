@@ -219,6 +219,7 @@ add_executable(
     src/picotorrent/aboutdialog
     src/picotorrent/addtorrentdialog
     src/picotorrent/application
+    src/picotorrent/buildinfo
     src/picotorrent/connectionsectionwidget
     src/picotorrent/downloadssectionwidget
     src/picotorrent/elidedlabel
@@ -231,11 +232,11 @@ add_executable(
     src/picotorrent/proxysectionwidget
     src/picotorrent/resources.qrc
     src/picotorrent/resources.rc
-    src/picotorrent/sessionloader
+    src/picotorrent/session
     src/picotorrent/sessionstate
-    src/picotorrent/sessionunloader
     src/picotorrent/statusbar
     src/picotorrent/systemtrayicon
+    src/picotorrent/torrent
     src/picotorrent/torrentcontextmenu
     src/picotorrent/torrentitemdelegate
     src/picotorrent/torrentlistmodel

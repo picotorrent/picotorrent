@@ -25,8 +25,9 @@ struct GeoIP::DatabaseHandle : public pt::MaxMindDatabase
 
 static int OneMonth = 60 * 60 * 24 * 30;
 
-GeoIP::GeoIP(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt::Configuration> cfg)
-    : m_env(env),
+GeoIP::GeoIP(QObject* parent, std::shared_ptr<pt::Environment> env, std::shared_ptr<pt::Configuration> cfg)
+    : QObject(parent),
+    m_env(env),
     m_cfg(cfg)
 {
     m_db = std::make_shared<DatabaseHandle>();

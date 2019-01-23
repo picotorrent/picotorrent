@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QList>
 #include <QTabWidget>
 
 #include <memory>
@@ -11,6 +12,7 @@ namespace pt
 {
     class GeoIP;
     struct SessionState;
+    class Torrent;
     class TorrentFilesWidget;
     class TorrentOverviewWidget;
     class TorrentPeersWidget;
@@ -19,10 +21,10 @@ namespace pt
     class TorrentDetailsWidget : public QTabWidget
     {
     public:
-        TorrentDetailsWidget(QWidget* parent, std::shared_ptr<SessionState> state, std::shared_ptr<GeoIP> geo);
+        TorrentDetailsWidget(QWidget* parent, std::shared_ptr<SessionState> state, GeoIP* geo);
 
-        void clear();
-        void refresh();
+    public slots:
+        void update(QList<Torrent*> const& torrents);
 
     private:
         std::shared_ptr<SessionState> m_state;

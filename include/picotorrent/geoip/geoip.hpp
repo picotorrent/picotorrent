@@ -19,7 +19,7 @@ namespace pt
         Q_OBJECT
 
     public:
-        GeoIP(std::shared_ptr<Environment> env, std::shared_ptr<Configuration> cfg);
+        GeoIP(QObject* parent, std::shared_ptr<Environment> env, std::shared_ptr<Configuration> cfg);
         ~GeoIP();
 
         void load();

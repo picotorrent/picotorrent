@@ -19,8 +19,7 @@ public:
 
 using pt::TorrentTrackersWidget;
 
-TorrentTrackersWidget::TorrentTrackersWidget(std::shared_ptr<pt::SessionState> state)
-    : m_state(state)
+TorrentTrackersWidget::TorrentTrackersWidget()
 {
     m_trackersModel = new TrackersListModel();
     m_trackersView = new MinimumTreeView();
@@ -40,15 +39,14 @@ void TorrentTrackersWidget::clear()
     m_trackersModel->clear();
 }
 
-void TorrentTrackersWidget::refresh()
+void TorrentTrackersWidget::refresh(QList<pt::Torrent*> const& torrents)
 {
-    if (m_state->selectedTorrents.size() != 1)
+    if (torrents.count() != 1)
     {
         return;
     }
 
-    auto hash = (*m_state->selectedTorrents.begin());
-    auto th = m_state->torrents.at(hash);
+    Torrent* torrent = torrents.at(0);
 
-    m_trackersModel->update(th);
+    // m_trackersModel->update(th);
 }

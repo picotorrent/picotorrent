@@ -137,7 +137,7 @@ static const std::map<std::string, QPoint> FlagPositions =
     { "YE", QPoint(72,  150) }, // Yemen
 };
 
-PeerListModel::PeerListModel(std::shared_ptr<pt::GeoIP> geo)
+PeerListModel::PeerListModel(pt::GeoIP* geo)
     : m_geo(geo)
 {
     QIcon icn(":/flags.svg");

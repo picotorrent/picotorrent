@@ -1,6 +1,7 @@
 #include "torrentdetailswidget.hpp"
 
 #include "../sessionstate.hpp"
+#include "../torrent.hpp"
 #include "../translator.hpp"
 
 #include "detailstab.hpp"
@@ -11,14 +12,14 @@
 
 using pt::TorrentDetailsWidget;
 
-TorrentDetailsWidget::TorrentDetailsWidget(QWidget* parent, std::shared_ptr<pt::SessionState> state, std::shared_ptr<pt::GeoIP> geo)
+TorrentDetailsWidget::TorrentDetailsWidget(QWidget* parent, std::shared_ptr<pt::SessionState> state, pt::GeoIP* geo)
     : QTabWidget(parent),
     m_state(state)
 {
-    m_overview = new TorrentOverviewWidget(state);
-    m_files = new TorrentFilesWidget(state);
-    m_peers = new TorrentPeersWidget(state, geo);
-    m_trackers = new TorrentTrackersWidget(state);
+    m_overview = new TorrentOverviewWidget();
+    m_files = new TorrentFilesWidget();
+    m_peers = new TorrentPeersWidget(geo);
+    m_trackers = new TorrentTrackersWidget();
 
     QTabWidget::addTab(m_overview, i18n("overview"));
     QTabWidget::addTab(m_files,    i18n("files"));
@@ -27,21 +28,22 @@ TorrentDetailsWidget::TorrentDetailsWidget(QWidget* parent, std::shared_ptr<pt::
 
     this->setMinimumHeight(140);
     this->setMovable(false);
-
-    // Refresh when we change tab
-    connect(this, &QTabWidget::currentChanged, [=] { this->refresh(); });
 }
 
-void TorrentDetailsWidget::clear()
+void TorrentDetailsWidget::update(QList<pt::Torrent*> const& torrents)
 {
-    QWidget* currWidget = this->currentWidget();
-    DetailsTab* tab = dynamic_cast<DetailsTab*>(currWidget);
-    tab->clear();
-}
+    for (int i = 0; i < this->count(); i++)
+    {
+        QWidget* currWidget = this->widget(i);
+        DetailsTab* tab = dynamic_cast<DetailsTab*>(currWidget);
 
-void TorrentDetailsWidget::refresh()
-{
-    QWidget* currWidget = this->currentWidget();
-    DetailsTab* tab = dynamic_cast<DetailsTab*>(currWidget);
-    tab->refresh();
+        if (torrents.count() > 0)
+        {
+            tab->refresh(torrents);
+        }
+        else
+        {
+            tab->clear();
+        }
+    }
 }

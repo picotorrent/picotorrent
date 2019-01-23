@@ -4,75 +4,61 @@
 #include <picotorrent/core/utils.hpp>
 #include <QDateTime>
 
+#include "torrent.hpp"
 #include "translator.hpp"
 
 namespace lt = libtorrent;
 using pt::TorrentListModel;
 
-void TorrentListModel::appendInfoHashes(QModelIndexList const& indexes, std::unordered_set<lt::sha1_hash>& hashes)
+void TorrentListModel::addTorrent(pt::Torrent* torrent)
 {
-    for (QModelIndex const& idx : indexes)
-    {
-        if (idx.column() > 0)
-        {
-            continue;
-        }
-
-        hashes.insert(m_status.at(idx.row()).info_hash);
-    }
-}
-
-void TorrentListModel::addTorrent(lt::torrent_status const& status)
-{
-    int nextIndex = static_cast<int>(m_status.size());
+    int nextIndex = static_cast<int>(m_torrents.size());
 
     beginInsertRows(QModelIndex(), nextIndex, nextIndex);
-    m_status.push_back(status);
+    m_torrents.push_back(torrent);
     endInsertRows();
 }
 
-void TorrentListModel::removeTorrent(lt::sha1_hash const& infoHash)
+void TorrentListModel::removeTorrent(pt::Torrent* torrent)
 {
     auto res = std::find_if(
-        m_status.begin(),
-        m_status.end(),
-        [=](lt::torrent_status const& st)
+        m_torrents.begin(),
+        m_torrents.end(),
+        [=](Torrent* t)
         {
-            return st.info_hash == infoHash;
+            return t == torrent;
         });
 
-    if (res == m_status.end())
+    if (res == m_torrents.end())
     {
         // Torrent not in model? How?
         throw std::runtime_error("how?");
     }
 
-    auto idx = std::distance(m_status.begin(), res);
+    auto idx = std::distance(m_torrents.begin(), res);
 
     beginRemoveRows(QModelIndex(), idx, idx);
-    m_status.erase(res);
+    m_torrents.erase(res);
     endRemoveRows();
 }
 
-void TorrentListModel::updateTorrent(lt::torrent_status const& status)
+void TorrentListModel::updateTorrent(pt::Torrent* torrent)
 {
     auto res = std::find_if(
-        m_status.begin(),
-        m_status.end(),
-        [=](lt::torrent_status const& st)
+        m_torrents.begin(),
+        m_torrents.end(),
+        [=](Torrent* t)
         {
-            return st.info_hash == status.info_hash;
+            return t == torrent;
         });
 
-    if (res == m_status.end())
+    if (res == m_torrents.end())
     {
         // Torrent not in model? How?
         throw std::runtime_error("how?");
     }
 
-    auto idx = std::distance(m_status.begin(), res);
-
-    m_status.at(idx) = status;
+    auto idx = std::distance(m_torrents.begin(), res);
 
     emit dataChanged(
         index(idx, 0),
@@ -91,8 +77,7 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         return QVariant();
     }
 
-    lt::torrent_status const& status = m_status.at(index.row());
-    bool paused = (status.flags & lt::torrent_flags::paused) == lt::torrent_flags::paused;
+    Torrent* torrent = m_torrents.at(index.row());
 
     switch (role)
     {
@@ -101,135 +86,67 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         switch (index.column())
         {
         case Columns::Name:
-        {
-            if (status.name.empty())
-            {
-                std::stringstream ss;
-                ss << status.info_hash;
-                return QString::fromStdString(ss.str());
-            }
-
-            return QString::fromStdString(status.name);
-        }
+            return torrent->name();
 
         case Columns::QueuePosition:
-        {
-            int qp = static_cast<int>(status.queue_position);
-
-            if (qp < 0)
-            {
-                return "-";
-            }
-
-            return qp + 1;
-        }
+            return torrent->queuePosition() < 0
+                ? QVariant("-")
+                : QVariant(torrent->queuePosition() + 1);
 
         case Columns::Size:
-            return QString::fromStdWString(Utils::toHumanFileSize(status.total_wanted));
+            return torrent->sizeTotalFormatted();
 
         case Columns::Progress:
-            return status.progress;
+            return torrent->progress();
 
         case Columns::ETA:
-        {
-            if (paused)
-            {
-                return "-";
-            }
+            // TODO: check if paused
+            return torrent->eta().count() <= 0
+                ? "-"
+                : torrent->etaFormatted();
 
-            std::chrono::seconds secs = getEta(status);
-
-            if (secs.count() <= 0)
-            {
-                return "-";
-            }
-
-            std::chrono::hours hours_left = std::chrono::duration_cast<std::chrono::hours>(secs);
-            std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(secs - hours_left);
-            std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(secs - hours_left - min_left);
-
-            return QString("%1h %2m %3s").arg(
-                QString::number(hours_left.count()),
-                QString::number(min_left.count()),
-                QString::number(sec_left.count()));
-        }
         case Columns::DownloadSpeed:
-        {
-            if (status.download_payload_rate > 0 && !paused)
-            {
-                return QString("%1/s").arg(Utils::toHumanFileSize(status.download_payload_rate));
-            }
+            // TODO: check if paused
+            return torrent->downloadRate() > 0
+                ? torrent->downloadRateFormatted()
+                : "-";
 
-            return "-";
-        }
         case Columns::UploadSpeed:
-        {
-            if (status.upload_payload_rate > 0 && !paused)
-            {
-                return QString("%1/s").arg(Utils::toHumanFileSize(status.upload_payload_rate));
-            }
+            // TODO: check if paused
+            return torrent->downloadRate() > 0
+                ? torrent->downloadRateFormatted()
+                : "-";
 
-            return "-";
-        }
         case Columns::Availability:
-        {
-            if (status.distributed_copies >= 0 && !paused)
-            {
-                QString str;
-                str.sprintf("%.3f", status.distributed_copies);
-                return str;
-            }
+            // TODO: check if paused
+            return torrent->availability() >= 0
+                ? torrent->availabilityFormatted()
+                : "-";
 
-            return "-";
-        }
         case Columns::Ratio:
-        {
-            float ratio = getRatio(status);
-            QString str;
-            str.sprintf("%.3f", ratio);
-            return str;
-        }
+            return torrent->ratioFormatted();
+
         case Columns::Seeds:
-        {
-            if (paused)
-            {
-                return "-";
-            }
-
-            QString str;
-            str.sprintf(
+            // TODO: check if paused
+            return QString::asprintf(
                 i18n("d_of_d").toLocal8Bit().data(),
-                status.num_seeds,
-                status.list_seeds);
-            return str;
-        }
+                torrent->seedsCurrent(),
+                torrent->seedsTotal());
+
         case Columns::Peers:
-        {
-            if (paused)
-            {
-                return "-";
-            }
-
-            QString str;
-            str.sprintf(
+            // TODO: check if paused
+            return QString::asprintf(
                 i18n("d_of_d").toLocal8Bit().data(),
-                status.num_peers - status.num_seeds,
-                status.list_peers - status.list_seeds);
-            return str;
-        }
-        case Columns::AddedOn:
-        {
-            return QDateTime::fromSecsSinceEpoch(status.added_time);
-        }
-        case Columns::CompletedOn:
-        {
-            if (status.completed_time > 0)
-            {
-                return QDateTime::fromSecsSinceEpoch(status.completed_time);
-            }
+                torrent->peersCurrent(),
+                torrent->peersTotal());
 
-            return "-";
-        }
+        case Columns::AddedOn:
+            return torrent->addedOn();
+
+        case Columns::CompletedOn:
+            return torrent->completedOn().isNull()
+                ? QVariant("-")
+                : QVariant(torrent->completedOn());
         }
     }
     case Qt::TextAlignmentRole:
@@ -256,6 +173,8 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         }
         break;
     }
+    case Qt::UserRole:
+        return QVariant::fromValue(static_cast<void*>(torrent));
     }
 
     return QVariant();
@@ -343,29 +262,5 @@ QModelIndex TorrentListModel::parent(const QModelIndex&)
 
 int TorrentListModel::rowCount(const QModelIndex&) const
 {
-    return static_cast<int>(m_status.size());
+    return static_cast<int>(m_torrents.size());
 }
-
-
-std::chrono::seconds TorrentListModel::getEta(const lt::torrent_status& ts) const
-{
-    int64_t remaining_bytes = ts.total_wanted - ts.total_wanted_done;
-
-    if (remaining_bytes > 0 && ts.download_payload_rate > 0)
-    {
-        return std::chrono::seconds(remaining_bytes / ts.download_payload_rate);
-    }
-
-    return std::chrono::seconds(0);
-}
-
-float TorrentListModel::getRatio(const lt::torrent_status& ts) const
-{
-    if (ts.all_time_download > 0)
-    {
-        return static_cast<float>(ts.all_time_upload) / static_cast<float>(ts.all_time_download);
-    }
-
-    return 0;
-}
-

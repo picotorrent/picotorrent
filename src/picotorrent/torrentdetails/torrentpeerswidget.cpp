@@ -20,8 +20,7 @@ public:
 
 using pt::TorrentPeersWidget;
 
-TorrentPeersWidget::TorrentPeersWidget(std::shared_ptr<pt::SessionState> state, std::shared_ptr<pt::GeoIP> geo)
-    : m_state(state)
+TorrentPeersWidget::TorrentPeersWidget(pt::GeoIP* geo)
 {
     m_peersModel = new PeerListModel(geo);
     m_peersView = new MinimumTreeView();
@@ -41,15 +40,14 @@ void TorrentPeersWidget::clear()
     m_peersModel->clear();
 }
 
-void TorrentPeersWidget::refresh()
+void TorrentPeersWidget::refresh(QList<pt::Torrent*> const& torrents)
 {
-    if (m_state->selectedTorrents.size() != 1)
+    if (torrents.count() != 1)
     {
         return;
     }
 
-    auto hash = (*m_state->selectedTorrents.begin());
-    auto th = m_state->torrents.at(hash);
+    Torrent* torrent = torrents.at(0);
 
-    m_peersModel->update(th);
+    // m_peersModel->update(th);
 }

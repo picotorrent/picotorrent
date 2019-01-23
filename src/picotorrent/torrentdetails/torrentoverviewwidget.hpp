@@ -8,18 +8,17 @@ namespace pt
 {
     class ElidedLabel;
     struct SessionState;
+    class Torrent;
 
     class TorrentOverviewWidget : public DetailsTab
     {
     public:
-        TorrentOverviewWidget(std::shared_ptr<SessionState> state);
+        TorrentOverviewWidget();
 
         virtual void clear() override;
-        virtual void refresh() override;
+        virtual void refresh(QList<Torrent*> const& torrents) override;
 
     private:
-        std::shared_ptr<SessionState> m_state;
-
         ElidedLabel* m_name;
         ElidedLabel* m_infoHash;
         ElidedLabel* m_savePath;
