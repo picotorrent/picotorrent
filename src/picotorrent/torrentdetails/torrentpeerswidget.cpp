@@ -23,7 +23,8 @@ using pt::TorrentPeersWidget;
 TorrentPeersWidget::TorrentPeersWidget(pt::GeoIP* geo)
 {
     m_peersModel = new PeerListModel(geo);
-    m_peersView = new MinimumTreeView();
+    m_peersView  = new MinimumTreeView();
+
     m_peersView->setModel(m_peersModel);
     m_peersView->setRootIsDecorated(false);
 
@@ -40,14 +41,12 @@ void TorrentPeersWidget::clear()
     m_peersModel->clear();
 }
 
-void TorrentPeersWidget::refresh(QList<pt::Torrent*> const& torrents)
+void TorrentPeersWidget::refresh(QList<pt::TorrentHandle*> const& torrents)
 {
     if (torrents.count() != 1)
     {
         return;
     }
 
-    Torrent* torrent = torrents.at(0);
-
-    // m_peersModel->update(th);
+    m_peersModel->update(torrents.at(0));
 }

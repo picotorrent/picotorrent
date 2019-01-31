@@ -5,6 +5,7 @@
 #include <QHeaderView>
 #include <QMenu>
 
+#include "torrenthandle.hpp"
 #include "torrentitemdelegate.hpp"
 #include "torrentlistmodel.hpp"
 
@@ -54,9 +55,6 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, pt::TorrentListModel* mode
 
     QObject::connect(header, &QHeaderView::customContextMenuRequested,
                      this,   &TorrentListWidget::showHeaderContextMenu);
-
-    QObject::connect(this,   &QTreeView::customContextMenuRequested,
-                     this,   &TorrentListWidget::showTorrentContextMenu);
 
     QObject::connect(sm,     &QItemSelectionModel::selectionChanged,
                      this,   &TorrentListWidget::torrentSelectionChanged);
@@ -123,19 +121,9 @@ void TorrentListWidget::showHeaderContextMenu(QPoint const& point)
     menu.exec(header->viewport()->mapToGlobal(point));
 }
 
-void TorrentListWidget::showTorrentContextMenu(QPoint const& point)
-{
-    auto sel = this->selectedIndexes();
-
-    if (sel.size() > 0)
-    {
-        printf("hej");
-    }
-}
-
 void TorrentListWidget::torrentSelectionChanged(QItemSelection const& selected, QItemSelection const& deselected)
 {
-    QList<Torrent*> torrents;
+    QList<TorrentHandle*> torrents;
 
     for (QModelIndex const& idx : selected.indexes())
     {
@@ -145,7 +133,7 @@ void TorrentListWidget::torrentSelectionChanged(QItemSelection const& selected, 
         }
 
         auto variant = this->model()->data(idx, Qt::UserRole);
-        auto torrent = static_cast<Torrent*>(variant.value<void*>());
+        auto torrent = static_cast<TorrentHandle*>(variant.value<void*>());
 
         torrents.append(torrent);
     }

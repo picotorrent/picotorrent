@@ -45,30 +45,30 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_db(db),
     m_cfg(cfg)
 {
-    m_session = new Session(this, db, cfg);
-    m_geo = new GeoIP(this, m_env, m_cfg);
-
-    m_torrentDetails = new TorrentDetailsWidget(this, m_sessionState, m_geo);
-
+    m_session          = new Session(this, db, cfg);
+    m_geo              = new GeoIP(this, m_env, m_cfg);
+    m_splitter         = new QSplitter(this);
+    m_statusBar        = new StatusBar(this);
+    m_trayIcon         = new SystemTrayIcon(this);
+    m_torrentDetails   = new TorrentDetailsWidget(this, m_sessionState, m_geo);
     m_torrentListModel = new TorrentListModel();
-    m_torrentList = new TorrentListWidget(this, m_torrentListModel, m_db);
-    m_torrentList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
+    m_torrentList      = new TorrentListWidget(this, m_torrentListModel, m_db);
 
-    m_splitter = new QSplitter();
+    // Setup splitter
     m_splitter->addWidget(m_torrentList);
     m_splitter->addWidget(m_torrentDetails);
     m_splitter->setCollapsible(0, false);
     m_splitter->setOrientation(Qt::Vertical);
 
-    m_statusBar = new StatusBar(this);
-    m_trayIcon = new SystemTrayIcon(this);
+    // Setup torrent list
+    m_torrentList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
 
     /* Create actions */
-    m_fileAddTorrent = new QAction(i18n("amp_add_torrent"), this);
+    m_fileAddTorrent     = new QAction(i18n("amp_add_torrent"), this);
     m_fileAddMagnetLinks = new QAction(i18n("amp_add_magnet_link_s"), this);
-    m_fileExit = new QAction(i18n("amp_exit"), this);
-    m_viewPreferences = new QAction(i18n("amp_preferences"), this);
-    m_helpAbout = new QAction(i18n("amp_about"), this);
+    m_fileExit           = new QAction(i18n("amp_exit"), this);
+    m_viewPreferences    = new QAction(i18n("amp_preferences"), this);
+    m_helpAbout          = new QAction(i18n("amp_about"), this);
 
     // Session signals
     QObject::connect(m_session,          &Session::torrentAdded,
@@ -79,6 +79,15 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
 
     QObject::connect(m_session,          &Session::torrentUpdated,
                      m_torrentListModel, &TorrentListModel::updateTorrent);
+
+    QObject::connect(m_session,          &Session::torrentUpdated,
+                     [this](TorrentHandle* torrent)
+                     {
+                         if (m_selectedTorrents.contains(torrent))
+                         {
+                             m_torrentDetails->update({ torrent });
+                         }
+                     });
 
     // Main menu signals
     QObject::connect(m_fileAddTorrent,  &QAction::triggered,
@@ -96,6 +105,13 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     // Torrent list signals
     QObject::connect(m_torrentList,     &TorrentListWidget::torrentsSelected,
                      m_torrentDetails,  &TorrentDetailsWidget::update);
+
+    QObject::connect(m_torrentList,     &TorrentListWidget::torrentsSelected,
+                     [this](QList<TorrentHandle*> const& torrents)
+                     {
+                         m_selectedTorrents.clear();
+                         m_selectedTorrents.append(torrents);
+                     });
 
     connect(
         m_torrentList,
@@ -219,7 +235,7 @@ void MainWindow::onTorrentContextMenu(QPoint const& point)
 
     if (idx.isValid())
     {
-        auto menu = new TorrentContextMenu(this, m_sessionState);
+        auto menu = new TorrentContextMenu(this, m_selectedTorrents);
         menu->popup(m_torrentList->viewport()->mapToGlobal(point));
 
         QObject::connect(menu, &QMenu::aboutToHide,

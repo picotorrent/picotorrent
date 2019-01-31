@@ -16,7 +16,7 @@ namespace pt
         TorrentOverviewWidget();
 
         virtual void clear() override;
-        virtual void refresh(QList<Torrent*> const& torrents) override;
+        virtual void refresh(QList<TorrentHandle*> const& torrents) override;
 
     private:
         ElidedLabel* m_name;

@@ -22,6 +22,7 @@ namespace pt
     class StatusBar;
     class SystemTrayIcon;
     class TorrentDetailsWidget;
+    class TorrentHandle;
     class TorrentListModel;
     class TorrentListWidget;
 
@@ -52,6 +53,8 @@ namespace pt
         QAction* m_fileExit;
         QAction* m_viewPreferences;
         QAction* m_helpAbout;
+
+        QList<TorrentHandle*> m_selectedTorrents;
 
         QSplitter* m_splitter;
 

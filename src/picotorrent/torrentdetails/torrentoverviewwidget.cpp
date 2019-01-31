@@ -9,7 +9,8 @@
 
 #include "../elidedlabel.hpp"
 #include "../sessionstate.hpp"
-#include "../torrent.hpp"
+#include "../torrenthandle.hpp"
+#include "../torrentstatus.hpp"
 #include "../translator.hpp"
 
 class BoldLabel : public QLabel
@@ -27,10 +28,10 @@ using pt::TorrentOverviewWidget;
 
 TorrentOverviewWidget::TorrentOverviewWidget()
 {
-    m_name = new ElidedLabel();
+    m_name     = new ElidedLabel();
     m_infoHash = new ElidedLabel();
     m_savePath = new ElidedLabel();
-    m_pieces = new ElidedLabel();
+    m_pieces   = new ElidedLabel();
 
     auto grid = new QGridLayout();
     grid->addWidget(new BoldLabel(i18n("name")),      0, 0);
@@ -60,23 +61,23 @@ void TorrentOverviewWidget::clear()
     m_pieces->setText("-");
 }
 
-void TorrentOverviewWidget::refresh(QList<pt::Torrent*> const& torrents)
+void TorrentOverviewWidget::refresh(QList<pt::TorrentHandle*> const& torrents)
 {
     if (torrents.count() != 1)
     {
         return;
     }
 
-    Torrent* torrent = torrents.at(0);
+    TorrentHandle* torrent = torrents.at(0);
+    TorrentStatus  status   = torrent->status();
 
-    /*QString pieces;
-    pieces.sprintf(
+    QString pieces = QString::asprintf(
         i18n("d_of_d").toLocal8Bit().data(),
-        ts.pieces.count(),
-        ts.pieces.size());*/
+        status.pieces.count(),
+        status.pieces.size());
 
-    m_name->setText(torrent->name());
-    // TOOD m_savePath->setText(torrent->savePath());
-    m_infoHash->setText(torrent->infoHash());
-    // TODO m_pieces->setText(pieces);
+    m_name->setText(status.name);
+    m_savePath->setText(status.savePath);
+    m_infoHash->setText(status.infoHash);
+    m_pieces->setText(pieces);
 }

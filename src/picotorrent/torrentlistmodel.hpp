@@ -9,10 +9,10 @@
 #include <libtorrent/sha1_hash.hpp>
 #include <libtorrent/torrent_status.hpp>
 
-#include "torrent.hpp"
-
 namespace pt
 {
+    class TorrentHandle;
+
     class TorrentListModel : public QAbstractListModel
     {
     public:
@@ -34,6 +34,9 @@ namespace pt
             _Max
         };
 
+        TorrentListModel();
+        virtual ~TorrentListModel();
+
         int columnCount(const QModelIndex&) const override;
         QVariant data(const QModelIndex&, int role) const override;
         QVariant headerData(int section, Qt::Orientation, int role) const override;
@@ -41,12 +44,11 @@ namespace pt
         int rowCount(const QModelIndex&) const override;
 
     public slots:
-        void addTorrent(Torrent* torrent);
-        void removeTorrent(Torrent* torrent);
-        void updateTorrent(Torrent* torrent);
+        void addTorrent(TorrentHandle* torrent);
+        void removeTorrent(TorrentHandle* torrent);
+        void updateTorrent(TorrentHandle* torrent);
 
     private:
-        std::vector<libtorrent::torrent_status> m_status;
-        std::vector<Torrent*> m_torrents;
+        std::vector<TorrentHandle*> m_torrents;
     };
 }

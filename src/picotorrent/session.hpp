@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <libtorrent/fwd.hpp>
+#include <libtorrent/session_types.hpp>
 #include <libtorrent/sha1_hash.hpp>
 
 class QTimer;
@@ -14,7 +15,7 @@ namespace pt
 {
     class Configuration;
     class Database;
-    class Torrent;
+    class TorrentHandle;
 
     class Session : public QObject
     {
@@ -25,14 +26,15 @@ namespace pt
         virtual ~Session();
 
         void addTorrent(libtorrent::add_torrent_params const& params);
+        void removeTorrent(TorrentHandle* handle, libtorrent::remove_flags_t flags = {});
 
     public slots:
         void reloadSettings();
 
     signals:
-        void torrentAdded(Torrent* torrent);
-        void torrentRemoved(Torrent* torrent);
-        void torrentUpdated(Torrent* torrent);
+        void torrentAdded(TorrentHandle* torrent);
+        void torrentRemoved(TorrentHandle* torrent);
+        void torrentUpdated(TorrentHandle* torrent);
 
     private slots:
         void readAlerts();
@@ -47,7 +49,8 @@ namespace pt
         std::unique_ptr<libtorrent::session> m_session;
         std::shared_ptr<Database> m_db;
         std::shared_ptr<Configuration> m_cfg;
-        std::map<libtorrent::sha1_hash, Torrent*> m_torrents;
+
+        std::map<libtorrent::sha1_hash, TorrentHandle*> m_torrents;
 
         QTimer* m_updateTimer;
     };

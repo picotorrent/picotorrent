@@ -12,6 +12,7 @@ class QPixmap;
 namespace pt
 {
     class GeoIP;
+    class TorrentHandle;
 
     class PeerListModel : public QAbstractListModel
     {
@@ -31,7 +32,7 @@ namespace pt
         virtual ~PeerListModel();
 
         void clear();
-        void update(libtorrent::torrent_handle const& th);
+        void update(TorrentHandle* torrent);
 
         int columnCount(const QModelIndex&) const override;
         QVariant data(const QModelIndex&, int role) const override;

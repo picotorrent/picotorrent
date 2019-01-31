@@ -10,7 +10,7 @@ namespace pt
 {
     class GeoIP;
     class PeerListModel;
-    class Torrent;
+    class TorrentHandle;
 
     class TorrentPeersWidget : public DetailsTab
     {
@@ -18,7 +18,7 @@ namespace pt
         TorrentPeersWidget(GeoIP* geo);
 
         virtual void clear() override;
-        virtual void refresh(QList<Torrent*> const& torrents) override;
+        virtual void refresh(QList<TorrentHandle*> const& torrents) override;
 
     private:
         QTreeView* m_peersView;

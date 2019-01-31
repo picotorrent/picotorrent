@@ -24,7 +24,7 @@
 
 #include "buildinfo.hpp"
 #include "semver.hpp"
-#include "torrent.hpp"
+#include "torrenthandle.hpp"
 
 namespace lt = libtorrent;
 using pt::Session;
@@ -167,6 +167,11 @@ void Session::addTorrent(lt::add_torrent_params const& params)
     m_session->async_add_torrent(params);
 }
 
+void Session::removeTorrent(pt::TorrentHandle* torrent, lt::remove_flags_t flags)
+{
+    m_session->remove_torrent(torrent->wrappedHandle(), flags);
+}
+
 void Session::reloadSettings()
 {
     lt::settings_pack settings = getSettingsPack(m_cfg);
@@ -276,11 +281,11 @@ void Session::readAlerts()
             m_statusBar->updateTorrentCount(m_sessionState->torrents.size());
             m_torrentListModel->addTorrent(ts);*/
 
-            auto torrent = new Torrent(this, ata->handle);
+            auto handle = new TorrentHandle(this, ata->handle);
 
-            m_torrents.insert({ ata->handle.info_hash(), torrent });
+            m_torrents.insert({ ata->handle.info_hash(), handle });
 
-            emit torrentAdded(torrent);
+            emit torrentAdded(handle);
 
             break;
         }
@@ -327,9 +332,9 @@ void Session::readAlerts()
 
             for (lt::torrent_status const& status : sua->status)
             {
-                auto torrent = m_torrents.at(status.info_hash);
-                torrent->updateStatus(status);
-                emit torrentUpdated(torrent);
+                auto handle = m_torrents.at(status.info_hash);
+                handle->updateStatus(status);
+                emit torrentUpdated(handle);
             }
 
             break;
@@ -339,11 +344,11 @@ void Session::readAlerts()
         {
             lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
 
-            auto torrent = m_torrents.at(tra->info_hash);
+            auto handle = m_torrents.at(tra->info_hash);
             m_torrents.erase(tra->info_hash);
 
-            emit torrentRemoved(torrent);
-            torrent->deleteLater();
+            emit torrentRemoved(handle);
+            handle->deleteLater();
 
             /*// If this torrent is selected, remove selection
             if (m_sessionState->isSelected(tra->info_hash))

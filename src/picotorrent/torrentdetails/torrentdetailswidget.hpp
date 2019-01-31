@@ -12,7 +12,7 @@ namespace pt
 {
     class GeoIP;
     struct SessionState;
-    class Torrent;
+    class TorrentHandle;
     class TorrentFilesWidget;
     class TorrentOverviewWidget;
     class TorrentPeersWidget;
@@ -24,7 +24,7 @@ namespace pt
         TorrentDetailsWidget(QWidget* parent, std::shared_ptr<SessionState> state, GeoIP* geo);
 
     public slots:
-        void update(QList<Torrent*> const& torrents);
+        void update(QList<TorrentHandle*> const& torrents);
 
     private:
         std::shared_ptr<SessionState> m_state;

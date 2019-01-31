@@ -3,6 +3,7 @@
 #include <libtorrent/announce_entry.hpp>
 #include <libtorrent/torrent_handle.hpp>
 
+#include "../torrenthandle.hpp"
 #include "../translator.hpp"
 
 using pt::TrackersListModel;
@@ -22,9 +23,9 @@ void TrackersListModel::clear()
     this->endResetModel();
 }
 
-void TrackersListModel::update(lt::torrent_handle const& th)
+void TrackersListModel::update(pt::TorrentHandle* torrent)
 {
-    std::vector<lt::announce_entry> trackers = th.trackers();
+    std::vector<lt::announce_entry> trackers = torrent->trackers();
 
     // Remove old data
     for (auto it = m_trackers.begin(); it != m_trackers.end();)

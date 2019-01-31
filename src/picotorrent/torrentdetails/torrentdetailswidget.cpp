@@ -1,7 +1,7 @@
 #include "torrentdetailswidget.hpp"
 
 #include "../sessionstate.hpp"
-#include "../torrent.hpp"
+#include "../torrenthandle.hpp"
 #include "../translator.hpp"
 
 #include "detailstab.hpp"
@@ -17,8 +17,8 @@ TorrentDetailsWidget::TorrentDetailsWidget(QWidget* parent, std::shared_ptr<pt::
     m_state(state)
 {
     m_overview = new TorrentOverviewWidget();
-    m_files = new TorrentFilesWidget();
-    m_peers = new TorrentPeersWidget(geo);
+    m_files    = new TorrentFilesWidget();
+    m_peers    = new TorrentPeersWidget(geo);
     m_trackers = new TorrentTrackersWidget();
 
     QTabWidget::addTab(m_overview, i18n("overview"));
@@ -30,7 +30,7 @@ TorrentDetailsWidget::TorrentDetailsWidget(QWidget* parent, std::shared_ptr<pt::
     this->setMovable(false);
 }
 
-void TorrentDetailsWidget::update(QList<pt::Torrent*> const& torrents)
+void TorrentDetailsWidget::update(QList<pt::TorrentHandle*> const& torrents)
 {
     for (int i = 0; i < this->count(); i++)
     {

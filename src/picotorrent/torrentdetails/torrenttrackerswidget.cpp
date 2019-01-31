@@ -22,7 +22,7 @@ using pt::TorrentTrackersWidget;
 TorrentTrackersWidget::TorrentTrackersWidget()
 {
     m_trackersModel = new TrackersListModel();
-    m_trackersView = new MinimumTreeView();
+    m_trackersView  = new MinimumTreeView();
     m_trackersView->setModel(m_trackersModel);
     m_trackersView->setRootIsDecorated(false);
 
@@ -39,14 +39,12 @@ void TorrentTrackersWidget::clear()
     m_trackersModel->clear();
 }
 
-void TorrentTrackersWidget::refresh(QList<pt::Torrent*> const& torrents)
+void TorrentTrackersWidget::refresh(QList<pt::TorrentHandle*> const& torrents)
 {
     if (torrents.count() != 1)
     {
         return;
     }
 
-    Torrent* torrent = torrents.at(0);
-
-    // m_trackersModel->update(th);
+    m_trackersModel->update(torrents.at(0));
 }

@@ -8,6 +8,8 @@
 
 namespace pt
 {
+    class TorrentHandle;
+
     class TrackersListModel : public QAbstractListModel
     {
     public:
@@ -24,7 +26,7 @@ namespace pt
         virtual ~TrackersListModel();
 
         void clear();
-        void update(libtorrent::torrent_handle const& th);
+        void update(TorrentHandle* torrent);
 
         int columnCount(const QModelIndex&) const override;
         QVariant data(const QModelIndex&, int role) const override;

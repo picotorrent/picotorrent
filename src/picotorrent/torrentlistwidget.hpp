@@ -5,6 +5,8 @@
 #include <QList>
 #include <QTreeView>
 
+#include "torrenthandle.hpp"
+
 class QAction;
 class QItemSelection;
 class QPoint;
@@ -12,7 +14,6 @@ class QPoint;
 namespace pt
 {
     class Database;
-    class Torrent;
     class TorrentListModel;
 
     class TorrentListWidget : public QTreeView
@@ -21,19 +22,18 @@ namespace pt
 
     public:
         TorrentListWidget(QWidget* parent, TorrentListModel* model, std::shared_ptr<Database> db);
-        ~TorrentListWidget();
+        virtual ~TorrentListWidget();
 
         QSize sizeHint() const override;
 
     signals:
-        void torrentsSelected(QList<Torrent*> torrents);
+        void torrentsSelected(QList<TorrentHandle*> torrents);
 
     private slots:
         void torrentSelectionChanged(QItemSelection const& selected, QItemSelection const& deselected);
 
     private:
         void showHeaderContextMenu(QPoint const& point);
-        void showTorrentContextMenu(QPoint const& point);
         void toggleColumnVisibility(QAction* action);
 
         std::shared_ptr<Database> m_db;

@@ -9,7 +9,7 @@ class QTreeView;
 namespace pt
 {
     struct SessionState;
-    class Torrent;
+    class TorrentHandle;
     class TrackersListModel;
 
     class TorrentTrackersWidget : public DetailsTab
@@ -18,7 +18,7 @@ namespace pt
         TorrentTrackersWidget();
 
         virtual void clear() override;
-        virtual void refresh(QList<Torrent*> const& torrents) override;
+        virtual void refresh(QList<TorrentHandle*> const& torrents) override;
 
     private:
         QTreeView* m_trackersView;

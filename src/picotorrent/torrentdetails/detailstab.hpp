@@ -5,11 +5,11 @@
 
 namespace pt
 {
-    class Torrent;
+    class TorrentHandle;
 
     struct DetailsTab : public QWidget
     {
         virtual void clear() = 0;
-        virtual void refresh(QList<Torrent*> const& torrents) = 0;
+        virtual void refresh(QList<TorrentHandle*> const& torrents) = 0;
     };
 }

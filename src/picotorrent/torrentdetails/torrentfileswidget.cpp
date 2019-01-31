@@ -9,8 +9,8 @@
 
 #include "../filestorageitemdelegate.hpp"
 #include "../filestorageitemmodel.hpp"
-#include "../sessionstate.hpp"
-#include "../torrent.hpp"
+#include "../torrenthandle.hpp"
+#include "../torrentstatus.hpp"
 #include "../translator.hpp"
 
 class MinimumTreeView : public QTreeView
@@ -28,8 +28,8 @@ using pt::TorrentFilesWidget;
 TorrentFilesWidget::TorrentFilesWidget()
 {
     m_filesModel = new FileStorageItemModel();
+    m_filesView  = new MinimumTreeView();
 
-    m_filesView = new MinimumTreeView();
     m_filesView->setItemDelegate(new FileStorageItemDelegate());
     m_filesView->setModel(m_filesModel);
     m_filesView->setColumnWidth(FileStorageItemModel::Columns::Name, 200);
@@ -51,35 +51,34 @@ void TorrentFilesWidget::clear()
     m_filesModel->clearTree();
 }
 
-void TorrentFilesWidget::refresh(QList<pt::Torrent*> const& torrents)
+void TorrentFilesWidget::refresh(QList<pt::TorrentHandle*> const& torrents)
 {
     if (torrents.count() != 1)
     {
         return;
     }
 
-    Torrent* torrent = torrents.at(0);
-/*
-    std::shared_ptr<const lt::torrent_info> ti = ts.torrent_file.lock();
+    TorrentHandle* torrent = torrents.at(0);
+    TorrentStatus  status  = torrent->status();
+    auto ti                = status.torrentFile.lock();
 
     if (!ti)
     {
         return;
     }
 
-    
     std::vector<int64_t> progress;
-    th.file_progress(progress, lt::torrent_handle::piece_granularity);
+    torrent->fileProgress(progress, lt::torrent_handle::piece_granularity);
 
     // Only update progress if we have the same selection as previous
-    if (m_currentSelection == hash)
+    if (m_currentSelection == torrent->infoHash())
     {
         m_filesModel->setProgress(progress);
     }
     else
     {
         m_filesModel->rebuildTree(ti);
-        m_filesModel->setPriorities(th.get_file_priorities());
+        m_filesModel->setPriorities(torrent->getFilePriorities());
         m_filesModel->setProgress(progress);
 
         if (ti->num_files() > 1)
@@ -110,7 +109,6 @@ void TorrentFilesWidget::refresh(QList<pt::Torrent*> const& torrents)
             }
         }
 
-        m_currentSelection = hash;
+        m_currentSelection = torrent->infoHash();
     }
-    */
 }

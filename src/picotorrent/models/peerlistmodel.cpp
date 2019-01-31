@@ -3,7 +3,6 @@
 #include <map>
 
 #include <libtorrent/peer_info.hpp>
-#include <libtorrent/torrent_handle.hpp>
 
 #include <picotorrent/core/utils.hpp>
 #include <picotorrent/geoip/geoip.hpp>
@@ -12,6 +11,7 @@
 #include <QImageReader>
 #include <QPixmap>
 
+#include "../torrenthandle.hpp"
 #include "../translator.hpp"
 
 namespace lt = libtorrent;
@@ -157,10 +157,10 @@ void PeerListModel::clear()
     this->endResetModel();
 }
 
-void PeerListModel::update(lt::torrent_handle const& th)
+void PeerListModel::update(pt::TorrentHandle* torrent)
 {
     std::vector<lt::peer_info> peers;
-    th.get_peer_info(peers);
+    torrent->getPeerInfo(peers);
 
     // Remove old data
     for (auto it = m_peers.begin(); it != m_peers.end();)

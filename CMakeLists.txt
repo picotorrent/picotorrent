@@ -236,9 +236,9 @@ add_executable(
     src/picotorrent/sessionstate
     src/picotorrent/statusbar
     src/picotorrent/systemtrayicon
-    src/picotorrent/torrent
     src/picotorrent/torrentcontextmenu
     src/picotorrent/torrentitemdelegate
+    src/picotorrent/torrenthandle
     src/picotorrent/torrentlistmodel
     src/picotorrent/torrentlistwidget
     src/picotorrent/translator

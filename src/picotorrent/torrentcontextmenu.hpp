@@ -10,33 +10,20 @@ class QWidget;
 
 namespace pt
 {
-    struct SessionState;
-    class Translator;
+    class TorrentHandle;
 
     class TorrentContextMenu : public QMenu
     {
     public:
-        TorrentContextMenu(QWidget* parent,
-            std::shared_ptr<SessionState> state);
+        TorrentContextMenu(QWidget* parent, QList<TorrentHandle*> const& torrents);
 
     private:
         void copyInfoHash();
-        void forceReannounce();
-        void forceRecheck();
         void move();
         void openExplorer();
-        void pause();
-        void queueUp();
-        void queueDown();
-        void queueTop();
-        void queueBottom();
-        void remove();
-        void removeFiles();
-        void resume();
-        void resumeForce();
 
         QWidget* m_parent;
-        std::shared_ptr<SessionState> m_state;
+        QList<TorrentHandle*> m_torrents;
 
         QMenu* m_queueMenu;
         QMenu* m_removeMenu;
