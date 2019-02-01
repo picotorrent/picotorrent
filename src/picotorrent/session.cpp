@@ -348,20 +348,25 @@ void Session::readAlerts()
             m_torrents.erase(tra->info_hash);
 
             emit torrentRemoved(handle);
-            handle->deleteLater();
 
-            /*// If this torrent is selected, remove selection
-            if (m_sessionState->isSelected(tra->info_hash))
+            std::vector<std::string> statements =
             {
-                m_sessionState->selectedTorrents.erase(tra->info_hash);
-                m_torrentDetails->clear();
+                "DELETE FROM torrent_resume_data WHERE info_hash = ?;",
+                "DELETE FROM torrent             WHERE info_hash = ?;",
+            };
+
+            std::stringstream hash;
+            hash << tra->info_hash;
+
+            for (std::string const& sql : statements)
+            {
+                auto stmt = m_db->statement(sql);
+                stmt->bind(1, hash.str());
+                stmt->execute();
             }
 
-            // TODO: remove from database
+            handle->deleteLater();
 
-            m_torrentListModel->removeTorrent(tra->info_hash);
-            m_sessionState->torrents.erase(tra->info_hash);
-            m_statusBar->updateTorrentCount(m_sessionState->torrents.size());*/
             break;
         }
         }

@@ -246,6 +246,7 @@ void MainWindow::onTorrentContextMenu(QPoint const& point)
 void MainWindow::onViewPreferences()
 {
     auto dlg = new PreferencesDialog(this, m_cfg);
+    dlg->load();
     dlg->open();
 
     QObject::connect(dlg,       &QDialog::accepted,

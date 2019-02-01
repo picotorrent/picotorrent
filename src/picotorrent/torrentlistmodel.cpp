@@ -106,6 +106,48 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         case Columns::Size:
             return QString::fromStdWString(Utils::toHumanFileSize(status.totalWanted));
 
+        case Columns::Status:
+        {
+            switch (status.state)
+            {
+            case TorrentStatus::State::CheckingFiles:
+            case TorrentStatus::State::DownloadingChecking:
+                return i18n("state_downloading_checking");
+
+            case TorrentStatus::State::CheckingResumeData:
+                return i18n("state_checking_resume_data");
+
+            case TorrentStatus::State::Downloading:
+                return i18n("state_downloading");
+
+            case TorrentStatus::State::DownloadingMetadata:
+                return i18n("state_downloading_metadata");
+
+            case TorrentStatus::State::DownloadingPaused:
+                return i18n("state_downloading_paused");
+
+            case TorrentStatus::State::DownloadingQueued:
+                return i18n("state_downloading_queued");
+
+            case TorrentStatus::State::Error:
+                return i18n("state_error").arg(status.error.toLocal8Bit().data());
+
+            case TorrentStatus::State::Unknown:
+                return i18n("state_unknown");
+
+            case TorrentStatus::State::Uploading:
+                return i18n("state_uploading");
+
+            case TorrentStatus::State::UploadingPaused:
+                return i18n("state_uploading_paused");
+
+            case TorrentStatus::State::UploadingQueued:
+                return i18n("state_uploading_queued");
+            }
+
+            return "-";
+        }
+
         case Columns::Progress:
             return status.progress;
 
@@ -219,6 +261,9 @@ QVariant TorrentListModel::headerData(int section, Qt::Orientation, int role) co
 
         case Columns::Size:
             return i18n("size");
+
+        case Columns::Status:
+            return i18n("status");
 
         case Columns::Progress:
             return i18n("progress");

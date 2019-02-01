@@ -21,6 +21,7 @@ namespace pt
             Name,
             QueuePosition,
             Size,
+            Status,
             Progress,
             ETA,
             DownloadSpeed,

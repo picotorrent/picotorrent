@@ -1,5 +1,7 @@
 #include "torrenthandle.hpp"
 
+#include <QDir>
+
 #include <libtorrent/announce_entry.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_handle.hpp>
@@ -10,6 +12,70 @@
 
 namespace lt = libtorrent;
 using pt::TorrentHandle;
+
+pt::TorrentStatus::State getTorrentStatusState(lt::torrent_status const& ts)
+{
+    bool paused = ((ts.flags & lt::torrent_flags::paused)
+        && !(ts.flags & lt::torrent_flags::auto_managed));
+
+    bool seeding = (ts.state == lt::torrent_status::state_t::seeding
+        || ts.state == lt::torrent_status::state_t::finished);
+
+    bool queued = ((ts.flags & lt::torrent_flags::paused)
+        && (ts.flags & lt::torrent_flags::auto_managed));
+
+    bool checking = (ts.state == lt::torrent_status::state_t::checking_files
+        || ts.state == lt::torrent_status::state_t::checking_resume_data);
+
+    if (paused)
+    {
+        if (ts.errc)
+        {
+            return pt::TorrentStatus::State::Error;
+        }
+
+        if (seeding)
+        {
+            return pt::TorrentStatus::State::UploadingPaused;
+        }
+
+        return pt::TorrentStatus::State::DownloadingPaused;
+    }
+    else
+    {
+        if (queued && !checking)
+        {
+            return seeding
+                ? pt::TorrentStatus::State::UploadingQueued
+                : pt::TorrentStatus::State::DownloadingQueued;
+        }
+        else
+        {
+            switch (ts.state)
+            {
+            case lt::torrent_status::state_t::finished:
+            case lt::torrent_status::state_t::seeding:
+                return paused
+                    ? pt::TorrentStatus::State::UploadingPaused
+                    : pt::TorrentStatus::State::Uploading;
+
+            case lt::torrent_status::state_t::checking_resume_data:
+                return pt::TorrentStatus::State::CheckingResumeData;
+
+            case lt::torrent_status::state_t::checking_files:
+                return pt::TorrentStatus::State::DownloadingChecking;
+
+            case lt::torrent_status::state_t::downloading_metadata:
+                return pt::TorrentStatus::State::DownloadingMetadata;
+
+            case lt::torrent_status::state_t::downloading:
+                return pt::TorrentStatus::State::Downloading;
+            }
+        }
+    }
+
+    return pt::TorrentStatus::State::Unknown;
+}
 
 TorrentHandle::TorrentHandle(pt::Session* session, lt::torrent_handle const& th)
     : m_session(session)
@@ -67,7 +133,8 @@ lt::sha1_hash TorrentHandle::infoHash()
 
 void TorrentHandle::moveStorage(QString const& newPath)
 {
-    m_th->move_storage(newPath.toStdString());
+    QString native = QDir::toNativeSeparators(newPath);
+    m_th->move_storage(native.toStdString());
 }
 
 void TorrentHandle::pause()
@@ -144,7 +211,9 @@ pt::TorrentStatus TorrentHandle::status()
     ts.availability        = m_ts->distributed_copies;
     ts.completedOn         = m_ts->completed_time > 0 ? QDateTime::fromSecsSinceEpoch(m_ts->completed_time) : QDateTime();
     ts.downloadPayloadRate = m_ts->download_payload_rate;
+    ts.error               = m_ts->errc ? QString::fromStdString(m_ts->errc.message()) : "";
     ts.eta                 = eta;
+    ts.forced              = (!(m_ts->flags & lt::torrent_flags::paused) && !(m_ts->flags & lt::torrent_flags::auto_managed));
     ts.infoHash            = QString::fromStdString(hash.str());
     ts.name                = QString::fromStdString(m_ts->name);
     ts.paused              = (m_th->flags() & lt::torrent_flags::paused) == lt::torrent_flags::paused;
@@ -157,6 +226,7 @@ pt::TorrentStatus TorrentHandle::status()
     ts.savePath            = QString::fromStdString(m_ts->save_path);
     ts.seedsCurrent        = m_ts->num_seeds;
     ts.seedsTotal          = m_ts->list_seeds;
+    ts.state               = getTorrentStatusState(*m_ts.get());
     ts.torrentFile         = m_ts->torrent_file;
     ts.totalWanted         = m_ts->total_wanted;
     ts.uploadPayloadRate   = m_ts->upload_payload_rate;
