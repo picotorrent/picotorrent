@@ -18,7 +18,7 @@ environment:
 
 # Build script
 build_script:
-- git submodule update --init
+- git submodule update --init --recursive
 - powershell -NoProfile -ExecutionPolicy unrestricted -Command .\build.ps1 -Platform %platform%
 
 # Publish artifacts
