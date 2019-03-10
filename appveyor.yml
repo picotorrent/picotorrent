@@ -9,11 +9,11 @@ branches:
 environment:
   matrix:
    - platform: x86
-     CMAKE_PREFIX_PATH: C:\Qt\5.11.2\msvc2015
+     CMAKE_PREFIX_PATH: C:\Qt\5.12.1\msvc2017
      OPENSSL_ROOT_DIR: C:\OpenSSL-v111-Win32\bin
 
    - platform: x64
-     CMAKE_PREFIX_PATH: C:\Qt\5.11.2\msvc2017_64
+     CMAKE_PREFIX_PATH: C:\Qt\5.12.1\msvc2017_64
      OPENSSL_ROOT_DIR: C:\OpenSSL-v111-Win64\bin
 
 # Build script

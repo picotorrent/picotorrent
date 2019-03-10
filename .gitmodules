@@ -134,3 +134,9 @@
 [submodule "vendor/libmaxminddb"]
 	path = vendor/libmaxminddb
 	url = https://github.com/maxmind/libmaxminddb
+[submodule "vendor/boost-multi_index"]
+	path = vendor/boost-multi_index
+	url = https://github.com/boostorg/multi_index
+[submodule "vendor/boost-foreach"]
+	path = vendor/boost-foreach
+	url = https://github.com/boostorg/foreach

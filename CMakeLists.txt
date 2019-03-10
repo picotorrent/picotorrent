@@ -17,9 +17,11 @@ endif()
 find_package(OpenSSL)
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Svg Widgets)
 
+add_subdirectory(vendor/zlib)
+
 include("cmake/boost.cmake")
 include("cmake/libtorrent.cmake")
-add_subdirectory(vendor/zlib)
+
 
 # Generate version information file
 file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)

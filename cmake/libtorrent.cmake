@@ -1,14 +1,23 @@
+
+add_library(
+    try_signal
+    STATIC
+    vendor/libtorrent/deps/try_signal/signal_error_code
+    vendor/libtorrent/deps/try_signal/try_signal)
+
 add_library(
     libtorrent-rasterbar
     STATIC
-    vendor/libtorrent/ed25519/src/add_scalar
-    vendor/libtorrent/ed25519/src/fe
-    vendor/libtorrent/ed25519/src/ge
-    vendor/libtorrent/ed25519/src/key_exchange
-    vendor/libtorrent/ed25519/src/keypair
-    vendor/libtorrent/ed25519/src/sc
-    vendor/libtorrent/ed25519/src/sign
-    vendor/libtorrent/ed25519/src/verify
+    vendor/libtorrent/src/ed25519/add_scalar
+    vendor/libtorrent/src/ed25519/fe
+    vendor/libtorrent/src/ed25519/ge
+    vendor/libtorrent/src/ed25519/hasher512
+    vendor/libtorrent/src/ed25519/key_exchange
+    vendor/libtorrent/src/ed25519/keypair
+    vendor/libtorrent/src/ed25519/sc
+    vendor/libtorrent/src/ed25519/sha512
+    vendor/libtorrent/src/ed25519/sign
+    vendor/libtorrent/src/ed25519/verify
 
     vendor/libtorrent/src/kademlia/dht_settings
     vendor/libtorrent/src/kademlia/dht_state
@@ -21,9 +30,9 @@ add_library(
     vendor/libtorrent/src/kademlia/get_peers
     vendor/libtorrent/src/kademlia/item
     vendor/libtorrent/src/kademlia/msg
-    vendor/libtorrent/src/kademlia/node
     vendor/libtorrent/src/kademlia/node_entry
     vendor/libtorrent/src/kademlia/node_id
+    vendor/libtorrent/src/kademlia/node
     vendor/libtorrent/src/kademlia/put_data
     vendor/libtorrent/src/kademlia/refresh
     vendor/libtorrent/src/kademlia/routing_table
@@ -41,7 +50,6 @@ add_library(
     vendor/libtorrent/src/bandwidth_queue_entry
     vendor/libtorrent/src/bdecode
     vendor/libtorrent/src/bitfield
-    vendor/libtorrent/src/block_cache
     vendor/libtorrent/src/bloom_filter
     vendor/libtorrent/src/broadcast_socket
     vendor/libtorrent/src/bt_peer_connection
@@ -52,8 +60,10 @@ add_library(
     vendor/libtorrent/src/cpuid
     vendor/libtorrent/src/crc32c
     vendor/libtorrent/src/create_torrent
+    vendor/libtorrent/src/disabled_disk_io
     vendor/libtorrent/src/disk_buffer_holder
     vendor/libtorrent/src/disk_buffer_pool
+    vendor/libtorrent/src/disk_interface
     vendor/libtorrent/src/disk_io_job
     vendor/libtorrent/src/disk_io_thread_pool
     vendor/libtorrent/src/disk_io_thread
@@ -64,15 +74,14 @@ add_library(
     vendor/libtorrent/src/error_code
     vendor/libtorrent/src/escape_string
     vendor/libtorrent/src/ffs
-    vendor/libtorrent/src/file
-    vendor/libtorrent/src/file_pool
     vendor/libtorrent/src/file_progress
     vendor/libtorrent/src/file_storage
+    vendor/libtorrent/src/file_view_pool
+    vendor/libtorrent/src/file
     vendor/libtorrent/src/fingerprint
     vendor/libtorrent/src/generate_peer_id
     vendor/libtorrent/src/gzip
     vendor/libtorrent/src/hasher
-    vendor/libtorrent/src/hasher512
     vendor/libtorrent/src/hex
     vendor/libtorrent/src/http_connection
     vendor/libtorrent/src/http_parser
@@ -90,21 +99,24 @@ add_library(
     vendor/libtorrent/src/lsd
     vendor/libtorrent/src/magnet_uri
     vendor/libtorrent/src/merkle
+    vendor/libtorrent/src/mmap
     vendor/libtorrent/src/natpmp
     vendor/libtorrent/src/packet_buffer
     vendor/libtorrent/src/parse_url
     vendor/libtorrent/src/part_file
     vendor/libtorrent/src/path
     vendor/libtorrent/src/pe_crypto
-    vendor/libtorrent/src/peer_class
     vendor/libtorrent/src/peer_class_set
-    vendor/libtorrent/src/peer_connection
+    vendor/libtorrent/src/peer_class
     vendor/libtorrent/src/peer_connection_handle
+    vendor/libtorrent/src/peer_connection
     vendor/libtorrent/src/peer_info
     vendor/libtorrent/src/peer_list
     vendor/libtorrent/src/performance_counters
     vendor/libtorrent/src/piece_picker
     vendor/libtorrent/src/platform_util
+    vendor/libtorrent/src/posix_disk_io
+    vendor/libtorrent/src/posix_storage
     vendor/libtorrent/src/proxy_base
     vendor/libtorrent/src/proxy_settings
     vendor/libtorrent/src/puff
@@ -114,36 +126,34 @@ add_library(
     vendor/libtorrent/src/request_blocks
     vendor/libtorrent/src/resolve_links
     vendor/libtorrent/src/resolver
-    vendor/libtorrent/src/session
     vendor/libtorrent/src/session_call
     vendor/libtorrent/src/session_handle
     vendor/libtorrent/src/session_impl
     vendor/libtorrent/src/session_settings
     vendor/libtorrent/src/session_stats
     vendor/libtorrent/src/session_udp_sockets
+    vendor/libtorrent/src/session
     vendor/libtorrent/src/settings_pack
-    vendor/libtorrent/src/sha1
     vendor/libtorrent/src/sha1_hash
-    vendor/libtorrent/src/sha512
+    vendor/libtorrent/src/sha1
     vendor/libtorrent/src/smart_ban
     vendor/libtorrent/src/socket_io
     vendor/libtorrent/src/socket_type
     vendor/libtorrent/src/socks5_stream
     vendor/libtorrent/src/stack_allocator
-    vendor/libtorrent/src/stat
     vendor/libtorrent/src/stat_cache
-    vendor/libtorrent/src/storage
-    vendor/libtorrent/src/storage_piece_set
+    vendor/libtorrent/src/stat
     vendor/libtorrent/src/storage_utils
+    vendor/libtorrent/src/storage
     vendor/libtorrent/src/string_util
     vendor/libtorrent/src/time
     vendor/libtorrent/src/timestamp_history
-    vendor/libtorrent/src/torrent
     vendor/libtorrent/src/torrent_handle
     vendor/libtorrent/src/torrent_info
-    vendor/libtorrent/src/torrent_peer
     vendor/libtorrent/src/torrent_peer_allocator
+    vendor/libtorrent/src/torrent_peer
     vendor/libtorrent/src/torrent_status
+    vendor/libtorrent/src/torrent
     vendor/libtorrent/src/tracker_manager
     vendor/libtorrent/src/udp_socket
     vendor/libtorrent/src/udp_tracker_connection
@@ -177,17 +187,17 @@ target_compile_definitions(
     -DTORRENT_NO_DEPRECATE
     -DTORRENT_USE_I2P=1
     -DTORRENT_USE_LIBCRYPTO
-    -DTORRENT_USE_OPENSSL
-)
+    -DTORRENT_USE_OPENSSL)
 
 target_include_directories(
     libtorrent-rasterbar
     PRIVATE
     ${BOOST_INCLUDE_DIRS}
     ${OPENSSL_INCLUDE_DIR}
+    "${CMAKE_SOURCE_DIR}/vendor/libtorrent/deps/try_signal"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include")
 
 target_link_libraries(
     libtorrent-rasterbar
     boost-system
-)
+    try_signal)
