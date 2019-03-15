@@ -3,6 +3,7 @@
 #include <picotorrent/core/configuration.hpp>
 
 #include <QCheckBox>
+#include <QFileDialog>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -20,31 +21,38 @@ DownloadsSectionWidget::DownloadsSectionWidget()
 {
     createUi();
 
-    connect(
-        m_moveCompleted,
-        &QCheckBox::stateChanged,
-        [this](int state)
-        {
-            m_moveCompletedBrowse->setEnabled(state == Qt::Checked);
-            m_moveCompletedPath->setEnabled(state == Qt::Checked);
-            m_onlyMoveFromDefault->setEnabled(state == Qt::Checked);
-        });
+    connect(m_moveCompleted, &QCheckBox::stateChanged,
+            [this](int state)
+            {
+                m_moveCompletedBrowse->setEnabled(state == Qt::Checked);
+                m_moveCompletedPath->setEnabled(state == Qt::Checked);
+                m_onlyMoveFromDefault->setEnabled(state == Qt::Checked);
+            });
 
-    connect(
-        m_downLimitEnable,
-        &QCheckBox::stateChanged,
-        [this](int state)
-        {
-            m_downLimit->setEnabled(state == Qt::Checked);
-        });
+    connect(m_downLimitEnable, &QCheckBox::stateChanged,
+            [this](int state)
+            {
+                m_downLimit->setEnabled(state == Qt::Checked);
+            });
 
-    connect(
-        m_upLimitEnable,
-        &QCheckBox::stateChanged,
-        [this](int state)
-        {
-            m_upLimit->setEnabled(state == Qt::Checked);
-        });
+    connect(m_upLimitEnable, &QCheckBox::stateChanged,
+            [this](int state)
+            {
+                m_upLimit->setEnabled(state == Qt::Checked);
+            });
+
+    // Connect save path (and move completed path) changing
+    connect(m_savePathBrowse,      &QPushButton::clicked,
+            [this]()
+            {
+                showPathDialog(m_savePath);
+            });
+
+    connect(m_moveCompletedBrowse, &QPushButton::clicked,
+            [this]()
+            {
+                showPathDialog(m_moveCompletedPath);
+            });
 }
 
 void DownloadsSectionWidget::loadConfig(std::shared_ptr<pt::Configuration> cfg)
@@ -184,4 +192,33 @@ void DownloadsSectionWidget::createUi()
     layout->setMargin(0);
 
     this->setLayout(layout);
+}
+
+void DownloadsSectionWidget::showPathDialog(QLineEdit* target)
+{
+    auto dlg = new QFileDialog(this);
+    dlg->setFileMode(QFileDialog::Directory);
+    dlg->setOption(QFileDialog::ShowDirsOnly);
+
+    if (!target->text().isEmpty())
+    {
+        dlg->setDirectory(target->text());
+    }
+
+    dlg->open();
+
+    QObject::connect(
+        dlg, &QDialog::finished,
+        [dlg, target](int result)
+        {
+            if (result)
+            {
+                QStringList files  = dlg->selectedFiles();
+                QString nativePath = QDir::toNativeSeparators(files.at(0));
+
+                target->setText(nativePath);
+            }
+
+            dlg->deleteLater();
+        });
 }

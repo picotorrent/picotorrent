@@ -21,6 +21,7 @@ namespace pt
 
     private:
         void createUi();
+        void showPathDialog(QLineEdit* target);
 
         QLineEdit* m_savePath;
         QPushButton* m_savePathBrowse;
