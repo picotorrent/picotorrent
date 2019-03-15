@@ -340,6 +340,37 @@ void Session::readAlerts()
             break;
         }
 
+        case lt::torrent_finished_alert::alert_type:
+        {
+            lt::torrent_finished_alert* tfa = lt::alert_cast<lt::torrent_finished_alert>(alert);
+            lt::torrent_status const& ts    = tfa->handle.status();
+
+            // Only move from completed path if we have downloaded any payload
+            // bytes, otherwise it's most likely a newly added torrent which we
+            // had already downloaded.
+
+            if (ts.total_payload_download <= 0)
+            {
+                break;
+            }
+
+            bool shouldMove      = m_cfg->getBool("move_completed_downloads");
+            bool onlyFromDefault = m_cfg->getBool("move_completed_downloads_from_default_only");
+            std::string movePath = m_cfg->getString("move_completed_downloads_path");
+
+            if (shouldMove)
+            {
+                if (onlyFromDefault && ts.save_path != m_cfg->getString("default_save_path"))
+                {
+                    break;
+                }
+
+                tfa->handle.move_storage(movePath);
+            }
+
+            break;
+        }
+
         case lt::torrent_removed_alert::alert_type:
         {
             lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
