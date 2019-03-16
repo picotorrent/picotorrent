@@ -38,7 +38,6 @@ namespace pt
 
     private:
         void onFileAddTorrent();
-        void onFileExit();
         void onHelpAbout();
         void onTorrentContextMenu(QPoint const& point);
         void onViewPreferences();

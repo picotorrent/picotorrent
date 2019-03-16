@@ -126,7 +126,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
                      this,              &MainWindow::onFileAddTorrent);
 
     QObject::connect(m_fileExit,        &QAction::triggered,
-                     this,              &MainWindow::onFileExit);
+                     this,              &MainWindow::close);
 
     QObject::connect(m_viewPreferences, &QAction::triggered,
                      this,              &MainWindow::onViewPreferences);
@@ -247,10 +247,6 @@ void MainWindow::onFileAddTorrent()
             }
         }
     }
-}
-
-void MainWindow::onFileExit()
-{
 }
 
 void MainWindow::onHelpAbout()
