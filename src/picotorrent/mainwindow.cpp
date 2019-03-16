@@ -29,12 +29,14 @@
 #include "preferencesdialog.hpp"
 #include "session.hpp"
 #include "sessionstate.hpp"
+#include "sessionstatistics.hpp"
 #include "statusbar.hpp"
 #include "systemtrayicon.hpp"
 #include "torrentcontextmenu.hpp"
 #include "torrentdetails/torrentdetailswidget.hpp"
 #include "torrentlistmodel.hpp"
 #include "torrentlistwidget.hpp"
+#include "torrentstatistics.hpp"
 #include "translator.hpp"
 
 namespace fs = std::experimental::filesystem;
@@ -43,7 +45,8 @@ using pt::MainWindow;
 MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt::Database> db, std::shared_ptr<pt::Configuration> cfg)
     : m_env(env),
     m_db(db),
-    m_cfg(cfg)
+    m_cfg(cfg),
+    m_torrentsCount(0)
 {
     m_session          = new Session(this, db, cfg);
     m_geo              = new GeoIP(this, m_env, m_cfg);
@@ -71,11 +74,40 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_helpAbout          = new QAction(i18n("amp_about"), this);
 
     // Session signals
+    QObject::connect(m_session,          &Session::sessionStatsUpdated,
+                     [this](SessionStatistics* stats)
+                     {
+                         bool dhtEnabled = m_cfg->getBool("enable_dht");
+                         m_statusBar->updateDhtNodesCount(dhtEnabled ? stats->dhtNodes : -1);
+                     });
+
     QObject::connect(m_session,          &Session::torrentAdded,
                      m_torrentListModel, &TorrentListModel::addTorrent);
 
+    QObject::connect(m_session,          &Session::torrentAdded,
+                     [this](TorrentHandle*)
+                     {
+                         m_torrentsCount++;
+                         m_statusBar->updateTorrentCount(m_torrentsCount);
+                     });
+
     QObject::connect(m_session,          &Session::torrentRemoved,
                      m_torrentListModel, &TorrentListModel::removeTorrent);
+
+    QObject::connect(m_session,          &Session::torrentRemoved,
+                     [this](TorrentHandle*)
+                     {
+                         m_torrentsCount--;
+                         m_statusBar->updateTorrentCount(m_torrentsCount);
+                     });
+
+    QObject::connect(m_session,          &Session::torrentStatsUpdated,
+                     [this](TorrentStatistics* stats)
+                     {
+                         m_statusBar->updateTransferRates(
+                             stats->totalPayloadDownloadRate,
+                             stats->totalPayloadUploadRate);
+                     });
 
     QObject::connect(m_session,          &Session::torrentUpdated,
                      m_torrentListModel, &TorrentListModel::updateTorrent);
@@ -149,7 +181,8 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
         m_geo->load();
     }
 
-    m_statusBar->updateTorrentCount(0);
+    m_statusBar->updateDhtNodesCount(m_cfg->getBool("enable_dht") ? 0 : -1);
+    m_statusBar->updateTorrentCount(m_torrentsCount);
 }
 
 bool MainWindow::nativeEvent(QByteArray const& eventType, void* message, long* result)

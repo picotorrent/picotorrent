@@ -15,7 +15,9 @@ namespace pt
 {
     class Configuration;
     class Database;
+    struct SessionStatistics;
     class TorrentHandle;
+    struct TorrentStatistics;
 
     class Session : public QObject
     {
@@ -32,8 +34,10 @@ namespace pt
         void reloadSettings();
 
     signals:
+        void sessionStatsUpdated(SessionStatistics* stats);
         void torrentAdded(TorrentHandle* torrent);
         void torrentRemoved(TorrentHandle* torrent);
+        void torrentStatsUpdated(TorrentStatistics* stats);
         void torrentUpdated(TorrentHandle* torrent);
 
     private slots:

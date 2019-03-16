@@ -24,7 +24,9 @@
 
 #include "buildinfo.hpp"
 #include "semver.hpp"
+#include "sessionstatistics.hpp"
 #include "torrenthandle.hpp"
+#include "torrentstatistics.hpp"
 
 namespace lt = libtorrent;
 using pt::Session;
@@ -314,14 +316,14 @@ void Session::readAlerts()
             lt::span<const int64_t> counters = ssa->counters();
             int idx = -1;
 
-            if (!m_cfg->getBool("enable_dht"))
+            SessionStatistics stats;
+
+            if ((idx = lt::find_metric_idx("dht.dht_nodes")) >= 0)
             {
-                // m_statusBar->updateDhtNodesCount(-1);
+                stats.dhtNodes = counters[idx];
             }
-            else if ((idx = lt::find_metric_idx("dht.dht_nodes")) >= 0)
-            {
-                // m_statusBar->updateDhtNodesCount(counters[idx]);
-            }
+
+            emit sessionStatsUpdated(&stats);
 
             break;
         }
@@ -330,12 +332,19 @@ void Session::readAlerts()
         {
             lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
 
+            TorrentStatistics stats = { 0 };
+
             for (lt::torrent_status const& status : sua->status)
             {
+                stats.totalPayloadDownloadRate += status.download_payload_rate;
+                stats.totalPayloadUploadRate   += status.upload_payload_rate;
+
                 auto handle = m_torrents.at(status.info_hash);
                 handle->updateStatus(status);
                 emit torrentUpdated(handle);
             }
+
+            emit torrentStatsUpdated(&stats);
 
             break;
         }

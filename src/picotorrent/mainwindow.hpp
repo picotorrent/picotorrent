@@ -65,5 +65,6 @@ namespace pt
         TorrentDetailsWidget* m_torrentDetails;
         TorrentListModel* m_torrentListModel;
         TorrentListWidget* m_torrentList;
+        int m_torrentsCount;
     };
 }
