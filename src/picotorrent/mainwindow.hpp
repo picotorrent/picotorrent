@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QSystemTrayIcon>
 
 #include <memory>
 #include <vector>
@@ -34,14 +35,18 @@ namespace pt
         MainWindow(std::shared_ptr<Environment> env, std::shared_ptr<Database> db, std::shared_ptr<Configuration> cfg);
 
     protected:
+        void changeEvent(QEvent* event) override;
+        void closeEvent(QCloseEvent* event) override;
         bool nativeEvent(QByteArray const& eventType, void* message, long* result) override;
 
-    private:
+    private slots:
         void onFileAddTorrent();
         void onHelpAbout();
         void onTorrentContextMenu(QPoint const& point);
+        void onTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
         void onViewPreferences();
 
+    private:
         std::shared_ptr<Environment> m_env;
         std::shared_ptr<Database> m_db;
         std::shared_ptr<Configuration> m_cfg;

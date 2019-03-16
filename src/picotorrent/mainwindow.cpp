@@ -12,6 +12,7 @@
 #include <picotorrent/geoip/geoip.hpp>
 
 #include <QAction>
+#include <QCloseEvent>
 #include <QDebug>
 #include <QDir>
 #include <QFileDialog>
@@ -145,18 +146,19 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
                          m_selectedTorrents.append(torrents);
                      });
 
-    connect(
-        m_torrentList,
-        &QTreeView::customContextMenuRequested,
-        this,
-        &MainWindow::onTorrentContextMenu);
+    QObject::connect(m_torrentList,     &QTreeView::customContextMenuRequested,
+                     this,              &MainWindow::onTorrentContextMenu);
 
     // GeoIP signals
-    connect(m_geo, &GeoIP::updateRequired,
-            m_geo, &GeoIP::update);
+    QObject::connect(m_geo,             &GeoIP::updateRequired,
+                     m_geo,             &GeoIP::update);
 
     // System tray
-    connect(m_trayIcon, &SystemTrayIcon::addTorrentRequested, this, &MainWindow::onFileAddTorrent);
+    QObject::connect(m_trayIcon,        &SystemTrayIcon::addTorrentRequested,
+                     this,              &MainWindow::onFileAddTorrent);
+
+    QObject::connect(m_trayIcon,        &QSystemTrayIcon::activated,
+                     this,              &MainWindow::onTrayIconActivated);
 
     auto fileMenu = menuBar()->addMenu(i18n("amp_file"));
     fileMenu->addAction(m_fileAddTorrent);
@@ -183,6 +185,45 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
 
     m_statusBar->updateDhtNodesCount(m_cfg->getBool("enable_dht") ? 0 : -1);
     m_statusBar->updateTorrentCount(m_torrentsCount);
+    m_trayIcon->show();
+}
+
+void MainWindow::changeEvent(QEvent* event)
+{
+    switch (event->type())
+    {
+    case QEvent::WindowStateChange:
+    {
+        bool showInNotificationArea  = m_cfg->getBool("show_in_notification_area");
+        bool minimizeToNotificationArea = m_cfg->getBool("minimize_to_notification_area");
+
+        if (this->isMinimized()
+            && showInNotificationArea
+            && minimizeToNotificationArea)
+        {
+            this->hide();
+            event->accept();
+        }
+
+        break;
+    }
+    }
+
+    QMainWindow::changeEvent(event);
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    bool showInNotificationArea  = m_cfg->getBool("show_in_notification_area");
+    bool closeToNotificationArea = m_cfg->getBool("close_to_notification_area");
+
+    if (event->spontaneous()
+        && showInNotificationArea
+        && closeToNotificationArea)
+    {
+        this->hide();
+        event->ignore();
+    }
 }
 
 bool MainWindow::nativeEvent(QByteArray const& eventType, void* message, long* result)
@@ -269,6 +310,18 @@ void MainWindow::onTorrentContextMenu(QPoint const& point)
 
         QObject::connect(menu, &QMenu::aboutToHide,
                          menu, &QMenu::deleteLater);
+    }
+}
+
+void MainWindow::onTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason)
+    {
+    case QSystemTrayIcon::Trigger:
+    case QSystemTrayIcon::DoubleClick:
+        this->showNormal();
+        this->activateWindow();
+        break;
     }
 }
 
