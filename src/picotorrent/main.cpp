@@ -37,7 +37,29 @@ int main(int argc, char **argv)
     translator.setLanguage(cfg->getInt("language_id"));
 
     pt::MainWindow wnd(env, db, cfg);
-    wnd.show();
+
+    switch (cfg->getInt("start_position"))
+    {
+    case pt::Configuration::WindowState::Hidden: // sys tray
+        // If we don't show PicoTorrent in the notification area, show it
+        // normally.
+        if (!cfg->getBool("show_in_notification_area"))
+        {
+            wnd.showNormal();
+        }
+        break;
+    case pt::Configuration::WindowState::Maximized:
+        wnd.showMaximized();
+        break;
+    case pt::Configuration::WindowState::Minimized:
+        wnd.showMinimized();
+        break;
+
+    case pt::Configuration::WindowState::Normal:
+    default:
+        wnd.showNormal();
+        break;
+    }
 
     return app.exec();
 }
