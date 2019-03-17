@@ -188,6 +188,55 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_trayIcon->show();
 }
 
+void MainWindow::addTorrentFiles(QStringList const& files)
+{
+    std::vector<lt::add_torrent_params> params;
+
+    for (QString const& fileName : files)
+    {
+        fs::path p = fs::absolute(fileName.toStdString());
+
+        lt::error_code ec;
+        lt::add_torrent_params param;
+
+        param.save_path = m_cfg->getString("default_save_path");
+        param.ti = std::make_shared<lt::torrent_info>(p.string(), ec);
+
+        if (ec)
+        {
+            // TODO(error log)
+            continue;
+        }
+
+        params.push_back(param);
+    }
+
+    if (m_cfg->getBool("skip_add_torrent_dialog"))
+    {
+        for (lt::add_torrent_params& p : params)
+        {
+            m_session->addTorrent(p);
+        }
+
+        return;
+    }
+
+    auto dlg = new AddTorrentDialog(this, params);
+    dlg->open();
+
+    QObject::connect(dlg, &QDialog::accepted,
+                     [this, dlg]()
+                     {
+                         for (lt::add_torrent_params& p : dlg->getParams())
+                         {
+                             m_session->addTorrent(p);
+                         }
+                     });
+
+    QObject::connect(dlg, &QDialog::finished,
+                     dlg, &QDialog::deleteLater);
+}
+
 void MainWindow::changeEvent(QEvent* event)
 {
     switch (event->type())
@@ -251,43 +300,19 @@ void MainWindow::onFileAddTorrent()
     filters << "Torrent files (*.torrent)"
             << "All files (*)";
 
-    QFileDialog dlg(this);
-    dlg.setFileMode(QFileDialog::ExistingFiles);
-    dlg.setNameFilters(filters);
-    
-    if (dlg.exec())
-    {
-        std::vector<lt::add_torrent_params> params;
+    auto dlg = new QFileDialog(this);
+    dlg->setFileMode(QFileDialog::ExistingFiles);
+    dlg->setNameFilters(filters);
+    dlg->open();
 
-        for (QString const& fileName : dlg.selectedFiles())
-        {
-            fs::path p = fs::absolute(fileName.toStdString());
+    QObject::connect(dlg, &QFileDialog::finished,
+                     [this, dlg](int result)
+                     {
+                         this->addTorrentFiles(dlg->selectedFiles());
+                     });
 
-            lt::error_code ec;
-            lt::add_torrent_params param;
-
-            param.save_path = m_cfg->getString("default_save_path");
-            param.ti = std::make_shared<lt::torrent_info>(p.string(), ec);
-
-            if (ec)
-            {
-                // TODO(error log)
-                continue;
-            }
-
-            params.push_back(param);
-        }
-
-        AddTorrentDialog addDlg(this, params);
-        
-        if (addDlg.exec())
-        {
-            for (lt::add_torrent_params& p : params)
-            {
-                m_session->addTorrent(p);
-            }
-        }
-    }
+    QObject::connect(dlg, &QFileDialog::finished,
+                     dlg, &QFileDialog::deleteLater);
 }
 
 void MainWindow::onHelpAbout()

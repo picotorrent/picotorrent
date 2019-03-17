@@ -187,6 +187,11 @@ AddTorrentDialog::AddTorrentDialog(QWidget* parent, std::vector<lt::add_torrent_
     }
 }
 
+std::vector<lt::add_torrent_params> AddTorrentDialog::getParams()
+{
+    return m_params;
+}
+
 void AddTorrentDialog::onSetTorrentFilePriorities(QAction* action)
 {
     lt::add_torrent_params& params = m_params.at(m_paramsList->currentIndex());

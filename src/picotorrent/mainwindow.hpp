@@ -47,6 +47,8 @@ namespace pt
         void onViewPreferences();
 
     private:
+        void addTorrentFiles(QStringList const& files);
+
         std::shared_ptr<Environment> m_env;
         std::shared_ptr<Database> m_db;
         std::shared_ptr<Configuration> m_cfg;
