@@ -81,6 +81,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, std::shared_ptr<pt::Config
 
     connect(m_sections, &QListView::clicked,         this, &PreferencesDialog::onSectionActivated);
     connect(m_buttons,  &QDialogButtonBox::accepted, this, &PreferencesDialog::onOk);
+    connect(m_buttons,  &QDialogButtonBox::rejected, this, &PreferencesDialog::reject);
 
     Qt::WindowFlags flags = windowFlags();
     flags |= Qt::CustomizeWindowHint;
