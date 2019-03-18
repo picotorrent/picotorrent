@@ -122,7 +122,8 @@ Task("Build-AppX-Package")
     .IsDependentOn("Setup-Publish-Directory")
     .Does(() =>
 {
-    var VCRedist = Directory("C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Redist\\MSVC\\14.16.27012");
+    var VCRedistVersion = System.IO.File.ReadAllText("C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Auxiliary\\Build\\Microsoft.VCRedistVersion.default.txt").Trim();
+    var VCRedist = Directory("C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Redist\\MSVC\\" + VCRedistVersion);
     var VCDir = VCRedist + Directory(platform) + Directory("Microsoft.VC141.CRT");
 
     var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs");
