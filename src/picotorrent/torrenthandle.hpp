@@ -23,15 +23,18 @@ namespace pt
     public:
         virtual ~TorrentHandle();
 
+        void addTracker(libtorrent::announce_entry const& entry);
         void fileProgress(std::vector<std::int64_t>& progress, int flags) const;
         std::vector<libtorrent::download_priority_t> getFilePriorities() const;
         void getPeerInfo(std::vector<libtorrent::peer_info>& peers) const;
         libtorrent::sha1_hash infoHash();
+        void replaceTrackers(std::vector<libtorrent::announce_entry> const& trackers);
         TorrentStatus status();
         std::vector<libtorrent::announce_entry> trackers() const;
 
     public slots:
         void forceReannounce();
+        void forceReannounce(int seconds, int trackerIndex);
         void forceRecheck();
         void moveStorage(QString const& newPath);
         void pause();

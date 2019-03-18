@@ -121,7 +121,7 @@ TorrentContextMenu::TorrentContextMenu(QWidget* parent, QList<pt::TorrentHandle*
                          torrent,           &TorrentHandle::resumeForce);
 
         QObject::connect(m_forceReannounce, &QAction::triggered,
-                         torrent,           &TorrentHandle::forceReannounce);
+                         [torrent]() { torrent->forceReannounce(); });
 
         QObject::connect(m_forceRecheck,    &QAction::triggered,
                          torrent,           &TorrentHandle::forceRecheck);

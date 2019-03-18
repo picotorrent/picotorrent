@@ -88,6 +88,11 @@ TorrentHandle::~TorrentHandle()
 {
 }
 
+void TorrentHandle::addTracker(lt::announce_entry const& entry)
+{
+    m_th->add_tracker(entry);
+}
+
 void TorrentHandle::fileProgress(std::vector<std::int64_t>& progress, int flags) const
 {
     m_th->file_progress(progress, flags);
@@ -96,6 +101,11 @@ void TorrentHandle::fileProgress(std::vector<std::int64_t>& progress, int flags)
 void TorrentHandle::forceReannounce()
 {
     m_th->force_reannounce();
+}
+
+void TorrentHandle::forceReannounce(int seconds, int trackerIndex)
+{
+    m_th->force_reannounce(seconds, trackerIndex);
 }
 
 void TorrentHandle::forceRecheck()
@@ -161,6 +171,11 @@ void TorrentHandle::queueTop()
 void TorrentHandle::queueBottom()
 {
     m_th->queue_position_bottom();
+}
+
+void TorrentHandle::replaceTrackers(std::vector<lt::announce_entry> const& trackers)
+{
+    m_th->replace_trackers(trackers);
 }
 
 void TorrentHandle::remove()
