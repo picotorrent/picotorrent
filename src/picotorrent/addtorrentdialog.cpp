@@ -11,6 +11,7 @@
 #include <QBoxLayout>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDialogButtonBox>
 #include <QDir>
 #include <QFileDialog>
 #include <QGridLayout>
@@ -24,6 +25,7 @@
 #include <QVBoxLayout>
 
 #include "filestorageitemmodel.hpp"
+#include "translator.hpp"
 
 namespace fs = std::experimental::filesystem;
 namespace lt = libtorrent;
@@ -44,13 +46,13 @@ AddTorrentDialog::AddTorrentDialog(QWidget* parent, std::vector<lt::add_torrent_
     m_torrentInfoHash = new QLabel("-");
     m_torrentComment = new QLabel("-");
     m_torrentSavePath = new QLineEdit();
-    m_torrentSavePathBrowse = new QPushButton("Browse");
-    m_torrentSequentialDownload = new QCheckBox("Sequential download");
-    m_torrentStart = new QCheckBox("Start torrent");
+    m_torrentSavePathBrowse = new QPushButton(i18n("browse"));
+    m_torrentSavePathBrowse->setMaximumWidth(30);
+    m_torrentSequentialDownload = new QCheckBox(i18n("sequential_download"));
+    m_torrentStart = new QCheckBox(i18n("start_torrent"));
     m_filesModel = new FileStorageItemModel();
     m_torrentContextMenu = new QMenu();
-    m_ok = new QPushButton("OK");
-    m_cancel = new QPushButton("Cancel");
+    m_buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
     m_torrentFiles = new QTreeView();
     m_torrentFiles->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -61,39 +63,39 @@ AddTorrentDialog::AddTorrentDialog(QWidget* parent, std::vector<lt::add_torrent_
     m_torrentFiles->setSelectionMode(QTreeView::ExtendedSelection);
 
     // Menu
-    QMenu* priorities = m_torrentContextMenu->addMenu("Priority");
-    priorities->addAction("Maximum")
+    QMenu* priorities = m_torrentContextMenu->addMenu(i18n("priority"));
+    priorities->addAction(i18n("maximum"))
         ->setData(static_cast<uint8_t>(lt::top_priority));
-    priorities->addAction("Normal")
+    priorities->addAction(i18n("normal"))
         ->setData(static_cast<uint8_t>(lt::default_priority));
-    priorities->addAction("Low")
+    priorities->addAction(i18n("low"))
         ->setData(static_cast<uint8_t>(lt::low_priority));
     priorities->addSeparator();
-    priorities->addAction("Do not download")
+    priorities->addAction(i18n("do_not_download"))
         ->setData(static_cast<uint8_t>(lt::dont_download));
 
-    auto fileGroup = new QGroupBox("File");
+    auto fileGroup = new QGroupBox(i18n("file"));
     auto fileLayout = new QVBoxLayout();
     fileLayout->addWidget(m_paramsList);
     fileGroup->setLayout(fileLayout);
 
-    auto torrentGroup = new QGroupBox("Torrent");
+    auto torrentGroup = new QGroupBox(i18n("torrent"));
     auto torrentGrid = new QGridLayout();
-    torrentGrid->addWidget(new QLabel("Name"), 0, 0);
+    torrentGrid->addWidget(new QLabel(i18n("name")), 0, 0);
     torrentGrid->addWidget(m_torrentName, 0, 1);
-    torrentGrid->addWidget(new QLabel("Size"), 1, 0);
+    torrentGrid->addWidget(new QLabel(i18n("size")), 1, 0);
     torrentGrid->addWidget(m_torrentSize, 1, 1);
-    torrentGrid->addWidget(new QLabel("Info hash"), 2, 0);
+    torrentGrid->addWidget(new QLabel(i18n("info_hash")), 2, 0);
     torrentGrid->addWidget(m_torrentInfoHash, 2, 1);
-    torrentGrid->addWidget(new QLabel("Comment"), 3, 0);
+    torrentGrid->addWidget(new QLabel(i18n("comment")), 3, 0);
     torrentGrid->addWidget(m_torrentComment, 3, 1);
     torrentGrid->setColumnStretch(0, 1);
     torrentGrid->setColumnStretch(1, 2);
     torrentGroup->setLayout(torrentGrid);
 
-    auto prefsGroup = new QGroupBox("Preferences");
+    auto prefsGroup = new QGroupBox(i18n("storage"));
     auto prefsGrid = new QGridLayout();
-    prefsGrid->addWidget(new QLabel("Save path"), 0, 0);
+    prefsGrid->addWidget(new QLabel(i18n("save_path")), 0, 0);
 
     auto dirBrowseLayout = new QHBoxLayout();
     dirBrowseLayout->addWidget(m_torrentSavePath);
@@ -111,16 +113,11 @@ AddTorrentDialog::AddTorrentDialog(QWidget* parent, std::vector<lt::add_torrent_
 
     prefsGroup->setLayout(prefsGrid);
 
-    auto btnLayout = new QHBoxLayout();
-    btnLayout->addStretch(1);
-    btnLayout->addWidget(m_ok);
-    btnLayout->addWidget(m_cancel);
-
     auto layout = new QVBoxLayout();
     layout->addWidget(fileGroup);
     layout->addWidget(torrentGroup);
     layout->addWidget(prefsGroup);
-    layout->addLayout(btnLayout);
+    layout->addWidget(m_buttons);
     layout->setStretch(2, 1);
 
     connect(
@@ -166,19 +163,19 @@ AddTorrentDialog::AddTorrentDialog(QWidget* parent, std::vector<lt::add_torrent_
         &AddTorrentDialog::onSetTorrentFilePriorities);
 
     connect(
-        m_cancel,
-        &QPushButton::clicked,
-        [this]() { done(QDialog::Rejected); });
+        m_buttons,
+        &QDialogButtonBox::accepted,
+        this, &QDialog::accept);
 
     connect(
-        m_ok,
-        &QPushButton::clicked,
-        [this]() { done(QDialog::Accepted); });
+        m_buttons,
+        &QDialogButtonBox::rejected,
+        this, &QDialog::reject);
 
     this->setLayout(layout);
     this->setMinimumWidth(430);
     this->setWindowFlags(flags);
-    this->setWindowTitle("Add torrent(s)");
+    this->setWindowTitle(i18n("add_torrent_s"));
 
     // Add torrents
     for (lt::add_torrent_params const& p : m_params)
@@ -277,21 +274,26 @@ void AddTorrentDialog::onTorrentSavePathBrowse()
 {
     lt::add_torrent_params& params = m_params.at(m_paramsList->currentIndex());
 
-    QFileDialog dlg(this);
-    dlg.setDirectory(QString::fromStdString(params.save_path));
-    dlg.setFileMode(QFileDialog::Directory);
-    dlg.setOption(QFileDialog::ShowDirsOnly);
+    auto dlg = new QFileDialog(this);
+    dlg->setDirectory(QString::fromStdString(params.save_path));
+    dlg->setFileMode(QFileDialog::Directory);
+    dlg->setOption(QFileDialog::ShowDirsOnly);
+    dlg->open();
 
-    if (dlg.exec())
-    {
-        QStringList files = dlg.selectedFiles();
+    QObject::connect(dlg, &QFileDialog::finished,
+                     [this, dlg]()
+                     {
+                         QStringList files = dlg->selectedFiles();
 
-        if (files.size() > 0)
-        {
-            QString nativePath = QDir::toNativeSeparators(files.at(0));
-            m_torrentSavePath->setText(nativePath);
-        }
-    }
+                         if (files.size() > 0)
+                         {
+                             QString nativePath = QDir::toNativeSeparators(files.at(0));
+                             m_torrentSavePath->setText(nativePath);
+                         }
+                     });
+
+    QObject::connect(dlg, &QFileDialog::finished,
+                     dlg, &QFileDialog::deleteLater);
 }
 
 void AddTorrentDialog::onTorrentSavePathChanged(QString const& text)

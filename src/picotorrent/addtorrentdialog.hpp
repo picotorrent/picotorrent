@@ -10,6 +10,7 @@
 class QActionGroup;
 class QCheckBox;
 class QComboBox;
+class QDialogButtonBox;
 class QLabel;
 class QLineEdit;
 class QMenu;
@@ -49,8 +50,7 @@ namespace pt
         QCheckBox* m_torrentSequentialDownload;
         QCheckBox* m_torrentStart;
         QTreeView* m_torrentFiles;
-        QPushButton* m_ok;
-        QPushButton* m_cancel;
+        QDialogButtonBox* m_buttons;
 
         QMenu* m_torrentContextMenu;
 
