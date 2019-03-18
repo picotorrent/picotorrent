@@ -11,11 +11,14 @@ set(CMAKE_CXX_STANDARD 14)
 set(OPENSSL_USE_STATIC_LIBS TRUE)
 
 if(DEFINED ENV{OPENSSL_ROOT_DIR})
-    set(OPENSSL_ROOT_DIR ENV{OPENSSL_ROOT_DIR})
+    set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
 endif()
 
-find_package(OpenSSL)
+find_package(OpenSSL REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Svg Widgets)
+
+message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
+message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
 
 add_subdirectory(vendor/zlib)
 

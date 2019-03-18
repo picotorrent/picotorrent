@@ -2,7 +2,6 @@
 
 #include <picotorrent/core/environment.hpp>
 
-#include "config.hpp"
 #include "picojson.hpp"
 
 namespace pj = picojson;

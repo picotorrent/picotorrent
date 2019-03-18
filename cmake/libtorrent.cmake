@@ -200,4 +200,9 @@ target_include_directories(
 target_link_libraries(
     libtorrent-rasterbar
     boost-system
-    try_signal)
+    try_signal
+
+    # OpenSSL
+    OpenSSL::Crypto
+    OpenSSL::SSL
+)

@@ -23,7 +23,7 @@ struct State
     DWORD totalSize = 0;
 };
 
-static void StatusCallbackProxy(HINTERNET hInternet, DWORD_PTR dwContext, DWORD dwInternetStatus, LPVOID lpStatusInformation, DWORD dwStatusInformationLength)
+static void CALLBACK StatusCallbackProxy(HINTERNET hInternet, DWORD_PTR dwContext, DWORD dwInternetStatus, LPVOID lpStatusInformation, DWORD dwStatusInformationLength)
 {
     State* state = reinterpret_cast<State*>(dwContext);
 

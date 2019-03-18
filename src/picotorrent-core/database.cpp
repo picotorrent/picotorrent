@@ -19,7 +19,7 @@ struct Migration
     std::string sql;
 };
 
-static BOOL EnumMigrations(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
+static BOOL CALLBACK EnumMigrations(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
 {
     std::vector<Migration>* migrations = reinterpret_cast<std::vector<Migration>*>(lParam);
 
