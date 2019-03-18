@@ -187,6 +187,16 @@ void TorrentHandle::resumeForce()
     m_th->resume();
 }
 
+void TorrentHandle::setFilePriorities(std::vector<lt::download_priority_t> priorities)
+{
+    m_th->prioritize_files(priorities);
+}
+
+void TorrentHandle::setFilePriority(lt::file_index_t index, lt::download_priority_t priority)
+{
+    m_th->file_priority(index, priority);
+}
+
 pt::TorrentStatus TorrentHandle::status()
 {
     std::stringstream hash;

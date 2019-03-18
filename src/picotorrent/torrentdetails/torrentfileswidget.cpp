@@ -1,5 +1,6 @@
 #include "torrentfileswidget.hpp"
 
+#include <QMenu>
 #include <QTreeView>
 #include <QVBoxLayout>
 
@@ -42,6 +43,9 @@ TorrentFilesWidget::TorrentFilesWidget()
     layout->addWidget(m_filesView);
     layout->setContentsMargins(2, 2, 2, 2);
 
+    QObject::connect(m_filesView, &QTreeView::customContextMenuRequested,
+                     this,        &TorrentFilesWidget::onFileContextMenu);
+
     this->clear();
     this->setLayout(layout);
 }
@@ -58,6 +62,7 @@ void TorrentFilesWidget::refresh(QList<pt::TorrentHandle*> const& torrents)
         return;
     }
 
+    m_torrents             = torrents;
     TorrentHandle* torrent = torrents.at(0);
     TorrentStatus  status  = torrent->status();
     auto ti                = status.torrentFile.lock();
@@ -111,4 +116,65 @@ void TorrentFilesWidget::refresh(QList<pt::TorrentHandle*> const& torrents)
 
         m_currentSelection = torrent->infoHash();
     }
+}
+
+void TorrentFilesWidget::onFileContextMenu(QPoint const& point)
+{
+    QModelIndex idx = m_filesView->indexAt(point);
+
+    if (!idx.isValid())
+    {
+        return;
+    }
+
+    // Actions
+    QAction* prioMaximum       = new QAction(i18n("maximum"));
+    QAction* prioNormal        = new QAction(i18n("normal"));
+    QAction* prioLow           = new QAction(i18n("low"));
+    QAction* prioDoNotDownload = new QAction(i18n("do_not_download"));
+
+    prioMaximum->setData(static_cast<uint8_t>(lt::top_priority));
+    prioNormal->setData(static_cast<uint8_t>(lt::default_priority));
+    prioLow->setData(static_cast<uint8_t>(lt::low_priority));
+    prioDoNotDownload->setData(static_cast<uint8_t>(lt::dont_download));
+
+    auto menu = new QMenu();
+    auto prios = menu->addMenu(i18n("priority"));
+
+    prios->addAction(prioMaximum);
+    prios->addAction(prioNormal);
+    prios->addAction(prioLow);
+    prios->addSeparator();
+    prios->addAction(prioDoNotDownload);
+
+    menu->popup(m_filesView->viewport()->mapToGlobal(point));
+
+    QObject::connect(menu, &QMenu::triggered,
+                     this, &TorrentFilesWidget::onSetFilePriorities);
+
+    QObject::connect(menu, &QMenu::aboutToHide,
+                     menu, &QMenu::deleteLater);
+}
+
+void TorrentFilesWidget::onSetFilePriorities(QAction* action)
+{
+    if (m_torrents.size() == 0)
+    {
+        return;
+    }
+
+    TorrentHandle* torrent = m_torrents.at(0);
+
+    lt::download_priority_t prio = lt::download_priority_t{ static_cast<uint8_t>(action->data().toInt()) };
+    auto const& indices          = m_filesView->selectionModel()->selectedIndexes();
+    auto fileIndices             = m_filesModel->fileIndices(indices);
+    auto filePriorities          = torrent->getFilePriorities();
+
+    for (int idx : fileIndices)
+    {
+        filePriorities.at(idx) = prio;
+    }
+
+    m_filesModel->setPriorities(filePriorities);
+    torrent->setFilePriorities(filePriorities);
 }

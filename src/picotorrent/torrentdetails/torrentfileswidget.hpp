@@ -6,6 +6,7 @@
 
 #include "detailstab.hpp"
 
+class QAction;
 class QTreeView;
 
 namespace pt
@@ -22,8 +23,18 @@ namespace pt
         virtual void refresh(QList<TorrentHandle*> const& torrents) override;
 
     private:
+        void onFileContextMenu(QPoint const& point);
+        void onSetFilePriorities(QAction* action);
+
         libtorrent::sha1_hash m_currentSelection;
         QTreeView* m_filesView;
         FileStorageItemModel* m_filesModel;
+        QList<TorrentHandle*> m_torrents;
+
+        // Actions
+        QAction* m_prioMaximum;
+        QAction* m_prioNormal;
+        QAction* m_prioLow;
+        QAction* m_prioDoNotDownload;
     };
 }

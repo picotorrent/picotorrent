@@ -43,6 +43,8 @@ namespace pt
         void removeFiles();
         void resume();
         void resumeForce();
+        void setFilePriorities(std::vector<libtorrent::download_priority_t> priorities);
+        void setFilePriority(libtorrent::file_index_t index, libtorrent::download_priority_t priority);
 
     private:
         TorrentHandle(Session* session, libtorrent::torrent_handle const& th);
