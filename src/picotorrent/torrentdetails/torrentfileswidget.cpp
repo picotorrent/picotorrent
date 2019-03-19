@@ -52,6 +52,7 @@ TorrentFilesWidget::TorrentFilesWidget()
 
 void TorrentFilesWidget::clear()
 {
+    m_currentSelection = lt::sha1_hash();
     m_filesModel->clearTree();
 }
 

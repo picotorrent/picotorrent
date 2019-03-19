@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/torrent_info.hpp>
 
 #include <picotorrent/core/configuration.hpp>
@@ -35,6 +36,7 @@
 #include "sessionstatistics.hpp"
 #include "statusbar.hpp"
 #include "systemtrayicon.hpp"
+#include "textinputdialog.hpp"
 #include "torrentcontextmenu.hpp"
 #include "torrentdetails/torrentdetailswidget.hpp"
 #include "torrentlistmodel.hpp"
@@ -55,6 +57,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_session          = new Session(this, db, cfg);
     m_geo              = new GeoIP(this, m_env, m_cfg);
     m_splitter         = new QSplitter(this);
+    m_taskbarButton    = new QWinTaskbarButton(this);
     m_statusBar        = new StatusBar(this);
     m_trayIcon         = new SystemTrayIcon(this);
     m_torrentDetails   = new TorrentDetailsWidget(this, m_sessionState, m_geo);
@@ -69,9 +72,6 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
 
     // Setup torrent list
     m_torrentList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
-
-    // Taskbar button
-    m_taskbarButton = new QWinTaskbarButton(this);
 
     /* Create actions */
     m_fileAddTorrent     = new QAction(i18n("amp_add_torrent"), this);
@@ -132,42 +132,54 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
                      });
 
     // Main menu signals
-    QObject::connect(m_fileAddTorrent,  &QAction::triggered,
-                     this,              &MainWindow::onFileAddTorrent);
+    QObject::connect(m_fileAddTorrent,     &QAction::triggered,
+                     this,                 &MainWindow::onFileAddTorrent);
 
-    QObject::connect(m_fileExit,        &QAction::triggered,
-                     this,              &MainWindow::close);
+    QObject::connect(m_fileAddMagnetLinks, &QAction::triggered,
+                     this,                 &MainWindow::onFileAddMagnetLinks);
 
-    QObject::connect(m_viewPreferences, &QAction::triggered,
-                     this,              &MainWindow::onViewPreferences);
+    QObject::connect(m_fileExit,           &QAction::triggered,
+                     this,                 &MainWindow::close);
 
-    QObject::connect(m_helpAbout,       &QAction::triggered,
-                     this,              &MainWindow::onHelpAbout);
+    QObject::connect(m_viewPreferences,    &QAction::triggered,
+                     this,                 &MainWindow::onViewPreferences);
+
+    QObject::connect(m_helpAbout,          &QAction::triggered,
+                     this,                 &MainWindow::onHelpAbout);
 
     // Torrent list signals
-    QObject::connect(m_torrentList,     &TorrentListWidget::torrentsSelected,
-                     m_torrentDetails,  &TorrentDetailsWidget::update);
+    QObject::connect(m_torrentList,        &TorrentListWidget::torrentsSelected,
+                     m_torrentDetails,     &TorrentDetailsWidget::update);
 
-    QObject::connect(m_torrentList,     &TorrentListWidget::torrentsSelected,
+    QObject::connect(m_torrentList,        &TorrentListWidget::torrentsSelected,
                      [this](QList<TorrentHandle*> const& torrents)
                      {
                          m_selectedTorrents.clear();
                          m_selectedTorrents.append(torrents);
                      });
 
-    QObject::connect(m_torrentList,     &QTreeView::customContextMenuRequested,
-                     this,              &MainWindow::onTorrentContextMenu);
+    QObject::connect(m_torrentList,        &QTreeView::customContextMenuRequested,
+                     this,                 &MainWindow::onTorrentContextMenu);
 
     // GeoIP signals
-    QObject::connect(m_geo,             &GeoIP::updateRequired,
-                     m_geo,             &GeoIP::update);
+    QObject::connect(m_geo,                &GeoIP::updateRequired,
+                     m_geo,                &GeoIP::update);
 
     // System tray
-    QObject::connect(m_trayIcon,        &SystemTrayIcon::addTorrentRequested,
-                     this,              &MainWindow::onFileAddTorrent);
+    QObject::connect(m_trayIcon,           &SystemTrayIcon::addTorrentRequested,
+                     this,                 &MainWindow::onFileAddTorrent);
 
-    QObject::connect(m_trayIcon,        &QSystemTrayIcon::activated,
-                     this,              &MainWindow::onTrayIconActivated);
+    QObject::connect(m_trayIcon,           &SystemTrayIcon::addMagnetLinkRequested,
+                     this,                 &MainWindow::onFileAddMagnetLinks);
+
+    QObject::connect(m_trayIcon,           &SystemTrayIcon::exitRequested,
+                     this,                 &MainWindow::close);
+
+    QObject::connect(m_trayIcon,           &SystemTrayIcon::viewPreferencesRequested,
+                     this,                 &MainWindow::onViewPreferences);
+
+    QObject::connect(m_trayIcon,           &QSystemTrayIcon::activated,
+                     this,                 &MainWindow::onTrayIconActivated);
 
     auto fileMenu = menuBar()->addMenu(i18n("amp_file"));
     fileMenu->addAction(m_fileAddTorrent);
@@ -197,27 +209,23 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_trayIcon->show();
 }
 
-void MainWindow::addTorrentFiles(QStringList const& files)
+void MainWindow::addTorrents(std::vector<lt::add_torrent_params>& params)
 {
-    std::vector<lt::add_torrent_params> params;
+    std::vector<lt::sha1_hash> hashes;
 
-    for (QString const& fileName : files)
+    // Set up default values for all params
+
+    for (lt::add_torrent_params& p : params)
     {
-        fs::path p = fs::absolute(fileName.toStdString());
+        p.save_path = m_cfg->getString("default_save_path");
 
-        lt::error_code ec;
-        lt::add_torrent_params param;
+        // If we have a param with an info hash and no torrent info,
+        // let the session find metadata for us
 
-        param.save_path = m_cfg->getString("default_save_path");
-        param.ti = std::make_shared<lt::torrent_info>(p.string(), ec);
-
-        if (ec)
+        if (!p.info_hash.is_all_zeros() && !p.ti)
         {
-            // TODO(error log)
-            continue;
+            hashes.push_back(p.info_hash);
         }
-
-        params.push_back(param);
     }
 
     if (m_cfg->getBool("skip_add_torrent_dialog"))
@@ -242,8 +250,53 @@ void MainWindow::addTorrentFiles(QStringList const& files)
                          }
                      });
 
+    QObject::connect(m_session, &Session::metadataSearchResult,
+                     dlg,       &AddTorrentDialog::refreshMetadata);
+
     QObject::connect(dlg, &QDialog::finished,
                      dlg, &QDialog::deleteLater);
+
+    m_session->metadataSearch(hashes);
+}
+
+void MainWindow::parseMagnetLinks(std::vector<lt::add_torrent_params>& params, QStringList const& magnetLinks)
+{
+    for (QString const& magnetLink : magnetLinks)
+    {
+        lt::add_torrent_params param;
+        lt::error_code ec;
+
+        lt::parse_magnet_uri(magnetLink.toStdString(), param, ec);
+
+        if (ec)
+        {
+            // TODO log some kind of warning or error?
+            continue;
+        }
+
+        params.push_back(param);
+    }
+}
+
+void MainWindow::parseTorrentFiles(std::vector<lt::add_torrent_params>& params, QStringList const& files)
+{
+    for (QString const& fileName : files)
+    {
+        fs::path p = fs::absolute(fileName.toStdString());
+
+        lt::error_code ec;
+        lt::add_torrent_params param;
+
+        param.ti = std::make_shared<lt::torrent_info>(p.string(), ec);
+
+        if (ec)
+        {
+            // TODO(error log)
+            continue;
+        }
+
+        params.push_back(param);
+    }
 }
 
 void MainWindow::changeEvent(QEvent* event)
@@ -313,6 +366,27 @@ void MainWindow::showEvent(QShowEvent* event)
 }
 
 /* Actions */
+void MainWindow::onFileAddMagnetLinks()
+{
+    auto dlg = new TextInputDialog(this, i18n("magnet_link_s"), true);
+    dlg->setWindowTitle(i18n("add_magnet_link_s"));
+    dlg->open();
+
+    QObject::connect(dlg, &TextInputDialog::accepted,
+                     [this, dlg]()
+                     {
+                         auto text  = dlg->text();
+                         auto links = text.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+
+                         std::vector<lt::add_torrent_params> params;
+                         this->parseMagnetLinks(params, links);
+                         this->addTorrents(params);
+                     });
+
+    QObject::connect(dlg, &TextInputDialog::finished,
+                     dlg, &TextInputDialog::deleteLater);
+}
+
 void MainWindow::onFileAddTorrent()
 {
     QStringList filters;
@@ -324,10 +398,12 @@ void MainWindow::onFileAddTorrent()
     dlg->setNameFilters(filters);
     dlg->open();
 
-    QObject::connect(dlg, &QFileDialog::finished,
-                     [this, dlg](int result)
+    QObject::connect(dlg, &QFileDialog::accepted,
+                     [this, dlg]()
                      {
-                         this->addTorrentFiles(dlg->selectedFiles());
+                         std::vector<lt::add_torrent_params> params;
+                         this->parseTorrentFiles(params, dlg->selectedFiles());
+                         this->addTorrents(params);
                      });
 
     QObject::connect(dlg, &QFileDialog::finished,

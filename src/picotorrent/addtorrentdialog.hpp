@@ -29,7 +29,15 @@ namespace pt
 
         std::vector<libtorrent::add_torrent_params> getParams();
 
+    public slots:
+        void refreshMetadata(std::shared_ptr<libtorrent::torrent_info>* ti);
+
     private:
+        QString getDisplayComment(libtorrent::add_torrent_params const& param);
+        QString getDisplayHash(libtorrent::add_torrent_params const& param);
+        QString getDisplayName(libtorrent::add_torrent_params const& param);
+        QString getDisplaySize(libtorrent::add_torrent_params const& param);
+
         void onSetTorrentFilePriorities(QAction* action);
         void onTorrentFileContextMenu(QPoint const& point);
         void onTorrentIndexChanged(int index);

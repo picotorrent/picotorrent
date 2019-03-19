@@ -3,16 +3,18 @@
 #include <QAction>
 #include <QMenu>
 
+#include "translator.hpp"
+
 using pt::SystemTrayIcon;
 
 SystemTrayIcon::SystemTrayIcon(QObject* parent)
     : QSystemTrayIcon(parent)
 {
-    m_menu = new QMenu();
-    m_addTorrentAction = new QAction("Add torrent");
-    m_addMagnetLinkAction = new QAction("Add magnet link");
-    m_preferencesAction = new QAction("Preferences");
-    m_exitAction = new QAction("Exit");
+    m_menu                = new QMenu();
+    m_addTorrentAction    = new QAction(i18n("add_torrent"));
+    m_addMagnetLinkAction = new QAction(i18n("add_magnet_link_s"));
+    m_preferencesAction   = new QAction(i18n("preferences"));
+    m_exitAction          = new QAction(i18n("exit"));
 
     m_menu->addAction(m_addTorrentAction);
     m_menu->addAction(m_addMagnetLinkAction);

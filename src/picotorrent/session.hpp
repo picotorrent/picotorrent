@@ -4,6 +4,8 @@
 
 #include <map>
 #include <memory>
+#include <unordered_set>
+#include <vector>
 
 #include <libtorrent/fwd.hpp>
 #include <libtorrent/session_types.hpp>
@@ -28,12 +30,14 @@ namespace pt
         virtual ~Session();
 
         void addTorrent(libtorrent::add_torrent_params const& params);
+        void metadataSearch(std::vector<libtorrent::sha1_hash> const& hashes);
         void removeTorrent(TorrentHandle* handle, libtorrent::remove_flags_t flags = {});
 
     public slots:
         void reloadSettings();
 
     signals:
+        void metadataSearchResult(std::shared_ptr<libtorrent::torrent_info>* ti);
         void sessionStatsUpdated(SessionStatistics* stats);
         void torrentAdded(TorrentHandle* torrent);
         void torrentRemoved(TorrentHandle* torrent);
@@ -55,6 +59,7 @@ namespace pt
         std::shared_ptr<Configuration> m_cfg;
 
         std::map<libtorrent::sha1_hash, TorrentHandle*> m_torrents;
+        std::unordered_set<libtorrent::sha1_hash> m_metadataSearches;
 
         QTimer* m_updateTimer;
     };

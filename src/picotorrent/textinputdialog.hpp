@@ -4,6 +4,7 @@
 
 class QDialogButtonBox;
 class QLineEdit;
+class QPlainTextEdit;
 
 namespace pt
 {
@@ -15,7 +16,8 @@ namespace pt
 
     private:
         QDialogButtonBox* m_buttons;
-        QLineEdit* m_input;
+        QLineEdit* m_singleLineInput;
+        QPlainTextEdit* m_multiLineInput;
         QString m_description;
         bool m_multiline;
     };

@@ -3,6 +3,8 @@
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 
+#include <libtorrent/fwd.hpp>
+
 #include <memory>
 #include <vector>
 
@@ -43,6 +45,7 @@ namespace pt
         void showEvent(QShowEvent* event) override;
 
     private slots:
+        void onFileAddMagnetLinks();
         void onFileAddTorrent();
         void onHelpAbout();
         void onTorrentContextMenu(QPoint const& point);
@@ -51,7 +54,9 @@ namespace pt
         void updateTaskbarButton(TorrentStatistics* stats);
 
     private:
-        void addTorrentFiles(QStringList const& files);
+        void addTorrents(std::vector<libtorrent::add_torrent_params>& params);
+        void parseMagnetLinks(std::vector<libtorrent::add_torrent_params>& params, QStringList const& magnetLinks);
+        void parseTorrentFiles(std::vector<libtorrent::add_torrent_params>& params, QStringList const& files);
 
         std::shared_ptr<Environment> m_env;
         std::shared_ptr<Database> m_db;

@@ -1,5 +1,6 @@
 #include "session.hpp"
 
+#include <filesystem>
 #include <iomanip>
 #include <queue>
 
@@ -28,7 +29,9 @@
 #include "torrenthandle.hpp"
 #include "torrentstatistics.hpp"
 
+namespace fs = std::experimental::filesystem;
 namespace lt = libtorrent;
+
 using pt::Session;
 
 static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Configuration> cfg)
@@ -135,7 +138,11 @@ Session::Session(QObject* parent, std::shared_ptr<pt::Database> db, std::shared_
 
     m_session = std::make_unique<lt::session>(
         settings,
-        lt::session_flags_t { lt::session_handle::add_default_plugins });
+        lt::session_flags_t {0});
+
+    m_session->add_extension(&lt::create_ut_metadata_plugin);
+    m_session->add_extension(&lt::create_ut_pex_plugin);
+    m_session->add_extension(&lt::create_smart_ban_plugin);
 
     if (cfg->getBool("enable_pex"))
     {
@@ -166,7 +173,43 @@ Session::~Session()
 
 void Session::addTorrent(lt::add_torrent_params const& params)
 {
+    // If we are searching for metadata for this torrent, stop
+    // that search and add this one instead.
+
+    if (m_metadataSearches.count(params.info_hash) > 0)
+    {
+        auto handle = m_session->find_torrent(params.info_hash);
+        m_session->remove_torrent(handle, lt::session::delete_files);
+    }
+
     m_session->async_add_torrent(params);
+}
+
+void Session::metadataSearch(std::vector<lt::sha1_hash> const& hashes)
+{
+    // To do a metadata search (ie. find a torrent file based on its info hash)
+    // we add the torrent with just the info_hash and save_path set, and then
+    // track it in our alert loop.
+
+    fs::path tmp = fs::temp_directory_path();
+
+    for (lt::sha1_hash const& hash : hashes)
+    {
+        lt::add_torrent_params params;
+        params.flags &= ~lt::torrent_flags::auto_managed;
+        params.flags &= ~lt::torrent_flags::paused;
+        params.flags &= ~lt::torrent_flags::update_subscribe;
+        params.flags |=  lt::torrent_flags::upload_mode;
+
+        params.info_hash = hash;
+        params.save_path = tmp.string();
+
+        // Track this info hash internally to make sure
+        // we do not emit any events for it.
+        m_metadataSearches.insert(hash);
+
+        m_session->async_add_torrent(params);
+    }
 }
 
 void Session::removeTorrent(pt::TorrentHandle* torrent, lt::remove_flags_t flags)
@@ -264,6 +307,12 @@ void Session::readAlerts()
                 continue;
             }
 
+            if (m_metadataSearches.count(ata->handle.info_hash()))
+            {
+                // Part of a metadata search. Ignore.
+                continue;
+            }
+
             std::stringstream ss;
             ss << ata->handle.info_hash();
             std::string ih = ss.str();
@@ -279,15 +328,31 @@ void Session::readAlerts()
                 lt::torrent_handle::flush_disk_cache
                 | lt::torrent_handle::save_info_dict);
 
-            /*m_sessionState->torrents.insert({ ts.info_hash, ts.handle });
-            m_statusBar->updateTorrentCount(m_sessionState->torrents.size());
-            m_torrentListModel->addTorrent(ts);*/
-
             auto handle = new TorrentHandle(this, ata->handle);
 
             m_torrents.insert({ ata->handle.info_hash(), handle });
 
             emit torrentAdded(handle);
+
+            break;
+        }
+
+        case lt::metadata_received_alert::alert_type:
+        {
+            lt::metadata_received_alert* mra = lt::alert_cast<lt::metadata_received_alert>(alert);
+            lt::sha1_hash infoHash = mra->handle.info_hash();
+
+            if (m_metadataSearches.count(infoHash) > 0)
+            {
+                // Create a non-const copy of the torrent_info
+
+                auto tiConst = mra->handle.torrent_file();
+                auto ti = std::make_shared<lt::torrent_info>(*tiConst.get());
+
+                emit metadataSearchResult(&ti);
+
+                m_session->remove_torrent(mra->handle, lt::session::delete_files);
+            }
 
             break;
         }
@@ -389,6 +454,12 @@ void Session::readAlerts()
         case lt::torrent_removed_alert::alert_type:
         {
             lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
+
+            if (m_metadataSearches.count(tra->info_hash) > 0)
+            {
+                m_metadataSearches.erase(tra->info_hash);
+                break;
+            }
 
             auto handle = m_torrents.at(tra->info_hash);
             m_torrents.erase(tra->info_hash);

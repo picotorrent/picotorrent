@@ -178,15 +178,92 @@ AddTorrentDialog::AddTorrentDialog(QWidget* parent, std::vector<lt::add_torrent_
     this->setWindowTitle(i18n("add_torrent_s"));
 
     // Add torrents
+
     for (lt::add_torrent_params const& p : m_params)
     {
-        m_paramsList->addItem(QString::fromStdString(p.ti->name()));
+        m_paramsList->addItem(getDisplayName(p));
     }
+}
+
+QString AddTorrentDialog::getDisplayComment(lt::add_torrent_params const& param)
+{
+    if (param.ti)
+    {
+        return QString::fromStdString(param.ti->comment());
+    }
+
+    return "-";
+}
+
+QString AddTorrentDialog::getDisplayHash(lt::add_torrent_params const& param)
+{
+    std::stringstream hash;
+
+    if (param.ti)
+    {
+        hash << param.ti->info_hash();
+    }
+    else if(!param.info_hash.is_all_zeros())
+    {
+        hash << param.info_hash;
+    }
+    else
+    {
+        hash << "-";
+    }
+
+    return QString::fromStdString(hash.str());
+}
+
+QString AddTorrentDialog::getDisplayName(lt::add_torrent_params const& param)
+{
+    if (param.ti)
+    {
+        return QString::fromStdString(param.ti->name());
+    }
+
+    if (param.name.size() > 0)
+    {
+        return QString::fromStdString(param.name);
+    }
+
+    std::stringstream hash;
+    hash << param.info_hash;
+
+    return QString::fromStdString(hash.str());
+}
+
+QString AddTorrentDialog::getDisplaySize(lt::add_torrent_params const& param)
+{
+    if (param.ti)
+    {
+        std::wstring humanSize = Utils::toHumanFileSize(param.ti->total_size());
+        return QString::fromStdWString(humanSize);
+    }
+
+    return "-";
 }
 
 std::vector<lt::add_torrent_params> AddTorrentDialog::getParams()
 {
     return m_params;
+}
+
+void AddTorrentDialog::refreshMetadata(std::shared_ptr<libtorrent::torrent_info>* ti)
+{
+    for (int i = 0; i < m_params.size(); i++)
+    {
+        if (m_params.at(i).info_hash == (*ti)->info_hash())
+        {
+            m_params.at(i).ti = (*ti);
+            m_paramsList->setItemText(i, QString::fromStdString(m_params.at(i).ti->name()));
+
+            if (i == m_paramsList->currentIndex())
+            {
+                onTorrentIndexChanged(i);
+            }
+        }
+    }
 }
 
 void AddTorrentDialog::onSetTorrentFilePriorities(QAction* action)
@@ -224,22 +301,28 @@ void AddTorrentDialog::onTorrentIndexChanged(int index)
 {
     auto const& param = m_params.at(index);
 
-    std::stringstream hash;
-    hash << param.ti->info_hash();
-
-    m_torrentName->setText(QString::fromStdString(param.ti->name()));
-    m_torrentSize->setText(QString::fromStdWString(Utils::toHumanFileSize(param.ti->total_size())));
-    m_torrentInfoHash->setText(QString::fromStdString(hash.str()));
-    m_torrentComment->setText(QString::fromStdString(param.ti->comment()));
+    m_torrentName->setText(getDisplayName(param));
+    m_torrentSize->setText(getDisplaySize(param));
+    m_torrentInfoHash->setText(getDisplayHash(param));
+    m_torrentComment->setText(getDisplayComment(param));
     m_torrentSavePath->setText(QString::fromStdString(param.save_path));
+
     m_torrentSequentialDownload->setChecked(
         ((param.flags & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download));
+
     m_torrentStart->setChecked(
         (param.flags & lt::torrent_flags::paused)
         && (param.flags & lt::torrent_flags::auto_managed));
 
-    m_filesModel->rebuildTree(param.ti);
     m_filesModel->setPriorities(param.file_priorities);
+
+    if (!param.ti)
+    {
+        m_filesModel->clearTree();
+        return;
+    }
+
+    m_filesModel->rebuildTree(param.ti);
 
     if (param.ti->num_files() > 1)
     {
