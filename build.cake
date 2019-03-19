@@ -122,16 +122,28 @@ Task("Build-AppX-Package")
     .IsDependentOn("Setup-Publish-Directory")
     .Does(() =>
 {
-    var VCRedistVersion = System.IO.File.ReadAllText("C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Auxiliary\\Build\\Microsoft.VCRedistVersion.default.txt").Trim();
-    var VCRedist = Directory("C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Redist\\MSVC\\" + VCRedistVersion);
-    var VCDir = VCRedist + Directory(platform) + Directory("Microsoft.VC141.CRT");
+    var UseBuildToolsPaths  = true;
+    var VCRedistPath        = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Redist\\MSVC";
+    var VCRedistVersionFile = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Auxiliary\\Build\\Microsoft.VCRedistVersion.default.txt";
 
-    var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs");
-    var CRTDir = CRTRedist + Directory(platform);
+    if (!System.IO.File.Exists(VCRedistVersionFile))
+    {
+        VCRedistPath        = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC";
+        VCRedistVersionFile = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\Microsoft.VCRedistVersion.default.txt";
+    }
+
+    var VCRedistVersion = System.IO.File.ReadAllText(VCRedistVersionFile).Trim();
+    var VCRedist = Directory(VCRedistPath)
+                 + Directory(VCRedistVersion)
+                 + Directory(platform)
+                 + Directory("Microsoft.VC141.CRT");
+
+    var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs")
+                  + Directory(platform);
 
     TransformTextFile("./packaging/AppX/PicoTorrent.mapping.template", "%{", "}")
-        .WithToken("VCDir", VCDir)
-        .WithToken("CRTDir", CRTDir)
+        .WithToken("VCDir", VCRedist)
+        .WithToken("CRTDir", CRTRedist)
         .WithToken("PublishDirectory", MakeAbsolute(PublishDirectory))
         .WithToken("ResourceDirectory", MakeAbsolute(ResourceDirectory))
         .WithToken("PackagingDirectory", MakeAbsolute(Directory("./packaging/AppX")))
