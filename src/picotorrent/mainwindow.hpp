@@ -11,6 +11,7 @@ class QItemSelection;
 class QLabel;
 class QSplitter;
 class QTimer;
+class QWinTaskbarButton;
 
 namespace pt
 {
@@ -26,6 +27,7 @@ namespace pt
     class TorrentHandle;
     class TorrentListModel;
     class TorrentListWidget;
+    struct TorrentStatistics;
 
     class MainWindow : public QMainWindow
     {
@@ -38,6 +40,7 @@ namespace pt
         void changeEvent(QEvent* event) override;
         void closeEvent(QCloseEvent* event) override;
         bool nativeEvent(QByteArray const& eventType, void* message, long* result) override;
+        void showEvent(QShowEvent* event) override;
 
     private slots:
         void onFileAddTorrent();
@@ -45,6 +48,7 @@ namespace pt
         void onTorrentContextMenu(QPoint const& point);
         void onTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
         void onViewPreferences();
+        void updateTaskbarButton(TorrentStatistics* stats);
 
     private:
         void addTorrentFiles(QStringList const& files);
@@ -63,6 +67,7 @@ namespace pt
         QList<TorrentHandle*> m_selectedTorrents;
 
         QSplitter* m_splitter;
+        QWinTaskbarButton* m_taskbarButton;
 
         GeoIP* m_geo;
         Session* m_session;

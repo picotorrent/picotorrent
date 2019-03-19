@@ -24,6 +24,8 @@
 #include <QSplitter>
 #include <QStatusBar>
 #include <QTimer>
+#include <QWinTaskbarButton>
+#include <QWinTaskbarProgress>
 
 #include "aboutdialog.hpp"
 #include "addtorrentdialog.hpp"
@@ -47,7 +49,8 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     : m_env(env),
     m_db(db),
     m_cfg(cfg),
-    m_torrentsCount(0)
+    m_torrentsCount(0),
+    m_taskbarButton(nullptr)
 {
     m_session          = new Session(this, db, cfg);
     m_geo              = new GeoIP(this, m_env, m_cfg);
@@ -66,6 +69,9 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
 
     // Setup torrent list
     m_torrentList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
+
+    // Taskbar button
+    m_taskbarButton = new QWinTaskbarButton(this);
 
     /* Create actions */
     m_fileAddTorrent     = new QAction(i18n("amp_add_torrent"), this);
@@ -109,6 +115,9 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
                              stats->totalPayloadDownloadRate,
                              stats->totalPayloadUploadRate);
                      });
+
+    QObject::connect(m_session,          &Session::torrentStatsUpdated,
+                     this,               &MainWindow::updateTaskbarButton);
 
     QObject::connect(m_session,          &Session::torrentUpdated,
                      m_torrentListModel, &TorrentListModel::updateTorrent);
@@ -293,6 +302,16 @@ bool MainWindow::nativeEvent(QByteArray const& eventType, void* message, long* r
     return false;
 }
 
+void MainWindow::showEvent(QShowEvent* event)
+{
+    QMainWindow::showEvent(event);
+
+    if (!m_taskbarButton->window())
+    {
+        m_taskbarButton->setWindow(this->windowHandle());
+    }
+}
+
 /* Actions */
 void MainWindow::onFileAddTorrent()
 {
@@ -361,4 +380,35 @@ void MainWindow::onViewPreferences()
 
     QObject::connect(dlg,       &QDialog::finished,
                      dlg,       &QDialog::deleteLater);
+}
+
+void MainWindow::updateTaskbarButton(pt::TorrentStatistics* stats)
+{
+    auto progress = m_taskbarButton->progress();
+
+    if (stats->totalWanted > 0)
+    {
+        if (!progress->isVisible())
+        {
+            progress->setVisible(true);
+        }
+
+        // Clamp progress to an integer between 0 and 100.
+        float totalProgress = 0;
+
+        if (stats->totalWantedDone > 0 && stats->totalWanted > 0)
+        {
+            totalProgress = (float)stats->totalWantedDone / (float)stats->totalWanted;
+        }
+
+        progress->setMaximum(100);
+        progress->setValue((int)(totalProgress * 100));
+    }
+    else
+    {
+        if (progress->isVisible())
+        {
+            progress->setVisible(false);
+        }
+    }
 }

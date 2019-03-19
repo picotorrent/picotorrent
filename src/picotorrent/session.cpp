@@ -339,6 +339,12 @@ void Session::readAlerts()
                 stats.totalPayloadDownloadRate += status.download_payload_rate;
                 stats.totalPayloadUploadRate   += status.upload_payload_rate;
 
+                if (status.state == lt::torrent_status::state_t::downloading)
+                {
+                    stats.totalWanted     += status.total_wanted;
+                    stats.totalWantedDone += status.total_wanted_done;
+                }
+
                 auto handle = m_torrents.at(status.info_hash);
                 handle->updateStatus(status);
                 emit torrentUpdated(handle);

@@ -16,6 +16,7 @@ endif()
 
 find_package(OpenSSL REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Svg Widgets)
+find_package(Qt5WinExtras REQUIRED)
 
 message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
 message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
@@ -300,6 +301,7 @@ target_include_directories(
     include/
     "${BOOST_INCLUDE_DIRS}"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
+    "${Qt5WinExtras_INCLUDE_DIRS}"
 )
 
 target_link_libraries(
@@ -332,6 +334,7 @@ target_link_libraries(
     # Qt
     Qt5::Svg
     Qt5::Widgets
+    Qt5::WinExtras
 )
 
 # Copy base Qt dependencies
@@ -342,6 +345,7 @@ add_custom_command(
         $<TARGET_FILE:Qt5::Gui>
         $<TARGET_FILE:Qt5::Svg>
         $<TARGET_FILE:Qt5::Widgets>
+        $<TARGET_FILE:Qt5::WinExtras>
         $<TARGET_FILE_DIR:PicoTorrent>
 )
 
