@@ -37,6 +37,7 @@ namespace pt
 
     public:
         MainWindow(std::shared_ptr<Environment> env, std::shared_ptr<Database> db, std::shared_ptr<Configuration> cfg);
+        void handleCommandLine(QStringList const& args);
 
     protected:
         void changeEvent(QEvent* event) override;

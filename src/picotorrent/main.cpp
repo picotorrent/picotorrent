@@ -61,5 +61,7 @@ int main(int argc, char **argv)
         break;
     }
 
+    wnd.handleCommandLine(app.arguments());
+
     return app.exec();
 }

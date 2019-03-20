@@ -13,7 +13,9 @@
 #include <picotorrent/geoip/geoip.hpp>
 
 #include <QAction>
+#include <QApplication>
 #include <QCloseEvent>
+#include <QCommandLineParser>
 #include <QDebug>
 #include <QDir>
 #include <QFileDialog>
@@ -30,6 +32,7 @@
 
 #include "aboutdialog.hpp"
 #include "addtorrentdialog.hpp"
+#include "picojson.hpp"
 #include "preferencesdialog.hpp"
 #include "session.hpp"
 #include "sessionstate.hpp"
@@ -211,6 +214,11 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
 
 void MainWindow::addTorrents(std::vector<lt::add_torrent_params>& params)
 {
+    if (params.empty())
+    {
+        return;
+    }
+
     std::vector<lt::sha1_hash> hashes;
 
     // Set up default values for all params
@@ -257,6 +265,33 @@ void MainWindow::addTorrents(std::vector<lt::add_torrent_params>& params)
                      dlg, &QDialog::deleteLater);
 
     m_session->metadataSearch(hashes);
+}
+
+void MainWindow::handleCommandLine(QStringList const& args)
+{
+    if (args.count() == 0)
+    {
+        return;
+    }
+
+    QCommandLineParser parser;
+    parser.process(args);
+
+    std::vector<lt::add_torrent_params> params;
+
+    for (QString const& arg : parser.positionalArguments())
+    {
+        if (arg.startsWith("magnet:?xt"))
+        {
+            this->parseMagnetLinks(params, { arg });
+        }
+        else
+        {
+            this->parseTorrentFiles(params, { arg });
+        }
+    }
+
+    this->addTorrents(params);
 }
 
 void MainWindow::parseMagnetLinks(std::vector<lt::add_torrent_params>& params, QStringList const& magnetLinks)
@@ -344,10 +379,25 @@ bool MainWindow::nativeEvent(QByteArray const& eventType, void* message, long* r
     if (msg->message == WM_COPYDATA)
     {
         COPYDATASTRUCT* cds = reinterpret_cast<COPYDATASTRUCT*>(msg->lParam);
-        LPTSTR str = reinterpret_cast<LPTSTR>(cds->lpData);
-        QString cmd = QString::fromWCharArray(str, cds->cbData);
+        const char* encodedArgs = reinterpret_cast<const char*>(cds->lpData);
 
-        // TODO(handle)
+        picojson::value encodedValue;
+        std::string err = picojson::parse(encodedValue, encodedArgs);
+
+        if (!err.empty())
+        {
+            return false;
+        }
+
+        picojson::array arr = encodedValue.get<picojson::array>();
+        QStringList args;
+
+        for (picojson::value const& val : arr)
+        {
+            args.push_back(QString::fromStdString(val.get<std::string>()));
+        }
+
+        handleCommandLine(args);
 
         return true;
     }
