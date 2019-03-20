@@ -237,6 +237,7 @@
         "encrypt_config_file": "Encrypt configuration file",
         "amp_details_panel": "&Details panel",
         "s_of_s": "%s (of %s)",
-        "downloaded_size": "Downloaded"
+        "downloaded_size": "Downloaded",
+        "amp_status_bar": "&Status bar"
     }
 }

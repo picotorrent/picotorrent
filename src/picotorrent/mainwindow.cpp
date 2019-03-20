@@ -70,7 +70,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     // Setup splitter
     m_splitter->addWidget(m_torrentList);
     m_splitter->addWidget(m_torrentDetails);
-    m_splitter->setCollapsible(0, false);
+    m_splitter->setChildrenCollapsible(false);
     m_splitter->setOrientation(Qt::Vertical);
 
     // Setup torrent list
@@ -81,7 +81,15 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_fileAddMagnetLinks = new QAction(i18n("amp_add_magnet_link_s"), this);
     m_fileExit           = new QAction(i18n("amp_exit"), this);
     m_viewPreferences    = new QAction(i18n("amp_preferences"), this);
+    m_viewDetailsPanel   = new QAction(i18n("amp_details_panel"), this);
+    m_viewStatusBar      = new QAction(i18n("amp_status_bar"), this);
     m_helpAbout          = new QAction(i18n("amp_about"), this);
+
+    m_viewDetailsPanel->setCheckable(true);
+    m_viewDetailsPanel->setChecked(m_cfg->getBool("ui.show_details_panel"));
+
+    m_viewStatusBar->setCheckable(true);
+    m_viewStatusBar->setChecked(m_cfg->getBool("ui.show_status_bar"));
 
     // Session signals
     QObject::connect(m_session,          &Session::sessionStatsUpdated,
@@ -147,6 +155,12 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     QObject::connect(m_viewPreferences,    &QAction::triggered,
                      this,                 &MainWindow::onViewPreferences);
 
+    QObject::connect(m_viewDetailsPanel,   &QAction::toggled,
+                     this,                 &MainWindow::showHideDetailsPanel);
+
+    QObject::connect(m_viewStatusBar,      &QAction::toggled,
+                     this,                 &MainWindow::showHideStatusBar);
+
     QObject::connect(m_helpAbout,          &QAction::triggered,
                      this,                 &MainWindow::onHelpAbout);
 
@@ -192,24 +206,65 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
 
     auto viewMenu = menuBar()->addMenu(i18n("amp_view"));
     viewMenu->addAction(m_viewPreferences);
+    viewMenu->addSeparator();
+    viewMenu->addAction(m_viewDetailsPanel);
+    viewMenu->addAction(m_viewStatusBar);
 
     auto helpMenu = menuBar()->addMenu(i18n("amp_help"));
     helpMenu->addAction(m_helpAbout);
 
     this->setCentralWidget(m_splitter);
-    this->setMinimumSize(400, 300);
+    this->setMinimumWidth(250);
     this->setStatusBar(m_statusBar);
     this->setWindowIcon(QIcon(":res/app.ico"));  
     this->setWindowTitle("PicoTorrent");
+
+    this->resize(
+        m_cfg->getInt("ui.widgets.main_window.width"),
+        m_cfg->getInt("ui.widgets.main_window.height"));
+
+    if (m_cfg->getString("ui.widgets.splitter.sizes") != "")
+    {
+        auto sizesPlain = QString::fromStdString(m_cfg->getString("ui.widgets.splitter.sizes"));
+        auto sizes      = sizesPlain.split(",");
+
+        QList<int> splitterSizes;
+
+        for (QString const& part : sizes)
+        {
+            splitterSizes.push_back(part.toInt());
+        }
+
+        m_splitter->setSizes(splitterSizes);
+    }
 
     if (m_cfg->getBool("geoip.enabled"))
     {
         m_geo->load();
     }
 
+    this->showHideDetailsPanel(m_cfg->getBool("ui.show_details_panel"));
+    this->showHideStatusBar(m_cfg->getBool("ui.show_status_bar"));
+
     m_statusBar->updateDhtNodesCount(m_cfg->getBool("enable_dht") ? 0 : -1);
     m_statusBar->updateTorrentCount(m_torrentsCount);
     m_trayIcon->show();
+}
+
+MainWindow::~MainWindow()
+{
+    m_cfg->setInt("ui.widgets.main_window.height", this->height());
+    m_cfg->setInt("ui.widgets.main_window.width",  this->width());
+
+    // Store splitter sizes
+    QStringList sizes;
+
+    for (int size : m_splitter->sizes())
+    {
+        sizes << QString::number(size);
+    }
+
+    m_cfg->setString("ui.widgets.splitter.sizes", sizes.join(",").toStdString());
 }
 
 void MainWindow::addTorrents(std::vector<lt::add_torrent_params>& params)
@@ -537,4 +592,34 @@ void MainWindow::updateTaskbarButton(pt::TorrentStatistics* stats)
             progress->setVisible(false);
         }
     }
+}
+
+void MainWindow::showHideDetailsPanel(bool show)
+{
+    if (show)
+    {
+        m_torrentDetails->show();
+        this->setMinimumHeight(300);
+    }
+    else
+    {
+        m_torrentDetails->hide();
+        this->setMinimumHeight(150);
+    }
+
+    m_cfg->setBool("ui.show_details_panel", show);
+}
+
+void MainWindow::showHideStatusBar(bool show)
+{
+    if (show)
+    {
+        m_statusBar->show();
+    }
+    else
+    {
+        m_statusBar->hide();
+    }
+
+    m_cfg->setBool("ui.show_status_bar", show);
 }

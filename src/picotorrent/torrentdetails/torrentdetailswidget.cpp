@@ -26,7 +26,7 @@ TorrentDetailsWidget::TorrentDetailsWidget(QWidget* parent, std::shared_ptr<pt::
     QTabWidget::addTab(m_peers,    i18n("peers"));
     QTabWidget::addTab(m_trackers, i18n("trackers"));
 
-    this->setMinimumHeight(140);
+    this->setMinimumHeight(120);
     this->setMovable(false);
 }
 

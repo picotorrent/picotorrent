@@ -30,6 +30,7 @@ IDI_APPICON ICON DISCARDABLE "..\\..\\res\\app.ico"
 20181211213708_create_column_state_table        DBMIGRATION "..\\..\\res\\dbmigrations\\20181211213708_create_column_state_table.sql"
 20181212205212_create_session_state_table       DBMIGRATION "..\\..\\res\\dbmigrations\\20181212205212_create_session_state_table.sql"
 20181212213425_create_log_table                 DBMIGRATION "..\\..\\res\\dbmigrations\\20181212213425_create_log_table.sql"
+20190320111141_insert_ui_settings               DBMIGRATION "..\\..\\res\\dbmigrations\\20190320111141_insert_ui_settings.sql"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION        VER_FILE_VERSION

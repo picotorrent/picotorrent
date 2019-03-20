@@ -37,6 +37,8 @@ namespace pt
 
     public:
         MainWindow(std::shared_ptr<Environment> env, std::shared_ptr<Database> db, std::shared_ptr<Configuration> cfg);
+        ~MainWindow();
+
         void handleCommandLine(QStringList const& args);
 
     protected:
@@ -58,6 +60,8 @@ namespace pt
         void addTorrents(std::vector<libtorrent::add_torrent_params>& params);
         void parseMagnetLinks(std::vector<libtorrent::add_torrent_params>& params, QStringList const& magnetLinks);
         void parseTorrentFiles(std::vector<libtorrent::add_torrent_params>& params, QStringList const& files);
+        void showHideDetailsPanel(bool show);
+        void showHideStatusBar(bool show);
 
         std::shared_ptr<Environment> m_env;
         std::shared_ptr<Database> m_db;
@@ -68,6 +72,8 @@ namespace pt
         QAction* m_fileAddMagnetLinks;
         QAction* m_fileExit;
         QAction* m_viewPreferences;
+        QAction* m_viewDetailsPanel;
+        QAction* m_viewStatusBar;
         QAction* m_helpAbout;
 
         QList<TorrentHandle*> m_selectedTorrents;
