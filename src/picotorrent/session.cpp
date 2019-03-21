@@ -141,7 +141,6 @@ Session::Session(QObject* parent, std::shared_ptr<pt::Database> db, std::shared_
         lt::session_flags_t {0});
 
     m_session->add_extension(&lt::create_ut_metadata_plugin);
-    m_session->add_extension(&lt::create_ut_pex_plugin);
     m_session->add_extension(&lt::create_smart_ban_plugin);
 
     if (cfg->getBool("enable_pex"))
@@ -513,7 +512,12 @@ void Session::saveTorrents()
     int numPaused = 0;
     int numFailed = 0;
 
-    auto temp = m_session->get_torrent_status([](const lt::torrent_status &st) { return true; });
+    // Save all torrents not part of a metadata search
+    auto temp = m_session->get_torrent_status(
+        [this](const lt::torrent_status &st)
+        {
+            return m_metadataSearches.count(st.info_hash) == 0;
+        });
 
     for (lt::torrent_status &st : temp)
     {
