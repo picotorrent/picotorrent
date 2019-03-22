@@ -48,7 +48,13 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    auto env = std::make_shared<pt::Environment>();
+    auto env = pt::Environment::create();
+
+    if (!env)
+    {
+        return -1;
+    }
+
     auto db = std::make_shared<pt::Database>(env);
 
     if (!db->migrate())

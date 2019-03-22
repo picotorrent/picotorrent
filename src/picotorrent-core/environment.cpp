@@ -7,6 +7,26 @@
 namespace fs = std::experimental::filesystem;
 using pt::Environment;
 
+std::shared_ptr<Environment> Environment::create()
+{
+    auto env = new Environment();
+
+    fs::path appData = env->getApplicationDataPath();
+
+    if (!fs::exists(appData))
+    {
+        std::error_code ec;
+        fs::create_directories(appData, ec);
+
+        if (ec)
+        {
+            return nullptr;
+        }
+    }
+
+    return std::shared_ptr<Environment>(env);
+}
+
 fs::path Environment::getApplicationDataPath()
 {
     if (isInstalled() || isAppContainerProcess())
