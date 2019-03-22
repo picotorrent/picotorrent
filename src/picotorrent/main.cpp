@@ -15,7 +15,10 @@
 #include <picotorrent/core/environment.hpp>
 #include <picotorrent/geoip/geoip.hpp>
 
+#include "../breakpad/exception_handler.h"
+
 #include "application.hpp"
+#include "errorhandler.hpp"
 #include "mainwindow.hpp"
 #include "translator.hpp"
 
@@ -23,6 +26,19 @@ int main(int argc, char **argv)
 {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
+    // Set up Google Breakpad before anything else
+#ifdef NDEBUG
+    google_breakpad::ExceptionHandler handler(
+        pt::ErrorHandler::dumpPath(),
+        &pt::ErrorHandler::filter,
+        &pt::ErrorHandler::report,
+        nullptr,
+        google_breakpad::ExceptionHandler::HandlerType::HANDLER_ALL,
+        MiniDumpNormal,
+        L"",
+        nullptr);
+#endif
 
     pt::Application app(argc, argv);
 

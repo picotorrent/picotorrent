@@ -243,6 +243,7 @@ add_executable(
     src/picotorrent/connectionsectionwidget
     src/picotorrent/downloadssectionwidget
     src/picotorrent/elidedlabel
+    src/picotorrent/errorhandler
     src/picotorrent/filestorageitemdelegate
     src/picotorrent/filestorageitemmodel
     src/picotorrent/generalsectionwidget
@@ -321,6 +322,7 @@ target_link_libraries(
     iphlpapi
     legacy_stdio_definitions
     shlwapi
+    wininet
 
     # Boost
     boost-system
