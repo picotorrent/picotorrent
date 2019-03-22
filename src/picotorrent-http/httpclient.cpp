@@ -23,6 +23,31 @@ struct State
     DWORD totalSize = 0;
 };
 
+static std::wstring ReadHeader(HINTERNET hRequest, DWORD dwHeader)
+{
+    DWORD bufLen;
+
+    WinHttpQueryHeaders(
+        hRequest,
+        dwHeader,
+        WINHTTP_HEADER_NAME_BY_INDEX,
+        WINHTTP_NO_OUTPUT_BUFFER,
+        &bufLen,
+        WINHTTP_NO_HEADER_INDEX);
+
+    std::wstring res(L"\0", bufLen);
+
+    WinHttpQueryHeaders(
+        hRequest,
+        dwHeader,
+        WINHTTP_HEADER_NAME_BY_INDEX,
+        &res[0],
+        &bufLen,
+        WINHTTP_NO_HEADER_INDEX);
+
+    return res;
+}
+
 static void CALLBACK StatusCallbackProxy(HINTERNET hInternet, DWORD_PTR dwContext, DWORD dwInternetStatus, LPVOID lpStatusInformation, DWORD dwStatusInformationLength)
 {
     State* state = reinterpret_cast<State*>(dwContext);
@@ -52,8 +77,8 @@ static void CALLBACK StatusCallbackProxy(HINTERNET hInternet, DWORD_PTR dwContex
 
     case WINHTTP_CALLBACK_STATUS_HEADERS_AVAILABLE:
     {
-        /*std::wstring status_str = ReadHeader(state->hRequest, WINHTTP_QUERY_STATUS_CODE);
-        state->statusCode = std::stoi(status_str);*/
+        std::wstring status_str = ReadHeader(state->hRequest, WINHTTP_QUERY_STATUS_CODE);
+        state->response->statusCode = std::stoi(status_str);
 
         WinHttpQueryDataAvailable(state->hRequest, NULL);
         break;

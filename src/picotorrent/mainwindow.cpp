@@ -1,5 +1,8 @@
 #include "mainwindow.hpp"
 
+#include <Windows.h>
+#include <CommCtrl.h>
+
 #include <filesystem>
 #include <vector>
 
@@ -14,9 +17,11 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QCheckBox>
 #include <QCloseEvent>
 #include <QCommandLineParser>
 #include <QDebug>
+#include <QDesktopServices>
 #include <QDir>
 #include <QFileDialog>
 #include <QHeaderView>
@@ -32,6 +37,7 @@
 
 #include "aboutdialog.hpp"
 #include "addtorrentdialog.hpp"
+#include "buildinfo.hpp"
 #include "picojson.hpp"
 #include "preferencesdialog.hpp"
 #include "session.hpp"
@@ -46,6 +52,8 @@
 #include "torrentlistwidget.hpp"
 #include "torrentstatistics.hpp"
 #include "translator.hpp"
+#include "updatechecker.hpp"
+#include "updateinformation.hpp"
 
 namespace fs = std::experimental::filesystem;
 using pt::MainWindow;
@@ -77,13 +85,14 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_torrentList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
 
     /* Create actions */
-    m_fileAddTorrent     = new QAction(i18n("amp_add_torrent"), this);
-    m_fileAddMagnetLinks = new QAction(i18n("amp_add_magnet_link_s"), this);
-    m_fileExit           = new QAction(i18n("amp_exit"), this);
-    m_viewPreferences    = new QAction(i18n("amp_preferences"), this);
-    m_viewDetailsPanel   = new QAction(i18n("amp_details_panel"), this);
-    m_viewStatusBar      = new QAction(i18n("amp_status_bar"), this);
-    m_helpAbout          = new QAction(i18n("amp_about"), this);
+    m_fileAddTorrent      = new QAction(i18n("amp_add_torrent"), this);
+    m_fileAddMagnetLinks  = new QAction(i18n("amp_add_magnet_link_s"), this);
+    m_fileExit            = new QAction(i18n("amp_exit"), this);
+    m_viewPreferences     = new QAction(i18n("amp_preferences"), this);
+    m_viewDetailsPanel    = new QAction(i18n("amp_details_panel"), this);
+    m_viewStatusBar       = new QAction(i18n("amp_status_bar"), this);
+    m_helpCheckForUpdates = new QAction(i18n("amp_check_for_updates"), this);
+    m_helpAbout           = new QAction(i18n("amp_about"), this);
 
     m_viewDetailsPanel->setCheckable(true);
     m_viewDetailsPanel->setChecked(m_cfg->getBool("ui.show_details_panel"));
@@ -161,6 +170,9 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     QObject::connect(m_viewStatusBar,      &QAction::toggled,
                      this,                 &MainWindow::showHideStatusBar);
 
+    QObject::connect(m_helpCheckForUpdates,&QAction::triggered,
+                     [this] { this->checkForUpdates(true); });
+
     QObject::connect(m_helpAbout,          &QAction::triggered,
                      this,                 &MainWindow::onHelpAbout);
 
@@ -211,6 +223,8 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     viewMenu->addAction(m_viewStatusBar);
 
     auto helpMenu = menuBar()->addMenu(i18n("amp_help"));
+    helpMenu->addAction(m_helpCheckForUpdates);
+    helpMenu->addSeparator();
     helpMenu->addAction(m_helpAbout);
 
     this->setCentralWidget(m_splitter);
@@ -249,6 +263,11 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_statusBar->updateDhtNodesCount(m_cfg->getBool("enable_dht") ? 0 : -1);
     m_statusBar->updateTorrentCount(m_torrentsCount);
     m_trayIcon->show();
+
+    if (m_cfg->getBool("update_checks.enabled"))
+    {
+        this->checkForUpdates();
+    }
 }
 
 MainWindow::~MainWindow()
@@ -411,6 +430,18 @@ void MainWindow::changeEvent(QEvent* event)
     }
 
     QMainWindow::changeEvent(event);
+}
+
+void MainWindow::checkForUpdates(bool force)
+{
+    auto checker = new UpdateChecker(m_cfg, force);
+    checker->check();
+
+    QObject::connect(checker, &UpdateChecker::finished,
+                     this,    &MainWindow::showUpdateDialog);
+
+    QObject::connect(checker, &UpdateChecker::finished,
+                     checker, &UpdateChecker::deleteLater);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -622,4 +653,67 @@ void MainWindow::showHideStatusBar(bool show)
     }
 
     m_cfg->setBool("ui.show_status_bar", show);
+}
+
+void MainWindow::showUpdateDialog(pt::UpdateInformation* info)
+{
+    if (info->available)
+    {
+        // Load translations
+        std::wstring content = i18n("new_version_available").toStdWString();
+        std::wstring mainFormatted = QString::asprintf(
+                i18n("picotorrent_v_available").toLocal8Bit().data(),
+                info->version.toLocal8Bit().data()).toStdWString();
+        std::wstring verification = i18n("ignore_update").toStdWString();
+        std::wstring show = i18n("show_on_github").toStdWString();
+
+        const TASKDIALOG_BUTTON pButtons[] =
+        {
+            { 1000, show.c_str() },
+        };
+
+        TASKDIALOGCONFIG tdf = { sizeof(TASKDIALOGCONFIG) };
+        tdf.cButtons = ARRAYSIZE(pButtons);
+        tdf.dwCommonButtons = TDCBF_CLOSE_BUTTON;
+        tdf.dwFlags = TDF_POSITION_RELATIVE_TO_WINDOW | TDF_USE_COMMAND_LINKS;
+        tdf.hwndParent = (HWND)this->winId();
+        tdf.pButtons = pButtons;
+        tdf.pszMainIcon = TD_INFORMATION_ICON;
+        tdf.pszMainInstruction = mainFormatted.c_str();
+        tdf.pszVerificationText = verification.c_str();
+        tdf.pszWindowTitle = TEXT("PicoTorrent");
+
+        int pnButton = -1;
+        int pnRadioButton = -1;
+        BOOL pfVerificationFlagChecked = FALSE;
+
+        TaskDialogIndirect(&tdf, &pnButton, &pnRadioButton, &pfVerificationFlagChecked);
+
+        if (pnButton == 1000)
+        {
+            QDesktopServices::openUrl(QUrl(info->url));
+            // wxLaunchDefaultBrowser(url, wxBROWSER_NEW_WINDOW);
+        }
+
+        if (pfVerificationFlagChecked)
+        {
+            m_cfg->setString(
+                "update_checks.ignored_version",
+                info->version.toStdString());
+        }
+    }
+    else
+    {
+        std::wstring main = i18n("no_update_available").toStdWString();
+
+        TASKDIALOGCONFIG tdf = { sizeof(TASKDIALOGCONFIG) };
+        tdf.dwCommonButtons = TDCBF_OK_BUTTON;
+        tdf.dwFlags = TDF_POSITION_RELATIVE_TO_WINDOW;
+        tdf.hwndParent = (HWND)this->winId();
+        tdf.pszMainIcon = TD_INFORMATION_ICON;
+        tdf.pszMainInstruction = main.c_str();
+        tdf.pszWindowTitle = TEXT("PicoTorrent");
+
+        TaskDialogIndirect(&tdf, nullptr, nullptr, nullptr);
+    }
 }

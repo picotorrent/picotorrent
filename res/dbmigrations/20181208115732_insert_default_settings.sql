@@ -2,7 +2,6 @@ INSERT INTO setting (key, int_value, string_value) VALUES
 
 ('default_save_path',                          NULL,                           get_known_folder_path('FOLDERID_Downloads')),
 ('language_id',                                get_user_default_ui_language(), NULL),
-('ignored_version',                            NULL,                           NULL),
 /* TODO: ('languages_path', '') */
 ('encrypt_config_file',                        0,                              NULL),
 ('listen_interface',                           NULL,                           '{any}'),
@@ -22,7 +21,6 @@ INSERT INTO setting (key, int_value, string_value) VALUES
 ('proxy_trackers',                             0,                              NULL),
 
 ('start_position',                             0,                              NULL),
-('update_url',                                 NULL,                           'https://api.picotorrent.org/releases/latest'),
 
 /* UI */
 ('skip_add_torrent_dialog',                    0,                              NULL),
@@ -52,5 +50,17 @@ INSERT INTO setting (key, int_value, string_value) VALUES
 
 /* GeoIP */
 ('geoip.database_url',                         0,                              'https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.mmdb.gz'),
-('geoip.enabled',                              1,                              NULL)
-;
+('geoip.enabled',                              1,                              NULL),
+
+/* Application updates */
+('update_checks.enabled',                      1,                              NULL),
+('update_checks.ignored_version',              NULL,                           NULL),
+('update_checks.url',                          NULL,                           'https://api.picotorrent.org/releases/latest'),
+
+/* UI state */
+('ui.widgets.main_window.height',              300,                            NULL),
+('ui.widgets.main_window.width',               400,                            NULL),
+('ui.widgets.splitter.sizes',                  NULL,                           ''),
+('ui.show_details_panel',                      1,                              NULL),
+('ui.show_status_bar',                         1,                              NULL);
+

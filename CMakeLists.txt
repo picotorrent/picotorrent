@@ -174,6 +174,7 @@ add_library(
     src/picotorrent-http/httpresponse
 
     # Headers (for MOC Q_OBJECT detection)
+    include/picotorrent/http/httpclient
     include/picotorrent/http/httprequest
     include/picotorrent/http/httpresponse
 )
@@ -262,6 +263,7 @@ add_executable(
     src/picotorrent/torrentlistmodel
     src/picotorrent/torrentlistwidget
     src/picotorrent/translator
+    src/picotorrent/updatechecker
 
     src/picotorrent/models/peerlistmodel
     src/picotorrent/models/trackerslistmodel
@@ -313,6 +315,7 @@ target_link_libraries(
     PicoTorrent.Http
 
     # Windows
+    Comctl32
     crypt32
     iphlpapi
     legacy_stdio_definitions

@@ -21,6 +21,7 @@ namespace pt
     class Database;
     class Environment;
     class GeoIP;
+    class HttpClient;
     class Session;
     struct SessionState;
     class StatusBar;
@@ -30,6 +31,7 @@ namespace pt
     class TorrentListModel;
     class TorrentListWidget;
     struct TorrentStatistics;
+    struct UpdateInformation;
 
     class MainWindow : public QMainWindow
     {
@@ -48,12 +50,14 @@ namespace pt
         void showEvent(QShowEvent* event) override;
 
     private slots:
+        void checkForUpdates(bool force = false);
         void onFileAddMagnetLinks();
         void onFileAddTorrent();
         void onHelpAbout();
         void onTorrentContextMenu(QPoint const& point);
         void onTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
         void onViewPreferences();
+        void showUpdateDialog(UpdateInformation* info);
         void updateTaskbarButton(TorrentStatistics* stats);
 
     private:
@@ -74,6 +78,7 @@ namespace pt
         QAction* m_viewPreferences;
         QAction* m_viewDetailsPanel;
         QAction* m_viewStatusBar;
+        QAction* m_helpCheckForUpdates;
         QAction* m_helpAbout;
 
         QList<TorrentHandle*> m_selectedTorrents;
