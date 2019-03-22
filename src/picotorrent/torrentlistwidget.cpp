@@ -11,9 +11,8 @@
 
 using pt::TorrentListWidget;
 
-TorrentListWidget::TorrentListWidget(QWidget* parent, pt::TorrentListModel* model, std::shared_ptr<pt::Database> db)
-    : m_db(db),
-    m_model(model)
+TorrentListWidget::TorrentListWidget(QWidget* parent, QAbstractItemModel* model, std::shared_ptr<pt::Database> db)
+    : m_db(db)
 {
     this->setModel(model);
     this->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -51,13 +50,23 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, pt::TorrentListModel* mode
         }
     }
 
-    auto sm = this->selectionModel();
+    // Sorting
+    auto torrentSortListQ = m_db->statement("SELECT sort_column_index, sort_column_order FROM list_state WHERE id = ?");
+    torrentSortListQ->bind(1, "torrent_list");
 
-    QObject::connect(header, &QHeaderView::customContextMenuRequested,
-                     this,   &TorrentListWidget::showHeaderContextMenu);
+    if (torrentSortListQ->read())
+    {
+        int sortColumnIndex = torrentSortListQ->getInt(0);
+        int sortColumnOrder = torrentSortListQ->getInt(1);
 
-    QObject::connect(sm,     &QItemSelectionModel::selectionChanged,
-                     this,   &TorrentListWidget::torrentSelectionChanged);
+        this->sortByColumn(sortColumnIndex, (Qt::SortOrder)sortColumnOrder);
+    }
+
+    QObject::connect(header,                 &QHeaderView::customContextMenuRequested,
+                     this,                   &TorrentListWidget::showHeaderContextMenu);
+
+    QObject::connect(this->selectionModel(), &QItemSelectionModel::selectionChanged,
+                     this,                   &TorrentListWidget::torrentSelectionChanged);
 }
 
 TorrentListWidget::~TorrentListWidget()
@@ -86,6 +95,12 @@ TorrentListWidget::~TorrentListWidget()
         stmt->bind(5, !sectionHidden);
         stmt->execute();
     }
+
+    auto sortStmt = m_db->statement("INSERT INTO list_state (id, sort_column_index, sort_column_order) VALUES (?, ?, ?) ON CONFLICT (id) DO UPDATE SET sort_column_index = excluded.sort_column_index, sort_column_order = excluded.sort_column_order");
+    sortStmt->bind(1, "torrent_list");
+    sortStmt->bind(2, header->sortIndicatorSection());
+    sortStmt->bind(3, (int)header->sortIndicatorOrder());
+    sortStmt->execute();
 }
 
 QSize TorrentListWidget::sizeHint() const

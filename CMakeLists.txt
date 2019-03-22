@@ -262,6 +262,7 @@ add_executable(
     src/picotorrent/torrenthandle
     src/picotorrent/torrentlistmodel
     src/picotorrent/torrentlistwidget
+    src/picotorrent/torrentsortfilterproxymodel
     src/picotorrent/translator
     src/picotorrent/updatechecker
 

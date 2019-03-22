@@ -50,6 +50,7 @@
 #include "torrentdetails/torrentdetailswidget.hpp"
 #include "torrentlistmodel.hpp"
 #include "torrentlistwidget.hpp"
+#include "torrentsortfilterproxymodel.hpp"
 #include "torrentstatistics.hpp"
 #include "translator.hpp"
 #include "updatechecker.hpp"
@@ -65,15 +66,17 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_torrentsCount(0),
     m_taskbarButton(nullptr)
 {
-    m_session          = new Session(this, db, cfg);
-    m_geo              = new GeoIP(this, m_env, m_cfg);
-    m_splitter         = new QSplitter(this);
-    m_taskbarButton    = new QWinTaskbarButton(this);
-    m_statusBar        = new StatusBar(this);
-    m_trayIcon         = new SystemTrayIcon(this);
-    m_torrentDetails   = new TorrentDetailsWidget(this, m_sessionState, m_geo);
-    m_torrentListModel = new TorrentListModel();
-    m_torrentList      = new TorrentListWidget(this, m_torrentListModel, m_db);
+    m_session                = new Session(this, db, cfg);
+    m_geo                    = new GeoIP(this, m_env, m_cfg);
+    m_splitter               = new QSplitter(this);
+    m_taskbarButton          = new QWinTaskbarButton(this);
+    m_statusBar              = new StatusBar(this);
+    m_trayIcon               = new SystemTrayIcon(this);
+    m_torrentDetails         = new TorrentDetailsWidget(this, m_sessionState, m_geo);
+    m_torrentListModel       = new TorrentListModel();
+    m_torrentSortFilterModel = new TorrentSortFilterProxyModel(this);
+    m_torrentSortFilterModel->setSourceModel(m_torrentListModel);
+    m_torrentList            = new TorrentListWidget(this, m_torrentSortFilterModel, m_db);
 
     // Setup splitter
     m_splitter->addWidget(m_torrentList);
@@ -81,7 +84,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_splitter->setChildrenCollapsible(false);
     m_splitter->setOrientation(Qt::Vertical);
 
-    // Setup torrent list
+    // Setup torrent list and sort/filter-model
     m_torrentList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
 
     /* Create actions */
@@ -91,7 +94,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_viewPreferences     = new QAction(i18n("amp_preferences"), this);
     m_viewDetailsPanel    = new QAction(i18n("amp_details_panel"), this);
     m_viewStatusBar       = new QAction(i18n("amp_status_bar"), this);
-    m_helpCheckForUpdates = new QAction(i18n("amp_check_for_updates"), this);
+    m_helpCheckForUpdates = new QAction(i18n("amp_check_for_update"), this);
     m_helpAbout           = new QAction(i18n("amp_about"), this);
 
     m_viewDetailsPanel->setCheckable(true);

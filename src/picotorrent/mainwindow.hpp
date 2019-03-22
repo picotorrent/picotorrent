@@ -30,6 +30,7 @@ namespace pt
     class TorrentHandle;
     class TorrentListModel;
     class TorrentListWidget;
+    class TorrentSortFilterProxyModel;
     struct TorrentStatistics;
     struct UpdateInformation;
 
@@ -93,6 +94,7 @@ namespace pt
         TorrentDetailsWidget* m_torrentDetails;
         TorrentListModel* m_torrentListModel;
         TorrentListWidget* m_torrentList;
+        TorrentSortFilterProxyModel* m_torrentSortFilterModel;
         int m_torrentsCount;
     };
 }

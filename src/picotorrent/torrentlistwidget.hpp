@@ -7,6 +7,7 @@
 
 #include "torrenthandle.hpp"
 
+class QAbstractItemModel;
 class QAction;
 class QItemSelection;
 class QPoint;
@@ -14,14 +15,13 @@ class QPoint;
 namespace pt
 {
     class Database;
-    class TorrentListModel;
 
     class TorrentListWidget : public QTreeView
     {
         Q_OBJECT
 
     public:
-        TorrentListWidget(QWidget* parent, TorrentListModel* model, std::shared_ptr<Database> db);
+        TorrentListWidget(QWidget* parent, QAbstractItemModel* model, std::shared_ptr<Database> db);
         virtual ~TorrentListWidget();
 
         QSize sizeHint() const override;
@@ -37,6 +37,5 @@ namespace pt
         void toggleColumnVisibility(QAction* action);
 
         std::shared_ptr<Database> m_db;
-        TorrentListModel* m_model;
     };
 }
