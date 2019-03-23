@@ -13,7 +13,9 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 
 ## Quick facts
 
-- (Azureus-style) peer ID: `-PI-`. Example: `-PI0091-` (major: 0, minor: 09, patch: 1).
+- Supports DHT, PeX, LSD, UPnP.
+- Geo IP lookups based on libmaxminddb.
+- (Azureus-style) peer ID: `-PI-`. Example: `-PI0151-` (major: 0, minor: 15, patch: 1).
 - User agent: `PicoTorrent/x.y.z`.
 - Native look-and-feel across Windows versions.
 - Easy to use with high performance.
@@ -23,20 +25,29 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 
 ## Building PicoTorrent
 
-PicoTorrent depends only on what Rasterbar-libtorrent needs (Boost.System
-and OpenSSL) and all dependencies are conveniently pre-packaged in a NuGet
-package which will be downloaded as a part of the build process.
+To successfully build PicoTorrent, you need the following libraries and
+applications installed,
 
-To successfully build PicoTorrent, you need the following tools installed,
+ * [CMake (>= v3.8)](https://cmake.org/download/).
+ * [Build Tools for Visual Studio 2017](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (or regular Visual Studio 2017 with the C++ toolset).
+ * [OpenSSL v1.1.1](https://slproweb.com/products/Win32OpenSSL.html) (*not*
+   the light version) for the architecture you plan on building. Both Win32
+   and Win64 can be installed side by side.
+ * [Qt v5.12.1](https://www.qt.io/download-qt-installer) for the architecture
+   you plan on building. Both Win32 and Win64 is recommended, as well as debug
+   symbols.
+ * [Chocolatey](https://chocolatey.org/install) (Optional) if you plan to build
+   or test the Chocolatey package.
 
-- CMake (>= v3.8) (installed and added to `PATH`)
-- Visual Studio 2017 (w/ C++ toolset)
-- Chocolatey (>= v0.10.7)
+Next, set the `CMAKE_PREFIX_PATH` environment variable to your Qt prefix path
+(ie. `C:\Qt\5.12.1\msvc2017` or `C:\Qt\5.12.1\msvc2017_64`).
 
-Build PicoTorrent by running the following in a PowerShell prompt,
+Make sure all Git submodules are updated, then run `.\build.ps1` to start
+building and packaging PicoTorrent. If you want to build for x86, you can pass
+the target platform to the script.
 
 ```
-PS> .\build.ps1
+PS> .\build.ps1 --platform [x86|x64] --configuration [Debug|Release]
 ```
 
 
