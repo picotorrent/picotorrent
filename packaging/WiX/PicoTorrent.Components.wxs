@@ -141,6 +141,13 @@
                     Source="$(var.PublishDirectory)\Qt5Widgets.dll" />
             </Component>
 
+            <Component Id="C_Qt5WinExtras.dll" Guid="8be04dc4-26e4-487a-b8c4-06fc225d8f10">
+                <File Id="F_Qt5WinExtras"
+                    KeyPath="yes"
+                    Name="Qt5WinExtras.dll"
+                    Source="$(var.PublishDirectory)\Qt5WinExtras.dll" />
+            </Component>
+
             <ComponentGroupRef Id="CG_ImageFormats" />
             <ComponentGroupRef Id="CG_Platforms" />
             <ComponentGroupRef Id="CG_Styles" />

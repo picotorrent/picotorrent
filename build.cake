@@ -103,6 +103,7 @@ Task("Setup-Publish-Directory")
         MakeAbsolute(BuildDirectory + File("Qt5Gui.dll")),
         MakeAbsolute(BuildDirectory + File("Qt5Svg.dll")),
         MakeAbsolute(BuildDirectory + File("Qt5Widgets.dll")),
+        MakeAbsolute(BuildDirectory + File("Qt5WinExtras.dll")),
 
         MakeAbsolute(BuildDirectory + Directory("imageformats") + File("qico.dll")),
         MakeAbsolute(BuildDirectory + Directory("platforms")    + File("qwindows.dll")),
