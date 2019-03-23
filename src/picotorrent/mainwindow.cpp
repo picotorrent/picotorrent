@@ -35,6 +35,8 @@
 #include <QWinTaskbarButton>
 #include <QWinTaskbarProgress>
 
+#include "loguru.hpp"
+
 #include "aboutdialog.hpp"
 #include "addtorrentdialog.hpp"
 #include "buildinfo.hpp"
@@ -382,7 +384,7 @@ void MainWindow::parseMagnetLinks(std::vector<lt::add_torrent_params>& params, Q
 
         if (ec)
         {
-            // TODO log some kind of warning or error?
+            LOG_F(ERROR, "Failed to parse magnet link: %s", ec.message().c_str());
             continue;
         }
 
@@ -403,7 +405,7 @@ void MainWindow::parseTorrentFiles(std::vector<lt::add_torrent_params>& params, 
 
         if (ec)
         {
-            // TODO(error log)
+            LOG_F(ERROR, "Failed to parse torrent file: %s", ec.message().c_str());
             continue;
         }
 

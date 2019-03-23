@@ -23,6 +23,8 @@
 #include <picotorrent/core/configuration.hpp>
 #include <picotorrent/core/database.hpp>
 
+#include "loguru.hpp"
+
 #include "buildinfo.hpp"
 #include "semver.hpp"
 #include "sessionstatistics.hpp"
@@ -236,7 +238,7 @@ void Session::loadState()
 
         if (ec)
         {
-            // TODO(log)
+            LOG_F(WARNING, "Failed to decode session state: %s", ec.message().data());
         }
         else
         {
@@ -265,14 +267,16 @@ void Session::loadTorrents()
 
             if (ec)
             {
-                // TODO(log)
+                LOG_F(WARNING, "Failed to decode resume data: %s", ec.message().data());
+                continue;
             }
 
             params = lt::read_resume_data(node, ec);
 
             if (ec)
             {
-                // TODO(log)
+                LOG_F(WARNING, "Failed to read resume data: %s", ec.message().data());
+                continue;
             }
         }
 
@@ -302,7 +306,7 @@ void Session::readAlerts()
 
             if (ata->error)
             {
-                // TODO(log)
+                LOG_F(ERROR, "Failed to add torrent to session: %s", ata->error.message().data());
                 continue;
             }
 
@@ -534,6 +538,8 @@ void Session::saveTorrents()
 
         ++numOutstandingResumeData;
     }
+
+    LOG_F(INFO, "Saving resume data for %d torrent(s)", numOutstandingResumeData);
 
     while (numOutstandingResumeData > 0)
     {

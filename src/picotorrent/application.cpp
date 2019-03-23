@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 
+#include "loguru.hpp"
 #include "picojson.hpp"
 
 using pt::Application;
@@ -26,6 +27,8 @@ Application::~Application()
 
 void Application::activateOtherInstance()
 {
+    LOG_F(INFO, "Activating other instance");
+
     picojson::array arr;
 
     for (QString const& arg : QApplication::arguments())
@@ -37,12 +40,18 @@ void Application::activateOtherInstance()
     std::string encodedArgs = val.serialize();
 
     COPYDATASTRUCT cds;
-    cds.cbData = encodedArgs.size();
+    cds.cbData = static_cast<DWORD>(encodedArgs.size());
     cds.dwData = 1;
     cds.lpData = reinterpret_cast<PVOID>(&encodedArgs[0]);
 
     // Activate other window
     HWND hWndOther = FindWindow(NULL, TEXT("PicoTorrent"));
+
+    if (hWndOther == NULL)
+    {
+        LOG_F(WARNING, "Could not find the window to send COPYDATASTRUCT to");
+        return;
+    }
 
     SetForegroundWindow(hWndOther);
     ShowWindow(hWndOther, SW_RESTORE);

@@ -70,6 +70,18 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:IC
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
 add_library(
+    loguru
+    STATIC
+    vendor/loguru/loguru
+)
+
+target_compile_definitions(
+    loguru
+    PRIVATE
+    -D_CRT_SECURE_NO_WARNINGS
+)
+
+add_library(
     breakpad
     STATIC
 
@@ -221,14 +233,15 @@ target_include_directories(
     PicoTorrent.Core
     PRIVATE
     include/
+    "${CMAKE_SOURCE_DIR}/vendor/loguru"
 )
 
 target_link_libraries(
     PicoTorrent.Core
     PRIVATE
     shlwapi
-    
-    # sqlite
+
+    loguru
     sqlite
 )
 
@@ -305,6 +318,7 @@ target_include_directories(
     include/
     "${BOOST_INCLUDE_DIRS}"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
+    "${CMAKE_SOURCE_DIR}/vendor/loguru"
     "${Qt5WinExtras_INCLUDE_DIRS}"
 )
 
@@ -329,6 +343,9 @@ target_link_libraries(
 
     # Breakpad
     breakpad
+
+    # loguru
+    loguru
 
     # Rasterbar-libtorrent
     libtorrent-rasterbar

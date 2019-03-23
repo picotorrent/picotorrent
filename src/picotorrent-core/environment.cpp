@@ -4,6 +4,8 @@
 #include <ShlObj.h>
 #include <Shlwapi.h>
 
+#include "loguru.hpp"
+
 namespace fs = std::experimental::filesystem;
 using pt::Environment;
 
@@ -23,6 +25,42 @@ std::shared_ptr<Environment> Environment::create()
             return nullptr;
         }
     }
+
+    fs::path logPath = appData / "logs";
+
+    if (!fs::exists(logPath))
+    {
+        std::error_code ec;
+        fs::create_directories(logPath, ec);
+
+        if (ec)
+        {
+            return nullptr;
+        }
+    }
+
+    // Set up logging. PicoTorrent will log to the file,
+    // - PicoTorrent.YYYYMMDDHHmmss.log
+    // which represents the start up time.
+
+    SYSTEMTIME lt = {0};
+    GetLocalTime(&lt);
+
+    char frmt[100] = {0};
+    snprintf(frmt,
+        ARRAYSIZE(frmt),
+        "PicoTorrent.%d%02d%02d%02d%02d%02d.log",
+        lt.wYear,
+        lt.wMonth,
+        lt.wDay,
+        lt.wHour,
+        lt.wMinute,
+        lt.wSecond);
+
+    auto logFile = logPath / frmt;
+    loguru::add_file(logFile.string().c_str(), loguru::Truncate, loguru::Verbosity_INFO);
+
+    LOG_F(INFO, "PicoTorrent starting up...");
 
     return std::shared_ptr<Environment>(env);
 }

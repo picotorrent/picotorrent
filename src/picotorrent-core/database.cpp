@@ -4,13 +4,16 @@
 #include <ShlObj.h>
 #include <Shlwapi.h>
 
+#include <filesystem>
 #include <vector>
 
 #include <picotorrent/core/environment.hpp>
 #include <picotorrent/core/utils.hpp>
 
+#include "loguru.hpp"
 #include "../sqlite/sqlite3.h"
 
+namespace fs = std::experimental::filesystem;
 using pt::Database;
 
 struct Migration
@@ -68,7 +71,7 @@ void Database::Statement::bind(int idx, std::vector<char> const& value)
 
     if (res != SQLITE_OK)
     {
-        printf("%d", res);
+        LOG_F(ERROR, "Failed to bind argument: %d", res);
     }
 }
 
@@ -79,6 +82,8 @@ void Database::Statement::execute()
     if (res != SQLITE_ROW && res != SQLITE_DONE)
     {
         const char* err = sqlite3_errmsg(sqlite3_db_handle(m_stmt));
+        LOG_F(ERROR, "Failed to execute statement: %s", err);
+
         throw std::runtime_error(err);
     }
 }
@@ -127,7 +132,11 @@ bool Database::Statement::read()
 Database::Database(std::shared_ptr<pt::Environment> env)
     : m_env(env)
 {
-    sqlite3_open(env->getDatabaseFilePath().string().c_str(), &m_db);
+    fs::path dbFile = env->getDatabaseFilePath();
+
+    LOG_F(INFO, "Loading PicoTorrent database from %s", dbFile.string().c_str());
+
+    sqlite3_open(dbFile.string().c_str(), &m_db);
 
     execute("PRAGMA foreign_keys = ON;");
 
@@ -180,6 +189,8 @@ bool Database::migrate()
         TEXT("DBMIGRATION"),
         &EnumMigrations,
         reinterpret_cast<LONG_PTR>(&migrations));
+
+    LOG_F(INFO, "Found %d migrations", migrations.size());
 
     execute("BEGIN TRANSACTION;");
 

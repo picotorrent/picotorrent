@@ -140,3 +140,6 @@
 [submodule "vendor/boost-foreach"]
 	path = vendor/boost-foreach
 	url = https://github.com/boostorg/foreach
+[submodule "vendor/loguru"]
+	path = vendor/loguru
+	url = https://github.com/emilk/loguru

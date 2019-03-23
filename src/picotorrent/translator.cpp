@@ -2,6 +2,7 @@
 
 #include <picotorrent/core/environment.hpp>
 
+#include "loguru.hpp"
 #include "picojson.hpp"
 
 namespace pj = picojson;
@@ -24,6 +25,8 @@ void Translator::loadEmbedded(HINSTANCE hInstance)
         TEXT("LANGFILE"),
         enumLanguageFiles,
         reinterpret_cast<LONG_PTR>(this));
+
+    LOG_F(INFO, "Found %d embedded translation files", m_languages.size());
 }
 
 BOOL Translator::enumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
@@ -42,7 +45,7 @@ BOOL Translator::enumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lps
 
     if (!err.empty())
     {
-        // TODO(logging)
+        LOG_F(ERROR, "Failed to parse language json: %s", err.data());
         return TRUE;
     }
 

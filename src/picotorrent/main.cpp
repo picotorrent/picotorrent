@@ -8,6 +8,7 @@
 #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
 
+#include <filesystem>
 #include <memory>
 
 #include <picotorrent/core/configuration.hpp>
@@ -16,16 +17,26 @@
 #include <picotorrent/geoip/geoip.hpp>
 
 #include "../breakpad/exception_handler.h"
+#include "loguru.hpp"
 
 #include "application.hpp"
 #include "errorhandler.hpp"
 #include "mainwindow.hpp"
 #include "translator.hpp"
 
+namespace fs = std::experimental::filesystem;
+
 int main(int argc, char **argv)
 {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
+    auto env = pt::Environment::create();
+
+    if (!env)
+    {
+        return -1;
+    }
 
     // Set up Google Breakpad before anything else
 #ifdef NDEBUG
@@ -38,6 +49,8 @@ int main(int argc, char **argv)
         MiniDumpNormal,
         L"",
         nullptr);
+
+    LOG_F(INFO, "Installed Breakpad handler");
 #endif
 
     pt::Application app(argc, argv);
@@ -46,13 +59,6 @@ int main(int argc, char **argv)
     {
         app.activateOtherInstance();
         return 0;
-    }
-
-    auto env = pt::Environment::create();
-
-    if (!env)
-    {
-        return -1;
     }
 
     auto db = std::make_shared<pt::Database>(env);

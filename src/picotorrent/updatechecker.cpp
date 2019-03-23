@@ -7,6 +7,8 @@
 #include <picotorrent/http/httprequest.hpp>
 #include <picotorrent/http/httpresponse.hpp>
 
+#include "loguru.hpp"
+
 #include "buildinfo.hpp"
 #include "picojson.hpp"
 #include "semver.hpp"
@@ -47,6 +49,7 @@ void UpdateChecker::parseResponse(pt::HttpResponse* response)
 {
     if (response->statusCode != 200)
     {
+        LOG_F(ERROR, "HTTP response status not 200, was %d", response->statusCode);
         return;
     }
 
@@ -56,6 +59,7 @@ void UpdateChecker::parseResponse(pt::HttpResponse* response)
 
     if (!err.empty())
     {
+        LOG_F(ERROR, "Failed to parse release JSON: %s", err.data());
         return;
     }
 
