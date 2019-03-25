@@ -288,6 +288,15 @@ target_link_libraries(
     Qt5::WinExtras
 )
 
+
+# Copy scripts
+add_custom_command(
+    TARGET PicoTorrent POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/src/scripts"
+        "$<TARGET_FILE_DIR:PicoTorrent>/scripts"
+)
+
 # Copy base Qt dependencies
 add_custom_command(
     TARGET PicoTorrent POST_BUILD
