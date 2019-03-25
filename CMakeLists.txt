@@ -53,6 +53,13 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# Get current architecture
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(PICO_ARCH "x64")
+else()
+    set(PICO_ARCH "x86")
+endif()
+
 # Generate buildinfo file
 configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp" @ONLY)
 
@@ -266,6 +273,7 @@ add_executable(
     src/picotorrent/proxysectionwidget
     src/picotorrent/resources.qrc
     src/picotorrent/resources.rc
+    src/picotorrent/scriptedtorrentfilter
     src/picotorrent/session
     src/picotorrent/sessionstate
     src/picotorrent/statusbar
@@ -317,9 +325,16 @@ target_include_directories(
     PRIVATE
     include/
     "${BOOST_INCLUDE_DIRS}"
+    "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/build/native/include"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
     "${CMAKE_SOURCE_DIR}/vendor/loguru"
     "${Qt5WinExtras_INCLUDE_DIRS}"
+)
+
+target_link_directories(
+    PicoTorrent
+    PRIVATE
+    "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/lib/native/v140/${PICO_ARCH}"
 )
 
 target_link_libraries(
@@ -343,6 +358,9 @@ target_link_libraries(
 
     # Breakpad
     breakpad
+
+    # ChakraCore
+    ChakraCore
 
     # loguru
     loguru
@@ -394,4 +412,12 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:Qt5::QWindowsVistaStylePlugin>
         "$<TARGET_FILE_DIR:PicoTorrent>/styles/$<TARGET_FILE_NAME:Qt5::QWindowsVistaStylePlugin>"
+)
+
+# Copy ChakraCore
+add_custom_command(
+    TARGET PicoTorrent POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/lib/native/v140/${PICO_ARCH}/$<CONFIG>/ChakraCore.dll"
+        $<TARGET_FILE_DIR:PicoTorrent>
 )

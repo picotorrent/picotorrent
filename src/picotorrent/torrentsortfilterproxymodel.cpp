@@ -1,5 +1,6 @@
 #include "torrentsortfilterproxymodel.hpp"
 
+#include "scriptedtorrentfilter.hpp"
 #include "torrenthandle.hpp"
 #include "torrentlistmodel.hpp"
 #include "torrentstatus.hpp"
@@ -7,12 +8,29 @@
 using pt::TorrentSortFilterProxyModel;
 
 TorrentSortFilterProxyModel::TorrentSortFilterProxyModel(QObject* parent)
-    : QSortFilterProxyModel(parent)
+    : QSortFilterProxyModel(parent),
+    m_scriptedFilter(nullptr)
 {
+}
+
+void TorrentSortFilterProxyModel::setScriptedFilter(pt::ScriptedTorrentFilter* filter)
+{
+    m_scriptedFilter = filter;
+    invalidateFilter();
 }
 
 bool TorrentSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
+    if (m_scriptedFilter)
+    {
+        QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+        QVariant data = sourceModel()->data(index, Qt::UserRole);
+        TorrentHandle* torrent = static_cast<TorrentHandle*>(data.value<void*>());
+        TorrentStatus status = torrent->status();
+
+        return m_scriptedFilter->includes(&status);
+    }
+
     return true;
 }
 

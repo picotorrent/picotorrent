@@ -42,6 +42,7 @@
 #include "buildinfo.hpp"
 #include "picojson.hpp"
 #include "preferencesdialog.hpp"
+#include "scriptedtorrentfilter.hpp"
 #include "session.hpp"
 #include "sessionstate.hpp"
 #include "sessionstatistics.hpp"
@@ -68,6 +69,8 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_torrentsCount(0),
     m_taskbarButton(nullptr)
 {
+    JsCreateRuntime(JsRuntimeAttributeEnableExperimentalFeatures, nullptr, &m_jsRuntime);
+
     m_session                = new Session(this, db, cfg);
     m_geo                    = new GeoIP(this, m_env, m_cfg);
     m_splitter               = new QSplitter(this);
@@ -93,11 +96,18 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_fileAddTorrent      = new QAction(i18n("amp_add_torrent"), this);
     m_fileAddMagnetLinks  = new QAction(i18n("amp_add_magnet_link_s"), this);
     m_fileExit            = new QAction(i18n("amp_exit"), this);
+    m_viewFiltersNone     = new QAction(i18n("amp_none"), this);
     m_viewPreferences     = new QAction(i18n("amp_preferences"), this);
     m_viewDetailsPanel    = new QAction(i18n("amp_details_panel"), this);
     m_viewStatusBar       = new QAction(i18n("amp_status_bar"), this);
     m_helpCheckForUpdates = new QAction(i18n("amp_check_for_update"), this);
     m_helpAbout           = new QAction(i18n("amp_about"), this);
+    m_filtersGroup        = new QActionGroup(this);
+    m_filtersGroup->addAction(m_viewFiltersNone);
+    m_filtersGroup->setExclusive(true);
+
+    m_viewFiltersNone->setCheckable(true);
+    m_viewFiltersNone->setChecked(true);
 
     m_viewDetailsPanel->setCheckable(true);
     m_viewDetailsPanel->setChecked(m_cfg->getBool("ui.show_details_panel"));
@@ -181,6 +191,9 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     QObject::connect(m_helpAbout,          &QAction::triggered,
                      this,                 &MainWindow::onHelpAbout);
 
+    QObject::connect(m_filtersGroup,       &QActionGroup::triggered,
+                    this,                  &MainWindow::setTorrentFilter);
+
     // Torrent list signals
     QObject::connect(m_torrentList,        &TorrentListWidget::torrentsSelected,
                      m_torrentDetails,     &TorrentDetailsWidget::update);
@@ -222,10 +235,16 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     fileMenu->addAction(m_fileExit);
 
     auto viewMenu = menuBar()->addMenu(i18n("amp_view"));
-    viewMenu->addAction(m_viewPreferences);
+
+    m_filtersMenu = viewMenu->addMenu(i18n("amp_filters"));
+    m_filtersMenu->addAction(m_viewFiltersNone);
+    m_filtersMenu->addSeparator();
+
     viewMenu->addSeparator();
     viewMenu->addAction(m_viewDetailsPanel);
     viewMenu->addAction(m_viewStatusBar);
+    viewMenu->addSeparator();
+    viewMenu->addAction(m_viewPreferences);
 
     auto helpMenu = menuBar()->addMenu(i18n("amp_help"));
     helpMenu->addAction(m_helpCheckForUpdates);
@@ -277,6 +296,13 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
 
 MainWindow::~MainWindow()
 {
+    for (ScriptedTorrentFilter* filter : m_torrentFilters)
+    {
+        delete filter;
+    }
+
+    JsDisposeRuntime(m_jsRuntime);
+
     m_cfg->setInt("ui.widgets.main_window.height", this->height());
     m_cfg->setInt("ui.widgets.main_window.width",  this->width());
 
@@ -630,6 +656,70 @@ void MainWindow::updateTaskbarButton(pt::TorrentStatistics* stats)
     }
 }
 
+void MainWindow::loadScripts()
+{
+    fs::path dataPath = m_env->getApplicationDataPath();
+    fs::path scriptsPath = dataPath / "scripts";
+
+    for (auto const& entry : fs::directory_iterator(scriptsPath))
+    {
+        fs::path scriptFilePath = entry.path();
+
+        if (scriptFilePath.extension() != ".js")
+        {
+            LOG_F(WARNING, "File with ignored extension in scripts path: %s", scriptFilePath.string());
+            continue;
+        }
+
+        std::ifstream t(scriptFilePath);
+        std::stringstream buffer;
+        buffer << t.rdbuf();
+
+        JsContextRef context;
+        JsCreateContext(m_jsRuntime, &context);
+
+        JsSetCurrentContext(context);
+
+        JsValueRef addFilterFunc;
+        JsCreateFunction(&MainWindow::js_addFilter, this, &addFilterFunc);
+
+        JsValueRef global;
+        JsGetGlobalObject(&global);
+
+        // Set props
+        JsPropertyIdRef addFilterProperty;
+        JsCreatePropertyId("addFilter", 9, &addFilterProperty);
+        JsSetProperty(global, addFilterProperty, addFilterFunc, false);
+
+        JsValueRef script;
+        JsCreateString(buffer.str().data(), buffer.str().size(), &script);
+
+        JsValueRef sourceUrl;
+        JsCreateString("", 0, &sourceUrl);
+
+        unsigned sourceContext = 0;
+        JsValueRef result;
+        JsErrorCode error = JsRun(script, sourceContext++, sourceUrl, JsParseScriptAttributeNone, &result);
+
+        if (error != JsNoError)
+        {
+            JsValueRef ex;
+            JsGetAndClearException(&ex);
+
+            JsValueRef stringEx;
+            JsConvertValueToString(ex, &stringEx);
+
+            size_t len;
+            JsCopyString(stringEx, nullptr, 0, &len);
+
+            std::string err(len, '\0');
+            JsCopyString(stringEx, &err[0], err.size(), nullptr);
+
+            LOG_F(INFO, "Error when loading script (%s): %s", scriptFilePath.string().data(), err.data());
+        }
+    }
+}
+
 void MainWindow::showHideDetailsPanel(bool show)
 {
     if (show)
@@ -658,6 +748,21 @@ void MainWindow::showHideStatusBar(bool show)
     }
 
     m_cfg->setBool("ui.show_status_bar", show);
+}
+
+void MainWindow::setTorrentFilter(QAction* action)
+{
+    auto data   = action->data();
+
+    if (data.isNull())
+    {
+        m_torrentSortFilterModel->setScriptedFilter(nullptr);
+        return;
+    }
+
+    auto filter = static_cast<ScriptedTorrentFilter*>(data.value<void*>());
+
+    m_torrentSortFilterModel->setScriptedFilter(filter);
 }
 
 void MainWindow::showUpdateDialog(pt::UpdateInformation* info)
@@ -697,7 +802,6 @@ void MainWindow::showUpdateDialog(pt::UpdateInformation* info)
         if (pnButton == 1000)
         {
             QDesktopServices::openUrl(QUrl(info->url));
-            // wxLaunchDefaultBrowser(url, wxBROWSER_NEW_WINDOW);
         }
 
         if (pfVerificationFlagChecked)
@@ -721,4 +825,31 @@ void MainWindow::showUpdateDialog(pt::UpdateInformation* info)
 
         TaskDialogIndirect(&tdf, nullptr, nullptr, nullptr);
     }
+}
+
+JsValueRef MainWindow::js_addFilter(JsValueRef callee, bool isConstructCall, JsValueRef* args, unsigned short argsCount, void* callbackState)
+{
+    MainWindow* mainWnd = static_cast<MainWindow*>(callbackState);
+
+    size_t len;
+    JsCopyString(args[2], nullptr, 0, &len);
+
+    std::string name(len, '\0');
+    JsCopyString(args[2], &name[0], name.size(), nullptr);
+
+    JsContextRef context;
+    JsGetCurrentContext(&context);
+
+    auto filter = new ScriptedTorrentFilter(context, args[1], QString::fromStdString(name));
+
+    auto action = mainWnd->m_filtersMenu->addAction(filter->name());
+    action->setCheckable(true);
+    action->setData(QVariant::fromValue(static_cast<void*>(filter)));
+
+    mainWnd->m_filtersGroup->addAction(action);
+    mainWnd->m_torrentFilters.push_back(filter);
+
+    JsValueRef undefined;
+    JsGetUndefinedValue(&undefined);
+    return undefined;
 }
