@@ -1,14 +1,12 @@
 #pragma once
 
-#include <picotorrent/export.hpp>
-
 #include <QUrl>
 
 namespace pt
 {
     class HttpResponse;
 
-    class PICO_HTTP_API HttpRequest
+    class HttpRequest
     {
     public:
         HttpRequest(QUrl const& url);

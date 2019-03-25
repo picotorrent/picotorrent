@@ -6,8 +6,6 @@
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/torrent_info.hpp>
 
-#include <picotorrent/core/utils.hpp>
-
 #include <QBoxLayout>
 #include <QCheckBox>
 #include <QComboBox>
@@ -26,6 +24,7 @@
 
 #include "filestorageitemmodel.hpp"
 #include "translator.hpp"
+#include "core/utils.hpp"
 
 namespace fs = std::experimental::filesystem;
 namespace lt = libtorrent;

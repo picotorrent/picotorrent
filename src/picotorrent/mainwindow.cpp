@@ -10,11 +10,6 @@
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/torrent_info.hpp>
 
-#include <picotorrent/core/configuration.hpp>
-#include <picotorrent/core/database.hpp>
-#include <picotorrent/core/environment.hpp>
-#include <picotorrent/geoip/geoip.hpp>
-
 #include <QAction>
 #include <QApplication>
 #include <QCheckBox>
@@ -36,6 +31,11 @@
 #include <QWinTaskbarProgress>
 
 #include "loguru.hpp"
+
+#include "core/configuration.hpp"
+#include "core/database.hpp"
+#include "core/environment.hpp"
+#include "core/geoip/geoip.hpp"
 
 #include "aboutdialog.hpp"
 #include "addtorrentdialog.hpp"

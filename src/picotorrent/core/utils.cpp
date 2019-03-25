@@ -1,4 +1,4 @@
-#include <picotorrent/core/utils.hpp>
+#include "utils.hpp"
 
 #include <Windows.h>
 #include <ShlObj.h>

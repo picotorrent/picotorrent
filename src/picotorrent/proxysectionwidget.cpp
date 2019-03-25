@@ -1,7 +1,5 @@
 #include "proxysectionwidget.hpp"
 
-#include <picotorrent/core/configuration.hpp>
-
 #include <QCheckBox>
 #include <QComboBox>
 #include <QGridLayout>
@@ -11,6 +9,7 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 
+#include "core/configuration.hpp"
 #include "translator.hpp"
 
 using pt::ProxySectionWidget;

@@ -3,8 +3,6 @@
 #include <memory>
 #include <string>
 
-#include <picotorrent/export.hpp>
-
 #include <QObject>
 
 namespace pt
@@ -14,7 +12,7 @@ namespace pt
     class HttpClient;
     class HttpResponse;
 
-    class PICO_GEOIP_API GeoIP : public QObject
+    class GeoIP : public QObject
     {
         Q_OBJECT
 

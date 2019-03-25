@@ -1,9 +1,8 @@
 #include "statusbar.hpp"
 
-#include <picotorrent/core/utils.hpp>
-
 #include <QLabel>
 
+#include "core/utils.hpp"
 #include "translator.hpp"
 
 using pt::StatusBar;

@@ -11,13 +11,13 @@
 #include <filesystem>
 #include <memory>
 
-#include <picotorrent/core/configuration.hpp>
-#include <picotorrent/core/database.hpp>
-#include <picotorrent/core/environment.hpp>
-#include <picotorrent/geoip/geoip.hpp>
-
 #include "../breakpad/exception_handler.h"
 #include "loguru.hpp"
+
+#include "core/configuration.hpp"
+#include "core/database.hpp"
+#include "core/environment.hpp"
+#include "core/geoip/geoip.hpp"
 
 #include "application.hpp"
 #include "errorhandler.hpp"

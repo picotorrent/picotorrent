@@ -1,6 +1,5 @@
 #pragma once
 
-#include <picotorrent/export.hpp>
 #include <QObject>
 
 #include <stdint.h>
@@ -8,7 +7,7 @@
 
 namespace pt
 {
-    class PICO_HTTP_API HttpResponse : public QObject
+    class HttpResponse : public QObject
     {
         Q_OBJECT
 

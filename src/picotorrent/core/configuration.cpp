@@ -1,5 +1,5 @@
-#include <picotorrent/core/configuration.hpp>
-#include <picotorrent/core/database.hpp>
+#include "configuration.hpp"
+#include "database.hpp"
 
 using pt::Configuration;
 

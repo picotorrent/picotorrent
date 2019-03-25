@@ -3,11 +3,10 @@
 #include <libtorrent/file_storage.hpp>
 #include <libtorrent/torrent_info.hpp>
 
-#include <picotorrent/core/utils.hpp>
-
 #include <QFileIconProvider>
 #include <QFileInfo>
 
+#include "core/utils.hpp"
 #include "translator.hpp"
 
 namespace lt = libtorrent;

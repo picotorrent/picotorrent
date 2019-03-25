@@ -138,123 +138,25 @@ target_link_libraries(
     Ws2_32
 )
 
-# PicoTorrent GeoIP library
-add_library(
-    PicoTorrent.GeoIP
-    SHARED
-    src/picotorrent-geoip/geoip
-    src/picotorrent-geoip/gzipdecompressor
-    src/picotorrent-geoip/maxminddatabase
-
-    # Headers (for MOC Q_OBJECT detection)
-    include/picotorrent/geoip/geoip
-)
-
-target_compile_definitions(
-    PicoTorrent.GeoIP
-    PRIVATE
-    -DPICO_BUILDING_GEOIP_API
-    -DZLIB_CONST
-)
-
-target_include_directories(
-    PicoTorrent.GeoIP
-    PRIVATE
-    include/
-
-    # libmaxminddb
-    vendor/libmaxminddb/include
-    vendor/libmaxminddb/projects/VS12
-
-    # zlib
-    vendor/zlib
-    "$<TARGET_FILE_DIR:zlibstatic>/../"
-)
-
-target_link_libraries(
-    PicoTorrent.GeoIP
-    PRIVATE
-
-    maxminddb
-    zlibstatic
-
-    PicoTorrent.Core
-    PicoTorrent.Http
-
-    Qt5::Core
-)
-
-# PicoTorrent HTTP library
-add_library(
-    PicoTorrent.Http
-    SHARED
-    src/picotorrent-http/httpclient
-    src/picotorrent-http/httprequest
-    src/picotorrent-http/httpresponse
-
-    # Headers (for MOC Q_OBJECT detection)
-    include/picotorrent/http/httpclient
-    include/picotorrent/http/httprequest
-    include/picotorrent/http/httpresponse
-)
-
-target_compile_definitions(
-    PicoTorrent.Http
-    PRIVATE
-    -DPICO_BUILDING_HTTP_API
-)
-
-target_include_directories(
-    PicoTorrent.Http
-    PRIVATE
-    include/
-)
-
-target_link_libraries(
-    PicoTorrent.Http
-    Qt5::Core
-    winhttp
-)
-
-add_library(
-    PicoTorrent.Core
-    SHARED
-    src/picotorrent-core/configuration
-    src/picotorrent-core/database
-    src/picotorrent-core/environment
-    src/picotorrent-core/utils
-)
-
-target_compile_definitions(
-    PicoTorrent.Core
-    PRIVATE
-    -DPICO_BUILDING_CORE_API
-    -D_UNICODE
-    -D_WIN32
-    -D_WIN32_WINNT=0x0600
-    -DWIN32
-    -DWIN32_LEAN_AND_MEAN
-)
-
-target_include_directories(
-    PicoTorrent.Core
-    PRIVATE
-    include/
-    "${CMAKE_SOURCE_DIR}/vendor/loguru"
-)
-
-target_link_libraries(
-    PicoTorrent.Core
-    PRIVATE
-    shlwapi
-
-    loguru
-    sqlite
-)
-
 add_executable(
     PicoTorrent
     WIN32
+
+    # Core
+    src/picotorrent/core/configuration
+    src/picotorrent/core/database
+    src/picotorrent/core/environment
+    src/picotorrent/core/utils
+
+    # GeoIP
+    src/picotorrent/core/geoip/geoip
+    src/picotorrent/core/geoip/gzipdecompressor
+    src/picotorrent/core/geoip/maxminddatabase
+
+    # HTTP
+    src/picotorrent/core/http/httpclient
+    src/picotorrent/core/http/httprequest
+    src/picotorrent/core/http/httpresponse
 
     src/picotorrent/aboutdialog
     src/picotorrent/addtorrentdialog
@@ -313,17 +215,25 @@ target_compile_definitions(
     -DUNICODE
     -DWIN32
     -DWIN32_LEAN_AND_MEAN
-    -DPICO_API_EXPORT
     -DPICO_GIT_COMMITISH=${GIT_COMMITISH}
     -DPICO_VERSION_MAJOR=${VERSION_MAJOR}
     -DPICO_VERSION_MINOR=${VERSION_MINOR}
     -DPICO_VERSION_REVISION=${VERSION_REVISION}
+    -DZLIB_CONST
 )
 
 target_include_directories(
     PicoTorrent
     PRIVATE
-    include/
+
+    # libmaxminddb
+    vendor/libmaxminddb/include
+    vendor/libmaxminddb/projects/VS12
+
+    # zlib
+    vendor/zlib
+    "$<TARGET_FILE_DIR:zlibstatic>/../"
+
     "${BOOST_INCLUDE_DIRS}"
     "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/build/native/include"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
@@ -340,11 +250,6 @@ target_link_directories(
 target_link_libraries(
     PicoTorrent
 
-    # Own libraries
-    PicoTorrent.Core
-    PicoTorrent.GeoIP
-    PicoTorrent.Http
-
     # Windows
     Comctl32
     crypt32
@@ -352,6 +257,7 @@ target_link_libraries(
     legacy_stdio_definitions
     shlwapi
     wininet
+    winhttp
 
     # Boost
     boost-system
@@ -371,6 +277,10 @@ target_link_libraries(
     # OpenSSL
     OpenSSL::Crypto
     OpenSSL::SSL
+
+    maxminddb
+    sqlite
+    zlibstatic
 
     # Qt
     Qt5::Svg

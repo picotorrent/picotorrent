@@ -1,7 +1,5 @@
 #include "translator.hpp"
 
-#include <picotorrent/core/environment.hpp>
-
 #include "loguru.hpp"
 #include "picojson.hpp"
 

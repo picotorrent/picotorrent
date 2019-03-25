@@ -1,4 +1,4 @@
-#include <picotorrent/geoip/geoip.hpp>
+#include "geoip.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -7,11 +7,11 @@
 
 #include <maxminddb.h>
 
-#include <picotorrent/core/configuration.hpp>
-#include <picotorrent/core/environment.hpp>
-#include <picotorrent/http/httpclient.hpp>
-#include <picotorrent/http/httprequest.hpp>
-#include <picotorrent/http/httpresponse.hpp>
+#include "../configuration.hpp"
+#include "../environment.hpp"
+#include "../http/httpclient.hpp"
+#include "../http/httprequest.hpp"
+#include "../http/httpresponse.hpp"
 
 #include "gzipdecompressor.hpp"
 #include "maxminddatabase.hpp"

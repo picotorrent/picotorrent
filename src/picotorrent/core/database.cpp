@@ -1,4 +1,4 @@
-#include <picotorrent/core/database.hpp>
+#include "database.hpp"
 
 #include <Windows.h>
 #include <ShlObj.h>
@@ -7,11 +7,11 @@
 #include <filesystem>
 #include <vector>
 
-#include <picotorrent/core/environment.hpp>
-#include <picotorrent/core/utils.hpp>
-
 #include "loguru.hpp"
-#include "../sqlite/sqlite3.h"
+#include "environment.hpp"
+#include "utils.hpp"
+
+#include "../../sqlite/sqlite3.h"
 
 namespace fs = std::experimental::filesystem;
 using pt::Database;

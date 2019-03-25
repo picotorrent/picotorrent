@@ -2,11 +2,9 @@
 
 #include <filesystem>
 
-#include <picotorrent/export.hpp>
-
 namespace pt
 {
-    class PICO_CORE_API Environment
+    class Environment
     {
     public:
         enum KnownFolder

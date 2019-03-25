@@ -1,9 +1,10 @@
 #include "torrentlistmodel.hpp"
 
 #include <libtorrent/torrent_status.hpp>
-#include <picotorrent/core/utils.hpp>
+
 #include <QDateTime>
 
+#include "core/utils.hpp"
 #include "torrenthandle.hpp"
 #include "torrentstatus.hpp"
 #include "translator.hpp"

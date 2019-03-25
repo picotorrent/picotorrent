@@ -2,14 +2,13 @@
 
 #include <QMessageBox>
 
-#include <picotorrent/core/configuration.hpp>
-#include <picotorrent/http/httpclient.hpp>
-#include <picotorrent/http/httprequest.hpp>
-#include <picotorrent/http/httpresponse.hpp>
-
-#include "loguru.hpp"
+#include "core/configuration.hpp"
+#include "core/http/httpclient.hpp"
+#include "core/http/httprequest.hpp"
+#include "core/http/httpresponse.hpp"
 
 #include "buildinfo.hpp"
+#include "loguru.hpp"
 #include "picojson.hpp"
 #include "semver.hpp"
 #include "translator.hpp"

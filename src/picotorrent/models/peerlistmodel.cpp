@@ -4,13 +4,12 @@
 
 #include <libtorrent/peer_info.hpp>
 
-#include <picotorrent/core/utils.hpp>
-#include <picotorrent/geoip/geoip.hpp>
-
 #include <QIcon>
 #include <QImageReader>
 #include <QPixmap>
 
+#include "../core/geoip/geoip.hpp"
+#include "../core/utils.hpp"
 #include "../torrenthandle.hpp"
 #include "../translator.hpp"
 

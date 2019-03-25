@@ -1,13 +1,11 @@
 #pragma once
 
-#include <picotorrent/export.hpp>
-
 #include <filesystem>
 #include <string>
 
 namespace pt
 {
-    class PICO_CORE_API Utils
+    class Utils
     {
     public:
         static void openAndSelect(std::experimental::filesystem::path path);

@@ -1,7 +1,5 @@
 #include "preferencesdialog.hpp"
 
-#include <picotorrent/core/configuration.hpp>
-
 #include <QAbstractListModel>
 #include <QDialogButtonBox>
 #include <QGroupbox>
@@ -13,6 +11,7 @@
 
 #include <vector>
 
+#include "core/configuration.hpp"
 #include "connectionsectionwidget.hpp"
 #include "downloadssectionwidget.hpp"
 #include "generalsectionwidget.hpp"

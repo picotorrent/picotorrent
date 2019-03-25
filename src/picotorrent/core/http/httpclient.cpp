@@ -1,6 +1,6 @@
-#include <picotorrent/http/httpclient.hpp>
-#include <picotorrent/http/httprequest.hpp>
-#include <picotorrent/http/httpresponse.hpp>
+#include "httpclient.hpp"
+#include "httprequest.hpp"
+#include "httpresponse.hpp"
 
 #include <Windows.h>
 #include <winhttp.h>
@@ -174,38 +174,3 @@ pt::HttpResponse* HttpClient::get(pt::HttpRequest const& req)
 
     return state->response;
 }
-
-/*
-
-
-void HttpClient::GetAsync(const std::wstring& url, std::function<void(pt::http::HttpResponse)> const& callback)
-{
-    
-}
-
-std::wstring HttpClient::ReadHeader(HINTERNET hRequest, DWORD dwHeader)
-{
-    DWORD bufLen;
-
-    WinHttpQueryHeaders(
-        hRequest,
-        dwHeader,
-        WINHTTP_HEADER_NAME_BY_INDEX,
-        WINHTTP_NO_OUTPUT_BUFFER,
-        &bufLen,
-        WINHTTP_NO_HEADER_INDEX);
-
-    std::wstring res(L"\0", bufLen);
-
-    WinHttpQueryHeaders(
-        hRequest,
-        dwHeader,
-        WINHTTP_HEADER_NAME_BY_INDEX,
-        &res[0],
-        &bufLen,
-        WINHTTP_NO_HEADER_INDEX);
-
-    return res;
-}
-
-*/

@@ -20,11 +20,10 @@
 #include <libtorrent/torrent_status.hpp>
 #include <libtorrent/write_resume_data.hpp>
 
-#include <picotorrent/core/configuration.hpp>
-#include <picotorrent/core/database.hpp>
-
 #include "loguru.hpp"
 
+#include "core/configuration.hpp"
+#include "core/database.hpp"
 #include "buildinfo.hpp"
 #include "semver.hpp"
 #include "sessionstatistics.hpp"

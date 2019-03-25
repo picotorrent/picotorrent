@@ -3,14 +3,12 @@
 #include <QObject>
 #include <QString>
 
-#include <picotorrent/export.hpp>
-
 namespace pt
 {
     class HttpRequest;
     class HttpResponse;
 
-    class PICO_HTTP_API HttpClient : public QObject
+    class HttpClient : public QObject
     {
         Q_OBJECT
 
