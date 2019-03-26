@@ -75,7 +75,6 @@ int main(int argc, char **argv)
     translator.setLanguage(cfg->getInt("language_id"));
 
     pt::MainWindow wnd(env, db, cfg);
-    wnd.loadScripts();
 
     switch (cfg->getInt("start_position"))
     {

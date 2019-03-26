@@ -40,6 +40,7 @@
 #include "aboutdialog.hpp"
 #include "addtorrentdialog.hpp"
 #include "buildinfo.hpp"
+#include "scripting/jsengine.hpp"
 #include "picojson.hpp"
 #include "preferencesdialog.hpp"
 #include "scriptedtorrentfilter.hpp"
@@ -69,10 +70,9 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_torrentsCount(0),
     m_taskbarButton(nullptr)
 {
-    JsCreateRuntime(JsRuntimeAttributeEnableExperimentalFeatures, nullptr, &m_jsRuntime);
-
     m_session                = new Session(this, db, cfg);
     m_geo                    = new GeoIP(this, m_env, m_cfg);
+    m_jsEngine               = new JsEngine(this);
     m_splitter               = new QSplitter(this);
     m_taskbarButton          = new QWinTaskbarButton(this);
     m_statusBar              = new StatusBar(this);
@@ -228,6 +228,10 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     QObject::connect(m_trayIcon,           &QSystemTrayIcon::activated,
                      this,                 &MainWindow::onTrayIconActivated);
 
+    // JS engine signals
+    QObject::connect(m_jsEngine,           &JsEngine::torrentFilterAdded,
+                     this,                 &MainWindow::addTorrentFilter);
+
     auto fileMenu = menuBar()->addMenu(i18n("amp_file"));
     fileMenu->addAction(m_fileAddTorrent);
     fileMenu->addAction(m_fileAddMagnetLinks);
@@ -292,17 +296,21 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     {
         this->checkForUpdates();
     }
+
+    // Load scripts
+    fs::path appScripts = m_env->getApplicationPath() / "scripts";
+    fs::path appDataScripts = m_env->getApplicationDataPath() / "scripts";
+
+    m_jsEngine->loadDirectory(appScripts);
+
+    if (appDataScripts != appScripts)
+    {
+        m_jsEngine->loadDirectory(appDataScripts);
+    }
 }
 
 MainWindow::~MainWindow()
 {
-    for (ScriptedTorrentFilter* filter : m_torrentFilters)
-    {
-        delete filter;
-    }
-
-    JsDisposeRuntime(m_jsRuntime);
-
     m_cfg->setInt("ui.widgets.main_window.height", this->height());
     m_cfg->setInt("ui.widgets.main_window.width",  this->width());
 
@@ -461,6 +469,15 @@ void MainWindow::changeEvent(QEvent* event)
     }
 
     QMainWindow::changeEvent(event);
+}
+
+void MainWindow::addTorrentFilter(pt::ScriptedTorrentFilter* filter)
+{
+    auto action = m_filtersMenu->addAction(filter->name());
+    action->setCheckable(true);
+    action->setData(QVariant::fromValue(static_cast<void*>(filter)));
+
+    m_filtersGroup->addAction(action);
 }
 
 void MainWindow::checkForUpdates(bool force)
@@ -656,76 +673,6 @@ void MainWindow::updateTaskbarButton(pt::TorrentStatistics* stats)
     }
 }
 
-void MainWindow::loadScripts()
-{
-    fs::path dataPath = m_env->getApplicationDataPath();
-    fs::path scriptsPath = dataPath / "scripts";
-
-    for (auto const& entry : fs::directory_iterator(scriptsPath))
-    {
-        fs::path scriptFilePath = entry.path();
-
-        if (scriptFilePath.extension() != ".js")
-        {
-            LOG_F(WARNING, "File with ignored extension in scripts path: %s", scriptFilePath.string());
-            continue;
-        }
-
-        std::ifstream t(scriptFilePath);
-        std::stringstream buffer;
-        buffer << t.rdbuf();
-
-        JsContextRef context;
-        JsCreateContext(m_jsRuntime, &context);
-
-        JsSetCurrentContext(context);
-
-        JsValueRef addFilterFunc;
-        JsCreateFunction(&MainWindow::js_addFilter, this, &addFilterFunc);
-
-        JsValueRef i18nFunc;
-        JsCreateFunction(&MainWindow::js_i18n, this, &i18nFunc);
-
-        JsValueRef global;
-        JsGetGlobalObject(&global);
-
-        JsPropertyIdRef addFilterProperty;
-        JsCreatePropertyId("addFilter", 9, &addFilterProperty);
-        JsSetProperty(global, addFilterProperty, addFilterFunc, false);
-
-        JsPropertyIdRef i18nProperty;
-        JsCreatePropertyId("i18n", 4, &i18nProperty);
-        JsSetProperty(global, i18nProperty, i18nFunc, false);
-
-        JsValueRef script;
-        JsCreateString(buffer.str().data(), buffer.str().size(), &script);
-
-        JsValueRef sourceUrl;
-        JsCreateString("", 0, &sourceUrl);
-
-        unsigned sourceContext = 0;
-        JsValueRef result;
-        JsErrorCode error = JsRun(script, sourceContext++, sourceUrl, JsParseScriptAttributeNone, &result);
-
-        if (error != JsNoError)
-        {
-            JsValueRef ex;
-            JsGetAndClearException(&ex);
-
-            JsValueRef stringEx;
-            JsConvertValueToString(ex, &stringEx);
-
-            size_t len;
-            JsCopyString(stringEx, nullptr, 0, &len);
-
-            std::string err(len, '\0');
-            JsCopyString(stringEx, &err[0], err.size(), nullptr);
-
-            LOG_F(INFO, "Error when loading script (%s): %s", scriptFilePath.string().data(), err.data());
-        }
-    }
-}
-
 void MainWindow::showHideDetailsPanel(bool show)
 {
     if (show)
@@ -831,47 +778,4 @@ void MainWindow::showUpdateDialog(pt::UpdateInformation* info)
 
         TaskDialogIndirect(&tdf, nullptr, nullptr, nullptr);
     }
-}
-
-JsValueRef MainWindow::js_addFilter(JsValueRef callee, bool isConstructCall, JsValueRef* args, unsigned short argsCount, void* callbackState)
-{
-    MainWindow* mainWnd = static_cast<MainWindow*>(callbackState);
-
-    size_t len;
-    JsCopyString(args[2], nullptr, 0, &len);
-
-    std::string name(len, '\0');
-    JsCopyString(args[2], &name[0], name.size(), nullptr);
-
-    JsContextRef context;
-    JsGetCurrentContext(&context);
-
-    auto filter = new ScriptedTorrentFilter(context, args[1], QString::fromStdString(name));
-
-    auto action = mainWnd->m_filtersMenu->addAction(filter->name());
-    action->setCheckable(true);
-    action->setData(QVariant::fromValue(static_cast<void*>(filter)));
-
-    mainWnd->m_filtersGroup->addAction(action);
-    mainWnd->m_torrentFilters.push_back(filter);
-
-    JsValueRef undefined;
-    JsGetUndefinedValue(&undefined);
-    return undefined;
-}
-
-JsValueRef MainWindow::js_i18n(JsValueRef callee, bool isConstructCall, JsValueRef* args, unsigned short argsCount, void* callbackState)
-{
-    size_t len;
-    JsCopyString(args[1], nullptr, 0, &len);
-
-    std::string key(len, '\0');
-    JsCopyString(args[1], &key[0], key.size(), nullptr);
-
-    QString translation = i18n(QString::fromStdString(key));
-
-    JsValueRef translationValue;
-    JsCreateString(translation.toStdString().data(), translation.toStdString().size(), &translationValue);
-
-    return translationValue;
 }

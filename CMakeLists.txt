@@ -158,6 +158,9 @@ add_executable(
     src/picotorrent/core/http/httprequest
     src/picotorrent/core/http/httpresponse
 
+    # Scripting
+    src/picotorrent/scripting/jsengine
+
     src/picotorrent/aboutdialog
     src/picotorrent/addtorrentdialog
     src/picotorrent/application

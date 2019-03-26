@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ChakraCore.h>
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 
@@ -25,6 +24,7 @@ namespace pt
     class Environment;
     class GeoIP;
     class HttpClient;
+    class JsEngine;
     class ScriptedTorrentFilter;
     class Session;
     struct SessionState;
@@ -56,6 +56,7 @@ namespace pt
         void showEvent(QShowEvent* event) override;
 
     private slots:
+        void addTorrentFilter(ScriptedTorrentFilter* filter);
         void checkForUpdates(bool force = false);
         void onFileAddMagnetLinks();
         void onFileAddTorrent();
@@ -74,16 +75,10 @@ namespace pt
         void showHideDetailsPanel(bool show);
         void showHideStatusBar(bool show);
 
-        // JS callbacks
-        static JsValueRef js_addFilter(JsValueRef callee, bool isConstructCall, JsValueRef* args, unsigned short argsCount, void* callbackState);
-        static JsValueRef js_i18n(JsValueRef callee, bool isConstructCall, JsValueRef* args, unsigned short argsCount, void* callbackState);
-
         std::shared_ptr<Environment> m_env;
         std::shared_ptr<Database> m_db;
         std::shared_ptr<Configuration> m_cfg;
         std::shared_ptr<SessionState> m_sessionState;
-
-        JsRuntimeHandle m_jsRuntime;
 
         QAction* m_fileAddTorrent;
         QAction* m_fileAddMagnetLinks;
@@ -99,12 +94,12 @@ namespace pt
         QMenu* m_filtersMenu;
 
         QList<TorrentHandle*> m_selectedTorrents;
-        QList<ScriptedTorrentFilter*> m_torrentFilters;
 
         QSplitter* m_splitter;
         QWinTaskbarButton* m_taskbarButton;
 
         GeoIP* m_geo;
+        JsEngine* m_jsEngine;
         Session* m_session;
         SystemTrayIcon* m_trayIcon;
         StatusBar* m_statusBar;
