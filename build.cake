@@ -221,7 +221,7 @@ Task("Build-Installer")
 });
 
 Task("Build-Installer-Bundle")
-    .IsDependentOn("Build")
+    .IsDependentOn("Build-Installer")
     .Does(() =>
 {
     var arch = Architecture.X64;

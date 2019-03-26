@@ -11,6 +11,7 @@
         <Directory Id="TARGETDIR" Name="SourceDir">
             <Directory Id="$(var.PlatformProgramFilesFolder)" Name="PFiles">
                 <Directory Id="INSTALLDIR" Name="PicoTorrent">
+                    <Directory Id="SCRIPTS" Name="scripts" />
                     <Directory Id="QTIMAGEFORMATS" Name="imageformats" />
                     <Directory Id="QTPLATFORMS" Name="platforms" />
                     <Directory Id="QTSTYLES" Name="styles" />

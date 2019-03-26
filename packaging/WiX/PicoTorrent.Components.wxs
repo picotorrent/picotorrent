@@ -136,7 +136,17 @@
 
             <ComponentGroupRef Id="CG_ImageFormats" />
             <ComponentGroupRef Id="CG_Platforms" />
+            <ComponentGroupRef Id="CG_Scripts" />
             <ComponentGroupRef Id="CG_Styles" />
+        </ComponentGroup>
+
+        <ComponentGroup Id="CG_Scripts" Directory="SCRIPTS">
+            <Component Id="C_filters.js" Guid="99be0fc1-709d-40c4-b3a9-45cba4608994">
+                <File Id="F_filters.js"
+                      KeyPath="yes"
+                      Name="filters.js"
+                      Source="$(var.PublishDirectory)\scripts\filters.js" />
+            </Component>
         </ComponentGroup>
 
         <ComponentGroup Id="CG_ImageFormats" Directory="QTIMAGEFORMATS">
