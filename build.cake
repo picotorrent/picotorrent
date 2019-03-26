@@ -95,9 +95,9 @@ Task("Setup-Publish-Directory")
     var files = new FilePath[]
     {
         MakeAbsolute(BuildDirectory + File("PicoTorrent.exe")),
-        MakeAbsolute(BuildDirectory + File("PicoTorrent.Core.dll")),
-        MakeAbsolute(BuildDirectory + File("PicoTorrent.GeoIP.dll")),
-        MakeAbsolute(BuildDirectory + File("PicoTorrent.Http.dll")),
+
+        MakeAbsolute(BuildDirectory + File("ChakraCore.dll")),
+        MakeAbsolute(BuildDirectory + Directory("scripts") + File("filters.js")),
 
         MakeAbsolute(BuildDirectory + File("Qt5Core.dll")),
         MakeAbsolute(BuildDirectory + File("Qt5Gui.dll")),
@@ -266,9 +266,6 @@ Task("Build-Symbols-Package")
     var files = new FilePath[]
     {
         BuildDirectory + File("PicoTorrent.pdb"),
-        BuildDirectory + File("PicoTorrent.Core.pdb"),
-        BuildDirectory + File("PicoTorrent.GeoIP.pdb"),
-        BuildDirectory + File("PicoTorrent.Http.pdb"),
     };
 
     Zip(BuildDirectory, PackagesDirectory + File(SymbolsPackage), files);

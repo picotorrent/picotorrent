@@ -92,25 +92,11 @@
                         Advertise="yes" />
             </Component>
 
-            <Component Id="C_PicoTorrent.Core.dll" Guid="8500823d-6374-4f17-8705-fe6e7f557387">
-                <File Id="F_PicoTorrent.Core.dll"
+            <Component Id="C_ChakraCore.dll" Guid="80cecb0f-e8f3-4724-a1b3-e207e3036951">
+                <File Id="F_ChakraCore.dll"
                     KeyPath="yes"
-                    Name="PicoTorrent.Core.dll"
-                    Source="$(var.PublishDirectory)\PicoTorrent.Core.dll" />
-            </Component>
-
-            <Component Id="C_PicoTorrent.GeoIP.dll" Guid="1c6da253-f5e9-4afb-9e59-1a7f95080bb0">
-                <File Id="F_PicoTorrent.GeoIP.dll"
-                    KeyPath="yes"
-                    Name="PicoTorrent.GeoIP.dll"
-                    Source="$(var.PublishDirectory)\PicoTorrent.GeoIP.dll" />
-            </Component>
-
-            <Component Id="C_PicoTorrent.Http.dll" Guid="8d7b85d8-0588-4ff5-8294-7085946e3cfd">
-                <File Id="F_PicoTorrent.Http.dll"
-                    KeyPath="yes"
-                    Name="PicoTorrent.Http.dll"
-                    Source="$(var.PublishDirectory)\PicoTorrent.Http.dll" />
+                    Name="ChakraCore.dll"
+                    Source="$(var.PublishDirectory)\ChakraCore.dll" />
             </Component>
 
             <Component Id="C_Qt5Core.dll" Guid="31923f96-639c-4f0b-a61f-29d5c9b73463">
