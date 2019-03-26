@@ -76,6 +76,7 @@ namespace pt
 
         // JS callbacks
         static JsValueRef js_addFilter(JsValueRef callee, bool isConstructCall, JsValueRef* args, unsigned short argsCount, void* callbackState);
+        static JsValueRef js_i18n(JsValueRef callee, bool isConstructCall, JsValueRef* args, unsigned short argsCount, void* callbackState);
 
         std::shared_ptr<Environment> m_env;
         std::shared_ptr<Database> m_db;

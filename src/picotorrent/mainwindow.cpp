@@ -236,7 +236,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
 
     auto viewMenu = menuBar()->addMenu(i18n("amp_view"));
 
-    m_filtersMenu = viewMenu->addMenu(i18n("amp_filters"));
+    m_filtersMenu = viewMenu->addMenu(i18n("amp_filter"));
     m_filtersMenu->addAction(m_viewFiltersNone);
     m_filtersMenu->addSeparator();
 
@@ -683,13 +683,19 @@ void MainWindow::loadScripts()
         JsValueRef addFilterFunc;
         JsCreateFunction(&MainWindow::js_addFilter, this, &addFilterFunc);
 
+        JsValueRef i18nFunc;
+        JsCreateFunction(&MainWindow::js_i18n, this, &i18nFunc);
+
         JsValueRef global;
         JsGetGlobalObject(&global);
 
-        // Set props
         JsPropertyIdRef addFilterProperty;
         JsCreatePropertyId("addFilter", 9, &addFilterProperty);
         JsSetProperty(global, addFilterProperty, addFilterFunc, false);
+
+        JsPropertyIdRef i18nProperty;
+        JsCreatePropertyId("i18n", 4, &i18nProperty);
+        JsSetProperty(global, i18nProperty, i18nFunc, false);
 
         JsValueRef script;
         JsCreateString(buffer.str().data(), buffer.str().size(), &script);
@@ -852,4 +858,20 @@ JsValueRef MainWindow::js_addFilter(JsValueRef callee, bool isConstructCall, JsV
     JsValueRef undefined;
     JsGetUndefinedValue(&undefined);
     return undefined;
+}
+
+JsValueRef MainWindow::js_i18n(JsValueRef callee, bool isConstructCall, JsValueRef* args, unsigned short argsCount, void* callbackState)
+{
+    size_t len;
+    JsCopyString(args[1], nullptr, 0, &len);
+
+    std::string key(len, '\0');
+    JsCopyString(args[1], &key[0], key.size(), nullptr);
+
+    QString translation = i18n(QString::fromStdString(key));
+
+    JsValueRef translationValue;
+    JsCreateString(translation.toStdString().data(), translation.toStdString().size(), &translationValue);
+
+    return translationValue;
 }

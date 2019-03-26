@@ -15,6 +15,17 @@ void setProperty(JsValueRef obj, QString const& name, QString const& value)
     JsSetProperty(obj, propId, val, false);
 }
 
+void setProperty(JsValueRef obj, QString const& name, int value)
+{
+    JsPropertyIdRef propId;
+    JsCreatePropertyId(name.toStdString().data(), name.size(), &propId);
+
+    JsValueRef val;
+    JsIntToNumber(value, &val);
+
+    JsSetProperty(obj, propId, val, false);
+}
+
 ScriptedTorrentFilter::ScriptedTorrentFilter(JsContextRef context, JsValueRef func, QString const& name)
     : m_context(context),
     m_func(func),
@@ -37,8 +48,10 @@ bool ScriptedTorrentFilter::includes(pt::TorrentStatus* status)
     JsValueRef torrentObject;
     JsCreateObject(&torrentObject);
 
+    setProperty(torrentObject, "downloadPayloadRate", status->downloadPayloadRate);
     setProperty(torrentObject, "name", status->name);
-    setProperty(torrentObject, "save_path", status->savePath);
+    setProperty(torrentObject, "savePath", status->savePath);
+    setProperty(torrentObject, "uploadPayloadRate", status->uploadPayloadRate);
 
     JsValueRef args[2];
     JsValueRef undefined;

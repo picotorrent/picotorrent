@@ -6,5 +6,5 @@ function uploadingActive(torrent) {
     return torrent.uploadPayloadRate > 0;
 }
 
-addFilter(downloadingActive, 'Downloading (active)');
-addFilter(uploadingActive,   'Uploading (active)');
+addFilter(downloadingActive, i18n('filter_downloading_active'));
+addFilter(uploadingActive,   i18n('filter_uploading_active'));
