@@ -1,6 +1,9 @@
 #include "torrentfileswidget.hpp"
 
+#include <filesystem>
+
 #include <QMenu>
+#include <QProcess>
 #include <QTreeView>
 #include <QVBoxLayout>
 
@@ -23,6 +26,7 @@ public:
     }
 };
 
+namespace fs = std::experimental::filesystem;
 namespace lt = libtorrent;
 using pt::TorrentFilesWidget;
 
@@ -42,6 +46,9 @@ TorrentFilesWidget::TorrentFilesWidget()
     auto layout = new QVBoxLayout();
     layout->addWidget(m_filesView);
     layout->setContentsMargins(2, 2, 2, 2);
+
+    QObject::connect(m_filesView, &QTreeView::activated,
+                     this,        &TorrentFilesWidget::showTorrentFileExplorer);
 
     QObject::connect(m_filesView, &QTreeView::customContextMenuRequested,
                      this,        &TorrentFilesWidget::onFileContextMenu);
@@ -178,4 +185,29 @@ void TorrentFilesWidget::onSetFilePriorities(QAction* action)
 
     m_filesModel->setPriorities(filePriorities);
     torrent->setFilePriorities(filePriorities);
+}
+
+void TorrentFilesWidget::showTorrentFileExplorer(QModelIndex const& index)
+{
+    if (m_torrents.size() == 0)
+    {
+        return;
+    }
+
+    TorrentHandle* torrent = m_torrents.at(0);
+    TorrentStatus  status  = torrent->status();
+
+    auto path = m_filesModel->filePath(index);
+    auto fullPath = status.savePath.toStdWString() / path;
+
+    QStringList param;
+
+    if (!fs::is_directory(fullPath))
+    {
+        param += QLatin1String("/select,");
+    }
+
+    param += QString::fromStdWString(fs::absolute(fullPath).wstring());
+
+    QProcess::startDetached("explorer.exe", param);
 }

@@ -9,6 +9,7 @@
 #include "core/utils.hpp"
 #include "translator.hpp"
 
+namespace fs = std::experimental::filesystem;
 namespace lt = libtorrent;
 using pt::FileStorageItemModel;
 
@@ -56,6 +57,26 @@ std::vector<int> FileStorageItemModel::fileIndices(QModelIndexList const& indice
     }
 
     return res;
+}
+
+fs::path FileStorageItemModel::filePath(QModelIndex const& index)
+{
+    if (!index.isValid())
+    {
+        return fs::path();
+    }
+
+    FileNode* item = static_cast<FileNode*>(index.internalPointer());
+    std::shared_ptr<FileNode> parent = item->parent;
+    fs::path result = item->name.toStdWString();
+
+    while (parent)
+    {
+        result = fs::path(parent->name.toStdWString()) / result;
+        parent = parent->parent;
+    }
+
+    return result;
 }
 
 int FileStorageItemModel::columnCount(QModelIndex const&) const

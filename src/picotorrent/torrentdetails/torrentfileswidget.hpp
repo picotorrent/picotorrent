@@ -25,6 +25,7 @@ namespace pt
     private:
         void onFileContextMenu(QPoint const& point);
         void onSetFilePriorities(QAction* action);
+        void showTorrentFileExplorer(QModelIndex const& index);
 
         libtorrent::sha1_hash m_currentSelection;
         QTreeView* m_filesView;

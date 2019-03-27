@@ -30,6 +30,7 @@ namespace pt
         void torrentsSelected(QList<TorrentHandle*> torrents);
 
     private slots:
+        void showTorrentExplorer(QModelIndex const& index);
         void torrentSelectionChanged(QItemSelection const& selected, QItemSelection const& deselected);
 
     private:

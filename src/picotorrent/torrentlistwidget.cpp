@@ -1,13 +1,19 @@
 #include "torrentlistwidget.hpp"
 
+#include <filesystem>
+
 #include <QHeaderView>
 #include <QMenu>
+#include <QProcess>
 
 #include "core/database.hpp"
 #include "torrenthandle.hpp"
 #include "torrentitemdelegate.hpp"
 #include "torrentlistmodel.hpp"
+#include "torrenthandle.hpp"
+#include "torrentstatus.hpp"
 
+namespace fs = std::experimental::filesystem;
 using pt::TorrentListWidget;
 
 TorrentListWidget::TorrentListWidget(QWidget* parent, QAbstractItemModel* model, std::shared_ptr<pt::Database> db)
@@ -66,6 +72,9 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, QAbstractItemModel* model,
 
     QObject::connect(this->selectionModel(), &QItemSelectionModel::selectionChanged,
                      this,                   &TorrentListWidget::torrentSelectionChanged);
+
+    QObject::connect(this,                   &TorrentListWidget::activated,
+                     this,                   &TorrentListWidget::showTorrentExplorer);
 }
 
 TorrentListWidget::~TorrentListWidget()
@@ -112,7 +121,7 @@ void TorrentListWidget::showHeaderContextMenu(QPoint const& point)
     auto header = this->header();
     auto model = this->model();
 
-    QMenu menu;
+    auto menu = new QMenu();
 
     for (int i = 0; i < header->count(); i++)
     {
@@ -120,19 +129,40 @@ void TorrentListWidget::showHeaderContextMenu(QPoint const& point)
 
         QVariant data = model->headerData(logicalIndex, Qt::Horizontal, Qt::DisplayRole);
 
-        QAction* action = menu.addAction(data.toString());
+        QAction* action = menu->addAction(data.toString());
         action->setCheckable(true);
         action->setChecked(!header->isSectionHidden(logicalIndex));
         action->setData(logicalIndex);
     }
 
-    connect(
-        &menu,
-        &QMenu::triggered,
-        this,
-        &TorrentListWidget::toggleColumnVisibility);
+    menu->popup(header->viewport()->mapToGlobal(point));
 
-    menu.exec(header->viewport()->mapToGlobal(point));
+    QObject::connect(menu, &QMenu::triggered,
+                     this, &TorrentListWidget::toggleColumnVisibility);
+
+    QObject::connect(menu, &QMenu::aboutToHide,
+                     menu, &QMenu::deleteLater);
+}
+
+void TorrentListWidget::showTorrentExplorer(QModelIndex const& index)
+{
+    auto variant = this->model()->data(index, Qt::UserRole);
+    auto torrent = static_cast<TorrentHandle*>(variant.value<void*>());
+    auto ts      = torrent->status();
+
+    fs::path savePath = ts.savePath.toStdWString();
+    fs::path path     = savePath / ts.name.toStdWString();
+
+    QStringList param;
+
+    if (!fs::is_directory(path))
+    {
+        param += QLatin1String("/select,");
+    }
+
+    param += QString::fromStdWString(fs::absolute(path).wstring());
+
+    QProcess::startDetached("explorer.exe", param);
 }
 
 void TorrentListWidget::torrentSelectionChanged(QItemSelection const& selected, QItemSelection const& deselected)
