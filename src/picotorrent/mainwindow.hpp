@@ -65,6 +65,7 @@ namespace pt
         void onTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
         void onViewPreferences();
         void setTorrentFilter(QAction* action);
+        void showTorrentFinishedNotification(TorrentHandle* torrent);
         void showUpdateDialog(UpdateInformation* info);
         void updateTaskbarButton(TorrentStatistics* stats);
 

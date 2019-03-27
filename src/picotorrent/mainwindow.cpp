@@ -56,6 +56,7 @@
 #include "torrentlistwidget.hpp"
 #include "torrentsortfilterproxymodel.hpp"
 #include "torrentstatistics.hpp"
+#include "torrentstatus.hpp"
 #include "translator.hpp"
 #include "updatechecker.hpp"
 #include "updateinformation.hpp"
@@ -132,6 +133,9 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
                          m_torrentsCount++;
                          m_statusBar->updateTorrentCount(m_torrentsCount);
                      });
+
+    QObject::connect(m_session,          &Session::torrentFinished,
+                     this,               &MainWindow::showTorrentFinishedNotification);
 
     QObject::connect(m_session,          &Session::torrentRemoved,
                      m_torrentListModel, &TorrentListModel::removeTorrent);
@@ -716,6 +720,16 @@ void MainWindow::setTorrentFilter(QAction* action)
     auto filter = static_cast<ScriptedTorrentFilter*>(data.value<void*>());
 
     m_torrentSortFilterModel->setScriptedFilter(filter);
+}
+
+void MainWindow::showTorrentFinishedNotification(pt::TorrentHandle* torrent)
+{
+    TorrentStatus status = torrent->status();
+
+    m_trayIcon->showMessage(
+        i18n("torrent_finished"),
+        status.name,
+        QIcon(":res/app.ico"));
 }
 
 void MainWindow::showUpdateDialog(pt::UpdateInformation* info)

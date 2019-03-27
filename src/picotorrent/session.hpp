@@ -40,6 +40,7 @@ namespace pt
         void metadataSearchResult(std::shared_ptr<libtorrent::torrent_info>* ti);
         void sessionStatsUpdated(SessionStatistics* stats);
         void torrentAdded(TorrentHandle* torrent);
+        void torrentFinished(TorrentHandle* torrent);
         void torrentRemoved(TorrentHandle* torrent);
         void torrentStatsUpdated(TorrentStatistics* stats);
         void torrentUpdated(TorrentHandle* torrent);

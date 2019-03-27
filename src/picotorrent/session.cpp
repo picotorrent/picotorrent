@@ -436,6 +436,8 @@ void Session::readAlerts()
                 break;
             }
 
+            emit torrentFinished(m_torrents.at(ts.info_hash));
+
             bool shouldMove      = m_cfg->getBool("move_completed_downloads");
             bool onlyFromDefault = m_cfg->getBool("move_completed_downloads_from_default_only");
             std::string movePath = m_cfg->getString("move_completed_downloads_path");
