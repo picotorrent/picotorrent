@@ -54,16 +54,11 @@ Task("Generate-Project")
     .IsDependentOn("Clean")
     .Does(() =>
 {
-    var generator = "Visual Studio 15 2017 Win64";
-
-    if(platform == "x86")
-    {
-        generator = "Visual Studio 15 2017";
-    }
-
     CMake("./", new CMakeSettings {
       OutputPath = OutputDirectory,
-      Generator = generator
+      Generator = "Visual Studio 16 2019",
+      Platform = platform == "x86" ? "Win32" : "x64",
+      Toolset = "v142"
     });
 });
 
