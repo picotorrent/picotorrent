@@ -123,8 +123,8 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Configuration> cfg)
         settings.set_str(lt::settings_pack::proxy_username,             cfg->getString("proxy_username"));
         settings.set_str(lt::settings_pack::proxy_password,             cfg->getString("proxy_password"));
         settings.set_bool(lt::settings_pack::proxy_hostnames,           cfg->getBool("proxy_hostnames"));
-        settings.set_bool(lt::settings_pack::proxy_peer_connections,    cfg->getBool("proxy_peer_connections"));
-        settings.set_bool(lt::settings_pack::proxy_tracker_connections, cfg->getBool("proxy_tracker_connections"));
+        settings.set_bool(lt::settings_pack::proxy_peer_connections,    cfg->getBool("proxy_peers"));
+        settings.set_bool(lt::settings_pack::proxy_tracker_connections, cfg->getBool("proxy_trackers"));
     }
 
     return settings;

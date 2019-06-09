@@ -45,7 +45,6 @@ void ProxySectionWidget::loadConfig(std::shared_ptr<pt::Configuration> cfg)
     m_proxyPort->setText(proxyPort > 0 ? QString::number(proxyPort) : "");
     m_proxyUsername->setText(QString::fromStdString(cfg->getString("proxy_username")));
     m_proxyPassword->setText(QString::fromStdString(cfg->getString("proxy_password")));
-    m_forceProxy->setChecked(cfg->getBool("proxy_force"));
     m_proxyHostnames->setChecked(cfg->getBool("proxy_hostnames"));
     m_proxyPeerConnections->setChecked(cfg->getBool("proxy_peers"));
     m_proxyTrackerConnections->setChecked(cfg->getBool("proxy_trackers"));
@@ -61,7 +60,6 @@ void ProxySectionWidget::saveConfig(std::shared_ptr<pt::Configuration> cfg)
     cfg->setInt("proxy_port", m_proxyPort->text().toInt());
     cfg->setString("proxy_username", m_proxyUsername->text().toStdString());
     cfg->setString("proxy_password", m_proxyPassword->text().toStdString());
-    cfg->setBool("proxy_force", m_forceProxy->checkState() == Qt::Checked);
     cfg->setBool("proxy_hostnames", m_proxyHostnames->checkState() == Qt::Checked);
     cfg->setBool("proxy_peers", m_proxyPeerConnections->checkState() == Qt::Checked);
     cfg->setBool("proxy_trackers", m_proxyTrackerConnections->checkState() == Qt::Checked);
@@ -74,7 +72,6 @@ void ProxySectionWidget::createUi()
     m_proxyPort = new QLineEdit();
     m_proxyUsername = new QLineEdit();
     m_proxyPassword = new QLineEdit();
-    m_forceProxy = new QCheckBox(i18n("force_proxy"));
     m_proxyHostnames = new QCheckBox(i18n("proxy_hostnames"));
     m_proxyPeerConnections = new QCheckBox(i18n("proxy_peer_connections"));
     m_proxyTrackerConnections = new QCheckBox(i18n("proxy_tracker_connections"));
@@ -104,10 +101,9 @@ void ProxySectionWidget::createUi()
     proxyLayout->addWidget(new QLabel(i18n("password")), 4, 0);
     proxyLayout->addWidget(m_proxyPassword, 4, 1);
 
-    proxyLayout->addWidget(m_forceProxy, 5, 0);
-    proxyLayout->addWidget(m_proxyHostnames, 5, 1);
-    proxyLayout->addWidget(m_proxyPeerConnections, 6, 0);
-    proxyLayout->addWidget(m_proxyTrackerConnections, 6, 1);
+    proxyLayout->addWidget(m_proxyHostnames, 5, 0);
+    proxyLayout->addWidget(m_proxyPeerConnections, 5, 1);
+    proxyLayout->addWidget(m_proxyTrackerConnections, 6, 0);
 
     auto proxyGroup = new QGroupBox(i18n("proxy"));
     proxyGroup->setLayout(proxyLayout);
@@ -128,7 +124,6 @@ void ProxySectionWidget::onProxyTypeChanged(int index)
     m_proxyPort->setEnabled(false);
     m_proxyUsername->setEnabled(false);
     m_proxyPassword->setEnabled(false);
-    m_forceProxy->setEnabled(false);
     m_proxyHostnames->setEnabled(false);
     m_proxyPeerConnections->setEnabled(false);
     m_proxyTrackerConnections->setEnabled(false);
@@ -143,7 +138,6 @@ void ProxySectionWidget::onProxyTypeChanged(int index)
     {
         m_proxyHost->setEnabled(true);
         m_proxyPort->setEnabled(true);
-        m_forceProxy->setEnabled(true);
         m_proxyHostnames->setEnabled(true);
         m_proxyPeerConnections->setEnabled(true);
         m_proxyTrackerConnections->setEnabled(true);

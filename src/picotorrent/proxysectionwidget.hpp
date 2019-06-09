@@ -28,7 +28,6 @@ namespace pt
         QLineEdit* m_proxyPort;
         QLineEdit* m_proxyUsername;
         QLineEdit* m_proxyPassword;
-        QCheckBox* m_forceProxy;
         QCheckBox* m_proxyHostnames;
         QCheckBox* m_proxyPeerConnections;
         QCheckBox* m_proxyTrackerConnections;
