@@ -1,5 +1,3 @@
-#r "./tools/Cake.CMake/lib/net45/Cake.CMake.dll"
-
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
 //////////////////////////////////////////////////////////////////////
@@ -54,11 +52,16 @@ Task("Generate-Project")
     .IsDependentOn("Clean")
     .Does(() =>
 {
-    CMake("./", new CMakeSettings {
-      OutputPath = OutputDirectory,
-      Generator = "Visual Studio 16 2019",
-      Platform = platform == "x86" ? "Win32" : "x64",
-      Toolset = "v142"
+    var cmakePath = Context.Tools.Resolve("cmake.exe");
+
+    StartProcess(cmakePath, new ProcessSettings
+    {
+        Arguments = new ProcessArgumentBuilder()
+            .Append("-S").AppendQuoted(".")
+            .Append("-B").AppendQuoted(OutputDirectory)
+            .Append("-G").AppendQuoted("Visual Studio 16 2019")
+            .Append("-A").AppendQuoted(platform == "x86" ? "Win32" : "x64")
+            .Append("-T").AppendQuoted("v142"),
     });
 });
 
@@ -67,7 +70,8 @@ Task("Build")
     .Does(() =>
 {
     var settings = new MSBuildSettings()
-                        .SetConfiguration(configuration);
+                        .SetConfiguration(configuration)
+                        .UseToolVersion(MSBuildToolVersion.VS2019);
 
     if(platform == "x86")
     {
@@ -94,15 +98,15 @@ Task("Setup-Publish-Directory")
         MakeAbsolute(BuildDirectory + File("ChakraCore.dll")),
         MakeAbsolute(BuildDirectory + Directory("scripts") + File("filters.js")),
 
-        MakeAbsolute(BuildDirectory + File("Qt5Core.dll")),
-        MakeAbsolute(BuildDirectory + File("Qt5Gui.dll")),
-        MakeAbsolute(BuildDirectory + File("Qt5Svg.dll")),
-        MakeAbsolute(BuildDirectory + File("Qt5Widgets.dll")),
-        MakeAbsolute(BuildDirectory + File("Qt5WinExtras.dll")),
+        MakeAbsolute(BuildDirectory + File($"Qt5Core{LibrarySuffix}.dll")),
+        MakeAbsolute(BuildDirectory + File($"Qt5Gui{LibrarySuffix}.dll")),
+        MakeAbsolute(BuildDirectory + File($"Qt5Svg{LibrarySuffix}.dll")),
+        MakeAbsolute(BuildDirectory + File($"Qt5Widgets{LibrarySuffix}.dll")),
+        MakeAbsolute(BuildDirectory + File($"Qt5WinExtras{LibrarySuffix}.dll")),
 
-        MakeAbsolute(BuildDirectory + Directory("imageformats") + File("qico.dll")),
-        MakeAbsolute(BuildDirectory + Directory("platforms")    + File("qwindows.dll")),
-        MakeAbsolute(BuildDirectory + Directory("styles")       + File("qwindowsvistastyle.dll")),
+        MakeAbsolute(BuildDirectory + Directory("imageformats") + File($"qico{LibrarySuffix}.dll")),
+        MakeAbsolute(BuildDirectory + Directory("platforms")    + File($"qwindows{LibrarySuffix}.dll")),
+        MakeAbsolute(BuildDirectory + Directory("styles")       + File($"qwindowsvistastyle{LibrarySuffix}.dll")),
     };
 
     CreateDirectory(PublishDirectory);
@@ -118,23 +122,22 @@ Task("Build-AppX-Package")
     .IsDependentOn("Setup-Publish-Directory")
     .Does(() =>
 {
-    var UseBuildToolsPaths  = true;
-    var VCRedistPath        = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Redist\\MSVC";
-    var VCRedistVersionFile = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Auxiliary\\Build\\Microsoft.VCRedistVersion.default.txt";
+    var VCRedistPath        = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Redist\\MSVC";
+    var VCRedistVersionFile = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\Microsoft.VCRedistVersion.default.txt";
 
     if (!System.IO.File.Exists(VCRedistVersionFile))
     {
-        VCRedistPath        = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC";
-        VCRedistVersionFile = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\Microsoft.VCRedistVersion.default.txt";
+        VCRedistPath        = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Redist\\MSVC";
+        VCRedistVersionFile = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\Microsoft.VCRedistVersion.default.txt";
     }
 
     var VCRedistVersion = System.IO.File.ReadAllText(VCRedistVersionFile).Trim();
     var VCRedist = Directory(VCRedistPath)
                  + Directory(VCRedistVersion)
                  + Directory(platform)
-                 + Directory("Microsoft.VC141.CRT");
+                 + Directory("Microsoft.VC142.CRT");
 
-    var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs")
+    var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\10.0.17763.0\\ucrt\\DLLs")
                   + Directory(platform);
 
     TransformTextFile("./packaging/AppX/PicoTorrent.mapping.template", "%{", "}")
@@ -143,6 +146,7 @@ Task("Build-AppX-Package")
         .WithToken("PublishDirectory", MakeAbsolute(PublishDirectory))
         .WithToken("ResourceDirectory", MakeAbsolute(ResourceDirectory))
         .WithToken("PackagingDirectory", MakeAbsolute(Directory("./packaging/AppX")))
+        .WithToken("QtLibrarySuffix", LibrarySuffix)
         .Save("./packaging/AppX/PicoTorrent.mapping");
 
     TransformTextFile("./packaging/AppX/PicoTorrentManifest.xml.template", "%{", "}")

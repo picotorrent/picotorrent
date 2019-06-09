@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
+<?if $(var.Configuration) = "Debug" ?>
+    <?define Qt5Core = "Qt5Cored.dll" ?>
+    <?define Qt5Gui = "Qt5Guid.dll" ?>
+    <?define Qt5Svg = "Qt5Svgd.dll" ?>
+    <?define Qt5Widgets = "Qt5Widgetsd.dll" ?>
+    <?define Qt5WinExtras = "Qt5WinExtrasd.dll" ?>
+    <?define Qt5_qico = "qicod.dll" ?>
+    <?define Qt5_qwindows = "qwindowsd.dll" ?>
+    <?define Qt5_qwindowsvistastyle = "qwindowsvistastyled.dll" ?>
+<?else ?>
+    <?define Qt5Core = "Qt5Core.dll" ?>
+    <?define Qt5Gui = "Qt5Gui.dll" ?>
+    <?define Qt5Svg = "Qt5Svg.dll" ?>
+    <?define Qt5Widgets = "Qt5Widgets.dll" ?>
+    <?define Qt5WinExtras = "Qt5WinExtras.dll" ?>
+    <?define Qt5_qico = "qico.dll" ?>
+    <?define Qt5_qwindows = "qwindows.dll" ?>
+    <?define Qt5_qwindowsvistastyle = "qwindowsvistastyle.dll" ?>
+<?endif ?>
+
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <ComponentGroup Id="CG_MainApplication" Directory="INSTALLDIR">
@@ -102,36 +122,36 @@
             <Component Id="C_Qt5Core.dll" Guid="31923f96-639c-4f0b-a61f-29d5c9b73463">
                 <File Id="F_Qt5Core.dll"
                     KeyPath="yes"
-                    Name="Qt5Core.dll"
-                    Source="$(var.PublishDirectory)\Qt5Core.dll" />
+                    Name="$(var.Qt5Core)"
+                    Source="$(var.PublishDirectory)\$(var.Qt5Core)" />
             </Component>
 
             <Component Id="C_Qt5Gui.dll" Guid="1a822836-d8fe-4354-823c-4f260c598681">
                 <File Id="F_Qt5Gui.dll"
                     KeyPath="yes"
-                    Name="Qt5Gui.dll"
-                    Source="$(var.PublishDirectory)\Qt5Gui.dll" />
+                    Name="$(var.Qt5Gui)"
+                    Source="$(var.PublishDirectory)\$(var.Qt5Gui)" />
             </Component>
 
             <Component Id="C_Qt5Svg.dll" Guid="da98b24a-7c19-43a2-815b-bb75cd06019c">
                 <File Id="F_Qt5Svg.dll"
                     KeyPath="yes"
-                    Name="Qt5Svg.dll"
-                    Source="$(var.PublishDirectory)\Qt5Svg.dll" />
+                    Name="$(var.Qt5Svg)"
+                    Source="$(var.PublishDirectory)\$(var.Qt5Svg)" />
             </Component>
 
             <Component Id="C_Qt5Widgets.dll" Guid="4d06f3ae-1cf6-4f18-9fe6-b20d0d177b05">
                 <File Id="F_Qt5Widgets"
                     KeyPath="yes"
-                    Name="Qt5Widgets.dll"
-                    Source="$(var.PublishDirectory)\Qt5Widgets.dll" />
+                    Name="$(var.Qt5Widgets)"
+                    Source="$(var.PublishDirectory)\$(var.Qt5Widgets)" />
             </Component>
 
             <Component Id="C_Qt5WinExtras.dll" Guid="8be04dc4-26e4-487a-b8c4-06fc225d8f10">
                 <File Id="F_Qt5WinExtras"
                     KeyPath="yes"
-                    Name="Qt5WinExtras.dll"
-                    Source="$(var.PublishDirectory)\Qt5WinExtras.dll" />
+                    Name="$(var.Qt5WinExtras)"
+                    Source="$(var.PublishDirectory)\$(var.Qt5WinExtras)" />
             </Component>
 
             <ComponentGroupRef Id="CG_ImageFormats" />
@@ -153,8 +173,8 @@
             <Component Id="C_qico.dll" Guid="262ec4a9-1fff-49e8-aa33-a4710e1acd2a">
                 <File Id="F_qico.dll"
                       KeyPath="yes"
-                      Name="qico.dll"
-                      Source="$(var.PublishDirectory)\imageformats\qico.dll" />
+                      Name="$(var.Qt5_qico)"
+                      Source="$(var.PublishDirectory)\imageformats\$(var.Qt5_qico)" />
             </Component>
         </ComponentGroup>
         
@@ -162,8 +182,8 @@
             <Component Id="C_qwindows.dll" Guid="03c35546-9ee0-4c89-8add-4a8e3d9837f1">
                 <File Id="F_qwindows.dll"
                       KeyPath="yes"
-                      Name="qwindows.dll"
-                      Source="$(var.PublishDirectory)\platforms\qwindows.dll" />
+                      Name="$(var.Qt5_qwindows)"
+                      Source="$(var.PublishDirectory)\platforms\$(var.Qt5_qwindows)" />
             </Component>
         </ComponentGroup>
 
@@ -171,8 +191,8 @@
             <Component Id="C_qwindowsvistastyle.dll" Guid="41cf0ea2-81c0-4486-b8c9-8f745d9f1d32">
                 <File Id="F_qwindowsvistastyle.dll"
                       KeyPath="yes"
-                      Name="qwindowsvistastyle.dll"
-                      Source="$(var.PublishDirectory)\styles\qwindowsvistastyle.dll" />
+                      Name="$(var.Qt5_qwindowsvistastyle)"
+                      Source="$(var.PublishDirectory)\styles\$(var.Qt5_qwindowsvistastyle)" />
             </Component>
         </ComponentGroup>
     </Fragment>

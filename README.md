@@ -28,19 +28,19 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 To successfully build PicoTorrent, you need the following libraries and
 applications installed,
 
- * [CMake (>= v3.8)](https://cmake.org/download/).
- * [Build Tools for Visual Studio 2017](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (or regular Visual Studio 2017 with the C++ toolset).
+ * [CMake (>= v3.14)](https://cmake.org/download/).
+ * [Visual Studio 2019 Build Tools](https://visualstudio.microsoft.com/downloads/) (or regular Visual Studio 2019 with the C++ toolset).
  * [OpenSSL v1.1.1](https://slproweb.com/products/Win32OpenSSL.html) (*not*
    the light version) for the architecture you plan on building. Both Win32
    and Win64 can be installed side by side.
- * [Qt v5.12.1](https://www.qt.io/download-qt-installer) for the architecture
+ * [Qt v5.12.3](https://www.qt.io/download-qt-installer) for the architecture
    you plan on building. Both Win32 and Win64 is recommended, as well as debug
    symbols.
  * [Chocolatey](https://chocolatey.org/install) (Optional) if you plan to build
    or test the Chocolatey package.
 
 Next, set the `CMAKE_PREFIX_PATH` environment variable to your Qt prefix path
-(ie. `C:\Qt\5.12.1\msvc2017` or `C:\Qt\5.12.1\msvc2017_64`).
+(ie. `C:\Qt\5.12.3\msvc2017` or `C:\Qt\5.12.3\msvc2017_64`).
 
 Make sure all Git submodules are updated, then run `.\build.ps1` to start
 building and packaging PicoTorrent. If you want to build for x86, you can pass
