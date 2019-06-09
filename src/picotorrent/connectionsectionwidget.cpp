@@ -183,7 +183,7 @@ void ConnectionSectionWidget::setupNetworkAdapters()
                     pCurrAddresses->NetworkGuid.Data4[4], pCurrAddresses->NetworkGuid.Data4[5],
                     pCurrAddresses->NetworkGuid.Data4[6], pCurrAddresses->NetworkGuid.Data4[7]);
 
-                adapter->description = QString::fromStdWString(pCurrAddresses->Description);
+                adapter->description = QString::fromStdWString(pCurrAddresses->FriendlyName);
                 adapter->guid = guidBuf;
 
                 IP_ADAPTER_UNICAST_ADDRESS* pu = pCurrAddresses->FirstUnicastAddress;
