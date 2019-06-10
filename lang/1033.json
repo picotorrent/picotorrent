@@ -242,6 +242,7 @@
         "amp_filter": "&Filter",
         "amp_none": "&None",
         "filter_downloading_active": "Downloading (active)",
-        "filter_uploading_active": "Uploading (active)"
+        "filter_uploading_active": "Uploading (active)",
+        "size_remaining": "Size (remaining)"
     }
 }

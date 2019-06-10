@@ -55,6 +55,8 @@ bool TorrentSortFilterProxyModel::lessThan(const QModelIndex &left, const QModel
         return leftStatus.queuePosition < rightStatus.queuePosition;
     case TorrentListModel::Columns::Size:
         return leftStatus.totalWanted < rightStatus.totalWanted;
+    case TorrentListModel::Columns::SizeRemaining:
+        return leftStatus.totalWantedRemaining < rightStatus.totalWantedRemaining;
     case TorrentListModel::Columns::Status:
         return leftStatus.state < rightStatus.state;
     case TorrentListModel::Columns::Progress:

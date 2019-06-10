@@ -232,29 +232,30 @@ pt::TorrentStatus TorrentHandle::status()
     }
 
     TorrentStatus ts;
-    ts.addedOn             = QDateTime::fromSecsSinceEpoch(m_ts->added_time);
-    ts.availability        = m_ts->distributed_copies;
-    ts.completedOn         = m_ts->completed_time > 0 ? QDateTime::fromSecsSinceEpoch(m_ts->completed_time) : QDateTime();
-    ts.downloadPayloadRate = m_ts->download_payload_rate;
-    ts.error               = m_ts->errc ? QString::fromStdString(m_ts->errc.message()) : "";
-    ts.eta                 = eta;
-    ts.forced              = (!(m_ts->flags & lt::torrent_flags::paused) && !(m_ts->flags & lt::torrent_flags::auto_managed));
-    ts.infoHash            = QString::fromStdString(hash.str());
-    ts.name                = QString::fromStdString(m_ts->name);
-    ts.paused              = (m_th->flags() & lt::torrent_flags::paused) == lt::torrent_flags::paused;
-    ts.peersCurrent        = m_ts->num_peers - m_ts->num_seeds;
-    ts.peersTotal          = m_ts->list_peers - m_ts->list_seeds;
-    ts.pieces              = m_ts->pieces;
-    ts.progress            = m_ts->progress;
-    ts.queuePosition       = static_cast<int>(m_ts->queue_position);
-    ts.ratio               = ratio;
-    ts.savePath            = QString::fromStdString(m_ts->save_path);
-    ts.seedsCurrent        = m_ts->num_seeds;
-    ts.seedsTotal          = m_ts->list_seeds;
-    ts.state               = getTorrentStatusState(*m_ts.get());
-    ts.torrentFile         = m_ts->torrent_file;
-    ts.totalWanted         = m_ts->total_wanted;
-    ts.uploadPayloadRate   = m_ts->upload_payload_rate;
+    ts.addedOn              = QDateTime::fromSecsSinceEpoch(m_ts->added_time);
+    ts.availability         = m_ts->distributed_copies;
+    ts.completedOn          = m_ts->completed_time > 0 ? QDateTime::fromSecsSinceEpoch(m_ts->completed_time) : QDateTime();
+    ts.downloadPayloadRate  = m_ts->download_payload_rate;
+    ts.error                = m_ts->errc ? QString::fromStdString(m_ts->errc.message()) : "";
+    ts.eta                  = eta;
+    ts.forced               = (!(m_ts->flags & lt::torrent_flags::paused) && !(m_ts->flags & lt::torrent_flags::auto_managed));
+    ts.infoHash             = QString::fromStdString(hash.str());
+    ts.name                 = QString::fromStdString(m_ts->name);
+    ts.paused               = (m_th->flags() & lt::torrent_flags::paused) == lt::torrent_flags::paused;
+    ts.peersCurrent         = m_ts->num_peers - m_ts->num_seeds;
+    ts.peersTotal           = m_ts->list_peers - m_ts->list_seeds;
+    ts.pieces               = m_ts->pieces;
+    ts.progress             = m_ts->progress;
+    ts.queuePosition        = static_cast<int>(m_ts->queue_position);
+    ts.ratio                = ratio;
+    ts.savePath             = QString::fromStdString(m_ts->save_path);
+    ts.seedsCurrent         = m_ts->num_seeds;
+    ts.seedsTotal           = m_ts->list_seeds;
+    ts.state                = getTorrentStatusState(*m_ts.get());
+    ts.torrentFile          = m_ts->torrent_file;
+    ts.totalWanted          = m_ts->total_wanted;
+    ts.totalWantedRemaining = m_ts->total_wanted - m_ts->total_wanted_done;
+    ts.uploadPayloadRate    = m_ts->upload_payload_rate;
     return ts;
 }
 

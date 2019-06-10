@@ -36,6 +36,9 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, QAbstractItemModel* model,
     header->resizeSection(TorrentListModel::Columns::QueuePosition, 30);
     header->resizeSection(TorrentListModel::Columns::Size,          60);
 
+    // Hidden columns
+    header->hideSection(TorrentListModel::Columns::SizeRemaining);
+
     auto torrentListQ = m_db->statement("SELECT column_id, width, position, is_visible FROM column_state WHERE list_id = ?");
     torrentListQ->bind(1, "torrent_list");
 
@@ -49,7 +52,11 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, QAbstractItemModel* model,
         header->moveSection(header->visualIndex(columnId), position);
         header->resizeSection(columnId, width);
 
-        if (!visible)
+        if (visible)
+        {
+            header->showSection(columnId);
+        }
+        else
         {
             header->hideSection(columnId);
         }
@@ -64,7 +71,9 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, QAbstractItemModel* model,
         int sortColumnIndex = torrentSortListQ->getInt(0);
         int sortColumnOrder = torrentSortListQ->getInt(1);
 
-        this->sortByColumn(sortColumnIndex, (Qt::SortOrder)sortColumnOrder);
+        this->sortByColumn(
+            sortColumnIndex,
+            static_cast<Qt::SortOrder>(sortColumnOrder));
     }
 
     QObject::connect(header,                 &QHeaderView::customContextMenuRequested,

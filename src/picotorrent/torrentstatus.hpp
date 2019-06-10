@@ -51,6 +51,7 @@ namespace pt
         State                                         state;
         std::weak_ptr<const libtorrent::torrent_info> torrentFile;
         std::int64_t                                  totalWanted;
+        std::int64_t                                  totalWantedRemaining;
         int                                           uploadPayloadRate;
     };
 }

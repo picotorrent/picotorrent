@@ -107,6 +107,11 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         case Columns::Size:
             return QString::fromStdWString(Utils::toHumanFileSize(status.totalWanted));
 
+        case Columns::SizeRemaining:
+            return status.totalWantedRemaining <= 0
+                ? "-"
+                : QString::fromStdWString(Utils::toHumanFileSize(status.totalWantedRemaining));
+
         case Columns::Status:
         {
             switch (status.state)
@@ -221,6 +226,7 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         {
         case Columns::QueuePosition:
         case Columns::Size:
+        case Columns::SizeRemaining:
         case Columns::ETA:
         case Columns::DownloadSpeed:
         case Columns::UploadSpeed:
@@ -262,6 +268,9 @@ QVariant TorrentListModel::headerData(int section, Qt::Orientation, int role) co
 
         case Columns::Size:
             return i18n("size");
+
+        case Columns::SizeRemaining:
+            return i18n("size_remaining");
 
         case Columns::Status:
             return i18n("status");
@@ -306,6 +315,7 @@ QVariant TorrentListModel::headerData(int section, Qt::Orientation, int role) co
         {
         case Columns::QueuePosition:
         case Columns::Size:
+        case Columns::SizeRemaining:
         case Columns::ETA:
         case Columns::DownloadSpeed:
         case Columns::UploadSpeed:
