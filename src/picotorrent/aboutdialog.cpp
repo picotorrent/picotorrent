@@ -19,10 +19,7 @@ AboutDialog::AboutDialog(QWidget* parent)
 
     QString info_str = i18n("picotorrent_description");
     QString heading = QString::asprintf(i18n("picotorrent_v_format").toStdString().c_str(), BuildInfo::version().toStdString().c_str());
-    QString dev_heading = "Developers";
     QString window_title = i18n("about_picotorrent");
-    QList<QString> developers;
-    developers.push_back(QString("Viktor Elofsson"));
 
     // All widgets defined
     QVBoxLayout* layout = new QVBoxLayout();
@@ -41,14 +38,10 @@ AboutDialog::AboutDialog(QWidget* parent)
 
     QLabel* info = new QLabel(info_str);
 
-    QString li = R"s(<a href="https://picotorrent.org">https://picotorrent.org</a>)s";
-    QLabel* link = new QLabel(li);
-
-    QLabel* dev = new QLabel(dev_heading);
-
-    QFrame* line = new QFrame();
-    line->setFrameShape(QFrame::HLine);
-    line->setFrameShadow(QFrame::Sunken);
+    QLabel* link = new QLabel("<a href=\"https://picotorrent.org?app\">https://picotorrent.org</a>", this);
+    link->setOpenExternalLinks(true);
+    link->setTextFormat(Qt::RichText);
+    link->setTextInteractionFlags(Qt::TextBrowserInteraction);
 
     // Adding widgets
     layout->addWidget(icon);
@@ -56,20 +49,11 @@ AboutDialog::AboutDialog(QWidget* parent)
     layout->addWidget(copyright);
     layout->addWidget(info);
     layout->addWidget(link);
-    layout->addWidget(dev);
-    layout->addWidget(line);
     layout->setAlignment(icon, Qt::AlignHCenter);
     layout->setAlignment(heading_l, Qt::AlignHCenter);
     layout->setAlignment(copyright, Qt::AlignHCenter);
     layout->setAlignment(info, Qt::AlignHCenter);
     layout->setAlignment(link, Qt::AlignHCenter);
-
-    for (auto dev : developers)
-    {
-        QLabel* devLabel = new QLabel(dev);
-        layout->addWidget(devLabel);
-        layout->setAlignment(devLabel, Qt::AlignHCenter);
-    }
 
     this->setLayout(layout);
     this->setWindowFlags(flags);
