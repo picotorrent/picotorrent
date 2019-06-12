@@ -243,6 +243,8 @@
         "amp_none": "&None",
         "filter_downloading_active": "Downloading (active)",
         "filter_uploading_active": "Uploading (active)",
-        "size_remaining": "Size (remaining)"
+        "size_remaining": "Size (remaining)",
+        "pause_on_low_disk_space": "Pause when disk space is low",
+        "pause_on_low_disk_space_alert": "Torrent paused (low disk space)"
     }
 }

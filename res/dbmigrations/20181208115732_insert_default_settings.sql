@@ -43,6 +43,8 @@ INSERT INTO setting (key, int_value, string_value) VALUES
 ('enable_download_rate_limit',                 0,                              NULL),
 ('enable_upload_rate_limit',                   0,                              NULL),
 ('download_rate_limit',                        1024,                           NULL),
+('pause_on_low_disk_space',                    0,                              NULL),
+('pause_on_low_disk_space_limit',              5,                              NULL),
 ('require_incoming_encryption',                0,                              NULL),
 ('require_outgoing_encryption',                0,                              NULL),
 ('stop_tracker_timeout',                       1,                              NULL),

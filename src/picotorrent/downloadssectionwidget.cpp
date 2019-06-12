@@ -13,6 +13,7 @@
 
 #include "core/configuration.hpp"
 #include "translator.hpp"
+#include "widgets/sunkenline.hpp"
 
 using pt::DownloadsSectionWidget;
 
@@ -72,6 +73,7 @@ void DownloadsSectionWidget::loadConfig(std::shared_ptr<pt::Configuration> cfg)
     m_moveCompleted->setChecked(moveCompleted);
     m_moveCompletedPath->setText(QString::fromStdString(cfg->getString("move_completed_downloads_path")));
     m_onlyMoveFromDefault->setChecked(onlyFromDefault);
+    m_pauseTorrentsOnLimit->setChecked(cfg->getBool("pause_on_low_disk_space"));
 
     m_downLimit->setEnabled(enableDownLimit);
     m_downLimit->setText(QString::number(cfg->getInt("download_rate_limit")));
@@ -91,6 +93,7 @@ void DownloadsSectionWidget::saveConfig(std::shared_ptr<pt::Configuration> cfg)
     cfg->setBool("move_completed_downloads", m_moveCompleted->checkState() == Qt::Checked);
     cfg->setString("move_completed_downloads_path", m_moveCompletedPath->text().toStdString());
     cfg->setBool("move_completed_downloads_from_default_only", m_onlyMoveFromDefault->checkState() == Qt::Checked);
+    cfg->setBool("pause_on_low_disk_space", m_pauseTorrentsOnLimit->checkState() == Qt::Checked);
     cfg->setInt("download_rate_limit", m_downLimit->text().toInt());
     cfg->setInt("upload_rate_limit", m_upLimit->text().toInt());
     cfg->setBool("enable_download_rate_limit", m_downLimitEnable->checkState() == Qt::Checked);
@@ -108,6 +111,7 @@ void DownloadsSectionWidget::createUi()
     m_moveCompletedPath = new QLineEdit();
     m_moveCompletedBrowse = new QPushButton("...");
     m_onlyMoveFromDefault = new QCheckBox(i18n("only_move_from_default_save_path"));
+    m_pauseTorrentsOnLimit = new QCheckBox(i18n("pause_on_low_disk_space"));
     m_downLimit = new QLineEdit();
     m_downLimitEnable = new QCheckBox(i18n("dl_limit"));
     m_upLimit = new QLineEdit();
@@ -157,13 +161,11 @@ void DownloadsSectionWidget::createUi()
     transfersLayout->addLayout(savePathLayout);
     transfersLayout->addWidget(m_moveCompleted);
     transfersLayout->addLayout(moveCompletedLayout);
+    transfersLayout->addWidget(new SunkenLine(this));
+    transfersLayout->addWidget(m_pauseTorrentsOnLimit);
 
     auto transfersGroup = new QGroupBox(i18n("transfers"));
     transfersGroup->setLayout(transfersLayout);
-
-    auto hl = new QFrame(this);
-    hl->setFrameShape(QFrame::HLine);
-    hl->setFrameShadow(QFrame::Sunken);
 
     auto limitsLayout = new QGridLayout();
     limitsLayout->addWidget(m_downLimitEnable,                    0, 0);
@@ -172,7 +174,7 @@ void DownloadsSectionWidget::createUi()
     limitsLayout->addWidget(m_upLimitEnable,                      1, 0);
     limitsLayout->addWidget(m_upLimit,                            1, 1);
     limitsLayout->addWidget(new QLabel("KB/s"),                   1, 2);
-    limitsLayout->addWidget(hl,                                   2, 0, 1, 3);
+    limitsLayout->addWidget(new SunkenLine(this),                 2, 0, 1, 3);
     limitsLayout->addWidget(new QLabel(i18n("total_active")),     3, 0);
     limitsLayout->addWidget(m_totalActive,                        3, 1);
     limitsLayout->addWidget(new QLabel(i18n("active_downloads")), 4, 0);

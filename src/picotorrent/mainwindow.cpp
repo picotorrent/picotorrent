@@ -159,6 +159,9 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
                      this,               &MainWindow::updateTaskbarButton);
 
     QObject::connect(m_session,          &Session::torrentUpdated,
+                     this,               &MainWindow::checkDiskSpace);
+
+    QObject::connect(m_session,          &Session::torrentUpdated,
                      m_torrentListModel, &TorrentListModel::updateTorrent);
 
     QObject::connect(m_session,          &Session::torrentUpdated,
@@ -483,6 +486,55 @@ void MainWindow::addTorrentFilter(pt::ScriptedTorrentFilter* filter)
     action->setData(QVariant::fromValue(static_cast<void*>(filter)));
 
     m_filtersGroup->addAction(action);
+}
+
+void MainWindow::checkDiskSpace(pt::TorrentHandle* torrent)
+{
+    bool shouldCheck = m_cfg->getBool("pause_on_low_disk_space");
+    int limit = m_cfg->getInt("pause_on_low_disk_space_limit");
+
+    if (!shouldCheck)
+    {
+        return;
+    }
+
+    auto status = torrent->status();
+
+    if (status.paused)
+    {
+        return;
+    }
+
+    ULARGE_INTEGER freeBytesAvailableToCaller;
+    ULARGE_INTEGER totalNumberOfBytes;
+    ULARGE_INTEGER totalNumberOfFreeBytes;
+
+    BOOL res = GetDiskFreeSpaceEx(
+        status.savePath.toStdWString().data(),
+        &freeBytesAvailableToCaller,
+        &totalNumberOfBytes,
+        &totalNumberOfFreeBytes);
+
+    if (res)
+    {
+        float diskSpaceAvailable = static_cast<float>(freeBytesAvailableToCaller.QuadPart) / static_cast<float>(totalNumberOfBytes.QuadPart);
+        float diskSpaceLimit = limit / 100.0f;
+
+        if (diskSpaceAvailable < diskSpaceLimit)
+        {
+            LOG_F(INFO, "Pausing torrent %s due to disk space too low (avail: %.2f, limit: %.2f)",
+                status.infoHash.toStdString().data(),
+                diskSpaceAvailable,
+                diskSpaceLimit);
+
+            torrent->pause();
+
+            m_trayIcon->showMessage(
+                i18n("pause_on_low_disk_space_alert"),
+                status.name,
+                QIcon(":res/app.ico"));
+        }
+    }
 }
 
 void MainWindow::checkForUpdates(bool force)

@@ -57,6 +57,7 @@ namespace pt
 
     private slots:
         void addTorrentFilter(ScriptedTorrentFilter* filter);
+        void checkDiskSpace(TorrentHandle* torrent);
         void checkForUpdates(bool force = false);
         void onFileAddMagnetLinks();
         void onFileAddTorrent();

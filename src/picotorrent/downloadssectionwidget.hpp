@@ -29,6 +29,7 @@ namespace pt
         QLineEdit* m_moveCompletedPath;
         QPushButton* m_moveCompletedBrowse;
         QCheckBox* m_onlyMoveFromDefault;
+        QCheckBox* m_pauseTorrentsOnLimit;
         QLineEdit* m_downLimit;
         QCheckBox* m_downLimitEnable;
         QLineEdit* m_upLimit;
