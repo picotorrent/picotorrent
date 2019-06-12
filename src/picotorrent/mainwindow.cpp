@@ -342,6 +342,7 @@ void MainWindow::addTorrents(std::vector<lt::add_torrent_params>& params)
 
     for (lt::add_torrent_params& p : params)
     {
+        p.flags |= lt::torrent_flags::duplicate_is_error;
         p.save_path = m_cfg->getString("default_save_path");
 
         // If we have a param with an info hash and no torrent info,
