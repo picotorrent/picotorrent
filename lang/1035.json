@@ -164,7 +164,7 @@
         "access_token": "Pääsytunniste",
         "certificate_public_key": "Sertifikaatti (julkinen avain)",
         "statistics": "Tilastot",
-        "ratio": "Suhde",
+        "ratio": "Jakosuhde",
         "pieces": "Osat",
         "downloaded": "Ladattu",
         "uploaded": "Lähetetty",
