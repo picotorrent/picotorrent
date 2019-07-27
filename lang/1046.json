@@ -212,7 +212,7 @@
         "added_on": "Adicionado em",
         "completed_on": "Completado em",
         "config_error_s": "Falha ao analisar o arquivo de configuração. A configuração padrão foi carregada.\n---\n%s",
-        "config_error_title": "Erro de confifguração",
+        "config_error_title": "Erro de configuração",
         "error_s": "Erro: %s",
         "add_trackers": "Adicionar Rastreadores",
         "tracker_urls": "URLs dos Rastreadores",
