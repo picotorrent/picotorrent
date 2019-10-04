@@ -30,7 +30,7 @@ namespace pt
         ~FileStorageItemModel();
 
         std::vector<int> fileIndices(QModelIndexList const& indices);
-        std::experimental::filesystem::path filePath(QModelIndex const& index);
+        std::filesystem::path filePath(QModelIndex const& index);
 
         int columnCount(QModelIndex const&) const override;
         QVariant data(QModelIndex const&, int) const override;

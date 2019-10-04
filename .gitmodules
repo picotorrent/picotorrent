@@ -143,3 +143,6 @@
 [submodule "vendor/loguru"]
 	path = vendor/loguru
 	url = https://github.com/emilk/loguru
+[submodule "vendor/boost-logic"]
+	path = vendor/boost-logic
+	url = https://github.com/boostorg/logic

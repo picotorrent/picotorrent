@@ -20,6 +20,7 @@ set(
     "${CMAKE_SOURCE_DIR}/vendor/boost-intrusive/include"
     "${CMAKE_SOURCE_DIR}/vendor/boost-iterator/include"
     "${CMAKE_SOURCE_DIR}/vendor/boost-lexical_cast/include"
+    "${CMAKE_SOURCE_DIR}/vendor/boost-logic/include"
     "${CMAKE_SOURCE_DIR}/vendor/boost-math/include"
     "${CMAKE_SOURCE_DIR}/vendor/boost-move/include"
     "${CMAKE_SOURCE_DIR}/vendor/boost-mpl/include"

@@ -4,7 +4,7 @@
 #include <ShlObj.h>
 #include <shlwapi.h>
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 using pt::Utils;
 

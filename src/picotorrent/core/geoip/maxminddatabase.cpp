@@ -15,7 +15,7 @@ MaxMindDatabase::~MaxMindDatabase()
     delete m_db;
 }
 
-void MaxMindDatabase::load(std::experimental::filesystem::path const& databaseFile)
+void MaxMindDatabase::load(std::filesystem::path const& databaseFile)
 {
     MMDB_close(m_db);
     MMDB_open(databaseFile.string().c_str(), MMDB_MODE_MMAP, m_db);

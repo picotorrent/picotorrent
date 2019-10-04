@@ -9,7 +9,7 @@
 #include "../scriptedtorrentfilter.hpp"
 #include "../translator.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 using pt::JsEngine;
 
 JsEngine::JsEngine(QObject* parent)

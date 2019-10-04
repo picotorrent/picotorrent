@@ -83,7 +83,10 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
     auto endp = std::min_element(
         entry.endpoints.begin(),
         entry.endpoints.end(),
-        [](lt::announce_endpoint const& l, lt::announce_endpoint const& r) { return l.fails < r.fails; });
+        [](lt::announce_endpoint const& l, lt::announce_endpoint const& r)
+		{
+			return l.info_hashes[lt::protocol_version::V1].fails < r.info_hashes[lt::protocol_version::V1].fails;
+		});
 
     switch (role)
     {
@@ -101,20 +104,22 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
                 return "-";
             }
 
-            if (endp->updating)
+			auto announce_hash = endp->info_hashes[lt::protocol_version::V1];
+
+            if (announce_hash.updating)
             {
                 return i18n("updating");
             }
 
-            if (endp->last_error)
+            if (announce_hash.last_error)
             {
                 return QString::asprintf(
                     i18n("error_s").toLocal8Bit().data(),
-                    endp->message.empty()
-                        ? endp->last_error.message().c_str()
+                    announce_hash.message.empty()
+                        ? announce_hash.last_error.message().c_str()
                         : QString("%1 \"%2\"")
-                            .arg(QString::fromStdString(endp->last_error.message()))
-                            .arg(QString::fromStdString(endp->message)));
+                            .arg(QString::fromStdString(announce_hash.last_error.message()))
+                            .arg(QString::fromStdString(announce_hash.message)));
             }
 
             if (entry.verified)
@@ -127,30 +132,36 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
 
         case Columns::Fails:
         {
-            if (endp != entry.endpoints.end() && endp->fails == 0)
+            if (endp != entry.endpoints.end()
+				&& endp->info_hashes[lt::protocol_version::V1].fails == 0)
             {
                 return "-";
             }
 
             if (entry.fail_limit == 0)
             {
-                return QString::number(endp != entry.endpoints.end() ? endp->fails : 0);
+                return QString::number(
+					endp != entry.endpoints.end()
+						? endp->info_hashes[lt::protocol_version::V1].fails
+						: 0);
             }
 
             return QString::asprintf(i18n("d_of_d").toLocal8Bit().data(),
-                    (endp != entry.endpoints.end() ? endp->fails : 0),
+                    (endp != entry.endpoints.end()
+						? endp->info_hashes[lt::protocol_version::V1].fails
+						: 0),
                     entry.fail_limit);
         }
 
         case Columns::NextAnnounce:
         {
             if (endp == entry.endpoints.end()
-                || endp->updating)
+                || endp->info_hashes[lt::protocol_version::V1].updating)
             {
                 return "-";
             }
 
-            int64_t secs = lt::total_seconds(endp->next_announce - lt::clock_type::now());
+            int64_t secs = lt::total_seconds(endp->info_hashes[lt::protocol_version::V1].next_announce - lt::clock_type::now());
             std::chrono::seconds s(secs);
 
             if (secs <= 0)

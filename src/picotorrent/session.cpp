@@ -30,7 +30,7 @@
 #include "torrenthandle.hpp"
 #include "torrentstatistics.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 namespace lt = libtorrent;
 
 using pt::Session;
@@ -176,16 +176,16 @@ void Session::addTorrent(lt::add_torrent_params const& params)
     // If we are searching for metadata for this torrent, stop
     // that search and add this one instead.
 
-    if (m_metadataSearches.count(params.info_hash) > 0)
+    if (m_metadataSearches.find(params.info_hash) != m_metadataSearches.end())
     {
-        auto handle = m_session->find_torrent(params.info_hash);
-        m_session->remove_torrent(handle, lt::session::delete_files);
+		lt::torrent_handle& hndl = m_metadataSearches.at(params.info_hash);
+        m_session->remove_torrent(hndl, lt::session::delete_files);
     }
 
     m_session->async_add_torrent(params);
 }
 
-void Session::metadataSearch(std::vector<lt::sha1_hash> const& hashes)
+void Session::metadataSearch(std::vector<lt::info_hash_t> const& hashes)
 {
     // To do a metadata search (ie. find a torrent file based on its info hash)
     // we add the torrent with just the info_hash and save_path set, and then
@@ -193,7 +193,7 @@ void Session::metadataSearch(std::vector<lt::sha1_hash> const& hashes)
 
     fs::path tmp = fs::temp_directory_path();
 
-    for (lt::sha1_hash const& hash : hashes)
+    for (lt::info_hash_t const& hash : hashes)
     {
         lt::add_torrent_params params;
         params.flags &= ~lt::torrent_flags::auto_managed;
@@ -206,7 +206,7 @@ void Session::metadataSearch(std::vector<lt::sha1_hash> const& hashes)
 
         // Track this info hash internally to make sure
         // we do not emit any events for it.
-        m_metadataSearches.insert(hash);
+		m_metadataSearches.insert({ hash, lt::torrent_handle() });
 
         m_session->async_add_torrent(params);
     }
@@ -342,7 +342,7 @@ void Session::readAlerts()
         case lt::metadata_received_alert::alert_type:
         {
             lt::metadata_received_alert* mra = lt::alert_cast<lt::metadata_received_alert>(alert);
-            lt::sha1_hash infoHash = mra->handle.info_hash();
+            lt::info_hash_t infoHash = mra->handle.info_hash();
 
             if (m_metadataSearches.count(infoHash) > 0)
             {

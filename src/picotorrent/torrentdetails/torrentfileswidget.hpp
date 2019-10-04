@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include <libtorrent/sha1_hash.hpp>
+#include <libtorrent/info_hash.hpp>
 
 #include "detailstab.hpp"
 
@@ -27,7 +27,7 @@ namespace pt
         void onSetFilePriorities(QAction* action);
         void showTorrentFileExplorer(QModelIndex const& index);
 
-        libtorrent::sha1_hash m_currentSelection;
+        libtorrent::info_hash_t m_currentSelection;
         QTreeView* m_filesView;
         FileStorageItemModel* m_filesModel;
         QList<TorrentHandle*> m_torrents;

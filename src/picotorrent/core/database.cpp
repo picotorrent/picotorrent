@@ -13,7 +13,7 @@
 
 #include "../../sqlite/sqlite3.h"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 using pt::Database;
 
 struct Migration

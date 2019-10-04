@@ -17,8 +17,8 @@ namespace pt
         JsEngine(QObject* parent = nullptr);
         virtual ~JsEngine();
 
-        void loadDirectory(std::experimental::filesystem::path const& path);
-        void loadFile(std::experimental::filesystem::path const& path);
+        void loadDirectory(std::filesystem::path const& path);
+        void loadFile(std::filesystem::path const& path);
 
     signals:
         void torrentFilterAdded(ScriptedTorrentFilter* filter);

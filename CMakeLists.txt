@@ -7,25 +7,27 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(OPENSSL_USE_STATIC_LIBS TRUE)
 
+# libtorrent
+set(BUILD_SHARED_LIBS OFF)
+set(deprecated-functions OFF)
+
 if(DEFINED ENV{OPENSSL_ROOT_DIR})
+    message("Using OpenSSL dir from env variable")
     set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
 endif()
 
-find_package(OpenSSL REQUIRED)
+# find_package(OpenSSL REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Svg Widgets)
 find_package(Qt5WinExtras REQUIRED)
 
-message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
-message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+# message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
+# message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
 
+add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/zlib)
-
-include("cmake/boost.cmake")
-include("cmake/libtorrent.cmake")
-
 
 # Generate version information file
 file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
@@ -263,7 +265,7 @@ target_link_libraries(
     winhttp
 
     # Boost
-    boost-system
+    # boost-system
 
     # Breakpad
     breakpad
@@ -275,11 +277,11 @@ target_link_libraries(
     loguru
 
     # Rasterbar-libtorrent
-    libtorrent-rasterbar
+    torrent-rasterbar
 
     # OpenSSL
-    OpenSSL::Crypto
-    OpenSSL::SSL
+    # OpenSSL::Crypto
+    # OpenSSL::SSL
 
     maxminddb
     sqlite

@@ -13,7 +13,7 @@
 #include "torrenthandle.hpp"
 #include "torrentstatus.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 using pt::TorrentListWidget;
 
 TorrentListWidget::TorrentListWidget(QWidget* parent, QAbstractItemModel* model, std::shared_ptr<pt::Database> db)

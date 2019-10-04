@@ -6,7 +6,7 @@
 
 #include "loguru.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 using pt::Environment;
 
 std::shared_ptr<Environment> Environment::create()

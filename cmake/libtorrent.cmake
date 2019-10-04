@@ -174,7 +174,7 @@ target_compile_definitions(
     libtorrent-rasterbar
     PRIVATE
     -D_CRT_SECURE_NO_WARNINGS
-    -D_WIN32_WINNT=0x0501
+    -D_WIN32_WINNT=0x0600
     -DBOOST_ALL_NO_LIB
     -DBOOST_ASIO_ENABLE_CANCELIO
     -DBOOST_ASIO_HAS_STD_CHRONO
@@ -187,7 +187,38 @@ target_compile_definitions(
     -DTORRENT_NO_DEPRECATE
     -DTORRENT_USE_I2P=1
     -DTORRENT_USE_LIBCRYPTO
-    -DTORRENT_USE_OPENSSL)
+    -DTORRENT_USE_OPENSSL
+    -DWIN32_LEAN_AND_MEAN)
+
+
+target_compile_options(
+    libtorrent-rasterbar
+    PRIVATE
+    /W4
+
+    # C4251: 'identifier' : class 'type' needs to have dll-interface to be
+    #        used by clients of class 'type2'
+    /wd4251
+
+    # C4275: non DLL-interface classkey 'identifier' used as base for
+    #        DLL-interface classkey 'identifier'
+    /wd4275
+
+    # C4373: virtual function overrides, previous versions of the compiler
+    #        did not override when parameters only differed by const/volatile qualifiers
+    /wd4373
+
+    # C4268: 'identifier' : 'const' static/global data initialized
+    #        with compiler generated default constructor fills the object with zeros
+    /wd4268
+
+    # C4503: 'identifier': decorated name length exceeded, name was truncated
+    /wd4503
+
+    /Zc:wchar_t /Zc:forScope # these compiler settings just make the compiler standard conforming
+    /MP # for multi-core compilation
+    /bigobj # increase the number of sections for obj files
+)
 
 target_include_directories(
     libtorrent-rasterbar

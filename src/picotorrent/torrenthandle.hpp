@@ -27,7 +27,7 @@ namespace pt
         void fileProgress(std::vector<std::int64_t>& progress, int flags) const;
         std::vector<libtorrent::download_priority_t> getFilePriorities() const;
         void getPeerInfo(std::vector<libtorrent::peer_info>& peers) const;
-        libtorrent::sha1_hash infoHash();
+        libtorrent::info_hash_t infoHash();
         void replaceTrackers(std::vector<libtorrent::announce_entry> const& trackers);
         TorrentStatus status();
         std::vector<libtorrent::announce_entry> trackers() const;

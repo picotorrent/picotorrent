@@ -7,7 +7,7 @@
 
 #include "buildinfo.hpp"
 
-namespace fs = std::experimental::filesystem::v1;
+namespace fs = std::filesystem;
 using pt::ErrorHandler;
 
 std::wstring ErrorHandler::dumpPath()

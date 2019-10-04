@@ -26,7 +26,7 @@ public:
     }
 };
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 namespace lt = libtorrent;
 using pt::TorrentFilesWidget;
 
@@ -59,7 +59,7 @@ TorrentFilesWidget::TorrentFilesWidget()
 
 void TorrentFilesWidget::clear()
 {
-    m_currentSelection = lt::sha1_hash();
+    m_currentSelection = lt::info_hash_t();
     m_filesModel->clearTree();
 }
 

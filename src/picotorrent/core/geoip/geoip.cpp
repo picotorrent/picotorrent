@@ -16,14 +16,14 @@
 #include "gzipdecompressor.hpp"
 #include "maxminddatabase.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 using pt::GeoIP;
 
 struct GeoIP::DatabaseHandle : public pt::MaxMindDatabase
 {
 };
 
-static int OneMonth = 60 * 60 * 24 * 30;
+static int HoursOneMonth = 24 * 30;
 
 GeoIP::GeoIP(QObject* parent, std::shared_ptr<pt::Environment> env, std::shared_ptr<pt::Configuration> cfg)
     : QObject(parent),
@@ -54,11 +54,12 @@ void GeoIP::load()
     }
 
     auto ftime = fs::last_write_time(db);
-    auto now = std::chrono::system_clock::now();
+	auto now = fs::file_time_type::clock::now();
+	auto hours = std::chrono::duration_cast<std::chrono::hours>(now - ftime);
 
     std::chrono::duration<double> age = now - ftime;
 
-    if (age.count() >= OneMonth)
+    if (age.count() >= HoursOneMonth)
     {
         emit updateRequired();
         return;

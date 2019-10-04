@@ -61,7 +61,7 @@
 #include "updatechecker.hpp"
 #include "updateinformation.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 using pt::MainWindow;
 
 MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt::Database> db, std::shared_ptr<pt::Configuration> cfg)
@@ -339,7 +339,7 @@ void MainWindow::addTorrents(std::vector<lt::add_torrent_params>& params)
         return;
     }
 
-    std::vector<lt::sha1_hash> hashes;
+    std::vector<lt::info_hash_t> hashes;
 
     // Set up default values for all params
 
@@ -351,7 +351,10 @@ void MainWindow::addTorrents(std::vector<lt::add_torrent_params>& params)
         // If we have a param with an info hash and no torrent info,
         // let the session find metadata for us
 
-        if (!p.info_hash.is_all_zeros() && !p.ti)
+        if (
+			((p.info_hash.has_v1() && !p.info_hash.v1.is_all_zeros())
+				|| (p.info_hash.has_v2() && !p.info_hash.v2.is_all_zeros()))
+			&& !p.ti)
         {
             hashes.push_back(p.info_hash);
         }

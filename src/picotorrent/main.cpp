@@ -24,7 +24,7 @@
 #include "mainwindow.hpp"
 #include "translator.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 int main(int argc, char **argv)
 {

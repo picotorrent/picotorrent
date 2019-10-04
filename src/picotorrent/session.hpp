@@ -4,12 +4,11 @@
 
 #include <map>
 #include <memory>
-#include <unordered_set>
 #include <vector>
 
 #include <libtorrent/fwd.hpp>
+#include <libtorrent/info_hash.hpp>
 #include <libtorrent/session_types.hpp>
-#include <libtorrent/sha1_hash.hpp>
 
 class QTimer;
 
@@ -30,7 +29,7 @@ namespace pt
         virtual ~Session();
 
         void addTorrent(libtorrent::add_torrent_params const& params);
-        void metadataSearch(std::vector<libtorrent::sha1_hash> const& hashes);
+        void metadataSearch(std::vector<libtorrent::info_hash_t> const& hashes);
         void removeTorrent(TorrentHandle* handle, libtorrent::remove_flags_t flags = {});
 
     public slots:
@@ -59,8 +58,8 @@ namespace pt
         std::shared_ptr<Database> m_db;
         std::shared_ptr<Configuration> m_cfg;
 
-        std::map<libtorrent::sha1_hash, TorrentHandle*> m_torrents;
-        std::unordered_set<libtorrent::sha1_hash> m_metadataSearches;
+        std::map<libtorrent::info_hash_t, TorrentHandle*> m_torrents;
+        std::map<libtorrent::info_hash_t, libtorrent::torrent_handle> m_metadataSearches;
 
         QTimer* m_updateTimer;
     };

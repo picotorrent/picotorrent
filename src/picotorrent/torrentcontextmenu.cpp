@@ -14,7 +14,7 @@
 #include "torrentstatus.hpp"
 #include "translator.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 namespace lt = libtorrent;
 
 using pt::TorrentContextMenu;
