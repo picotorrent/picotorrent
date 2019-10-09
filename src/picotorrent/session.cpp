@@ -316,7 +316,16 @@ void Session::readAlerts()
             }
 
             std::stringstream ss;
-            ss << ata->handle.info_hash();
+
+            if (ata->handle.info_hash().has_v2())
+            {
+                ss << ata->handle.info_hash().v2;
+            }
+            else
+            {
+                ss << ata->handle.info_hash().v1;
+            }
+
             std::string ih = ss.str();
 
             lt::torrent_status ts = ata->handle.status();
@@ -365,7 +374,16 @@ void Session::readAlerts()
             std::vector<char> buffer = lt::write_resume_data_buf(srda->params);
 
             std::stringstream ss;
-            ss << srda->handle.info_hash();
+
+            if (srda->handle.info_hash().has_v2())
+            {
+                ss << srda->handle.info_hash().v2;
+            }
+            else
+            {
+                ss << srda->handle.info_hash().v1;
+            }
+
             std::string ih = ss.str();
 
             // Store the data
@@ -477,7 +495,15 @@ void Session::readAlerts()
             };
 
             std::stringstream hash;
-            hash << tra->info_hash;
+
+            if (tra->info_hash.has_v2())
+            {
+                hash << tra->info_hash.v2;
+            }
+            else
+            {
+                hash << tra->info_hash.v1;
+            }
 
             for (std::string const& sql : statements)
             {
@@ -574,7 +600,16 @@ void Session::saveTorrents()
             std::vector<char> buffer = lt::write_resume_data_buf(rd->params);
 
             std::stringstream ss;
-            ss << rd->handle.info_hash();
+
+            if (rd->handle.info_hash().has_v2())
+            {
+                ss << rd->handle.info_hash().v2;
+            }
+            else
+            {
+                ss << rd->handle.info_hash().v1;
+            }
+
             std::string ih = ss.str();
 
             // Store state

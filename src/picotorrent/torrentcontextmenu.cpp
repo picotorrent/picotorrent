@@ -95,7 +95,8 @@ TorrentContextMenu::TorrentContextMenu(QWidget* parent, QList<pt::TorrentHandle*
 
     if (torrents.size() == 1)
     {
-        this->addAction(m_sequentialDownload);
+        // TODO
+        // this->addAction(m_sequentialDownload);
     }
 
     this->addSeparator();
@@ -160,7 +161,14 @@ void TorrentContextMenu::copyInfoHash()
 
     for (TorrentHandle* torrent : m_torrents)
     {
-        hashes << "," << torrent->infoHash();
+        if (torrent->infoHash().has_v2())
+        {
+            hashes << "," << torrent->infoHash().v2;
+        }
+        else
+        {
+            hashes << "," << torrent->infoHash().v1;
+        }
     }
 
     QString hashList = QString::fromStdString(hashes.str().substr(1));

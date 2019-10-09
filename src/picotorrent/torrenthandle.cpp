@@ -215,7 +215,15 @@ void TorrentHandle::setFilePriority(lt::file_index_t index, lt::download_priorit
 pt::TorrentStatus TorrentHandle::status()
 {
     std::stringstream hash;
-    hash << m_ts->info_hash;
+
+    if (m_ts->info_hash.has_v2())
+    {
+        hash << m_ts->info_hash.v2;
+    }
+    else
+    {
+        hash << m_ts->info_hash.v1;
+    }
 
     auto eta = std::chrono::seconds(0);
 

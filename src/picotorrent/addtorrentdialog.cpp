@@ -200,12 +200,25 @@ QString AddTorrentDialog::getDisplayHash(lt::add_torrent_params const& param)
 
     if (param.ti)
     {
-        hash << param.ti->info_hash();
+        if (param.ti->info_hash().has_v2())
+        {
+            hash << param.ti->info_hash().v2;
+        }
+        else
+        {
+            hash << param.ti->info_hash().v1;
+        }
     }
-    else if((param.info_hash.has_v1() && !param.info_hash.v1.is_all_zeros())
-		|| (param.info_hash.has_v2() && !param.info_hash.v2.is_all_zeros()))
+    else if(param.info_hash.has_v1() || param.info_hash.has_v2())
     {
-        hash << param.info_hash;
+        if (param.info_hash.has_v2())
+        {
+            hash << param.info_hash.v2;
+        }
+        else
+        {
+            hash << param.info_hash.v1;
+        }
     }
     else
     {
