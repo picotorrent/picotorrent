@@ -81,6 +81,7 @@ add_library(
     vendor/libtorrent/src/fingerprint
     vendor/libtorrent/src/generate_peer_id
     vendor/libtorrent/src/gzip
+    vendor/libtorrent/src/hash_picker
     vendor/libtorrent/src/hasher
     vendor/libtorrent/src/hex
     vendor/libtorrent/src/http_connection
@@ -174,6 +175,7 @@ target_compile_definitions(
     libtorrent-rasterbar
     PRIVATE
     -D_CRT_SECURE_NO_WARNINGS
+    -D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
     -D_WIN32_WINNT=0x0600
     -DBOOST_ALL_NO_LIB
     -DBOOST_ASIO_ENABLE_CANCELIO
@@ -223,14 +225,14 @@ target_compile_options(
 target_include_directories(
     libtorrent-rasterbar
     PRIVATE
-    ${BOOST_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
     ${OPENSSL_INCLUDE_DIR}
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/deps/try_signal"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include")
 
 target_link_libraries(
     libtorrent-rasterbar
-    boost-system
+    ${Boost_LIBRARIES}
     try_signal
 
     # OpenSSL

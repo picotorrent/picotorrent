@@ -1,33 +1,30 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
-cmake_policy(SET CMP0077 NEW)
 
 project("PicoTorrent")
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
-
 set(CMAKE_CXX_STANDARD 17)
-set(OPENSSL_USE_STATIC_LIBS TRUE)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# libtorrent
-set(BUILD_SHARED_LIBS OFF)
-set(deprecated-functions OFF)
+set(Boost_USE_STATIC_LIBS ON)
+set(OPENSSL_USE_STATIC_LIBS TRUE)
 
 if(DEFINED ENV{OPENSSL_ROOT_DIR})
     message("Using OpenSSL dir from env variable")
     set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
 endif()
 
-# find_package(OpenSSL REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(OpenSSL REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Svg Widgets)
 find_package(Qt5WinExtras REQUIRED)
 
-# message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
-# message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
+message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
 
-add_subdirectory(vendor/libtorrent)
+include("cmake/libtorrent.cmake")
 add_subdirectory(vendor/zlib)
 
 # Generate version information file
@@ -65,11 +62,6 @@ endif()
 
 # Generate buildinfo file
 configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp" @ONLY)
-
-# Shared flags
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
-# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4099 /WX")
-# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4099 /WX")
 
 # Debug flags
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
@@ -240,7 +232,8 @@ target_include_directories(
     vendor/zlib
     "$<TARGET_FILE_DIR:zlibstatic>/../"
 
-    "${BOOST_INCLUDE_DIRS}"
+    "${Boost_INCLUDE_DIRS}"
+
     "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/build/native/include"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
     "${CMAKE_SOURCE_DIR}/vendor/loguru"
@@ -266,7 +259,7 @@ target_link_libraries(
     winhttp
 
     # Boost
-    # boost-system
+    ${Boost_LIBRARIES}
 
     # Breakpad
     breakpad
@@ -278,11 +271,11 @@ target_link_libraries(
     loguru
 
     # Rasterbar-libtorrent
-    torrent-rasterbar
+    libtorrent-rasterbar
 
     # OpenSSL
-    # OpenSSL::Crypto
-    # OpenSSL::SSL
+    OpenSSL::Crypto
+    OpenSSL::SSL
 
     maxminddb
     sqlite
