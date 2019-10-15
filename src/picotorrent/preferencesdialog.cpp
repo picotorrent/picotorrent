@@ -5,6 +5,7 @@
 #include <QGroupbox>
 #include <QHBoxLayout>
 #include <QListView>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QVBoxLayout>
@@ -130,10 +131,22 @@ void PreferencesDialog::createUi()
 
 void PreferencesDialog::onOk()
 {
-    m_general->saveConfig(m_cfg);
+    bool requiresRestart = false;
+
+    m_general->saveConfig(m_cfg, &requiresRestart);
     m_downloads->saveConfig(m_cfg);
     m_connection->saveConfig(m_cfg);
     m_proxy->saveConfig(m_cfg);
+
+    if (requiresRestart)
+    {
+        QMessageBox mbox(this);
+        mbox.addButton(QMessageBox::Ok);
+        mbox.setIcon(QMessageBox::Information);
+        mbox.setText(i18n("prompt_restart"));
+        mbox.setWindowTitle(i18n("prompt_restart_title"));
+        mbox.exec();
+    }
 
     this->done(QDialog::Accepted);
 }

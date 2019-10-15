@@ -122,10 +122,15 @@ void GeneralSectionWidget::loadConfig(std::shared_ptr<pt::Configuration> cfg)
     m_closeToNotificationArea->setChecked(cfg->getBool("close_to_notification_area"));
 }
 
-void GeneralSectionWidget::saveConfig(std::shared_ptr<pt::Configuration> cfg)
+void GeneralSectionWidget::saveConfig(std::shared_ptr<pt::Configuration> cfg, bool* requiresRestart)
 {
     auto langIndex = m_languages->currentIndex();
     auto langData = m_languages->itemData(langIndex);
+
+    if (cfg->getInt("language_id") != langData.toInt())
+    {
+        *requiresRestart = true;
+    }
 
     cfg->setInt("language_id", langData.toInt());
     cfg->setInt("start_position", m_startPosition->currentIndex());

@@ -16,7 +16,7 @@ namespace pt
     public:
         GeneralSectionWidget();
         void loadConfig(std::shared_ptr<Configuration> cfg);
-        void saveConfig(std::shared_ptr<Configuration> cfg);
+        void saveConfig(std::shared_ptr<Configuration> cfg, bool* requiresRestart);
 
     private:
         void createUi();
