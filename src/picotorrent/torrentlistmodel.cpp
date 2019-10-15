@@ -191,25 +191,23 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         case Columns::Availability:
             // TODO: check if paused
             return status.availability >= 0
-                ? QString::asprintf("%.3f", status.availability)
+                ? QString("%1").arg(status.availability, 0, 'f', 3)
                 : "-";
 
         case Columns::Ratio:
-            return QString::asprintf("%.3f", status.ratio);
+            return QString("%1").arg(status.ratio, 0, 'f', 3);
 
         case Columns::Seeds:
             // TODO: check if paused
-            return QString::asprintf(
-                i18n("d_of_d").toLocal8Bit().data(),
-                status.seedsCurrent,
-                status.seedsTotal);
+            return i18n("d_of_d")
+                .arg(status.seedsCurrent)
+                .arg(status.seedsTotal);
 
         case Columns::Peers:
             // TODO: check if paused
-            return QString::asprintf(
-                i18n("d_of_d").toLocal8Bit().data(),
-                status.peersCurrent,
-                status.peersTotal);
+            return i18n("d_of_d")
+                .arg(status.peersCurrent)
+                .arg(status.peersTotal);
 
         case Columns::AddedOn:
             return status.addedOn.toString("yyyy-MM-dd HH:mm:ss");

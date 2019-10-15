@@ -18,7 +18,7 @@ AboutDialog::AboutDialog(QWidget* parent)
     flags &= ~Qt::WindowSystemMenuHint;
 
     QString info_str = i18n("picotorrent_description");
-    QString heading = QString::asprintf(i18n("picotorrent_v_format").toStdString().c_str(), BuildInfo::version().toStdString().c_str());
+    QString heading = i18n("picotorrent_v_format").arg(BuildInfo::version());
     QString window_title = i18n("about_picotorrent");
 
     // All widgets defined

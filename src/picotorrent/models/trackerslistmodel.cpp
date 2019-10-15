@@ -113,8 +113,7 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
 
             if (announce_hash.last_error)
             {
-                return QString::asprintf(
-                    i18n("error_s").toLocal8Bit().data(),
+                return i18n("error_s").arg(
                     announce_hash.message.empty()
                         ? announce_hash.last_error.message().c_str()
                         : QString("%1 \"%2\"")
@@ -146,11 +145,11 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
 						: 0);
             }
 
-            return QString::asprintf(i18n("d_of_d").toLocal8Bit().data(),
-                    (endp != entry.endpoints.end()
-						? endp->info_hashes[lt::protocol_version::V1].fails
-						: 0),
-                    entry.fail_limit);
+            return i18n("d_of_d")
+                .arg(endp != entry.endpoints.end()
+                    ? endp->info_hashes[lt::protocol_version::V1].fails
+                    : 0)
+                .arg(entry.fail_limit);
         }
 
         case Columns::NextAnnounce:
@@ -173,8 +172,7 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
             std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(s - hours_left);
             std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(s - hours_left - min_left);
 
-            return QString::asprintf(
-                "%dh %dm %ds",
+            return QString("%1h %2m %3s").arg(
                 hours_left.count(),
                 min_left.count(),
                 sec_left.count());

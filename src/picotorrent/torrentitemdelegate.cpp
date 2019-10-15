@@ -44,7 +44,7 @@ void TorrentItemDelegate::paint(QPainter* painter, QStyleOptionViewItem const& o
         // Set the progress and text values of the style option.
         int progress = index.data().toDouble() * 100;
         progressBarOption.progress = progress < 0 ? 0 : progress;
-        progressBarOption.text = QString::asprintf("%d%%", progressBarOption.progress);
+        progressBarOption.text = QString("%1%").arg(progressBarOption.progress);
 
         // Draw the progress bar onto the view.
         QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);

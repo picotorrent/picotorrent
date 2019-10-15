@@ -71,10 +71,9 @@ void TorrentOverviewWidget::refresh(QList<pt::TorrentHandle*> const& torrents)
     TorrentHandle* torrent = torrents.at(0);
     TorrentStatus  status   = torrent->status();
 
-    QString pieces = QString::asprintf(
-        i18n("d_of_d").toLocal8Bit().data(),
-        status.pieces.count(),
-        status.pieces.size());
+    QString pieces = i18n("d_of_d")
+        .arg(status.pieces.count())
+        .arg(status.pieces.size());
 
     m_name->setText(status.name);
     m_savePath->setText(status.savePath);

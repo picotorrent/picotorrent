@@ -30,26 +30,19 @@ void StatusBar::updateDhtNodesCount(int64_t nodes)
     }
     else
     {
-        m_dhtNodeCount->setText(
-            QString::asprintf(
-                i18n("dht_i64d_nodes").toLocal8Bit().data(),
-                nodes));
+        m_dhtNodeCount->setText(i18n("dht_i64d_nodes").arg(nodes));
     }
 }
 
 void StatusBar::updateTorrentCount(int64_t torrents)
 {
-    m_torrentsCount->setText(
-        QString::asprintf(
-            i18n("i64d_torrents").toLocal8Bit().data(),
-            torrents));
+    m_torrentsCount->setText(i18n("i64d_torrents").arg(torrents));
 }
 
 void StatusBar::updateTransferRates(int64_t downSpeed, int64_t upSpeed)
 {
     m_transferSpeeds->setText(
-        QString::asprintf(
-            i18n("dl_s_ul_s").toLocal8Bit().data(),
-            downSpeed < 1024 ? "-" : Utils::toStdString(Utils::toHumanFileSize(downSpeed)).c_str(),
-            upSpeed   < 1024 ? "-" : Utils::toStdString(Utils::toHumanFileSize(upSpeed)).c_str()));
+        i18n("dl_s_ul_s").arg(
+            downSpeed < 1024 ? "-" : QString::fromStdWString(Utils::toHumanFileSize(downSpeed)),
+            upSpeed   < 1024 ? "-" : QString::fromStdWString(Utils::toHumanFileSize(upSpeed))));
 }

@@ -49,7 +49,7 @@ void FileStorageItemDelegate::paint(QPainter* painter, QStyleOptionViewItem cons
 
         // Set the progress and text values of the style option.
         progressBarOption.progress = progress < 0 ? 0 : progress;
-        progressBarOption.text = QString::asprintf("%d%%", progressBarOption.progress);
+        progressBarOption.text = QString("%1%").arg(progressBarOption.progress);
 
         // Draw the progress bar onto the view.
         QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);

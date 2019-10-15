@@ -794,9 +794,7 @@ void MainWindow::showUpdateDialog(pt::UpdateInformation* info)
     {
         // Load translations
         std::wstring content = i18n("new_version_available").toStdWString();
-        std::wstring mainFormatted = QString::asprintf(
-                i18n("picotorrent_v_available").toLocal8Bit().data(),
-                info->version.toLocal8Bit().data()).toStdWString();
+        std::wstring mainFormatted = i18n("picotorrent_v_available").arg(info->version).toStdWString();
         std::wstring verification = i18n("ignore_update").toStdWString();
         std::wstring show = i18n("show_on_github").toStdWString();
 
