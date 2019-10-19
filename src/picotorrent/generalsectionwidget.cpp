@@ -5,6 +5,7 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QLabel>
+#include <QLineEdit>
 #include <QVBoxLayout>
 
 #include <strsafe.h>
@@ -120,6 +121,7 @@ void GeneralSectionWidget::loadConfig(std::shared_ptr<pt::Configuration> cfg)
     m_showInNotificationArea->setChecked(cfg->getBool("show_in_notification_area"));
     m_minimizeToNotificationArea->setChecked(cfg->getBool("minimize_to_notification_area"));
     m_closeToNotificationArea->setChecked(cfg->getBool("close_to_notification_area"));
+    m_geoipEnabled->setChecked(cfg->getBool("geoip.enabled"));
 }
 
 void GeneralSectionWidget::saveConfig(std::shared_ptr<pt::Configuration> cfg, bool* requiresRestart)
@@ -138,6 +140,7 @@ void GeneralSectionWidget::saveConfig(std::shared_ptr<pt::Configuration> cfg, bo
     cfg->setBool("show_in_notification_area", m_showInNotificationArea->checkState() == Qt::Checked);
     cfg->setBool("minimize_to_notification_area", m_minimizeToNotificationArea->checkState() == Qt::Checked);
     cfg->setBool("close_to_notification_area", m_closeToNotificationArea->checkState() == Qt::Checked);
+    cfg->setBool("geoip.enabled", m_geoipEnabled->checkState() == Qt::Checked);
 
     AutoRunKey key;
 
@@ -161,6 +164,7 @@ void GeneralSectionWidget::createUi()
     m_showInNotificationArea = new QCheckBox(i18n("show_picotorrent_in_notification_area"));
     m_minimizeToNotificationArea = new QCheckBox(i18n("minimize_to_notification_area"));
     m_closeToNotificationArea = new QCheckBox(i18n("close_to_notification_area"));
+    m_geoipEnabled = new QCheckBox(i18n("enable_geoip"));
 
     Translator& tr = Translator::instance();
 
@@ -179,10 +183,11 @@ void GeneralSectionWidget::createUi()
     uiGrid->addWidget(m_languages, 0, 1);
 
     auto miscGrid = new QGridLayout();
-    miscGrid->addWidget(m_skipAddTorrentDialog, 0, 0);
-    miscGrid->addWidget(m_startWithWindows, 1, 0);
-    miscGrid->addWidget(new QLabel(i18n("start_position")), 2, 0);
-    miscGrid->addWidget(m_startPosition, 2, 1);
+    miscGrid->addWidget(m_geoipEnabled, 0, 0);
+    miscGrid->addWidget(m_skipAddTorrentDialog, 1, 0);
+    miscGrid->addWidget(m_startWithWindows, 2, 0);
+    miscGrid->addWidget(new QLabel(i18n("start_position")), 3, 0);
+    miscGrid->addWidget(m_startPosition, 3, 1);
 
     auto notifIndentedLayout = new QVBoxLayout();
     notifIndentedLayout->addWidget(m_minimizeToNotificationArea);

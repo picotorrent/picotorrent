@@ -29,5 +29,6 @@ namespace pt
         QCheckBox* m_showInNotificationArea;
         QCheckBox* m_minimizeToNotificationArea;
         QCheckBox* m_closeToNotificationArea;
+        QCheckBox* m_geoipEnabled;
     };
 }
