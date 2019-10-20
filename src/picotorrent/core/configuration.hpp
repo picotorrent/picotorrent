@@ -6,6 +6,7 @@
 namespace pt
 {
     class Database;
+    class Environment;
 
     class Configuration
     {
@@ -30,6 +31,8 @@ namespace pt
 
         Configuration(std::shared_ptr<Database> db);
         ~Configuration();
+
+        static void migrate(std::shared_ptr<Environment> env, std::shared_ptr<Configuration> cfg);
 
         bool getBool(std::string const& key);
         int getInt(std::string const& key);
