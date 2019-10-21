@@ -71,8 +71,8 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_torrentsCount(0),
     m_taskbarButton(nullptr)
 {
-    m_session                = new Session(this, db, cfg);
-    m_geo                    = new GeoIP(this, m_env, m_cfg);
+    m_session                = new Session(this, db, cfg, env);
+    m_geo                    = new GeoIP(this, env, cfg);
     m_jsEngine               = new JsEngine(this);
     m_splitter               = new QSplitter(this);
     m_taskbarButton          = new QWinTaskbarButton(this);
