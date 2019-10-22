@@ -13,6 +13,8 @@
 #include "../http/httprequest.hpp"
 #include "../http/httpresponse.hpp"
 
+#include "loguru.hpp"
+
 #include "gzipdecompressor.hpp"
 #include "maxminddatabase.hpp"
 
@@ -49,6 +51,7 @@ void GeoIP::load()
 
     if (!fs::exists(db))
     {
+        LOG_F(INFO, "GeoIP database not found on disk. Updating...");
         emit updateRequired();
         return;
     }
@@ -61,9 +64,12 @@ void GeoIP::load()
 
     if (age.count() >= HoursOneMonth)
     {
+        LOG_F(INFO, "GeoIP database more than one month old. Updating...");
         emit updateRequired();
         return;
     }
+
+    LOG_F(INFO, "Loading GeoIP database");
 
     m_db->load(db);
 
@@ -75,6 +81,8 @@ void GeoIP::update()
     QString databaseUrl = QString::fromStdString(m_cfg->getString("geoip.database_url"));
     QUrl url(databaseUrl);
 
+    LOG_F(INFO, "Updating GeoIP database from %s", databaseUrl.toStdString().data());
+
     HttpRequest req(url);
     HttpResponse* res = m_httpClient->get(req);
 
@@ -84,6 +92,8 @@ void GeoIP::update()
 
 void GeoIP::databaseDownloaded(pt::HttpResponse* response)
 {
+    LOG_F(INFO, "GeoIP database downloaded... Decompressing");
+
     GZipDecompressor gzip;
     auto decompressed = gzip.decompress(response->body);
 
@@ -96,6 +106,8 @@ void GeoIP::databaseDownloaded(pt::HttpResponse* response)
         decompressed.end(),
         std::ostreambuf_iterator<char>(out));
     out.close();
+
+    LOG_F(INFO, "GeoIP database saved. Loading...");
 
     // Reload the database
     m_db->load(db);

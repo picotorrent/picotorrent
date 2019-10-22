@@ -25,6 +25,12 @@ JsEngine::~JsEngine()
 
 void JsEngine::loadDirectory(fs::path const& path)
 {
+    if (!fs::exists(path))
+    {
+        LOG_F(INFO, "Script path does not exist (%s)", path.string().c_str());
+        return;
+    }
+
     for (auto const& entry : fs::directory_iterator(path))
     {
         fs::path scriptFilePath = entry.path();

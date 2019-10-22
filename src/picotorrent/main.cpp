@@ -70,6 +70,9 @@ int main(int argc, char **argv)
 
     auto cfg = std::make_shared<pt::Configuration>(db);
 
+    // Migrate old configuration to new database
+    pt::Configuration::migrate(env, cfg);
+
     pt::Translator& translator = pt::Translator::instance();
     translator.loadEmbedded(GetModuleHandle(NULL));
     translator.setLanguage(cfg->getInt("language_id"));
