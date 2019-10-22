@@ -51,7 +51,7 @@ INSERT INTO setting (key, int_value, string_value) VALUES
 ('upload_rate_limit',                          1024,                           NULL),
 
 /* GeoIP */
-('geoip.database_url',                         0,                              'https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.mmdb.gz'),
+('geoip.database_url',                         0,                              'https://api.picotorrent.org/files/geolite2-country.mmdb.gz'),
 ('geoip.enabled',                              1,                              NULL),
 
 /* Application updates */

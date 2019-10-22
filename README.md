@@ -55,3 +55,5 @@ PS> .\build.ps1 --platform [x86|x64] --configuration [Debug|Release]
 
 Copyright (c) Viktor Elofsson and contributors. PicoTorrent is provided
 as-is under the MIT license. For more information see [LICENSE](LICENSE).
+
+*This product includes GeoLite2 data created by MaxMind, available from https://www.maxmind.com.*
