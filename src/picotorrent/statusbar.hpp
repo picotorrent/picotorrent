@@ -1,26 +1,24 @@
 #pragma once
 
-#include <wx/wxprec.h>
-#ifndef WX_PRECOMP
-#include <wx/wx.h>
-#endif
+#include <QStatusBar>
 
-#include <memory>
+class QLabel;
+class QWidget;
 
 namespace pt
 {
-    class Translator;
-
-    class StatusBar : public wxStatusBar
+    class StatusBar : public QStatusBar
     {
     public:
-        StatusBar(wxWindow* parent, std::shared_ptr<Translator> translator);
+        StatusBar(QWidget* parent);
 
-        void UpdateDhtNodesCount(int64_t nodes);
-        void UpdateTorrentCount(int64_t torrents);
-        void UpdateTransferRates(int64_t downSpeed, int64_t upSpeed);
+        void updateDhtNodesCount(int64_t nodes);
+        void updateTorrentCount(int64_t torrents);
+        void updateTransferRates(int64_t downSpeed, int64_t upSpeed);
 
     private:
-        std::shared_ptr<Translator> m_translator;
+        QLabel* m_torrentsCount;
+        QLabel* m_dhtNodeCount;
+        QLabel* m_transferSpeeds;
     };
 }

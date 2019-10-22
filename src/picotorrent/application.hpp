@@ -1,13 +1,8 @@
 #pragma once
 
-#include <wx/wxprec.h>
-#ifndef WX_PRECOMP
-#include <wx/wx.h>
-#endif
+#include <QApplication>
 
 #include <memory>
-
-#include <wx/snglinst.h>
 
 namespace google_breakpad
 {
@@ -16,21 +11,19 @@ namespace google_breakpad
 
 namespace pt
 {
-    struct ApplicationOptions;
-
-    class Application : public wxApp
+    class Application : public QApplication
     {
     public:
-        Application();
+        Application(int& argc, char **argv);
         virtual ~Application();
 
-        virtual bool OnCmdLineParsed(wxCmdLineParser&) wxOVERRIDE;
-        virtual bool OnInit();
-        virtual void OnInitCmdLine(wxCmdLineParser&) wxOVERRIDE;
+        void activateOtherInstance();
+        bool isSingleInstance();
 
     private:
-        google_breakpad::ExceptionHandler* m_exceptionHandler;
-        std::unique_ptr<wxSingleInstanceChecker> m_singleInstance;
-        std::shared_ptr<ApplicationOptions> m_options;
+        struct Mutex;
+
+        std::unique_ptr<Mutex> m_singleInstanceMutex;
+        bool m_isSingleInstance;
     };
 }

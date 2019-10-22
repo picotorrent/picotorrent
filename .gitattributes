@@ -2,3 +2,4 @@
 * text=auto
 
 src/breakpad/* linguist-vendored
+src/sqlite/* linguist-vendored

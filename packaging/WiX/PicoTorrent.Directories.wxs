@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<?if $(var.Platform) = "x64" ?>
+    <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+<?else ?>
+    <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+<?endif ?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="$(var.PlatformProgramFilesFolder)" Name="PFiles">
+                <Directory Id="INSTALLDIR" Name="PicoTorrent">
+                    <Directory Id="SCRIPTS" Name="scripts" />
+                    <Directory Id="QTIMAGEFORMATS" Name="imageformats" />
+                    <Directory Id="QTPLATFORMS" Name="platforms" />
+                    <Directory Id="QTSTYLES" Name="styles" />
+                </Directory>
+            </Directory>
+
+            <Directory Id="ProgramMenuFolder" />
+        </Directory>
+    </Fragment>
+</Wix>

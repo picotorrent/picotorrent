@@ -9,6 +9,7 @@ src/core/version_info.cpp
 src/picotorrent/buildinfo.cpp
 tools/Cake
 tools/Cake.CMake
+tools/Microsoft.ChakraCore.vc140
 tools/nuget.exe
 tools/Rasterbar-libtorrent
 tools/WiX

@@ -229,6 +229,6 @@
         "start_torrent": "Käynnistä torrentti",
         "auto_managed": "Hallitse automaattisesti",
         "copy": "Kopioi",
-		"encrypt_config_file: Kryptaa asetustiedosto"
+        "encrypt_config_file": "Kryptaa asetustiedosto"
     }
 }

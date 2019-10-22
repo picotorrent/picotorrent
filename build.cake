@@ -1,5 +1,3 @@
-#r "./tools/Cake.CMake/lib/net45/Cake.CMake.dll"
-
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
 //////////////////////////////////////////////////////////////////////
@@ -25,6 +23,8 @@ var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version, platf
 var AppXPackage        = string.Format("PicoTorrent-{0}-{1}.appx", Version, platform);
 var PortablePackage    = string.Format("PicoTorrent-{0}-{1}.zip", Version, platform);
 var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Version, platform);
+
+var LibrarySuffix      = configuration == "Release" ? "" : "d";
 
 public void SignFile(FilePath file, string description = "")
 {
@@ -52,16 +52,16 @@ Task("Generate-Project")
     .IsDependentOn("Clean")
     .Does(() =>
 {
-    var generator = "Visual Studio 15 2017 Win64";
+    var cmakePath = Context.Tools.Resolve("cmake.exe");
 
-    if(platform == "x86")
+    StartProcess(cmakePath, new ProcessSettings
     {
-        generator = "Visual Studio 15 2017";
-    }
-
-    CMake("./", new CMakeSettings {
-      OutputPath = OutputDirectory,
-      Generator = generator
+        Arguments = new ProcessArgumentBuilder()
+            .Append("-S").AppendQuoted(".")
+            .Append("-B").AppendQuoted(OutputDirectory)
+            .Append("-G").AppendQuoted("Visual Studio 16 2019")
+            .Append("-A").AppendQuoted(platform == "x86" ? "Win32" : "x64")
+            .Append("-T").AppendQuoted("v142"),
     });
 });
 
@@ -70,7 +70,8 @@ Task("Build")
     .Does(() =>
 {
     var settings = new MSBuildSettings()
-                        .SetConfiguration(configuration);
+                        .SetConfiguration(configuration)
+                        .UseToolVersion(MSBuildToolVersion.VS2019);
 
     if(platform == "x86")
     {
@@ -92,11 +93,28 @@ Task("Setup-Publish-Directory")
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.exe")
+        MakeAbsolute(BuildDirectory + File("PicoTorrent.exe")),
+
+        MakeAbsolute(BuildDirectory + File("ChakraCore.dll")),
+        MakeAbsolute(BuildDirectory + Directory("scripts") + File("filters.js")),
+
+        MakeAbsolute(BuildDirectory + File($"Qt5Core{LibrarySuffix}.dll")),
+        MakeAbsolute(BuildDirectory + File($"Qt5Gui{LibrarySuffix}.dll")),
+        MakeAbsolute(BuildDirectory + File($"Qt5Svg{LibrarySuffix}.dll")),
+        MakeAbsolute(BuildDirectory + File($"Qt5Widgets{LibrarySuffix}.dll")),
+        MakeAbsolute(BuildDirectory + File($"Qt5WinExtras{LibrarySuffix}.dll")),
+
+        MakeAbsolute(BuildDirectory + Directory("imageformats") + File($"qico{LibrarySuffix}.dll")),
+        MakeAbsolute(BuildDirectory + Directory("platforms")    + File($"qwindows{LibrarySuffix}.dll")),
+        MakeAbsolute(BuildDirectory + Directory("styles")       + File($"qwindowsvistastyle{LibrarySuffix}.dll")),
     };
 
     CreateDirectory(PublishDirectory);
-    CopyFiles(files, PublishDirectory);
+
+    CopyFiles(
+        files,            // Source
+        PublishDirectory, // Target
+        true);            // Preserve folder structure
 });
 
 Task("Build-AppX-Package")
@@ -104,18 +122,31 @@ Task("Build-AppX-Package")
     .IsDependentOn("Setup-Publish-Directory")
     .Does(() =>
 {
-    var VCRedist = Directory("C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\redist");
-    var VCDir = VCRedist + Directory(platform) + Directory("Microsoft.VC140.CRT");
+    var VCRedistPath        = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Redist\\MSVC";
+    var VCRedistVersionFile = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\Microsoft.VCRedistVersion.default.txt";
 
-    var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\ucrt\\DLLs");
-    var CRTDir = CRTRedist + Directory(platform);
+    if (!System.IO.File.Exists(VCRedistVersionFile))
+    {
+        VCRedistPath        = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Redist\\MSVC";
+        VCRedistVersionFile = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\Microsoft.VCRedistVersion.default.txt";
+    }
+
+    var VCRedistVersion = System.IO.File.ReadAllText(VCRedistVersionFile).Trim();
+    var VCRedist = Directory(VCRedistPath)
+                 + Directory(VCRedistVersion)
+                 + Directory(platform)
+                 + Directory("Microsoft.VC142.CRT");
+
+    var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\10.0.17763.0\\ucrt\\DLLs")
+                  + Directory(platform);
 
     TransformTextFile("./packaging/AppX/PicoTorrent.mapping.template", "%{", "}")
-        .WithToken("VCDir", VCDir)
-        .WithToken("CRTDir", CRTDir)
+        .WithToken("VCDir", VCRedist)
+        .WithToken("CRTDir", CRTRedist)
         .WithToken("PublishDirectory", MakeAbsolute(PublishDirectory))
         .WithToken("ResourceDirectory", MakeAbsolute(ResourceDirectory))
         .WithToken("PackagingDirectory", MakeAbsolute(Directory("./packaging/AppX")))
+        .WithToken("QtLibrarySuffix", LibrarySuffix)
         .Save("./packaging/AppX/PicoTorrent.mapping");
 
     TransformTextFile("./packaging/AppX/PicoTorrentManifest.xml.template", "%{", "}")
@@ -130,7 +161,7 @@ Task("Build-AppX-Package")
     argsBuilder.Append("/f {0}", MakeAbsolute(File("./packaging/AppX/PicoTorrent.mapping")));
     argsBuilder.Append("/p {0}", MakeAbsolute(PackagesDirectory + File(AppXPackage)));
 
-    var makeAppXTool = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.15063.0\\x86\\makeappx.exe";
+    var makeAppXTool = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.17763.0\\x86\\makeappx.exe";
     int exitCode = StartProcess(makeAppXTool, new ProcessSettings
     {
         Arguments = argsBuilder
@@ -154,7 +185,21 @@ Task("Build-Installer")
         arch = Architecture.X86;
     }
 
-    WiXCandle("./packaging/WiX/PicoTorrent.wxs", new CandleSettings
+    var sourceFiles = new FilePath[]
+    {
+        "./packaging/WiX/PicoTorrent.wxs",
+        "./packaging/WiX/PicoTorrent.Components.wxs",
+        "./packaging/WiX/PicoTorrent.Directories.wxs"
+    };
+
+    var objFiles = new FilePath[]
+    {
+        BuildDirectory + File("PicoTorrent.wixobj"),
+        BuildDirectory + File("PicoTorrent.Components.wixobj"),
+        BuildDirectory + File("PicoTorrent.Directories.wixobj")
+    };
+
+    WiXCandle(sourceFiles, new CandleSettings
     {
         Architecture = arch,
         Defines = new Dictionary<string, string>
@@ -168,14 +213,14 @@ Task("Build-Installer")
         OutputDirectory = BuildDirectory
     });
 
-    WiXLight(BuildDirectory + File("PicoTorrent.wixobj"), new LightSettings
+    WiXLight(objFiles, new LightSettings
     {
         OutputFile = PackagesDirectory + File(Installer)
     });
 });
 
 Task("Build-Installer-Bundle")
-    .IsDependentOn("Build")
+    .IsDependentOn("Build-Installer")
     .Does(() =>
 {
     var arch = Architecture.X64;
@@ -219,7 +264,7 @@ Task("Build-Symbols-Package")
 {
     var files = new FilePath[]
     {
-        BuildDirectory + File("PicoTorrent.pdb")
+        BuildDirectory + File("PicoTorrent.pdb"),
     };
 
     Zip(BuildDirectory, PackagesDirectory + File(SymbolsPackage), files);

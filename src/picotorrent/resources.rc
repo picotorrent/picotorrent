@@ -1,10 +1,10 @@
-#include "wx/msw/wx.rc"
 #include "version.h"
 
-AppIcon ICON "..\\..\\res\\app.ico"
+IDI_APPICON ICON DISCARDABLE "..\\..\\res\\app.ico"
 
 1027 LANGFILE "..\\..\\lang\\1027.json"
 1031 LANGFILE "..\\..\\lang\\1031.json"
+1032 LANGFILE "..\\..\\lang\\1032.json"
 1033 LANGFILE "..\\..\\lang\\1033.json"
 1034 LANGFILE "..\\..\\lang\\1034.json"
 1035 LANGFILE "..\\..\\lang\\1035.json"
@@ -13,6 +13,7 @@ AppIcon ICON "..\\..\\res\\app.ico"
 1040 LANGFILE "..\\..\\lang\\1040.json"
 1042 LANGFILE "..\\..\\lang\\1042.json"
 1043 LANGFILE "..\\..\\lang\\1043.json"
+1045 LANGFILE "..\\..\\lang\\1045.json"
 1046 LANGFILE "..\\..\\lang\\1046.json"
 1048 LANGFILE "..\\..\\lang\\1048.json"
 1049 LANGFILE "..\\..\\lang\\1049.json"
@@ -20,7 +21,20 @@ AppIcon ICON "..\\..\\res\\app.ico"
 1055 LANGFILE "..\\..\\lang\\1055.json"
 1057 LANGFILE "..\\..\\lang\\1057.json"
 1062 LANGFILE "..\\..\\lang\\1062.json"
+1063 LANGFILE "..\\..\\lang\\1063.json"
+1067 LANGFILE "..\\..\\lang\\1067.json"
 1079 LANGFILE "..\\..\\lang\\1079.json"
+2052 LANGFILE "..\\..\\lang\\2052.json"
+
+// SQL migrations
+20181208115043_create_setting_table             DBMIGRATION "..\\..\\res\\dbmigrations\\20181208115043_create_setting_table.sql"
+20181208115732_insert_default_settings          DBMIGRATION "..\\..\\res\\dbmigrations\\20181208115732_insert_default_settings.sql"
+20181211212324_create_torrent_table             DBMIGRATION "..\\..\\res\\dbmigrations\\20181211212324_create_torrent_table.sql"
+20181211212637_create_torrent_resume_data_table DBMIGRATION "..\\..\\res\\dbmigrations\\20181211212637_create_torrent_resume_data_table.sql"
+20181211213708_create_column_state_table        DBMIGRATION "..\\..\\res\\dbmigrations\\20181211213708_create_column_state_table.sql"
+20181212205212_create_session_state_table       DBMIGRATION "..\\..\\res\\dbmigrations\\20181212205212_create_session_state_table.sql"
+20181212213425_create_log_table                 DBMIGRATION "..\\..\\res\\dbmigrations\\20181212213425_create_log_table.sql"
+20190322145531_create_list_state_table          DBMIGRATION "..\\..\\res\\dbmigrations\\20190322145531_create_list_state_table.sql"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION        VER_FILE_VERSION

@@ -1,48 +1,48 @@
 #include "statusbar.hpp"
 
-#include "scaler.hpp"
+#include <QLabel>
+
+#include "core/utils.hpp"
 #include "translator.hpp"
-#include "utils.hpp"
 
 using pt::StatusBar;
 
-StatusBar::StatusBar(wxWindow* parent, std::shared_ptr<pt::Translator> translator)
-    : wxStatusBar(parent, wxID_ANY),
-    m_translator(translator)
+StatusBar::StatusBar(QWidget* parent)
+    : QStatusBar(parent)
 {
-    int widths[] =
-    {
-        SX(120),
-        SX(120),
-        -1
-    };
+    m_torrentsCount = new QLabel();
+    m_torrentsCount->setMinimumWidth(100);
+    m_dhtNodeCount = new QLabel();
+    m_dhtNodeCount->setMinimumWidth(100);
+    m_transferSpeeds = new QLabel();
+    m_transferSpeeds->setMinimumWidth(100);
 
-    SetFieldsCount(3);
-    SetStatusWidths(3, widths);
+    this->addWidget(m_torrentsCount);
+    this->addWidget(m_dhtNodeCount);
+    this->addWidget(m_transferSpeeds);
 }
 
-void StatusBar::UpdateDhtNodesCount(int64_t nodes)
+void StatusBar::updateDhtNodesCount(int64_t nodes)
 {
     if (nodes < 0)
     {
-        SetStatusText(i18n(m_translator, "dht_disabled"), 1);
+        m_dhtNodeCount->setText(i18n("dht_disabled"));
     }
     else
     {
-        SetStatusText(wxString::Format(i18n(m_translator, "dht_i64d_nodes"), nodes), 1);
+        m_dhtNodeCount->setText(i18n("dht_i64d_nodes").arg(nodes));
     }
 }
 
-void StatusBar::UpdateTorrentCount(int64_t torrents)
+void StatusBar::updateTorrentCount(int64_t torrents)
 {
-    SetStatusText(wxString::Format(i18n(m_translator, "i64d_torrents"), torrents), 0);
+    m_torrentsCount->setText(i18n("i64d_torrents").arg(torrents));
 }
 
-void StatusBar::UpdateTransferRates(int64_t downSpeed, int64_t upSpeed)
+void StatusBar::updateTransferRates(int64_t downSpeed, int64_t upSpeed)
 {
-    SetStatusText(
-        wxString::Format(i18n(m_translator, "dl_s_ul_s"),
-            Utils::ToHumanFileSize(downSpeed),
-            Utils::ToHumanFileSize(upSpeed)),
-        2);
+    m_transferSpeeds->setText(
+        i18n("dl_s_ul_s").arg(
+            downSpeed < 1024 ? "-" : QString::fromStdWString(Utils::toHumanFileSize(downSpeed)),
+            upSpeed   < 1024 ? "-" : QString::fromStdWString(Utils::toHumanFileSize(upSpeed))));
 }

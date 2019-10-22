@@ -1,42 +1,42 @@
 #pragma once
 
-#include <wx/wxprec.h>
-#ifndef WX_PRECOMP
-#include <wx/wx.h>
-#endif
+#include <Windows.h>
 
 #include <map>
 #include <memory>
 #include <vector>
 
-#define i18n(t, s) t->Translate(##s)
+#include <QString>
+
+#define i18n(key) Translator::instance().translate(key)
 
 namespace pt
 {
-    class Configuration;
-    class Environment;
-
     class Translator
     {
     public:
         struct Language
         {
             int code;
-            wxString name;
-            std::map<wxString, wxString> translations;
+            QString name;
+            std::map<QString, QString> translations;
         };
 
+        static Translator& instance();
 
-        static std::shared_ptr<Translator> Load(HINSTANCE hInstance, std::shared_ptr<Configuration> config);
+        Translator(Translator const&) = delete;
+        void operator=(Translator const&) = delete;
 
-        std::vector<Language> GetAvailableLanguages();
-        wxString Translate(wxString key);
+        std::vector<Language> languages();
+        void loadEmbedded(HINSTANCE hInstance);
+        void loadFile(QString const& fileName);
+        void setLanguage(int languageCode);
+        QString translate(QString const& key);
 
     private:
-        Translator(std::map<int, Language> const& languages, int selectedLanguage);
+        Translator();
 
-        static BOOL CALLBACK LoadTranslationResource(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam);
-        static bool LoadLanguageFromJson(std::string const& json, Language& lang);
+        static BOOL CALLBACK enumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam);
 
         int m_selectedLanguage;
         std::map<int, Language> m_languages;

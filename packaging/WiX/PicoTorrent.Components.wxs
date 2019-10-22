@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<?if $(var.Configuration) = "Debug" ?>
+    <?define Qt5Core = "Qt5Cored.dll" ?>
+    <?define Qt5Gui = "Qt5Guid.dll" ?>
+    <?define Qt5Svg = "Qt5Svgd.dll" ?>
+    <?define Qt5Widgets = "Qt5Widgetsd.dll" ?>
+    <?define Qt5WinExtras = "Qt5WinExtrasd.dll" ?>
+    <?define Qt5_qico = "qicod.dll" ?>
+    <?define Qt5_qwindows = "qwindowsd.dll" ?>
+    <?define Qt5_qwindowsvistastyle = "qwindowsvistastyled.dll" ?>
+<?else ?>
+    <?define Qt5Core = "Qt5Core.dll" ?>
+    <?define Qt5Gui = "Qt5Gui.dll" ?>
+    <?define Qt5Svg = "Qt5Svg.dll" ?>
+    <?define Qt5Widgets = "Qt5Widgets.dll" ?>
+    <?define Qt5WinExtras = "Qt5WinExtras.dll" ?>
+    <?define Qt5_qico = "qico.dll" ?>
+    <?define Qt5_qwindows = "qwindows.dll" ?>
+    <?define Qt5_qwindowsvistastyle = "qwindowsvistastyle.dll" ?>
+<?endif ?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <ComponentGroup Id="CG_MainApplication" Directory="INSTALLDIR">
+            <Component Id="C_PicoTorrent.exe" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205">
+                <File Id="F_PicoTorrent.exe"
+                    KeyPath="yes"
+                    Name="PicoTorrent.exe"
+                    Source="$(var.PublishDirectory)\PicoTorrent.exe" />
+
+                <ProgId Id="PicoTorrent.Document" Icon="F_PicoTorrent.exe" IconIndex="0">
+                    <Extension Id="torrent">
+                        <Verb Id="open" Command="Open with PicoTorrent" TargetFile="F_PicoTorrent.exe" Argument="&quot;%1&quot;" />
+                        <MIME ContentType="application/x-bittorrent" Default="yes" />
+                    </Extension>
+                </ProgId>
+
+                <!-- Register magnet: URI handler -->
+                <RegistryKey Root="HKCR" Key="magnet">
+                    <RegistryValue Type="string" Value="PicoTorent magnet link" />
+                    <RegistryValue Type="string" Name="URL Protocol" Value="" />
+
+                    <RegistryKey Key="DefaultIcon">
+                        <RegistryValue Type="string" Value="[INSTALLDIR]PicoTorrent.exe,0" />
+                    </RegistryKey>
+
+                    <RegistryKey Key="shell\open\command">
+                        <RegistryValue Type="string" Value="&quot;[INSTALLDIR]PicoTorrent.exe&quot; &quot;%1&quot;" />
+                    </RegistryKey>
+                </RegistryKey>
+
+                <RegistryKey Root="HKLM" Key="Software">
+                    <RegistryKey Key="Classes">
+                        <RegistryKey Key="Applications\PicoTorrent.exe">
+                            <RegistryKey Key="SupportedTypes">
+                                <RegistryValue Name=".torrent" Value="" Type="string" />
+                            </RegistryKey>
+
+                            <RegistryKey Key="shell\open">
+                                <RegistryValue Name="FriendlyAppName" Value="PicoTorrent" Type="string" />
+                            </RegistryKey>
+                        </RegistryKey>
+
+                        <RegistryKey Key="PicoTorrent.Document">
+                            <RegistryValue Name="FriendlyTypeName" Value="BitTorrent file" Type="string" />
+                        </RegistryKey>
+                    </RegistryKey>
+
+                    <RegistryKey Key="Microsoft\Windows\CurrentVersion\App Paths\PicoTorrent.exe">
+                        <RegistryValue Value="[#F_PicoTorrent.exe]" Type="string" />
+                    </RegistryKey>
+
+                    <RegistryKey Key="PicoTorrent">
+                        <RegistryValue Name="InstallDirectory" Value="[INSTALLDIR]" Type="string" />
+                        <RegistryValue Name="InstalledVersion" Value="$(var.Version)" Type="string" />
+
+                        <RegistryKey Key="Capabilities">
+                            <RegistryValue Name="ApplicationDescription" Value="A tiny, hackable BitTorrent client" Type="string" />
+                            <RegistryValue Name="ApplicationIcon" Value="[INSTALLDIR]PicoTorrent.exe,0" Type="string" />
+                            <RegistryValue Name="ApplicationName" Value="PicoTorrent" Type="string" />
+
+                            <RegistryKey Key="DefaultIcon">
+                                <RegistryValue Value="[INSTALLDIR]PicoTorrent.exe,0" Type="string" />
+                            </RegistryKey>
+
+                            <RegistryKey Key="FileAssociations">
+                                <RegistryValue Name=".torrent" Value="PicoTorrent.Document" Type="string" />
+                            </RegistryKey>
+
+                            <RegistryKey Key="MIMEAssociations">
+                                <RegistryValue Name="application/x-bittorrent" Value="PicoTorrent.Document" Type="string" />
+                            </RegistryKey>
+
+                            <RegistryKey Key="shell\open\command">
+                                <RegistryValue Value="&quot;[INSTALLDIR]PicoTorrent.exe&quot; &quot;%1&quot;" Type="string" />
+                            </RegistryKey>
+                        </RegistryKey>
+                    </RegistryKey>
+
+                    <RegistryKey Key="RegisteredApplications">
+                        <RegistryValue Name="PicoTorrent" Value="Software\PicoTorrent\Capabilities" Type="string" />
+                    </RegistryKey>
+                </RegistryKey>
+
+                <Shortcut Id="S_PicoTorrent"
+                        Directory="ProgramMenuFolder"
+                        Name="PicoTorrent"
+                        WorkingDirectory="INSTALLDIR"
+                        Icon="I_PicoTorrent.ico"
+                        IconIndex="0"
+                        Advertise="yes" />
+            </Component>
+
+            <Component Id="C_ChakraCore.dll" Guid="80cecb0f-e8f3-4724-a1b3-e207e3036951">
+                <File Id="F_ChakraCore.dll"
+                    KeyPath="yes"
+                    Name="ChakraCore.dll"
+                    Source="$(var.PublishDirectory)\ChakraCore.dll" />
+            </Component>
+
+            <Component Id="C_Qt5Core.dll" Guid="31923f96-639c-4f0b-a61f-29d5c9b73463">
+                <File Id="F_Qt5Core.dll"
+                    KeyPath="yes"
+                    Name="$(var.Qt5Core)"
+                    Source="$(var.PublishDirectory)\$(var.Qt5Core)" />
+            </Component>
+
+            <Component Id="C_Qt5Gui.dll" Guid="1a822836-d8fe-4354-823c-4f260c598681">
+                <File Id="F_Qt5Gui.dll"
+                    KeyPath="yes"
+                    Name="$(var.Qt5Gui)"
+                    Source="$(var.PublishDirectory)\$(var.Qt5Gui)" />
+            </Component>
+
+            <Component Id="C_Qt5Svg.dll" Guid="da98b24a-7c19-43a2-815b-bb75cd06019c">
+                <File Id="F_Qt5Svg.dll"
+                    KeyPath="yes"
+                    Name="$(var.Qt5Svg)"
+                    Source="$(var.PublishDirectory)\$(var.Qt5Svg)" />
+            </Component>
+
+            <Component Id="C_Qt5Widgets.dll" Guid="4d06f3ae-1cf6-4f18-9fe6-b20d0d177b05">
+                <File Id="F_Qt5Widgets"
+                    KeyPath="yes"
+                    Name="$(var.Qt5Widgets)"
+                    Source="$(var.PublishDirectory)\$(var.Qt5Widgets)" />
+            </Component>
+
+            <Component Id="C_Qt5WinExtras.dll" Guid="8be04dc4-26e4-487a-b8c4-06fc225d8f10">
+                <File Id="F_Qt5WinExtras"
+                    KeyPath="yes"
+                    Name="$(var.Qt5WinExtras)"
+                    Source="$(var.PublishDirectory)\$(var.Qt5WinExtras)" />
+            </Component>
+
+            <ComponentGroupRef Id="CG_ImageFormats" />
+            <ComponentGroupRef Id="CG_Platforms" />
+            <ComponentGroupRef Id="CG_Scripts" />
+            <ComponentGroupRef Id="CG_Styles" />
+        </ComponentGroup>
+
+        <ComponentGroup Id="CG_Scripts" Directory="SCRIPTS">
+            <Component Id="C_filters.js" Guid="99be0fc1-709d-40c4-b3a9-45cba4608994">
+                <File Id="F_filters.js"
+                      KeyPath="yes"
+                      Name="filters.js"
+                      Source="$(var.PublishDirectory)\scripts\filters.js" />
+            </Component>
+        </ComponentGroup>
+
+        <ComponentGroup Id="CG_ImageFormats" Directory="QTIMAGEFORMATS">
+            <Component Id="C_qico.dll" Guid="262ec4a9-1fff-49e8-aa33-a4710e1acd2a">
+                <File Id="F_qico.dll"
+                      KeyPath="yes"
+                      Name="$(var.Qt5_qico)"
+                      Source="$(var.PublishDirectory)\imageformats\$(var.Qt5_qico)" />
+            </Component>
+        </ComponentGroup>
+        
+        <ComponentGroup Id="CG_Platforms" Directory="QTPLATFORMS">
+            <Component Id="C_qwindows.dll" Guid="03c35546-9ee0-4c89-8add-4a8e3d9837f1">
+                <File Id="F_qwindows.dll"
+                      KeyPath="yes"
+                      Name="$(var.Qt5_qwindows)"
+                      Source="$(var.PublishDirectory)\platforms\$(var.Qt5_qwindows)" />
+            </Component>
+        </ComponentGroup>
+
+        <ComponentGroup Id="CG_Styles" Directory="QTSTYLES">
+            <Component Id="C_qwindowsvistastyle.dll" Guid="41cf0ea2-81c0-4486-b8c9-8f745d9f1d32">
+                <File Id="F_qwindowsvistastyle.dll"
+                      KeyPath="yes"
+                      Name="$(var.Qt5_qwindowsvistastyle)"
+                      Source="$(var.PublishDirectory)\styles\$(var.Qt5_qwindowsvistastyle)" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+</Wix>

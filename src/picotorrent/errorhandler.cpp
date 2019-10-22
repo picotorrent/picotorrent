@@ -6,19 +6,18 @@
 #include <filesystem>
 
 #include "buildinfo.hpp"
-#include "utils.hpp"
 
-namespace fs = std::experimental::filesystem::v1;
+namespace fs = std::filesystem;
 using pt::ErrorHandler;
 
-std::wstring ErrorHandler::GetDumpPath()
+std::wstring ErrorHandler::dumpPath()
 {
     TCHAR p[MAX_PATH];
     GetTempPath(ARRAYSIZE(p), p);
     return p;
 }
 
-bool ErrorHandler::Filter(void* context, EXCEPTION_POINTERS* exinfo, MDRawAssertionInfo* assertion)
+bool ErrorHandler::filter(void* context, EXCEPTION_POINTERS* exinfo, MDRawAssertionInfo* assertion)
 {
     const TASKDIALOG_BUTTON buttons[] =
     {
@@ -53,9 +52,9 @@ bool ErrorHandler::Filter(void* context, EXCEPTION_POINTERS* exinfo, MDRawAssert
     return false;
 }
 
-bool ErrorHandler::Report(const wchar_t* path, const wchar_t* id, void* context, EXCEPTION_POINTERS* exinfo, MDRawAssertionInfo* assertion, bool succeeded)
+bool ErrorHandler::report(const wchar_t* path, const wchar_t* id, void* context, EXCEPTION_POINTERS* exinfo, MDRawAssertionInfo* assertion, bool succeeded)
 {
-    fs::path checkpointFile = fs::path(GetDumpPath()) / fs::path("PicoTorrent.checkpoint");
+    fs::path checkpointFile = fs::path(dumpPath()) / fs::path("PicoTorrent.checkpoint");
 
     google_breakpad::CrashReportSender sender(checkpointFile.wstring());
     sender.set_max_reports_per_day(5);
@@ -63,13 +62,13 @@ bool ErrorHandler::Report(const wchar_t* path, const wchar_t* id, void* context,
     std::map<std::wstring, std::wstring> params;
     std::map<std::wstring, std::wstring> files;
 
-    wxString branch = BuildInfo::Branch();
-    wxString commitish = BuildInfo::Commitish();
-    wxString version = BuildInfo::Version();
+    QString branch = BuildInfo::branch();
+    QString commitish = BuildInfo::commitish();
+    QString version = BuildInfo::version();
 
-    params.insert({ L"branch", branch.ToStdWstring() });
-    params.insert({ L"commitish", commitish.ToStdWstring() });
-    params.insert({ L"version", version.ToStdWstring() });
+    params.insert({ L"branch", branch.toStdWString() });
+    params.insert({ L"commitish", commitish.toStdWString() });
+    params.insert({ L"version", version.toStdWString() });
 
     fs::path dmpFile = fs::path(path) / fs::path(id).replace_extension(".dmp");
     files.insert({ L"minidump", dmpFile.wstring() });
