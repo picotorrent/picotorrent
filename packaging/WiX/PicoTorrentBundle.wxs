@@ -5,23 +5,23 @@
     <?define UpgradeCode = "58903cac-fb00-4335-8149-0e1177cc8cba" ?>
 
     <?define FindVCRedistKey = "Software\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" ?>
-    <?define VCRedistDescription = "Microsoft Visual C++ 2017 Redistributable (x64) - 14.12.25810" ?>
-    <?define VCRedistHash = "6699383b22f2ad050245866a176c2ede6e348443" ?>
+    <?define VCRedistDescription = "Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.23.27820" ?>
+    <?define VCRedistHash = "3b32bc4b8dec32fd52a8f4bda5648c3a8d999d7c" ?>
     <?define VCRedistName = "VC_redist.x64.exe" ?>
-    <?define VCRedistSize = "15328616" ?>
-    <?define VCRedistUrl = "https://picotorrent.blob.core.windows.net/public/vcredist/14.12.25810.0/VC_redist.x64.exe" ?>
-    <?define VCRedistVersion = "14.12.25810.0" ?>
+    <?define VCRedistSize = "15073600" ?>
+    <?define VCRedistUrl = "https://download.visualstudio.microsoft.com/download/pr/9565895b-35a6-434b-a881-11a6f4beec76/EE84FED2552E018E854D4CD2496DF4DD516F30733A27901167B8A9882119E57C/VC_redist.x64.exe" ?>
+    <?define VCRedistVersion = "14.23.27820.0" ?>
 <?else ?>
     <?define InstallFolder = "[ProgramFilesFolder]PicoTorrent" ?>
     <?define UpgradeCode = "08b52a3a-63eb-47c0-8a75-1df052a99042" ?>
 
     <?define FindVCRedistKey = "Software\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" ?>
-    <?define VCRedistDescription = "Microsoft Visual C++ 2017 Redistributable (x86) - 14.12.25810" ?>
-    <?define VCRedistHash = "735bfa44d4b475fafd175ba0e1ced21888c7a2db" ?>
+    <?define VCRedistDescription = "Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.23.27820" ?>
+    <?define VCRedistHash = "aa56b7fe64e957fba2a6bdc65abbaa47438ec620" ?>
     <?define VCRedistName = "VC_redist.x86.exe" ?>
-    <?define VCRedistSize = "14565944" ?>
-    <?define VCRedistUrl = "https://picotorrent.blob.core.windows.net/public/vcredist/14.12.25810.0/VC_redist.x86.exe" ?>
-    <?define VCRedistVersion = "14.12.25810.0" ?>
+    <?define VCRedistSize = "14373272" ?>
+    <?define VCRedistUrl = "https://download.visualstudio.microsoft.com/download/pr/9565895b-35a6-434b-a881-11a6f4beec76/4A8157B2FF422C259DDAA2D0E568C0C0AFAB940E1F6E0E482EF83E90DDBAD2D6/VC_redist.x86.exe" ?>
+    <?define VCRedistVersion = "14.23.27820.0" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
@@ -39,8 +39,8 @@
         <util:RegistrySearch Id="FindVCRedist"
                              Root="HKLM"
                              Key="$(var.FindVCRedistKey)"
-                             Value="installed"
-                             Variable="VCRedistExists"
+                             Value="Version"
+                             Variable="VCREDISTVERSION"
                              Result="exists" />
 
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
@@ -54,7 +54,7 @@
         <Chain>
             <ExePackage Name="$(var.VCRedistName)"
                         Compressed="no"
-                        DetectCondition="VCRedistExists"
+                        DetectCondition="VCREDISTVERSION &gt;= v14.23.27820"
                         DownloadUrl="$(var.VCRedistUrl)"
                         InstallCommand="/quiet"
                         PerMachine="yes"
