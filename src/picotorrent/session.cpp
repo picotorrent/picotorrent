@@ -81,13 +81,13 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Configuration> cfg)
     settings.set_bool(lt::settings_pack::enable_lsd, cfg->getBool("enable_lsd"));
 
     // Limits
-    settings.set_int(lt::settings_pack::active_checking,      cfg->getBool("active_checking"));
-    settings.set_int(lt::settings_pack::active_dht_limit,     cfg->getBool("active_dht_limit"));
-    settings.set_int(lt::settings_pack::active_downloads,     cfg->getBool("active_downloads"));
-    settings.set_int(lt::settings_pack::active_limit,         cfg->getBool("active_limit"));
-    settings.set_int(lt::settings_pack::active_lsd_limit,     cfg->getBool("active_lsd_limit"));
-    settings.set_int(lt::settings_pack::active_seeds,         cfg->getBool("active_seeds"));
-    settings.set_int(lt::settings_pack::active_tracker_limit, cfg->getBool("active_tracker_limit"));
+    settings.set_int(lt::settings_pack::active_checking,      cfg->getInt("active_checking"));
+    settings.set_int(lt::settings_pack::active_dht_limit,     cfg->getInt("active_dht_limit"));
+    settings.set_int(lt::settings_pack::active_downloads,     cfg->getInt("active_downloads"));
+    settings.set_int(lt::settings_pack::active_limit,         cfg->getInt("active_limit"));
+    settings.set_int(lt::settings_pack::active_lsd_limit,     cfg->getInt("active_lsd_limit"));
+    settings.set_int(lt::settings_pack::active_seeds,         cfg->getInt("active_seeds"));
+    settings.set_int(lt::settings_pack::active_tracker_limit, cfg->getInt("active_tracker_limit"));
 
     // Encryption
     lt::settings_pack::enc_policy in_policy = cfg->getBool("require_incoming_encryption")
@@ -107,12 +107,12 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Configuration> cfg)
 
     settings.set_int(lt::settings_pack::download_rate_limit,
         cfg->getBool("enable_download_rate_limit")
-        ? cfg->getBool("download_rate_limit") * 1024
+        ? cfg->getInt("download_rate_limit") * 1024
         : 0);
 
     settings.set_int(lt::settings_pack::upload_rate_limit,
         cfg->getBool("enable_upload_rate_limit")
-        ? cfg->getBool("upload_rate_limit") * 1024
+        ? cfg->getInt("upload_rate_limit") * 1024
         : 0);
 
     // Calculate user agent
