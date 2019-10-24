@@ -237,7 +237,7 @@
     "encrypt_config_file": "Chiffrer le fichier de configuration",
     "amp_details_panel": "&Panneau des détails",
     "s_of_s": "%s (sur %s)",
-    "downloaded_size": "Téléchargé"
+    "downloaded_size": "Téléchargé",
 	"amp_status_bar": "&Barre d'état",
     "amp_filter": "&Filtre",
     "amp_none": "&Aucun",
