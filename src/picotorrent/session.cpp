@@ -195,8 +195,16 @@ void Session::addTorrent(lt::add_torrent_params const& params)
 
     if (m_metadataSearches.find(params.info_hash) != m_metadataSearches.end())
     {
-		lt::torrent_handle& hndl = m_metadataSearches.at(params.info_hash);
-        m_session->remove_torrent(hndl, lt::session::delete_files);
+        lt::torrent_handle& hndl = m_metadataSearches.at(params.info_hash);
+
+        // By default, an invalid torrent handle is added to the metadata
+        // search map. Only remove the handle from the session if it has
+        // been replaced with a valid one in the add_torrent_alert handler.
+
+        if (hndl.is_valid())
+        {
+            m_session->remove_torrent(hndl, lt::session::delete_files);
+        }
     }
 
     m_session->async_add_torrent(params);
@@ -452,7 +460,9 @@ void Session::readAlerts()
 
             if (m_metadataSearches.count(ata->handle.info_hash()))
             {
-                // Part of a metadata search. Ignore.
+                // Part of a metadata search - update the metadata search map
+                // with the new handle, then ignore it.
+                m_metadataSearches[ata->handle.info_hash()] = ata->handle;
                 continue;
             }
 
