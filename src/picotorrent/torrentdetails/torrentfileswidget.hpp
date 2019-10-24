@@ -28,6 +28,7 @@ namespace pt
         void showTorrentFileExplorer(QModelIndex const& index);
 
         libtorrent::info_hash_t m_currentSelection;
+        int m_currentFileCount;
         QTreeView* m_filesView;
         FileStorageItemModel* m_filesModel;
         QList<TorrentHandle*> m_torrents;
