@@ -59,6 +59,7 @@ TorrentFilesWidget::TorrentFilesWidget()
 
 void TorrentFilesWidget::clear()
 {
+    m_currentFileCount = -1;
     m_currentSelection = lt::info_hash_t();
     m_filesModel->clearTree();
 }
@@ -83,8 +84,8 @@ void TorrentFilesWidget::refresh(QList<pt::TorrentHandle*> const& torrents)
     std::vector<int64_t> progress;
     torrent->fileProgress(progress, lt::torrent_handle::piece_granularity);
 
-    // Only update progress if we have the same selection as previous
-    if (m_currentSelection == torrent->infoHash())
+    // Only update progress if we have the same selection and file count as previous
+    if (m_currentSelection == torrent->infoHash() && m_currentFileCount == ti->num_files())
     {
         m_filesModel->setProgress(progress);
     }
