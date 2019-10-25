@@ -10,6 +10,8 @@
 
 class QAction;
 class QActionGroup;
+class QDragEnterEvent;
+class QDropEvent;
 class QItemSelection;
 class QLabel;
 class QMenu;
@@ -72,6 +74,8 @@ namespace pt
 
     private:
         void addTorrents(std::vector<libtorrent::add_torrent_params>& params);
+        void dragEnterEvent(QDragEnterEvent* event);
+        void dropEvent(QDropEvent* event);
         void parseMagnetLinks(std::vector<libtorrent::add_torrent_params>& params, QStringList const& magnetLinks);
         void parseTorrentFiles(std::vector<libtorrent::add_torrent_params>& params, QStringList const& files);
         void showHideDetailsPanel(bool show);

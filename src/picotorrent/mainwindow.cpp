@@ -18,11 +18,14 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QFileDialog>
 #include <QHeaderView>
 #include <QLabel>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QPluginLoader>
 #include <QSplitter>
 #include <QStatusBar>
@@ -262,6 +265,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     helpMenu->addSeparator();
     helpMenu->addAction(m_helpAbout);
 
+    this->setAcceptDrops(true);
     this->setCentralWidget(m_splitter);
     this->setMinimumWidth(250);
     this->setStatusBar(m_statusBar);
@@ -389,6 +393,33 @@ void MainWindow::addTorrents(std::vector<lt::add_torrent_params>& params)
                      dlg, &QDialog::deleteLater);
 
     m_session->metadataSearch(hashes);
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasUrls())
+    {
+        event->acceptProposedAction();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent* event)
+{
+    if (!event->mimeData()->hasUrls())
+    {
+        return;
+    }
+
+    QStringList files;
+
+    for (QUrl const& url : event->mimeData()->urls())
+    {
+        files << url.toLocalFile();
+    }
+
+    std::vector<lt::add_torrent_params> params;
+    this->parseTorrentFiles(params, files);
+    this->addTorrents(params);
 }
 
 void MainWindow::handleCommandLine(QStringList const& args)
