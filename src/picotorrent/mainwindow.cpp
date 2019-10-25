@@ -27,6 +27,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QPluginLoader>
+#include <QShortcut>
 #include <QSplitter>
 #include <QStatusBar>
 #include <QTimer>
@@ -118,6 +119,23 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
 
     m_viewStatusBar->setCheckable(true);
     m_viewStatusBar->setChecked(m_cfg->getBool("ui.show_status_bar"));
+
+    // Shortcuts
+    m_shortcutOpenTorrent = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_O), this);
+    m_shortcutRemoveSelectedTorrent = new QShortcut(QKeySequence(Qt::Key_Delete), m_torrentList);
+
+    // Shortcut signals
+    QObject::connect(m_shortcutOpenTorrent, &QShortcut::activated,
+                     this, &MainWindow::onFileAddTorrent);
+
+    QObject::connect(m_shortcutRemoveSelectedTorrent, &QShortcut::activated,
+        [this]()
+        {
+            for (TorrentHandle* th : m_selectedTorrents)
+            {
+                th->remove();
+            }
+        });
 
     // Session signals
     QObject::connect(m_session,          &Session::sessionStatsUpdated,
