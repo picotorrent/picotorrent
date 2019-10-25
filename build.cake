@@ -210,11 +210,13 @@ Task("Build-Installer")
             { "ResourceDirectory", ResourceDirectory },
             { "Version", Version }
         },
+        Extensions = new [] { "WixUtilExtension" },
         OutputDirectory = BuildDirectory
     });
 
     WiXLight(objFiles, new LightSettings
     {
+        Extensions = new [] { "WixUtilExtension" },
         OutputFile = PackagesDirectory + File(Installer)
     });
 });
