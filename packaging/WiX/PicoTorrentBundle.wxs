@@ -40,8 +40,7 @@
                              Root="HKLM"
                              Key="$(var.FindVCRedistKey)"
                              Value="Version"
-                             Variable="VCREDISTVERSION"
-                             Result="exists" />
+                             Variable="VCREDISTVERSION" />
 
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
             <bal:WixStandardBootstrapperApplication LicenseFile="LICENSE.rtf"
@@ -56,7 +55,7 @@
                         Compressed="no"
                         DetectCondition="VCREDISTVERSION &gt;= v14.23.27820"
                         DownloadUrl="$(var.VCRedistUrl)"
-                        InstallCommand="/quiet"
+                        InstallCommand="/quiet /norestart"
                         PerMachine="yes"
                         Permanent="yes"
                         Vital="yes">
