@@ -15,6 +15,7 @@ class QDropEvent;
 class QItemSelection;
 class QLabel;
 class QMenu;
+class QShortcut;
 class QSplitter;
 class QTimer;
 class QWinTaskbarButton;
@@ -95,6 +96,10 @@ namespace pt
         QAction* m_viewStatusBar;
         QAction* m_helpCheckForUpdates;
         QAction* m_helpAbout;
+
+        // Shortcuts
+        QShortcut* m_shortcutOpenTorrent;
+        QShortcut* m_shortcutRemoveSelectedTorrent;
 
         QActionGroup* m_filtersGroup;
         QMenu* m_filtersMenu;
