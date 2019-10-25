@@ -225,6 +225,13 @@ pt::TorrentStatus TorrentHandle::status()
         hash << m_ts->info_hash.v1;
     }
 
+    if (!m_th->is_valid())
+    {
+        TorrentStatus ts;
+        ts.infoHash = QString::fromStdString(hash.str());
+        return ts;
+    }
+
     auto eta = std::chrono::seconds(0);
 
     if ((m_ts->total_wanted - m_ts->total_wanted_done > 0) && m_ts->download_payload_rate > 0)
