@@ -572,6 +572,13 @@ void Session::readAlerts()
 
             for (lt::torrent_status const& status : sua->status)
             {
+                // Skip torrents which are not found in m_torrents - this can happen
+                // when we recieve alerts for a torrent currently in metadata search
+                if (m_torrents.find(status.info_hash) == m_torrents.end())
+                {
+                    continue;
+                }
+
                 stats.totalPayloadDownloadRate += status.download_payload_rate;
                 stats.totalPayloadUploadRate   += status.upload_payload_rate;
 
