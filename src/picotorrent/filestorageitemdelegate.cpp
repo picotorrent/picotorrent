@@ -28,12 +28,14 @@ void FileStorageItemDelegate::paint(QPainter* painter, QStyleOptionViewItem cons
     {
     case FileStorageItemModel::Columns::Progress:
     {
-        int progress = index.data().toDouble() * 100;
+        QVariant data = index.data();
 
-        if (progress < 0)
+        if (!data.isValid())
         {
             break;
         }
+
+        int progress = data.toDouble() * 100;
 
         painter->setFont(*m_font);
 
