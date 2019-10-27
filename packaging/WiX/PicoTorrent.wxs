@@ -30,10 +30,14 @@
         <DirectoryRef Id="TARGETDIR" />
 
         <util:CloseApplication Id="CloseApp"
-                               CloseMessage="yes"
                                Target="PicoTorrent.exe"
                                RebootPrompt="no"
-                               TerminateProcess="1" />
+                               EndSessionMessage="yes" />
+
+        <InstallExecuteSequence>
+            <Custom Action="WixCloseApplications"
+                    Before="InstallValidate">1</Custom>
+        </InstallExecuteSequence>
 
         <Feature Id="F_Complete"
                  Title="PicoTorrent"
