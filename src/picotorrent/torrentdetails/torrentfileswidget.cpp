@@ -91,6 +91,8 @@ void TorrentFilesWidget::refresh(QList<pt::TorrentHandle*> const& torrents)
     }
     else
     {
+        m_currentFileCount = ti->num_files();
+
         m_filesModel->rebuildTree(ti);
         m_filesModel->setPriorities(torrent->getFilePriorities());
         m_filesModel->setProgress(progress);
