@@ -20,7 +20,6 @@
 struct NetworkAdapter
 {
     QString description;
-    QString guid;
     QString ipv4;
     QString ipv6;
 };
@@ -32,11 +31,8 @@ ConnectionSectionWidget::ConnectionSectionWidget()
     createUi();
     setupNetworkAdapters();
 
-    connect(
-        m_listenInterfaces,
-        QOverload<int>::of(&QComboBox::currentIndexChanged),
-        this,
-        &ConnectionSectionWidget::onListenInterfaceChanged);
+    QObject::connect(m_listenInterfaces, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                     this,               &ConnectionSectionWidget::onListenInterfaceChanged);
 }
 
 void ConnectionSectionWidget::loadConfig(std::shared_ptr<pt::Configuration> cfg)
@@ -47,9 +43,18 @@ void ConnectionSectionWidget::loadConfig(std::shared_ptr<pt::Configuration> cfg)
     {
         auto adapter = static_cast<NetworkAdapter*>(m_listenInterfaces->itemData(i).value<void*>());
 
-        if (adapter->guid == iface)
+        if (adapter->ipv4 == iface || adapter->ipv6 == iface)
         {
             m_listenInterfaces->setCurrentIndex(i);
+        }
+        else if (iface.contains("|"))
+        {
+            QStringList ifaces = iface.split("|");
+
+            if (adapter->ipv4 == ifaces[0] || adapter->ipv6 == ifaces[1])
+            {
+                m_listenInterfaces->setCurrentIndex(i);
+            }
         }
     }
 
@@ -67,7 +72,15 @@ void ConnectionSectionWidget::saveConfig(std::shared_ptr<pt::Configuration> cfg)
     auto adapterData = m_listenInterfaces->itemData(adapterIndex);
     auto adapter = static_cast<NetworkAdapter*>(adapterData.value<void*>());
 
-    cfg->setString("listen_interface", adapter->guid.toStdString());
+    QStringList iface;
+    iface << adapter->ipv4;
+
+    if (!adapter->ipv6.isEmpty())
+    {
+        iface << adapter->ipv6;
+    }
+
+    cfg->setString("listen_interface", iface.join("|").toStdString());
     cfg->setInt("listen_port", m_port->text().toInt());
     cfg->setBool("require_incoming_encryption", m_encryptIncoming->checkState() == Qt::Checked);
     cfg->setBool("require_outgoing_encryption", m_encryptOutgoing->checkState() == Qt::Checked);
@@ -147,7 +160,6 @@ void ConnectionSectionWidget::setupNetworkAdapters()
     // Add the <any> adapter
     auto any = new NetworkAdapter();
     any->description = "<any>";
-    any->guid = "{any}";
     any->ipv4 = "0.0.0.0";
     any->ipv6 = "::";
 
@@ -167,58 +179,43 @@ void ConnectionSectionWidget::setupNetworkAdapters()
 
     if (ret == ERROR_SUCCESS)
     {
-        IP_ADAPTER_ADDRESSES* pCurrAddresses = pAddresses;
+        for (PIP_ADAPTER_ADDRESSES pCurrAddresses = pAddresses; pCurrAddresses != nullptr; pCurrAddresses = pCurrAddresses->Next)
 
-        while (pCurrAddresses)
+        if (pCurrAddresses->IfType != IF_TYPE_SOFTWARE_LOOPBACK)
         {
-            if (pCurrAddresses->IfType != IF_TYPE_SOFTWARE_LOOPBACK)
+            auto adapter = new NetworkAdapter();
+            adapter->description = QString::fromStdWString(pCurrAddresses->FriendlyName);
+
+            IP_ADAPTER_UNICAST_ADDRESS* pu = pCurrAddresses->FirstUnicastAddress;
+
+            while (pu)
             {
-                auto adapter = new NetworkAdapter();
-
-                char guidBuf[64];
-                sprintf_s(guidBuf, 64, "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
-                    pCurrAddresses->NetworkGuid.Data1, pCurrAddresses->NetworkGuid.Data2, pCurrAddresses->NetworkGuid.Data3,
-                    pCurrAddresses->NetworkGuid.Data4[0], pCurrAddresses->NetworkGuid.Data4[1],
-                    pCurrAddresses->NetworkGuid.Data4[2], pCurrAddresses->NetworkGuid.Data4[3],
-                    pCurrAddresses->NetworkGuid.Data4[4], pCurrAddresses->NetworkGuid.Data4[5],
-                    pCurrAddresses->NetworkGuid.Data4[6], pCurrAddresses->NetworkGuid.Data4[7]);
-
-                adapter->description = QString::fromStdWString(pCurrAddresses->FriendlyName);
-                adapter->guid = guidBuf;
-
-                IP_ADAPTER_UNICAST_ADDRESS* pu = pCurrAddresses->FirstUnicastAddress;
-
-                while (pu)
+                switch (pu->Address.lpSockaddr->sa_family)
                 {
-                    switch (pu->Address.lpSockaddr->sa_family)
-                    {
-                    case AF_INET:
-                    {
-                        char buf[INET_ADDRSTRLEN] = {};
-                        sockaddr_in *si = reinterpret_cast<sockaddr_in*>(pu->Address.lpSockaddr);
-                        inet_ntop(AF_INET, &(si->sin_addr), buf, sizeof(buf));
-                        adapter->ipv4 = buf;
-                        break;
-                    }
-                    case AF_INET6:
-                    {
-                        char buf[INET6_ADDRSTRLEN] = {};
-                        sockaddr_in6 *si = reinterpret_cast<sockaddr_in6*>(pu->Address.lpSockaddr);
-                        inet_ntop(AF_INET6, &(si->sin6_addr), buf, sizeof(buf));
-                        adapter->ipv6 = buf;
-                        break;
-                    }
-                    }
-
-                    pu = pu->Next;
+                case AF_INET:
+                {
+                    char buf[INET_ADDRSTRLEN] = {};
+                    sockaddr_in *si = reinterpret_cast<sockaddr_in*>(pu->Address.lpSockaddr);
+                    inet_ntop(AF_INET, &(si->sin_addr), buf, sizeof(buf));
+                    adapter->ipv4 = buf;
+                    break;
+                }
+                case AF_INET6:
+                {
+                    char buf[INET6_ADDRSTRLEN] = {};
+                    sockaddr_in6 *si = reinterpret_cast<sockaddr_in6*>(pu->Address.lpSockaddr);
+                    inet_ntop(AF_INET6, &(si->sin6_addr), buf, sizeof(buf));
+                    adapter->ipv6 = buf;
+                    break;
+                }
                 }
 
-                m_listenInterfaces->addItem(
-                    adapter->description,
-                    QVariant::fromValue(static_cast<void*>(adapter)));
+                pu = pu->Next;
             }
 
-            pCurrAddresses = pCurrAddresses->Next;
+            m_listenInterfaces->addItem(
+                adapter->description,
+                QVariant::fromValue(static_cast<void*>(adapter)));
         }
     }
 
