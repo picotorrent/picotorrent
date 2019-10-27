@@ -131,7 +131,7 @@ QVariant FileStorageItemModel::data(QModelIndex const& index, int role) const
         {
             if (item->children.size() > 0)
             {
-                return -99;
+                return QVariant();
             }
 
             if (item->progress > 0)
