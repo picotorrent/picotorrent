@@ -64,13 +64,28 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Configuration> cfg)
     int listenPort = cfg->getInt("listen_port");
     std::stringstream ifaces;
 
-    if (listenInterface == "{any}")
+    // If the string starts with '{', i.e '{any}' or a network interface guid (which did not work),
+    // set to listen to any interface.
+    if (listenInterface.find_first_of('{') == 0)
     {
         ifaces << "0.0.0.0:" << listenPort << "," << "[::]:" << listenPort;
     }
     else
     {
-        ifaces << listenInterface << "::" << listenPort;
+        QString iface = QString::fromStdString(listenInterface);
+
+        if (iface.contains("|"))
+        {
+            QStringList multi = iface.split("|");
+
+            // Set up both IPv4 and IPv6
+            ifaces << multi[0].toStdString() << ":" << listenPort << ",[" << multi[1].toStdString() << "]:" << listenPort;
+        }
+        else
+        {
+            // Only IPv4 here
+            ifaces << listenInterface << ":" << listenPort;
+        }
     }
 
     // Listen interface
