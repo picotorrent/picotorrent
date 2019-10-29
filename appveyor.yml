@@ -2,10 +2,6 @@
 
 os: Visual Studio 2019
 
-branches:
-  except:
-  - master
-
 environment:
   global:
     BOOST_ROOT: C:\Libraries\boost_1_71_0
