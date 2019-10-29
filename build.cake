@@ -94,6 +94,7 @@ Task("Setup-Publish-Directory")
     var files = new FilePath[]
     {
         MakeAbsolute(BuildDirectory + File("PicoTorrent.exe")),
+        MakeAbsolute(BuildDirectory + File("crashpad_handler.exe")),
 
         MakeAbsolute(BuildDirectory + File("ChakraCore.dll")),
         MakeAbsolute(BuildDirectory + Directory("scripts") + File("filters.js")),

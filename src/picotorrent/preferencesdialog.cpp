@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "core/configuration.hpp"
+#include "core/environment.hpp"
 #include "connectionsectionwidget.hpp"
 #include "downloadssectionwidget.hpp"
 #include "generalsectionwidget.hpp"
@@ -65,9 +66,10 @@ public:
     }
 };
 
-PreferencesDialog::PreferencesDialog(QWidget* parent, std::shared_ptr<pt::Configuration> cfg)
+PreferencesDialog::PreferencesDialog(QWidget* parent, std::shared_ptr<pt::Configuration> cfg, std::shared_ptr<pt::Environment> env)
     : QDialog(parent),
-    m_cfg(cfg)
+    m_cfg(cfg),
+    m_env(env)
 {
     createUi();
 
@@ -94,7 +96,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, std::shared_ptr<pt::Config
 
 void PreferencesDialog::load()
 {
-    m_general->loadConfig(m_cfg);
+    m_general->loadConfig(m_cfg, m_env);
     m_downloads->loadConfig(m_cfg);
     m_connection->loadConfig(m_cfg);
     m_proxy->loadConfig(m_cfg);
@@ -133,7 +135,7 @@ void PreferencesDialog::onOk()
 {
     bool requiresRestart = false;
 
-    m_general->saveConfig(m_cfg, &requiresRestart);
+    m_general->saveConfig(m_cfg, m_env, &requiresRestart);
     m_downloads->saveConfig(m_cfg);
     m_connection->saveConfig(m_cfg);
     m_proxy->saveConfig(m_cfg);

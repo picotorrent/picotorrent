@@ -112,6 +112,13 @@
                         Advertise="yes" />
             </Component>
 
+            <Component Id="C_crashpad_handler.exe" Guid="99f10c73-7f2e-466b-a46b-cf755f884823">
+                <File Id="C_crashpad_handler.dll"
+                    KeyPath="yes"
+                    Name="crashpad_handler.exe"
+                    Source="$(var.PublishDirectory)\crashpad_handler.exe" />
+            </Component>
+
             <Component Id="C_ChakraCore.dll" Guid="80cecb0f-e8f3-4724-a1b3-e207e3036951">
                 <File Id="F_ChakraCore.dll"
                     KeyPath="yes"

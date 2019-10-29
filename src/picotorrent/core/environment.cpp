@@ -9,6 +9,11 @@
 namespace fs = std::filesystem;
 using pt::Environment;
 
+Environment::Environment()
+    : m_startupTime(std::chrono::system_clock::now())
+{
+}
+
 std::shared_ptr<Environment> Environment::create()
 {
     auto env = new Environment();
@@ -43,22 +48,8 @@ std::shared_ptr<Environment> Environment::create()
     // - PicoTorrent.YYYYMMDDHHmmss.log
     // which represents the start up time.
 
-    SYSTEMTIME lt = {0};
-    GetLocalTime(&lt);
-
-    char frmt[100] = {0};
-    snprintf(frmt,
-        ARRAYSIZE(frmt),
-        "PicoTorrent.%d%02d%02d%02d%02d%02d.log",
-        lt.wYear,
-        lt.wMonth,
-        lt.wDay,
-        lt.wHour,
-        lt.wMinute,
-        lt.wSecond);
-
-    auto logFile = logPath / frmt;
-    loguru::add_file(logFile.string().c_str(), loguru::Truncate, loguru::Verbosity_INFO);
+    fs::path logFilePath = env->getLogFilePath();
+    loguru::add_file(logFilePath.string().c_str(), loguru::Truncate, loguru::Verbosity_INFO);
 
     LOG_F(INFO, "PicoTorrent starting up...");
 
@@ -104,6 +95,7 @@ fs::path Environment::getKnownFolderPath(Environment::KnownFolder knownFolder)
         break;
 
     default:
+        LOG_F(FATAL, "Unknown KnownFolder specified: %d", knownFolder);
         throw std::runtime_error("Unknown folder");
     }
 
@@ -117,7 +109,29 @@ fs::path Environment::getKnownFolderPath(Environment::KnownFolder knownFolder)
         return p;
     }
 
+    LOG_F(FATAL, "Failed to get KnownFolder: %d", knownFolder);
+
     throw std::runtime_error("Could not get known folder path");
+}
+
+fs::path Environment::getLogFilePath()
+{
+    std::time_t tim = std::chrono::system_clock::to_time_t(m_startupTime);
+    tm t;
+    localtime_s(&t, &tim);
+
+    char frmt[100] = { 0 };
+    snprintf(frmt,
+        ARRAYSIZE(frmt),
+        "PicoTorrent.%d%02d%02d%02d%02d%02d.log",
+        t.tm_year + 1900,
+        t.tm_mon + 1,
+        t.tm_mday,
+        t.tm_hour,
+        t.tm_min,
+        t.tm_sec);
+
+    return getApplicationDataPath() / "logs" / frmt;
 }
 
 bool Environment::isAppContainerProcess()

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <filesystem>
 
 namespace pt
@@ -19,10 +20,12 @@ namespace pt
         std::filesystem::path getApplicationPath();
         std::filesystem::path getDatabaseFilePath();
         std::filesystem::path getKnownFolderPath(KnownFolder knownFolder);
+        std::filesystem::path getLogFilePath();
         bool isAppContainerProcess();
         bool isInstalled();
 
     private:
-        Environment() { }
+        Environment();
+        std::chrono::system_clock::time_point m_startupTime;
     };
 }
