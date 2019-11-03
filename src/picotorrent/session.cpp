@@ -657,9 +657,10 @@ void Session::readAlerts()
             }
 
             auto handle = m_torrents.at(tra->info_hash);
-            m_torrents.erase(tra->info_hash);
 
             emit torrentRemoved(handle);
+
+            m_torrents.erase(tra->info_hash);
 
             std::vector<std::string> statements =
             {

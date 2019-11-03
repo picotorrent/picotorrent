@@ -135,6 +135,8 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
             {
                 th->remove();
             }
+
+            m_selectedTorrents.clear();
         });
 
     // Session signals
@@ -146,26 +148,22 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
                      });
 
     QObject::connect(m_session,          &Session::torrentAdded,
-                     m_torrentListModel, &TorrentListModel::addTorrent);
-
-    QObject::connect(m_session,          &Session::torrentAdded,
-                     [this](TorrentHandle*)
+                     [this](TorrentHandle* torrent)
                      {
                          m_torrentsCount++;
                          m_statusBar->updateTorrentCount(m_torrentsCount);
+                         m_torrentListModel->addTorrent(torrent);
                      });
 
     QObject::connect(m_session,          &Session::torrentFinished,
                      this,               &MainWindow::showTorrentFinishedNotification);
 
     QObject::connect(m_session,          &Session::torrentRemoved,
-                     m_torrentListModel, &TorrentListModel::removeTorrent);
-
-    QObject::connect(m_session,          &Session::torrentRemoved,
-                     [this](TorrentHandle*)
+                     [this](TorrentHandle* torrent)
                      {
                          m_torrentsCount--;
                          m_statusBar->updateTorrentCount(m_torrentsCount);
+                         m_torrentListModel->removeTorrent(torrent);
                      });
 
     QObject::connect(m_session,          &Session::torrentStatsUpdated,
@@ -190,7 +188,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
                      {
                          if (m_selectedTorrents.contains(torrent))
                          {
-                             m_torrentDetails->update({ torrent });
+                             m_torrentDetails->update(m_selectedTorrents);
                          }
                      });
 
@@ -223,15 +221,21 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
                     this,                  &MainWindow::setTorrentFilter);
 
     // Torrent list signals
-    QObject::connect(m_torrentList,        &TorrentListWidget::torrentsSelected,
-                     m_torrentDetails,     &TorrentDetailsWidget::update);
+    QObject::connect(m_torrentList, &TorrentListWidget::torrentsDeselected,
+        [this](QList<TorrentHandle*> const& torrents)
+        {
+            for (auto th : torrents)
+            {
+                m_selectedTorrents.removeAll(th);
+            }
+        });
 
-    QObject::connect(m_torrentList,        &TorrentListWidget::torrentsSelected,
-                     [this](QList<TorrentHandle*> const& torrents)
-                     {
-                         m_selectedTorrents.clear();
-                         m_selectedTorrents.append(torrents);
-                     });
+    QObject::connect(m_torrentList, &TorrentListWidget::torrentsSelected,
+        [this](QList<TorrentHandle*> const& torrents)
+        {
+            m_selectedTorrents.append(torrents);
+            m_torrentDetails->update(m_selectedTorrents);
+        });
 
     QObject::connect(m_torrentList,        &QTreeView::customContextMenuRequested,
                      this,                 &MainWindow::onTorrentContextMenu);

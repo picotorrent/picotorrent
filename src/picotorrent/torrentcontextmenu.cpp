@@ -95,19 +95,21 @@ TorrentContextMenu::TorrentContextMenu(QWidget* parent, QList<pt::TorrentHandle*
 
     if (torrents.size() == 1)
     {
-        // TODO
-        // this->addAction(m_sequentialDownload);
+        this->addSeparator();
+        this->addAction(m_move);
     }
 
-    this->addSeparator();
-    this->addAction(m_move);
     this->addSeparator();
     this->addMenu(m_removeMenu);
     this->addSeparator();
     this->addMenu(m_queueMenu);
     this->addSeparator();
     this->addAction(m_copyHash);
-    this->addAction(m_openExplorer);
+
+    if (torrents.size() == 1)
+    {
+        this->addAction(m_openExplorer);
+    }
 
     for (TorrentHandle* torrent : torrents)
     {

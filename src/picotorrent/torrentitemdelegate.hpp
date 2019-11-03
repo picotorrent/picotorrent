@@ -14,6 +14,7 @@ namespace pt
         TorrentItemDelegate(QObject* parent);
         virtual ~TorrentItemDelegate();
 
+        virtual void initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const;
         void paint(QPainter* painter, QStyleOptionViewItem const& option, QModelIndex const& index) const override;
 
     private:

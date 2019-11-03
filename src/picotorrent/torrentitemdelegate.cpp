@@ -21,6 +21,12 @@ TorrentItemDelegate::~TorrentItemDelegate()
     delete m_font;
 }
 
+void TorrentItemDelegate::initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const
+{
+    QStyledItemDelegate::initStyleOption(option, index);
+    option->state = option->state & ~QStyle::State_HasFocus;
+}
+
 void TorrentItemDelegate::paint(QPainter* painter, QStyleOptionViewItem const& option, QModelIndex const& index) const
 {
     QStyledItemDelegate::paint(painter, option, index);
