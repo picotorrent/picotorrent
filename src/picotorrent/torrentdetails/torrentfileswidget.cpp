@@ -109,7 +109,7 @@ void TorrentFilesWidget::refresh(QList<pt::TorrentHandle*> const& torrents)
 
             m_filesView->setRootIsDecorated(true);
         }
-        else
+        else if(ti->num_files() > 0)
         {
             // If the file name is the same as torrent name, this is a single file
             // torrent which downloads directly to the save path. In that case, hide
