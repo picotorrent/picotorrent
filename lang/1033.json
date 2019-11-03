@@ -246,6 +246,7 @@
         "size_remaining": "Size (remaining)",
         "pause_on_low_disk_space": "Pause when disk space is low",
         "pause_on_low_disk_space_alert": "Torrent paused (low disk space)",
-        "enable_geoip": "Enable GeoIP lookups"
+        "enable_geoip": "Enable GeoIP lookups",
+        "enable_automatic_crash_reporting": "Enable automatic crash reporting"
     }
 }

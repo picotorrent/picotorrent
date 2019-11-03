@@ -11,7 +11,6 @@
 #include <filesystem>
 #include <memory>
 
-#include "../breakpad/exception_handler.h"
 #include "loguru.hpp"
 
 #include "core/configuration.hpp"
@@ -20,7 +19,7 @@
 #include "core/geoip/geoip.hpp"
 
 #include "application.hpp"
-#include "errorhandler.hpp"
+#include "crashpad.hpp"
 #include "mainwindow.hpp"
 #include "translator.hpp"
 
@@ -33,25 +32,13 @@ int main(int argc, char **argv)
 
     auto env = pt::Environment::create();
 
-    if (!env)
+    if (env == nullptr)
     {
+        // TODO: show some dialog
         return -1;
     }
 
-    // Set up Google Breakpad before anything else
-#ifdef NDEBUG
-    google_breakpad::ExceptionHandler handler(
-        pt::ErrorHandler::dumpPath(),
-        &pt::ErrorHandler::filter,
-        &pt::ErrorHandler::report,
-        nullptr,
-        google_breakpad::ExceptionHandler::HandlerType::HANDLER_ALL,
-        MiniDumpNormal,
-        L"",
-        nullptr);
-
-    LOG_F(INFO, "Installed Breakpad handler");
-#endif
+    pt::CrashpadInitializer::init(env);
 
     pt::Application app(argc, argv);
 

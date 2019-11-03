@@ -740,7 +740,7 @@ void MainWindow::onTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
 
 void MainWindow::onViewPreferences()
 {
-    auto dlg = new PreferencesDialog(this, m_cfg);
+    auto dlg = new PreferencesDialog(this, m_cfg, m_env);
     dlg->load();
     dlg->open();
 

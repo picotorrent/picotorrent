@@ -1,5 +1,6 @@
 [Files]
 "%{PublishDirectory}/PicoTorrent.exe"                                 "PicoTorrent.exe"
+"%{PublishDirectory}/crashpad_handler.exe"                            "crashpad_handler.exe"
 "%{PublishDirectory}/ChakraCore.dll"                                  "ChakraCore.dll"
 "%{PublishDirectory}/Qt5Core%{QtLibrarySuffix}.dll"                   "Qt5Core%{QtLibrarySuffix}.dll"
 "%{PublishDirectory}/Qt5Gui%{QtLibrarySuffix}.dll"                    "Qt5Gui%{QtLibrarySuffix}.dll"

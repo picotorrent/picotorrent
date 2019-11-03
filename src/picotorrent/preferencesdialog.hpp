@@ -16,13 +16,14 @@ namespace pt
     class Configuration;
     class ConnectionSectionWidget;
     class DownloadsSectionWidget;
+    class Environment;
     class GeneralSectionWidget;
     class ProxySectionWidget;
 
     class PreferencesDialog : public QDialog
     {
     public:
-        PreferencesDialog(QWidget* parent, std::shared_ptr<Configuration> cfg);
+        PreferencesDialog(QWidget* parent, std::shared_ptr<Configuration> cfg, std::shared_ptr<Environment> env);
         void load();
 
     private:
@@ -31,6 +32,7 @@ namespace pt
         void onSectionActivated(QModelIndex const& index);
 
         std::shared_ptr<Configuration> m_cfg;
+        std::shared_ptr<Environment> m_env;
 
         QStackedWidget* m_stacked;
         QDialogButtonBox* m_buttons;

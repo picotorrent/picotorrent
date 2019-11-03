@@ -84,30 +84,6 @@ target_compile_definitions(
 )
 
 add_library(
-    breakpad
-    STATIC
-
-    src/breakpad/client_info
-    src/breakpad/crash_generation_client
-    src/breakpad/minidump_generator
-    src/breakpad/exception_handler
-    src/breakpad/crash_report_sender
-    src/breakpad/guid_string
-    src/breakpad/http_upload
-)
-
-target_compile_definitions(
-    breakpad
-    PRIVATE
-    -D_UNICODE
-    -D_WIN32
-    -D_WIN32_WINNT=0x0600
-    -DUNICODE
-    -DWIN32
-    -DWIN32_LEAN_AND_MEAN
-)
-
-add_library(
     sqlite
     STATIC
     src/sqlite/sqlite3
@@ -161,9 +137,9 @@ add_executable(
     src/picotorrent/application
     src/picotorrent/buildinfo
     src/picotorrent/connectionsectionwidget
+    src/picotorrent/crashpad
     src/picotorrent/downloadssectionwidget
     src/picotorrent/elidedlabel
-    src/picotorrent/errorhandler
     src/picotorrent/filestorageitemdelegate
     src/picotorrent/filestorageitemmodel
     src/picotorrent/generalsectionwidget
@@ -235,6 +211,8 @@ target_include_directories(
     "${Boost_INCLUDE_DIRS}"
 
     "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/build/native/include"
+    "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/build/native/crashpad/include"
+    "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/build/native/mini_chromium/include"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
     "${CMAKE_SOURCE_DIR}/vendor/loguru"
     "${Qt5WinExtras_INCLUDE_DIRS}"
@@ -244,6 +222,7 @@ target_link_directories(
     PicoTorrent
     PRIVATE
     "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/lib/native/v140/${PICO_ARCH}"
+    "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/lib/native/v142/${PICO_ARCH}"
 )
 
 target_link_libraries(
@@ -261,8 +240,10 @@ target_link_libraries(
     # Boost
     ${Boost_LIBRARIES}
 
-    # Breakpad
-    breakpad
+    # Crashpad
+    crashpad_client
+    crashpad_util
+    mini_chromium
 
     # ChakraCore
     ChakraCore
@@ -339,3 +320,12 @@ add_custom_command(
         "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/lib/native/v140/${PICO_ARCH}/$<CONFIG>/ChakraCore.dll"
         $<TARGET_FILE_DIR:PicoTorrent>
 )
+
+# Copy Crashpad handler
+add_custom_command(
+    TARGET PicoTorrent POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/lib/native/v142/${PICO_ARCH}/$<CONFIG>/crashpad_handler.exe"
+        $<TARGET_FILE_DIR:PicoTorrent>
+)
+

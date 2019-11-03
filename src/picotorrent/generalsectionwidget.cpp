@@ -1,5 +1,8 @@
 #include "generalsectionwidget.hpp"
 
+#include <filesystem>
+#include <fstream>
+
 #include <QCheckBox>
 #include <QComboBox>
 #include <QGridLayout>
@@ -11,8 +14,11 @@
 #include <strsafe.h>
 
 #include "core/configuration.hpp"
+#include "core/environment.hpp"
+#include "widgets/sunkenline.hpp"
 #include "translator.hpp"
 
+namespace fs = std::filesystem;
 using pt::GeneralSectionWidget;
 
 struct AutoRunKey
@@ -96,7 +102,7 @@ GeneralSectionWidget::GeneralSectionWidget()
         &GeneralSectionWidget::onShowInNotificationAreaChanged);
 }
 
-void GeneralSectionWidget::loadConfig(std::shared_ptr<pt::Configuration> cfg)
+void GeneralSectionWidget::loadConfig(std::shared_ptr<pt::Configuration> cfg, std::shared_ptr<pt::Environment> env)
 {
     int currentLanguage = cfg->getInt("language_id");
 
@@ -121,15 +127,24 @@ void GeneralSectionWidget::loadConfig(std::shared_ptr<pt::Configuration> cfg)
     m_showInNotificationArea->setChecked(cfg->getBool("show_in_notification_area"));
     m_minimizeToNotificationArea->setChecked(cfg->getBool("minimize_to_notification_area"));
     m_closeToNotificationArea->setChecked(cfg->getBool("close_to_notification_area"));
+    m_automaticCrashReportingEnabled->setChecked(hasCrashReportingConsent(env));
     m_geoipEnabled->setChecked(cfg->getBool("geoip.enabled"));
 }
 
-void GeneralSectionWidget::saveConfig(std::shared_ptr<pt::Configuration> cfg, bool* requiresRestart)
+void GeneralSectionWidget::saveConfig(std::shared_ptr<pt::Configuration> cfg, std::shared_ptr<pt::Environment> env, bool* requiresRestart)
 {
     auto langIndex = m_languages->currentIndex();
     auto langData = m_languages->itemData(langIndex);
 
     if (cfg->getInt("language_id") != langData.toInt())
+    {
+        *requiresRestart = true;
+    }
+
+    bool prevConsent = hasCrashReportingConsent(env);
+    bool newConsent = m_automaticCrashReportingEnabled->isChecked();
+
+    if (prevConsent != newConsent)
     {
         *requiresRestart = true;
     }
@@ -153,18 +168,25 @@ void GeneralSectionWidget::saveConfig(std::shared_ptr<pt::Configuration> cfg, bo
     {
         key.Create();
     }
+
+    auto consentFile = env->getApplicationDataPath() / "Crashpad" / "db" / "consent";
+    std::ofstream output(consentFile, std::ios::binary);
+
+    char consent[1] = { newConsent ? '1' : '0' };
+    output.write(consent, 1);
 }
 
 void GeneralSectionWidget::createUi()
 {
-    m_languages = new QComboBox();
-    m_skipAddTorrentDialog = new QCheckBox(i18n("skip_add_torrent_dialog"));
-    m_startWithWindows = new QCheckBox(i18n("start_with_windows"));
-    m_startPosition = new QComboBox();
-    m_showInNotificationArea = new QCheckBox(i18n("show_picotorrent_in_notification_area"));
-    m_minimizeToNotificationArea = new QCheckBox(i18n("minimize_to_notification_area"));
-    m_closeToNotificationArea = new QCheckBox(i18n("close_to_notification_area"));
-    m_geoipEnabled = new QCheckBox(i18n("enable_geoip"));
+    m_languages = new QComboBox(this);
+    m_skipAddTorrentDialog = new QCheckBox(i18n("skip_add_torrent_dialog"), this);
+    m_startWithWindows = new QCheckBox(i18n("start_with_windows"), this);
+    m_startPosition = new QComboBox(this);
+    m_showInNotificationArea = new QCheckBox(i18n("show_picotorrent_in_notification_area"), this);
+    m_minimizeToNotificationArea = new QCheckBox(i18n("minimize_to_notification_area"), this);
+    m_closeToNotificationArea = new QCheckBox(i18n("close_to_notification_area"), this);
+    m_automaticCrashReportingEnabled = new QCheckBox(i18n("enable_automatic_crash_reporting"), this);
+    m_geoipEnabled = new QCheckBox(i18n("enable_geoip"), this);
 
     Translator& tr = Translator::instance();
 
@@ -183,11 +205,13 @@ void GeneralSectionWidget::createUi()
     uiGrid->addWidget(m_languages, 0, 1);
 
     auto miscGrid = new QGridLayout();
-    miscGrid->addWidget(m_geoipEnabled, 0, 0);
-    miscGrid->addWidget(m_skipAddTorrentDialog, 1, 0);
-    miscGrid->addWidget(m_startWithWindows, 2, 0);
-    miscGrid->addWidget(new QLabel(i18n("start_position")), 3, 0);
-    miscGrid->addWidget(m_startPosition, 3, 1);
+    miscGrid->addWidget(m_automaticCrashReportingEnabled, 0, 0);
+    miscGrid->addWidget(new SunkenLine(this), 1, 0, 1, 2);
+    miscGrid->addWidget(m_geoipEnabled, 2, 0);
+    miscGrid->addWidget(m_skipAddTorrentDialog, 3, 0);
+    miscGrid->addWidget(m_startWithWindows, 4, 0);
+    miscGrid->addWidget(new QLabel(i18n("start_position")), 5, 0);
+    miscGrid->addWidget(m_startPosition, 5, 1);
 
     auto notifIndentedLayout = new QVBoxLayout();
     notifIndentedLayout->addWidget(m_minimizeToNotificationArea);
@@ -221,4 +245,21 @@ void GeneralSectionWidget::onShowInNotificationAreaChanged(int state)
 {
     m_minimizeToNotificationArea->setEnabled(state == Qt::Checked);
     m_closeToNotificationArea->setEnabled(state == Qt::Checked);
+}
+
+bool GeneralSectionWidget::hasCrashReportingConsent(std::shared_ptr<pt::Environment> env)
+{
+    auto consentFile = env->getApplicationDataPath() / "Crashpad" / "db" / "consent";
+
+    if (fs::exists(consentFile))
+    {
+        std::ifstream input(consentFile, std::ios::binary);
+
+        char consent[1] = { '0' };
+        input.read(consent, 1);
+
+        return consent[0] == '1';
+    }
+
+    return false;
 }

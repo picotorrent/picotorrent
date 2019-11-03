@@ -12,6 +12,7 @@ tools/Cake.CMake
 tools/Microsoft.ChakraCore.vc140
 tools/nuget.exe
 tools/Rasterbar-libtorrent
+tools/UnidentifiedDeveloper.Crashpad.vc142
 tools/WiX
 tools/wxWidgets
 .vscode
