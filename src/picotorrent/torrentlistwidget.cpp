@@ -23,6 +23,7 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, QAbstractItemModel* model,
     this->setContextMenuPolicy(Qt::CustomContextMenu);
     this->setItemDelegate(new TorrentItemDelegate(this));
     this->setRootIsDecorated(false);
+    this->setSelectionMode(QTreeView::ExtendedSelection);
     this->setSortingEnabled(true);
 
     auto header = this->header();
@@ -176,7 +177,8 @@ void TorrentListWidget::showTorrentExplorer(QModelIndex const& index)
 
 void TorrentListWidget::torrentSelectionChanged(QItemSelection const& selected, QItemSelection const& deselected)
 {
-    QList<TorrentHandle*> torrents;
+    QList<TorrentHandle*> deselectedTorrents;
+    QList<TorrentHandle*> selectedTorrents;
 
     for (QModelIndex const& idx : selected.indexes())
     {
@@ -188,10 +190,24 @@ void TorrentListWidget::torrentSelectionChanged(QItemSelection const& selected, 
         auto variant = this->model()->data(idx, Qt::UserRole);
         auto torrent = static_cast<TorrentHandle*>(variant.value<void*>());
 
-        torrents.append(torrent);
+        selectedTorrents.append(torrent);
     }
 
-    emit torrentsSelected(torrents);
+    for (QModelIndex const& idx : deselected.indexes())
+    {
+        if (idx.column() > 0)
+        {
+            continue;
+        }
+
+        auto variant = this->model()->data(idx, Qt::UserRole);
+        auto torrent = static_cast<TorrentHandle*>(variant.value<void*>());
+
+        deselectedTorrents.append(torrent);
+    }
+
+    emit torrentsDeselected(deselectedTorrents);
+    emit torrentsSelected(selectedTorrents);
 }
 
 void TorrentListWidget::toggleColumnVisibility(QAction* action)

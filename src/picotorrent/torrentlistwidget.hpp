@@ -27,6 +27,7 @@ namespace pt
         QSize sizeHint() const override;
 
     signals:
+        void torrentsDeselected(QList<TorrentHandle*> torrents);
         void torrentsSelected(QList<TorrentHandle*> torrents);
 
     private slots:
