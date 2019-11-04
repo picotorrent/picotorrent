@@ -1,11 +1,5 @@
 
 add_library(
-    try_signal
-    STATIC
-    vendor/libtorrent/deps/try_signal/signal_error_code
-    vendor/libtorrent/deps/try_signal/try_signal)
-
-add_library(
     libtorrent-rasterbar
     STATIC
     vendor/libtorrent/src/ed25519/add_scalar
@@ -87,7 +81,6 @@ add_library(
     vendor/libtorrent/src/http_connection
     vendor/libtorrent/src/http_parser
     vendor/libtorrent/src/http_seed_connection
-    vendor/libtorrent/src/http_stream
     vendor/libtorrent/src/http_tracker_connection
     vendor/libtorrent/src/i2p_stream
     vendor/libtorrent/src/identify_client
@@ -169,6 +162,10 @@ add_library(
     vendor/libtorrent/src/web_peer_connection
     vendor/libtorrent/src/write_resume_data
     vendor/libtorrent/src/xml_parse
+
+    # try_signal
+    vendor/libtorrent/deps/try_signal/signal_error_code
+    vendor/libtorrent/deps/try_signal/try_signal
 )
 
 target_compile_definitions(
@@ -232,8 +229,9 @@ target_include_directories(
 
 target_link_libraries(
     libtorrent-rasterbar
+
+    # Boost
     ${Boost_LIBRARIES}
-    try_signal
 
     # OpenSSL
     OpenSSL::Crypto
