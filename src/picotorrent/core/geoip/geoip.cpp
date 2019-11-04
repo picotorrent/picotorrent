@@ -57,12 +57,10 @@ void GeoIP::load()
     }
 
     auto ftime = fs::last_write_time(db);
-	auto now = fs::file_time_type::clock::now();
-	auto hours = std::chrono::duration_cast<std::chrono::hours>(now - ftime);
+    auto now = fs::file_time_type::clock::now();
+    auto hours = std::chrono::duration_cast<std::chrono::hours>(now - ftime);
 
-    std::chrono::duration<double> age = now - ftime;
-
-    if (age.count() >= HoursOneMonth)
+    if (hours.count() >= HoursOneMonth)
     {
         LOG_F(INFO, "GeoIP database more than one month old. Updating...");
         emit updateRequired();

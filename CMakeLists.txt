@@ -97,6 +97,14 @@ add_library(
     vendor/libmaxminddb/src/maxminddb
 )
 
+target_compile_definitions(
+    maxminddb
+    PRIVATE
+    -DUNICODE
+    -DWIN32
+    -DWIN32_LEAN_AND_MEAN
+)
+
 target_include_directories(
     maxminddb
     PRIVATE
