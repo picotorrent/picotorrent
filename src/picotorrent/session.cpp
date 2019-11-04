@@ -706,6 +706,9 @@ void Session::saveState()
     auto stmt = m_db->statement("INSERT INTO session_state (state_data, timestamp) VALUES (?, strftime('%s'))");
     stmt->bind(1, stateBuffer);
     stmt->execute();
+
+    // Keep only the five last states
+    m_db->execute("DELETE FROM session_state WHERE id NOT IN (SELECT id FROM session_state ORDER BY timestamp DESC LIMIT 5)");
 }
 
 void Session::saveTorrents()
