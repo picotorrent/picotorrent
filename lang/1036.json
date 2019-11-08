@@ -1,7 +1,8 @@
 {
   "lang_id": 1036,
   "lang_name": "French (France)",
-  "strings": {
+  "strings":
+   {
     "name": "Nom",
     "queue_position": "#",
     "size": "Taille",
@@ -246,6 +247,7 @@
     "size_remaining": "Taille restante",
     "pause_on_low_disk_space": "Mettre en pause quand l'espace disque devient faible",
     "pause_on_low_disk_space_alert": "Torrent en pause (espace disque faible)",
-    "enable_geoip": "Activer GeoIP"
+    "enable_geoip": "Activer GeoIP",
+    "enable_automatic_crash_reporting": "Activer l'envoi automatique du rapport d'erreur"
 	}
 }
