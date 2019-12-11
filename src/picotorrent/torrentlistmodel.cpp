@@ -159,9 +159,7 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
 
         case Columns::ETA:
         {
-            // TODO: check if paused
-
-            if (status.eta.count() <= 0)
+            if (status.paused || status.eta.count() <= 0)
             {
                 return "-";
             }
@@ -170,6 +168,18 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
             std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(status.eta - hours_left);
             std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(status.eta - hours_left - min_left);
 
+            if (hours_left.count() <= 0)
+            {
+                if (min_left.count() <= 0)
+                {
+                    return QString("%1s").arg(sec_left.count());
+                }
+
+                return QString("%1m %2s")
+                    .arg(min_left.count())
+                    .arg(sec_left.count());
+            }
+
             return QString("%1h %2m %3s").arg(
                 QString::number(hours_left.count()),
                 QString::number(min_left.count()),
@@ -177,37 +187,67 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
         }
 
         case Columns::DownloadSpeed:
-            // TODO: check if paused
+        {
+            if (status.paused)
+            {
+                return "-";
+            }
+
             return status.downloadPayloadRate > 0
                 ? QString("%1/s").arg(Utils::toHumanFileSize(status.downloadPayloadRate))
                 : "-";
+        }
 
         case Columns::UploadSpeed:
-            // TODO: check if paused
+        {
+            if (status.paused)
+            {
+                return "-";
+            }
+
             return status.uploadPayloadRate > 0
                 ? QString("%1/s").arg(Utils::toHumanFileSize(status.uploadPayloadRate))
                 : "-";
+        }
 
         case Columns::Availability:
-            // TODO: check if paused
+        {
+            if (status.paused)
+            {
+                return "-";
+            }
+
             return status.availability >= 0
                 ? QString("%1").arg(status.availability, 0, 'f', 3)
                 : "-";
+        }
 
         case Columns::Ratio:
             return QString("%1").arg(status.ratio, 0, 'f', 3);
 
         case Columns::Seeds:
-            // TODO: check if paused
+        {
+            if (status.paused)
+            {
+                return "-";
+            }
+
             return i18n("d_of_d")
                 .arg(status.seedsCurrent)
                 .arg(status.seedsTotal);
+        }
 
         case Columns::Peers:
-            // TODO: check if paused
+        {
+            if (status.paused)
+            {
+                return "-";
+            }
+
             return i18n("d_of_d")
                 .arg(status.peersCurrent)
                 .arg(status.peersTotal);
+        }
 
         case Columns::AddedOn:
             return status.addedOn.toString("yyyy-MM-dd HH:mm:ss");
