@@ -24,7 +24,12 @@ find_package(Qt5WinExtras REQUIRED)
 message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
 message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
 
-include("cmake/libtorrent.cmake")
+# --------- libtorrent options
+option(BUILD_SHARED_LIBS    "" off)
+option(deprecated-functions "" off)
+# ----------------------------
+
+add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/zlib)
 
 # Generate version information file
@@ -260,7 +265,7 @@ target_link_libraries(
     loguru
 
     # Rasterbar-libtorrent
-    libtorrent-rasterbar
+    "torrent-rasterbar"
 
     # OpenSSL
     OpenSSL::Crypto

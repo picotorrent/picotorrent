@@ -49,7 +49,6 @@ namespace pt
         void readAlerts();
 
     private:
-        void loadState();
         void loadTorrents();
         void loadTorrentsOld();
         void postUpdates();
