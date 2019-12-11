@@ -172,7 +172,8 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
             {
                 if (min_left.count() <= 0)
                 {
-                    return QString("%1s").arg(sec_left.count());
+                    return QString("%1s")
+                        .arg(sec_left.count());
                 }
 
                 return QString("%1m %2s")
@@ -180,10 +181,10 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
                     .arg(sec_left.count());
             }
 
-            return QString("%1h %2m %3s").arg(
-                QString::number(hours_left.count()),
-                QString::number(min_left.count()),
-                QString::number(sec_left.count()));
+            return QString("%1h %2m %3s")
+                .arg(hours_left.count())
+                .arg(min_left.count())
+                .arg(sec_left.count());
         }
 
         case Columns::DownloadSpeed:
