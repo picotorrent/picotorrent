@@ -24,7 +24,12 @@ find_package(Qt5WinExtras REQUIRED)
 message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
 message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
 
-include("cmake/libtorrent.cmake")
+# --------- libtorrent options
+option(BUILD_SHARED_LIBS    "" off)
+option(deprecated-functions "" off)
+# ----------------------------
+
+add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/zlib)
 
 # Generate version information file
@@ -95,6 +100,14 @@ add_library(
     STATIC
     vendor/libmaxminddb/src/data-pool
     vendor/libmaxminddb/src/maxminddb
+)
+
+target_compile_definitions(
+    maxminddb
+    PRIVATE
+    -DUNICODE
+    -DWIN32
+    -DWIN32_LEAN_AND_MEAN
 )
 
 target_include_directories(
@@ -252,7 +265,7 @@ target_link_libraries(
     loguru
 
     # Rasterbar-libtorrent
-    libtorrent-rasterbar
+    "torrent-rasterbar"
 
     # OpenSSL
     OpenSSL::Crypto

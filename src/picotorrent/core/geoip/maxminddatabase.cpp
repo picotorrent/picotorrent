@@ -2,6 +2,9 @@
 
 #include <maxminddb.h>
 
+#include "loguru.hpp"
+
+namespace fs = std::filesystem;
 using pt::MaxMindDatabase;
 
 MaxMindDatabase::MaxMindDatabase()
@@ -15,10 +18,22 @@ MaxMindDatabase::~MaxMindDatabase()
     delete m_db;
 }
 
-void MaxMindDatabase::load(std::filesystem::path const& databaseFile)
+void MaxMindDatabase::load(fs::path const& databaseFile)
 {
     MMDB_close(m_db);
-    MMDB_open(databaseFile.string().c_str(), MMDB_MODE_MMAP, m_db);
+
+    if (!fs::exists(databaseFile))
+    {
+        LOG_F(ERROR, "GeoLite2 database file does not exist: %s", databaseFile.string().c_str());
+        return;
+    }
+
+    int res = MMDB_open(databaseFile.string().c_str(), MMDB_MODE_MMAP, m_db);
+
+    if (res != MMDB_SUCCESS)
+    {
+        LOG_F(ERROR, "Failed to open GeoLite2 database - error code %d", res);
+    }
 }
 
 std::string MaxMindDatabase::lookup(std::string const& ip)

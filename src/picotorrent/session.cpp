@@ -15,6 +15,7 @@
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/session.hpp>
+#include <libtorrent/session_params.hpp>
 #include <libtorrent/session_stats.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
@@ -49,6 +50,33 @@ struct SessionLoadItem
     std::string magnet_save_path;
     std::string magnet_url;
 };
+
+static lt::session_params getSessionParams(std::shared_ptr<pt::Database> db)
+{
+    lt::session_params sp;
+
+    auto stmt = db->statement("SELECT state_data FROM session_state ORDER BY timestamp DESC LIMIT 1");
+
+    if (stmt->read())
+    {
+        std::vector<char> stateData;
+        stmt->getBlob(0, stateData);
+
+        lt::error_code ec;
+        lt::bdecode_node node = lt::bdecode(stateData, ec);
+
+        if (ec)
+        {
+            LOG_F(WARNING, "Failed to decode session state: %s", ec.message().data());
+        }
+        else
+        {
+            sp = lt::read_session_params(node, lt::session::save_dht_state);
+        }
+    }
+
+    return sp;
+}
 
 static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Configuration> cfg)
 {
@@ -166,12 +194,10 @@ Session::Session(QObject* parent, std::shared_ptr<pt::Database> db, std::shared_
     m_cfg(cfg),
     m_env(env)
 {
-    lt::settings_pack settings = getSettingsPack(cfg);
+    lt::session_params sp = getSessionParams(db);
+    sp.settings = getSettingsPack(cfg);
 
-    m_session = std::make_unique<lt::session>(
-        settings,
-        lt::session_flags_t {0});
-
+    m_session = std::make_unique<lt::session>(sp);
     m_session->add_extension(&lt::create_ut_metadata_plugin);
     m_session->add_extension(&lt::create_smart_ban_plugin);
 
@@ -180,7 +206,6 @@ Session::Session(QObject* parent, std::shared_ptr<pt::Database> db, std::shared_
         m_session->add_extension(lt::create_ut_pex_plugin);
     }
 
-    this->loadState();
     this->loadTorrents();
     this->loadTorrentsOld();
 
@@ -190,8 +215,10 @@ Session::Session(QObject* parent, std::shared_ptr<pt::Database> db, std::shared_
     });
 
     m_updateTimer = new QTimer(this);
-    connect(m_updateTimer, &QTimer::timeout, this, &Session::postUpdates);
     m_updateTimer->start(1000);
+
+    QObject::connect(m_updateTimer, &QTimer::timeout,
+                     this,          &Session::postUpdates);
 }
 
 Session::~Session()
@@ -261,29 +288,6 @@ void Session::reloadSettings()
 {
     lt::settings_pack settings = getSettingsPack(m_cfg);
     m_session->apply_settings(settings);
-}
-
-void Session::loadState()
-{
-    auto stmt = m_db->statement("SELECT state_data FROM session_state ORDER BY timestamp DESC LIMIT 1");
-
-    if (stmt->read())
-    {
-        std::vector<char> stateData;
-        stmt->getBlob(0, stateData);
-
-        lt::error_code ec;
-        lt::bdecode_node node = lt::bdecode(stateData, ec);
-
-        if (ec)
-        {
-            LOG_F(WARNING, "Failed to decode session state: %s", ec.message().data());
-        }
-        else
-        {
-            m_session->load_state(node);
-        }
-    }
 }
 
 void Session::loadTorrents()
@@ -696,16 +700,16 @@ void Session::readAlerts()
 
 void Session::saveState()
 {
-    // Save session state
-    lt::entry entry;
-    m_session->save_state(entry);
-
-    std::vector<char> stateBuffer;
-    lt::bencode(std::back_inserter(stateBuffer), entry);
+    std::vector<char> stateBuffer = lt::write_session_params_buf(
+        m_session->session_state(),
+        lt::session::save_dht_state);
 
     auto stmt = m_db->statement("INSERT INTO session_state (state_data, timestamp) VALUES (?, strftime('%s'))");
     stmt->bind(1, stateBuffer);
     stmt->execute();
+
+    // Keep only the five last states
+    m_db->execute("DELETE FROM session_state WHERE id NOT IN (SELECT id FROM session_state ORDER BY timestamp DESC LIMIT 5)");
 }
 
 void Session::saveTorrents()

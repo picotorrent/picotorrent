@@ -172,10 +172,10 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
             std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(s - hours_left);
             std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(s - hours_left - min_left);
 
-            return QString("%1h %2m %3s").arg(
-                hours_left.count(),
-                min_left.count(),
-                sec_left.count());
+            return QString("%1h %2m %3s")
+                .arg(hours_left.count())
+                .arg(min_left.count())
+                .arg(sec_left.count());
         }
         }
 
