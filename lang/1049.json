@@ -234,6 +234,19 @@
         "dht_i64d_nodes": "DHT: %1 узел(ов)",
         "i64d_torrents": "%1 торрент(ов)",
         "dl_s_ul_s": "З: %1/с, О: %2/с",
-        "encrypt_config_file": "Зашифровать файл настроек"
+        "encrypt_config_file": "Зашифровать файл настроек",
+        "amp_details_panel": "&Панель сведений",
+        "s_of_s": "%1 (из %2)",
+        "downloaded_size": "Загруженный",
+        "amp_status_bar": "&Статус бар",
+        "amp_filter": "&Фильтрация",
+        "amp_none": "&Отсутствует",
+        "filter_downloading_active": "Загружаются (активны)",
+        "filter_uploading_active": "Раздаются (активны)",
+        "size_remaining": "Размер (оставшийся)",
+        "pause_on_low_disk_space": "Приостановить, когда на диске мало места",
+        "pause_on_low_disk_space_alert": "Торрент приостановлен (мало места на диске)",
+        "enable_geoip": "Включить отображение страны для IP-адреса",
+        "enable_automatic_crash_reporting": "Включить автоматическое отправление отчётов о сбоях"
     }
 }
