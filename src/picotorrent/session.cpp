@@ -563,14 +563,6 @@ void Session::readAlerts()
                     ss << infoHash.v1;
                 }
 
-                // if we recieve the metadata for a torrent we are currently interested in,
-                // we can remove the magnet_uri stored for it
-                {
-                    auto stmt = m_db->statement("DELETE FROM torrent_magnet_uri  WHERE info_hash = ?;");
-                    stmt->bind(1, ss.str());
-                    stmt->execute();
-                }
-
                 if (mra->handle.need_save_resume_data())
                 {
                     mra->handle.save_resume_data(
@@ -600,11 +592,20 @@ void Session::readAlerts()
 
             std::string ih = ss.str();
 
-            // Store the data
-            auto stmt = m_db->statement("REPLACE INTO torrent_resume_data (info_hash, resume_data) VALUES (?, ?);");
-            stmt->bind(1, ih);
-            stmt->bind(2, buffer);
-            stmt->execute();
+            {
+                // Store the data
+                auto stmt = m_db->statement("REPLACE INTO torrent_resume_data (info_hash, resume_data) VALUES (?, ?);");
+                stmt->bind(1, ih);
+                stmt->bind(2, buffer);
+                stmt->execute();
+            }
+
+            {
+                // at this stage we can remove the magnet link
+                auto stmt = m_db->statement("DELETE FROM torrent_magnet_uri  WHERE info_hash = ?;");
+                stmt->bind(1, ss.str());
+                stmt->execute();
+            }
 
             break;
         }
