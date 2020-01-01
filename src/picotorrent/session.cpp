@@ -292,16 +292,32 @@ void Session::reloadSettings()
 
 void Session::loadTorrents()
 {
-    auto stmt = m_db->statement("SELECT trd.resume_data AS resume_data FROM torrent t\n"
+    auto stmt = m_db->statement("SELECT t.info_hash AS info_hash, tmu.magnet_uri AS magnet_uri, trd.resume_data AS resume_data, tmu.save_path AS save_path FROM torrent t\n"
+        "LEFT JOIN torrent_magnet_uri  tmu ON t.info_hash = tmu.info_hash\n"
         "LEFT JOIN torrent_resume_data trd ON t.info_hash = trd.info_hash\n"
         "ORDER BY t.queue_position ASC");
 
     while (stmt->read())
     {
+        std::string info_hash  = stmt->getString(0);
+        std::string magnet_uri = stmt->getString(1);
+        std::string save_path  = stmt->getString(3);
+
         std::vector<char> resume_data;
-        stmt->getBlob(0, resume_data);
+        stmt->getBlob(2, resume_data);
 
         lt::add_torrent_params params;
+
+        // Always parse magnet uri if it is empty
+        if (!magnet_uri.empty())
+        {
+            params = lt::parse_magnet_uri(magnet_uri);
+        }
+
+        if (!save_path.empty())
+        {
+            params.save_path = save_path;
+        }
 
         if (resume_data.size() > 0)
         {
@@ -534,6 +550,26 @@ void Session::readAlerts()
 
                 m_session->remove_torrent(mra->handle, lt::session::delete_files);
             }
+            else
+            {
+                std::stringstream ss;
+
+                if (infoHash.has_v2())
+                {
+                    ss << infoHash.v2;
+                }
+                else
+                {
+                    ss << infoHash.v1;
+                }
+
+                if (mra->handle.need_save_resume_data())
+                {
+                    mra->handle.save_resume_data(
+                        lt::torrent_handle::flush_disk_cache
+                        | lt::torrent_handle::save_info_dict);
+                }
+            }
 
             break;
         }
@@ -556,11 +592,20 @@ void Session::readAlerts()
 
             std::string ih = ss.str();
 
-            // Store the data
-            auto stmt = m_db->statement("REPLACE INTO torrent_resume_data (info_hash, resume_data) VALUES (?, ?);");
-            stmt->bind(1, ih);
-            stmt->bind(2, buffer);
-            stmt->execute();
+            {
+                // Store the data
+                auto stmt = m_db->statement("REPLACE INTO torrent_resume_data (info_hash, resume_data) VALUES (?, ?);");
+                stmt->bind(1, ih);
+                stmt->bind(2, buffer);
+                stmt->execute();
+            }
+
+            {
+                // at this stage we can remove the magnet link
+                auto stmt = m_db->statement("DELETE FROM torrent_magnet_uri  WHERE info_hash = ?;");
+                stmt->bind(1, ss.str());
+                stmt->execute();
+            }
 
             break;
         }
@@ -669,6 +714,7 @@ void Session::readAlerts()
             std::vector<std::string> statements =
             {
                 "DELETE FROM torrent_resume_data WHERE info_hash = ?;",
+                "DELETE FROM torrent_magnet_uri  WHERE info_hash = ?;",
                 "DELETE FROM torrent             WHERE info_hash = ?;",
             };
 
@@ -744,7 +790,41 @@ void Session::saveTorrents()
         ++numOutstandingResumeData;
     }
 
-    LOG_F(INFO, "Saving resume data for %d torrent(s)", numOutstandingResumeData);
+    // Save all torrents without metadata
+    auto missingMeta = m_session->get_torrent_status(
+        [this](const lt::torrent_status& st)
+        {
+            return !st.has_metadata;
+        });
+
+    LOG_F(INFO, "Saving data for %d torrent(s)", numOutstandingResumeData + static_cast<int>(missingMeta.size()));
+
+    for (lt::torrent_status& st : missingMeta)
+    {
+        std::stringstream ss;
+
+        if (st.info_hash.has_v2())
+        {
+            ss << st.info_hash.v2;
+        }
+        else
+        {
+            ss << st.info_hash.v1;
+        }
+
+        // Store state
+        auto stmt = m_db->statement("REPLACE INTO torrent (info_hash, queue_position) VALUES (?, ?)");
+        stmt->bind(1, ss.str());
+        stmt->bind(2, static_cast<int>(st.queue_position));
+        stmt->execute();
+
+        // Store the magnet uri
+        stmt = m_db->statement("REPLACE INTO torrent_magnet_uri (info_hash, magnet_uri, save_path) VALUES (?, ?, ?);");
+        stmt->bind(1, ss.str());
+        stmt->bind(2, lt::make_magnet_uri(st.handle));
+        stmt->bind(3, st.handle.status(lt::torrent_handle::query_save_path).save_path);
+        stmt->execute();
+    }
 
     while (numOutstandingResumeData > 0)
     {
