@@ -195,10 +195,10 @@
         "apply": "Aplicar",
         "maximized": "Maximizado",
         "no_magnet_links_found": "Ningún enlace magnético encontrado",
-        "notification_area": "Area de notificación",
-        "show_picotorrent_in_notification_area": "Mostrar PicoTorrent en el area de notificación",
-        "minimize_to_notification_area": "Minimizar al area de notificación",
-        "close_to_notification_area": "Cerrar al area de notificación",
+        "notification_area": "Área de notificación",
+        "show_picotorrent_in_notification_area": "Mostrar PicoTorrent en el área de notificación",
+        "minimize_to_notification_area": "Minimizar al área de notificación",
+        "close_to_notification_area": "Cerrar al área de notificación",
         "invalid_regex": "Expresión regular inválida"
     }
 }
