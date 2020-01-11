@@ -33,7 +33,7 @@ AboutDialog::AboutDialog(QWidget* parent)
     heading_l->setStyleSheet("QLabel { font-size: 18px; }");
 
     QString c = QChar(0xA9);
-    c.append(" 2015-2019");
+    c.append(" 2015-2020");
     QLabel* copyright = new QLabel(c);
 
     QLabel* info = new QLabel(info_str);
