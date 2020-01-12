@@ -141,6 +141,11 @@ lt::info_hash_t TorrentHandle::infoHash()
     return m_th->info_hash();
 }
 
+bool TorrentHandle::isValid()
+{
+    return m_th->is_valid();
+}
+
 void TorrentHandle::moveStorage(QString const& newPath)
 {
     QString native = QDir::toNativeSeparators(newPath);
