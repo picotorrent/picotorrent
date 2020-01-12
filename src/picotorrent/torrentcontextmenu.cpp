@@ -63,7 +63,7 @@ TorrentContextMenu::TorrentContextMenu(QWidget* parent, QList<pt::TorrentHandle*
         m_torrents.end(),
         [](TorrentHandle* th)
         {
-            return th->status().paused;
+            return th->status().paused && th->status().state != TorrentStatus::UploadingQueued;
         });
 
     bool allRunning = std::all_of(
