@@ -10,6 +10,7 @@
 
 class QAction;
 class QActionGroup;
+class QClipboard;
 class QDragEnterEvent;
 class QDropEvent;
 class QItemSelection;

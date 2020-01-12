@@ -77,3 +77,14 @@ QString TextInputDialog::text()
 
     return m_singleLineInput->text();
 }
+
+void TextInputDialog::setText(QString text)
+{
+    if (m_multiline)
+    {
+        m_multiLineInput->setPlainText(text);
+    }
+
+    // m_singleLineInput
+}
+
