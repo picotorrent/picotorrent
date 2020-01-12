@@ -84,7 +84,9 @@ void TextInputDialog::setText(QString text)
     {
         m_multiLineInput->setPlainText(text);
     }
-
-    // m_singleLineInput
+    else
+    {
+        m_singleLineInput->setText(text);
+    }
 }
 

@@ -67,6 +67,9 @@ void TorrentTrackersWidget::onAddTracker()
     dlg->setWindowTitle(i18n("add_tracker"));
     dlg->open();
 
+    QClipboard* clipboard = QGuiApplication::clipboard();
+    dlg->setText(clipboard->text());
+
     QObject::connect(dlg,  &QDialog::accepted,
                      [this, dlg]()
                      {
