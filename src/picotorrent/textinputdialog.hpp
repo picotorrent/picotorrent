@@ -12,6 +12,7 @@ namespace pt
     {
     public:
         TextInputDialog(QWidget* parent, QString const& description = "", bool multiline = false);
+        void setFocusToText();
         QString text();
 
     private:
