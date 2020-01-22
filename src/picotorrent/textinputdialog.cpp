@@ -55,7 +55,6 @@ TextInputDialog::TextInputDialog(QWidget* parent, QString const& description, bo
     this->setFocusToText();
 }
 
-
 void TextInputDialog::setFocusToText()
 {
     if (m_multiline)

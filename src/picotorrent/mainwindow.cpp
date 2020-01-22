@@ -672,10 +672,8 @@ void MainWindow::onFileAddMagnetLinks()
 
     QClipboard* clipboard = QApplication::clipboard();
     QString text = clipboard->text();
-    if (clipboard->text().startsWith(
-        "magnet:",
-        Qt::CaseSensitivity::CaseInsensitive
-    )) {
+    if (text.startsWith("magnet:", Qt::CaseSensitivity::CaseInsensitive))
+    {
         dlg->setText(text);
     }
 
