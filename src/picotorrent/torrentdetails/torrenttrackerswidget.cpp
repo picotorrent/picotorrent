@@ -26,6 +26,8 @@ public:
 
 using pt::TorrentTrackersWidget;
 
+static QString trackerUrlSchemes[] = {"http", "https", "udp"};
+
 TorrentTrackersWidget::TorrentTrackersWidget()
 {
     m_trackersModel = new TrackersListModel();
@@ -68,7 +70,11 @@ void TorrentTrackersWidget::onAddTracker()
     dlg->open();
 
     QClipboard* clipboard = QGuiApplication::clipboard();
-    dlg->setText(clipboard->text());
+    QString text = clipboard->text();
+    if (isTrackerUrl(text))
+    {
+        dlg->setText(text);
+    }
 
     QObject::connect(dlg,  &QDialog::accepted,
                      [this, dlg]()
@@ -160,4 +166,17 @@ void TorrentTrackersWidget::onTrackerContextMenu(QPoint const& point)
 
     QObject::connect(menu, &QMenu::aboutToHide,
                      menu, &QMenu::deleteLater);
+}
+
+bool TorrentTrackersWidget::isTrackerUrl(QString url)
+{
+    for each (QString urlScheme in trackerUrlSchemes)
+    {
+        if (url.startsWith(urlScheme + "://", Qt::CaseSensitivity::CaseInsensitive))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
