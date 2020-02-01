@@ -84,9 +84,9 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
         entry.endpoints.begin(),
         entry.endpoints.end(),
         [](lt::announce_endpoint const& l, lt::announce_endpoint const& r)
-		{
-			return l.info_hashes[lt::protocol_version::V1].fails < r.info_hashes[lt::protocol_version::V1].fails;
-		});
+        {
+            return l.info_hashes[lt::protocol_version::V1].fails < r.info_hashes[lt::protocol_version::V1].fails;
+        });
 
     switch (role)
     {
@@ -104,7 +104,7 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
                 return "-";
             }
 
-			auto announce_hash = endp->info_hashes[lt::protocol_version::V1];
+            auto announce_hash = endp->info_hashes[lt::protocol_version::V1];
 
             if (announce_hash.updating)
             {
@@ -132,7 +132,7 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
         case Columns::Fails:
         {
             if (endp != entry.endpoints.end()
-				&& endp->info_hashes[lt::protocol_version::V1].fails == 0)
+                && endp->info_hashes[lt::protocol_version::V1].fails == 0)
             {
                 return "-";
             }
@@ -140,9 +140,9 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
             if (entry.fail_limit == 0)
             {
                 return QString::number(
-					endp != entry.endpoints.end()
-						? endp->info_hashes[lt::protocol_version::V1].fails
-						: 0);
+                    endp != entry.endpoints.end()
+                        ? endp->info_hashes[lt::protocol_version::V1].fails
+                        : 0);
             }
 
             return i18n("d_of_d")
