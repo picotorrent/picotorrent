@@ -38,7 +38,7 @@ void TorrentDetailsWidget::update(QList<pt::TorrentHandle*> const& torrents)
         DetailsTab* tab = dynamic_cast<DetailsTab*>(currWidget);
 
         // For now, the details panel only supports showing information for a single torrent.
-        if (torrents.count() == 1)
+        if (torrents.count() == 1 && torrents.at(0)->isValid())
         {
             tab->refresh(torrents);
         }
