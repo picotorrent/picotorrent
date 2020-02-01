@@ -92,13 +92,27 @@ void TorrentTrackersWidget::onCopyUrl()
 void TorrentTrackersWidget::onRemove()
 {
     auto index = m_trackersView->selectionModel()->currentIndex();
+    auto modelData = m_trackersView->model()->data(index, Qt::UserRole);
+
+    std::string entryUrl = modelData.toString().toStdString();
 
     if (m_torrents.size() > 0)
     {
         auto trackers = m_torrents.at(0)->trackers();
-        trackers.erase(trackers.begin() + index.row());
+        auto found = std::find_if(
+            trackers.begin(),
+            trackers.end(),
+            [entryUrl](lt::announce_entry const& e)
+            {
+                return e.url == entryUrl;
+            });
 
-        m_torrents.at(0)->replaceTrackers(trackers);
+        if (found != trackers.end())
+        {
+            trackers.erase(found);
+            m_torrents.at(0)->replaceTrackers(trackers);
+            m_trackersModel->update(m_torrents.at(0));
+        }
     }
 }
 

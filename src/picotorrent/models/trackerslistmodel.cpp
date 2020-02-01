@@ -181,6 +181,10 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
 
         break;
     }
+    case Qt::UserRole:
+    {
+        return QString::fromStdString(entry.url);
+    }
     }
 
     return QVariant();
