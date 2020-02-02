@@ -12,7 +12,9 @@ namespace pt
     {
     public:
         TextInputDialog(QWidget* parent, QString const& description = "", bool multiline = false);
+        void setFocusToText();
         QString text();
+        void setText(QString text);
 
     private:
         QDialogButtonBox* m_buttons;
