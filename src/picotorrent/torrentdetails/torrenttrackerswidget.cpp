@@ -170,7 +170,7 @@ void TorrentTrackersWidget::onTrackerContextMenu(QPoint const& point)
 
 bool TorrentTrackersWidget::isTrackerUrl(QString url)
 {
-    for each (QString urlScheme in trackerUrlSchemes)
+    for (const QString& urlScheme : trackerUrlSchemes)
     {
         if (url.startsWith(urlScheme + "://", Qt::CaseSensitivity::CaseInsensitive))
         {
