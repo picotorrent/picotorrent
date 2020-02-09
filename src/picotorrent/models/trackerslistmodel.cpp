@@ -3,6 +3,9 @@
 #include <libtorrent/announce_entry.hpp>
 #include <libtorrent/torrent_handle.hpp>
 
+#include <QColor>
+#include <QFont>
+
 #include "../torrenthandle.hpp"
 #include "../translator.hpp"
 
@@ -30,7 +33,13 @@ void TrackersListModel::update(pt::TorrentHandle* torrent)
     // Remove old data
     for (auto it = m_trackers.begin(); it != m_trackers.end();)
     {
-        auto f = std::find_if(trackers.begin(), trackers.end(), [it](lt::announce_entry& ae) { return ae.url == it->url; });
+        auto f = std::find_if(
+            trackers.begin(),
+            trackers.end(),
+            [it](lt::announce_entry& ae)
+            {
+                return ae.url == it->key && ae.tier == it->tier && !it->isTier;
+            });
 
         if (f == trackers.end())
         {
@@ -39,6 +48,8 @@ void TrackersListModel::update(pt::TorrentHandle* torrent)
             this->beginRemoveRows(QModelIndex(), distance, distance);
             it = m_trackers.erase(it);
             this->endRemoveRows();
+
+            // TODO, also remove tier item if this was the last item in this tier
         }
         else
         {
@@ -49,24 +60,63 @@ void TrackersListModel::update(pt::TorrentHandle* torrent)
     // Add or update new data
     for (auto it = trackers.begin(); it != trackers.end(); it++)
     {
-        auto f = std::find_if(m_trackers.begin(), m_trackers.end(), [it](lt::announce_entry& ae) { return ae.url == it->url; });
+        ListItem trackerItem;
+        trackerItem.isTier = false;
+        trackerItem.key = it->url;
+//        trackerItem.nextAnnounce = std::chrono::seconds(lt::total_seconds(it->endpoints[0].info_hashes[lt::protocol_version::V1].next_announce));
+        trackerItem.peers = it->endpoints[0].info_hashes[lt::protocol_version::V1].scrape_incomplete;
+        trackerItem.seeds = it->endpoints[0].info_hashes[lt::protocol_version::V1].scrape_complete;
+
+        auto f = std::find_if(
+            m_trackers.begin(),
+            m_trackers.end(),
+            [it](ListItem& item)
+            {
+                return item.key == it->url && item.tier == it->tier;
+            });
 
         if (f == m_trackers.end())
         {
-            int nextIndex = static_cast<int>(m_trackers.size());
+            // Find end of tier
+            auto endOfTier = std::find_if(
+                m_trackers.rbegin(),
+                m_trackers.rend(),
+                [it](ListItem& item)
+                {
+                    return item.tier == it->tier && !item.isTier;
+                });
 
-            this->beginInsertRows(QModelIndex(), nextIndex, nextIndex);
-            m_trackers.push_back(*it);
-            this->endInsertRows();
+            int insertIndex = endOfTier == m_trackers.rend()
+                ? static_cast<int>(m_trackers.size())
+                : std::distance(m_trackers.rbegin(), endOfTier);
+
+            if (endOfTier == m_trackers.rend())
+            {
+                // Insert tier and then insert item at end
+                ListItem tierItem;
+                tierItem.isTier = true;
+                tierItem.tier = it->tier;
+
+                this->beginInsertRows(QModelIndex(), insertIndex, insertIndex + 1);
+                m_trackers.push_back(tierItem);
+                m_trackers.push_back(trackerItem);
+                this->endInsertRows();
+            }
+            else
+            {
+                this->beginInsertRows(QModelIndex(), insertIndex, insertIndex);
+                m_trackers.insert(endOfTier.base(), trackerItem);
+                this->endInsertRows();
+            }
         }
         else
         {
-            auto distance = std::distance(m_trackers.begin(), f);
+            /*auto distance = std::distance(m_trackers.begin(), f);
             m_trackers.at(distance) = *it;
 
             emit dataChanged(
                 index(distance, 0),
-                index(distance, Columns::_Max - 1));
+                index(distance, Columns::_Max - 1));*/
         }
     }
 }
@@ -78,15 +128,15 @@ int TrackersListModel::columnCount(const QModelIndex&) const
 
 QVariant TrackersListModel::data(const QModelIndex& index, int role) const
 {
-    lt::announce_entry const& entry = m_trackers.at(index.row());
+    ListItem const& item = m_trackers.at(index.row());
 
-    auto endp = std::min_element(
+    /*auto endp = std::min_element(
         entry.endpoints.begin(),
         entry.endpoints.end(),
         [](lt::announce_endpoint const& l, lt::announce_endpoint const& r)
         {
             return l.info_hashes[lt::protocol_version::V1].fails < r.info_hashes[lt::protocol_version::V1].fails;
-        });
+        });*/
 
     switch (role)
     {
@@ -95,9 +145,16 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
         switch (index.column())
         {
         case Columns::Url:
-            return QString::fromStdString(entry.url);
+        {
+            if (item.isTier)
+            {
+                return QString::fromStdString("tier #" + std::to_string(item.tier));
+            }
 
-        case Columns::Status:
+            return QString::fromStdString(item.key);
+        }
+
+        /*case Columns::Status:
         {
             if (endp == entry.endpoints.end())
             {
@@ -176,18 +233,48 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
                 .arg(hours_left.count())
                 .arg(min_left.count())
                 .arg(sec_left.count());
-        }
+        }*/
         }
 
         break;
     }
+    case Qt::FontRole:
+    {
+        if (item.isTier)
+        {
+            QFont font;
+            font.setCapitalization(QFont::SmallCaps);
+            return font;
+        }
+        break;
+    }
+    case Qt::ForegroundRole:
+    {
+        if (item.isTier)
+        {
+            return QColor(Qt::gray);
+        }
+        break;
+    }
     case Qt::UserRole:
     {
-        return QString::fromStdString(entry.url);
+        return QString::fromStdString(item.key);
     }
     }
 
     return QVariant();
+}
+
+Qt::ItemFlags TrackersListModel::flags(const QModelIndex& index) const
+{
+    ListItem const& item = m_trackers.at(index.row());
+
+    if (item.isTier)
+    {
+        return Qt::NoItemFlags;
+    }
+
+    return QAbstractItemModel::flags(index);
 }
 
 QVariant TrackersListModel::headerData(int section, Qt::Orientation, int role) const
