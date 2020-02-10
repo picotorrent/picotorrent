@@ -4,6 +4,7 @@
 #include <libtorrent/torrent_handle.hpp>
 
 #include <QColor>
+#include <QDebug>
 #include <QFont>
 
 #include "../torrenthandle.hpp"
@@ -12,6 +13,9 @@
 using pt::TrackersListModel;
 
 TrackersListModel::TrackersListModel()
+    : m_dhtTrackerStatus(nullptr),
+    m_lsdTrackerStatus(nullptr),
+    m_pexTrackerStatus(nullptr)
 {
 }
 
@@ -22,34 +26,145 @@ TrackersListModel::~TrackersListModel()
 void TrackersListModel::clear()
 {
     this->beginResetModel();
+
+    m_dhtTrackerStatus = nullptr;
+    m_lsdTrackerStatus = nullptr;
+    m_pexTrackerStatus = nullptr;
+
     m_trackers.clear();
+
     this->endResetModel();
 }
 
 void TrackersListModel::update(pt::TorrentHandle* torrent)
 {
+    // Insert static items
+    if (m_dhtTrackerStatus == nullptr)
+    {
+        ListItem dht;
+        dht.isTier = false;
+        dht.key = "DHT";
+        dht.numDownloaded = -1;
+        dht.numLeeches = 0;
+        dht.numSeeds = 0;
+        dht.tier = -1;
+
+        m_trackers.insert(m_trackers.begin(), dht);
+
+        m_dhtTrackerStatus = &m_trackers[0];
+    }
+
+    if (m_lsdTrackerStatus == nullptr)
+    {
+        ListItem lsd;
+        lsd.isTier = false;
+        lsd.key = "LSD";
+        lsd.numDownloaded = -1;
+        lsd.numLeeches = 0;
+        lsd.numSeeds = 0;
+        lsd.tier = -1;
+
+        m_trackers.insert(m_trackers.begin() + 1, lsd);
+
+        m_lsdTrackerStatus = &m_trackers[1];
+    }
+
+    if (m_pexTrackerStatus == nullptr)
+    {
+        ListItem pex;
+        pex.isTier = false;
+        pex.key = "PeX";
+        pex.numDownloaded = -1;
+        pex.numLeeches = 0;
+        pex.numSeeds = 0;
+        pex.tier = -1;
+
+        m_trackers.insert(m_trackers.begin() + 2, pex);
+
+        m_pexTrackerStatus = &m_trackers[2];
+    }
+
     std::vector<lt::announce_entry> trackers = torrent->trackers();
 
-    // Remove old data
+    std::vector<lt::peer_info> peers;
+    torrent->getPeerInfo(peers);
+
+    m_dhtTrackerStatus->numLeeches = m_dhtTrackerStatus->numSeeds = 0;
+    m_lsdTrackerStatus->numLeeches = m_lsdTrackerStatus->numSeeds = 0;
+    m_pexTrackerStatus->numLeeches = m_pexTrackerStatus->numSeeds = 0;
+
+    for (lt::peer_info const& peer : peers)
+    {
+        bool seed = static_cast<bool>(peer.flags & lt::peer_info::seed);
+
+        if (static_cast<bool>(peer.source & lt::peer_info::dht))
+        {
+            if (seed) m_dhtTrackerStatus->numSeeds += 1;
+            else      m_dhtTrackerStatus->numLeeches += 1;
+        }
+        else if (static_cast<bool>(peer.source & lt::peer_info::lsd))
+        {
+            if (seed) m_lsdTrackerStatus->numSeeds += 1;
+            else      m_lsdTrackerStatus->numLeeches += 1;
+        }
+        else if (static_cast<bool>(peer.source & lt::peer_info::pex))
+        {
+            if (seed) m_pexTrackerStatus->numSeeds += 1;
+            else      m_pexTrackerStatus->numLeeches += 1;
+        }
+    }
+
     for (auto it = m_trackers.begin(); it != m_trackers.end();)
     {
+        // if it's a tier or if the tier is < 0 meaning it's a static item
+        if (it->isTier || it->tier < 0)
+        {
+            ++it;
+            continue;
+        }
+
         auto f = std::find_if(
             trackers.begin(),
             trackers.end(),
             [it](lt::announce_entry& ae)
             {
-                return ae.url == it->key && ae.tier == it->tier && !it->isTier;
+                return ae.url == it->key
+                    && ae.tier == it->tier;
             });
 
         if (f == trackers.end())
         {
-            auto distance = std::distance(m_trackers.begin(), it);
 
-            this->beginRemoveRows(QModelIndex(), distance, distance);
-            it = m_trackers.erase(it);
-            this->endRemoveRows();
+            // If we only have one two items in this tier, one must be the tier label
+            // and if so, remove both.
 
-            // TODO, also remove tier item if this was the last item in this tier
+            int tierCount = std::count_if(
+                m_trackers.begin(),
+                m_trackers.end(),
+                [it](ListItem const& li)
+                {
+                    return li.tier == it->tier;
+                });
+
+            if (tierCount == 2)
+            {
+                --it;
+
+                auto distance = std::distance(m_trackers.begin(), it);
+
+                this->beginRemoveRows(QModelIndex(), distance, distance + 1);
+                it = m_trackers.erase(it);
+                it = m_trackers.erase(it);
+                this->endRemoveRows();
+            }
+            else
+            {
+                auto distance = std::distance(m_trackers.begin(), it);
+
+                this->beginRemoveRows(QModelIndex(), distance, distance);
+                it = m_trackers.erase(it);
+                this->endRemoveRows();
+            }
         }
         else
         {
@@ -60,12 +175,61 @@ void TrackersListModel::update(pt::TorrentHandle* torrent)
     // Add or update new data
     for (auto it = trackers.begin(); it != trackers.end(); it++)
     {
+        auto endpoint = std::min_element(
+            it->endpoints.begin(),
+            it->endpoints.end(),
+            [](lt::announce_endpoint const& l, lt::announce_endpoint const& r)
+            {
+                return l.info_hashes[lt::protocol_version::V1].fails < r.info_hashes[lt::protocol_version::V1].fails;
+            });
+
         ListItem trackerItem;
         trackerItem.isTier = false;
         trackerItem.key = it->url;
-//        trackerItem.nextAnnounce = std::chrono::seconds(lt::total_seconds(it->endpoints[0].info_hashes[lt::protocol_version::V1].next_announce));
-        trackerItem.peers = it->endpoints[0].info_hashes[lt::protocol_version::V1].scrape_incomplete;
-        trackerItem.seeds = it->endpoints[0].info_hashes[lt::protocol_version::V1].scrape_complete;
+        trackerItem.numDownloaded = -1;
+        trackerItem.numLeeches = -1;
+        trackerItem.numSeeds = -1;
+        trackerItem.status = ListItemStatus::unknown;
+        trackerItem.tier = it->tier;
+
+        for (lt::announce_endpoint const& ep : it->endpoints)
+        {
+            lt::announce_infohash const& ah = ep.info_hashes[lt::protocol_version::V1];
+
+            trackerItem.numDownloaded = std::max(trackerItem.numDownloaded, ah.scrape_downloaded);
+            trackerItem.numLeeches = std::max(trackerItem.numLeeches, ah.scrape_incomplete);
+            trackerItem.numSeeds = std::max(trackerItem.numSeeds, ah.scrape_complete);
+        }
+
+        if (endpoint != it->endpoints.end())
+        {
+            lt::announce_infohash const& ah = endpoint->info_hashes[lt::protocol_version::V1];
+
+            trackerItem.failLimit = it->fail_limit;
+            trackerItem.fails = ah.fails;
+            trackerItem.nextAnnounce = std::chrono::seconds(lt::total_seconds(ah.next_announce - lt::clock_type::now()));
+
+            if (ah.updating)
+            {
+                trackerItem.status = ListItemStatus::updating;
+            }
+            else if (ah.last_error)
+            {
+                QString error = i18n("error_s")
+                    .arg(ah.message.empty()
+                            ? ah.last_error.message().c_str()
+                            : QString("%1 \"%2\"")
+                    .arg(QString::fromStdString(ah.last_error.message()))
+                    .arg(QString::fromStdString(ah.message)));
+
+                trackerItem.errorMessage = error.toStdString();
+                trackerItem.status = ListItemStatus::error;
+            }
+            else if (it->verified)
+            {
+                trackerItem.status = ListItemStatus::working;
+            }
+        }
 
         auto f = std::find_if(
             m_trackers.begin(),
@@ -111,12 +275,12 @@ void TrackersListModel::update(pt::TorrentHandle* torrent)
         }
         else
         {
-            /*auto distance = std::distance(m_trackers.begin(), f);
-            m_trackers.at(distance) = *it;
+            auto distance = std::distance(m_trackers.begin(), f);
+            m_trackers.at(distance) = trackerItem;
 
             emit dataChanged(
                 index(distance, 0),
-                index(distance, Columns::_Max - 1));*/
+                index(distance, Columns::_Max - 1));
         }
     }
 }
@@ -130,14 +294,6 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
 {
     ListItem const& item = m_trackers.at(index.row());
 
-    /*auto endp = std::min_element(
-        entry.endpoints.begin(),
-        entry.endpoints.end(),
-        [](lt::announce_endpoint const& l, lt::announce_endpoint const& r)
-        {
-            return l.info_hashes[lt::protocol_version::V1].fails < r.info_hashes[lt::protocol_version::V1].fails;
-        });*/
-
     switch (role)
     {
     case Qt::DisplayRole:
@@ -148,92 +304,113 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
         {
             if (item.isTier)
             {
-                return QString::fromStdString("tier #" + std::to_string(item.tier));
+                return i18n("tier_n")
+                    .arg(item.tier);
             }
 
             return QString::fromStdString(item.key);
         }
 
-        /*case Columns::Status:
+        case Columns::Status:
         {
-            if (endp == entry.endpoints.end())
+            if (item.isTier)
             {
+                return "";
+            }
+
+            switch (item.status)
+            {
+            case ListItemStatus::updating:
+                return i18n("updating");
+            case ListItemStatus::error:
+                return QString::fromStdString(item.errorMessage);
+            case ListItemStatus::working:
+                return i18n("ok");
+            default:
                 return "-";
             }
+        }
 
-            auto announce_hash = endp->info_hashes[lt::protocol_version::V1];
-
-            if (announce_hash.updating)
+        case Columns::NumDownloaded:
+        {
+            if (item.isTier ||item.tier < 0)
             {
-                return i18n("updating");
+                return "";
             }
 
-            if (announce_hash.last_error)
+            return item.numDownloaded >= 0
+                ? QString::number(item.numDownloaded)
+                : i18n("not_available");
+        }
+
+        case Columns::NumLeeches:
+        {
+            if (item.isTier)
             {
-                return i18n("error_s").arg(
-                    announce_hash.message.empty()
-                        ? announce_hash.last_error.message().c_str()
-                        : QString("%1 \"%2\"")
-                            .arg(QString::fromStdString(announce_hash.last_error.message()))
-                            .arg(QString::fromStdString(announce_hash.message)));
+                return "";
             }
 
-            if (entry.verified)
+            return item.numLeeches >= 0
+                ? QString::number(item.numLeeches)
+                : i18n("not_available");
+        }
+
+        case Columns::NumSeeds:
+        {
+            if (item.isTier)
             {
-                return i18n("ok");
+                return "";
             }
 
-            return "-";
+            return item.numSeeds >= 0
+                ? QString::number(item.numSeeds)
+                : i18n("not_available");
         }
 
         case Columns::Fails:
         {
-            if (endp != entry.endpoints.end()
-                && endp->info_hashes[lt::protocol_version::V1].fails == 0)
+            if (item.isTier || item.tier < 0)
+            {
+                return "";
+            }
+
+            if (item.fails == 0)
             {
                 return "-";
             }
 
-            if (entry.fail_limit == 0)
+            if (item.failLimit == 0)
             {
-                return QString::number(
-                    endp != entry.endpoints.end()
-                        ? endp->info_hashes[lt::protocol_version::V1].fails
-                        : 0);
+                return QString::number(item.fails);
             }
 
             return i18n("d_of_d")
-                .arg(endp != entry.endpoints.end()
-                    ? endp->info_hashes[lt::protocol_version::V1].fails
-                    : 0)
-                .arg(entry.fail_limit);
+                .arg(item.fails)
+                .arg(item.failLimit);
         }
 
         case Columns::NextAnnounce:
         {
-            if (endp == entry.endpoints.end()
-                || endp->info_hashes[lt::protocol_version::V1].updating)
+            if (item.isTier || item.tier < 0)
+            {
+                return "";
+            }
+
+            if (item.status == ListItemStatus::updating
+                || item.nextAnnounce.count() <= 0)
             {
                 return "-";
             }
 
-            int64_t secs = lt::total_seconds(endp->info_hashes[lt::protocol_version::V1].next_announce - lt::clock_type::now());
-            std::chrono::seconds s(secs);
-
-            if (secs <= 0)
-            {
-                return "-";
-            }
-
-            std::chrono::hours hours_left = std::chrono::duration_cast<std::chrono::hours>(s);
-            std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(s - hours_left);
-            std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(s - hours_left - min_left);
+            std::chrono::hours hours_left = std::chrono::duration_cast<std::chrono::hours>(item.nextAnnounce);
+            std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(item.nextAnnounce - hours_left);
+            std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(item.nextAnnounce - hours_left - min_left);
 
             return QString("%1h %2m %3s")
                 .arg(hours_left.count())
                 .arg(min_left.count())
                 .arg(sec_left.count());
-        }*/
+        }
         }
 
         break;
@@ -243,8 +420,17 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
         if (item.isTier)
         {
             QFont font;
-            font.setCapitalization(QFont::SmallCaps);
+            font.setBold(true);
+            font.setPointSizeF(8);
             return font;
+        }
+        break;
+    }
+    case Qt::BackgroundRole:
+    {
+        if (item.isTier)
+        {
+            return QColor(245, 245, 245);
         }
         break;
     }
@@ -256,25 +442,27 @@ QVariant TrackersListModel::data(const QModelIndex& index, int role) const
         }
         break;
     }
+    case Qt::TextAlignmentRole:
+    {
+        switch (index.column())
+        {
+        case Columns::Fails:
+        case Columns::NextAnnounce:
+        case Columns::NumDownloaded:
+        case Columns::NumLeeches:
+        case Columns::NumSeeds:
+        {
+            return (Qt::AlignVCenter | Qt::AlignRight);
+        }
+        }
+    }
     case Qt::UserRole:
     {
-        return QString::fromStdString(item.key);
+        return QVariant::fromValue(item);
     }
     }
 
     return QVariant();
-}
-
-Qt::ItemFlags TrackersListModel::flags(const QModelIndex& index) const
-{
-    ListItem const& item = m_trackers.at(index.row());
-
-    if (item.isTier)
-    {
-        return Qt::NoItemFlags;
-    }
-
-    return QAbstractItemModel::flags(index);
 }
 
 QVariant TrackersListModel::headerData(int section, Qt::Orientation, int role) const
@@ -291,6 +479,15 @@ QVariant TrackersListModel::headerData(int section, Qt::Orientation, int role) c
         case Columns::Status:
             return i18n("status");
 
+        case Columns::NumDownloaded:
+            return i18n("downloaded");
+
+        case Columns::NumLeeches:
+            return i18n("leeches");
+
+        case Columns::NumSeeds:
+            return i18n("seeds");
+
         case Columns::Fails:
             return i18n("fails");
 
@@ -299,6 +496,20 @@ QVariant TrackersListModel::headerData(int section, Qt::Orientation, int role) c
         }
 
         break;
+    }
+    case Qt::TextAlignmentRole:
+    {
+        switch (section)
+        {
+        case Columns::Fails:
+        case Columns::NextAnnounce:
+        case Columns::NumDownloaded:
+        case Columns::NumLeeches:
+        case Columns::NumSeeds:
+        {
+            return (Qt::AlignVCenter | Qt::AlignRight);
+        }
+        }
     }
     }
 

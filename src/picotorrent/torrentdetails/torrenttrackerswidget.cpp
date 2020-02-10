@@ -93,8 +93,7 @@ void TorrentTrackersWidget::onRemove()
 {
     auto index = m_trackersView->selectionModel()->currentIndex();
     auto modelData = m_trackersView->model()->data(index, Qt::UserRole);
-
-    std::string entryUrl = modelData.toString().toStdString();
+    auto item = modelData.value<TrackersListModel::ListItem>();
 
     if (m_torrents.size() > 0)
     {
@@ -102,27 +101,104 @@ void TorrentTrackersWidget::onRemove()
         auto found = std::find_if(
             trackers.begin(),
             trackers.end(),
-            [entryUrl](lt::announce_entry const& e)
+            [&item](lt::announce_entry const& e)
             {
-                return e.url == entryUrl;
+                return e.url == item.key
+                    && e.tier == item.tier
+                    && !item.isTier;
             });
 
         if (found != trackers.end())
         {
             trackers.erase(found);
+
             m_torrents.at(0)->replaceTrackers(trackers);
             m_trackersModel->update(m_torrents.at(0));
         }
     }
 }
 
-void TorrentTrackersWidget::onForceReannounce()
+void TorrentTrackersWidget::onRemoveTier()
 {
     auto index = m_trackersView->selectionModel()->currentIndex();
+    auto modelData = m_trackersView->model()->data(index, Qt::UserRole);
+    auto item = modelData.value<TrackersListModel::ListItem>();
 
     if (m_torrents.size() > 0)
     {
-        m_torrents.at(0)->forceReannounce(0, index.row());
+        auto trackers = m_torrents.at(0)->trackers();
+
+        trackers.erase(
+            std::remove_if(
+                trackers.begin(),
+                trackers.end(),
+                [item](lt::announce_entry const& ae)
+                {
+                    return ae.tier == item.tier;
+                }),
+            trackers.end());
+
+        m_torrents.at(0)->replaceTrackers(trackers);
+        m_trackersModel->update(m_torrents.at(0));
+    }
+}
+
+void TorrentTrackersWidget::onForceReannounce()
+{
+    auto index = m_trackersView->selectionModel()->currentIndex();
+    auto modelData = m_trackersView->model()->data(index, Qt::UserRole);
+    auto item = modelData.value<TrackersListModel::ListItem>();
+
+    if (m_torrents.size() > 0)
+    {
+        auto trackers = m_torrents.at(0)->trackers();
+        auto found = std::find_if(
+            trackers.begin(),
+            trackers.end(),
+            [&item](lt::announce_entry const& e)
+            {
+                return e.url == item.key
+                    && e.tier == item.tier
+                    && !item.isTier;
+            });
+
+        if (found != trackers.end())
+        {
+            m_torrents[0]->forceReannounce(
+                0,
+                std::distance(trackers.begin(), found));
+
+            m_trackersModel->update(m_torrents.at(0));
+        }
+    }
+}
+
+void TorrentTrackersWidget::onScrape()
+{
+    auto index = m_trackersView->selectionModel()->currentIndex();
+    auto modelData = m_trackersView->model()->data(index, Qt::UserRole);
+    auto item = modelData.value<TrackersListModel::ListItem>();
+
+    if (m_torrents.size() > 0)
+    {
+        auto trackers = m_torrents.at(0)->trackers();
+        auto found = std::find_if(
+            trackers.begin(),
+            trackers.end(),
+            [&item](lt::announce_entry const& e)
+            {
+                return e.url == item.key
+                    && e.tier == item.tier
+                    && !item.isTier;
+            });
+
+        if (found != trackers.end())
+        {
+            m_torrents[0]->scrapeTracker(
+                std::distance(trackers.begin(), found));
+
+            m_trackersModel->update(m_torrents.at(0));
+        }
     }
 }
 
@@ -133,29 +209,61 @@ void TorrentTrackersWidget::onTrackerContextMenu(QPoint const& point)
         return;
     }
 
-    QModelIndex idx = m_trackersView->indexAt(point);
+    QMenu*      menu  = new QMenu();
+    QModelIndex index = m_trackersView->indexAt(point);
 
-    auto menu = new QMenu();
+    QObject::connect(menu, &QMenu::aboutToHide,
+                     menu, &QMenu::deleteLater);
 
-    if (idx.isValid())
+    if (index.isValid())
     {
-        auto copyUrl         = new QAction(i18n("copy_url"));
-        auto forceReannounce = new QAction(i18n("force_reannounce"));
-        auto remove          = new QAction(i18n("remove"));
+        auto modelData = m_trackersView->model()->data(index, Qt::UserRole);
+        auto item = modelData.value<TrackersListModel::ListItem>();
 
-        QObject::connect(copyUrl,         &QAction::triggered,
-                         this,            &TorrentTrackersWidget::onCopyUrl);
+        if (item.tier < 0)
+        {
+            QObject::disconnect(menu, &QMenu::aboutToHide,
+                                menu, &QMenu::deleteLater);
 
-        QObject::connect(forceReannounce, &QAction::triggered,
-                         this,            &TorrentTrackersWidget::onForceReannounce);
+            delete menu;
 
-        QObject::connect(remove,          &QAction::triggered,
-                         this,            &TorrentTrackersWidget::onRemove);
+            return;
+        }
 
-        menu->addAction(copyUrl);
-        menu->addAction(forceReannounce);
-        menu->addSeparator();
-        menu->addAction(remove);
+        if (item.isTier)
+        {
+            auto removeTier = new QAction(i18n("remove_tier"), menu);
+
+            QObject::connect(removeTier, &QAction::triggered,
+                             this,       &TorrentTrackersWidget::onRemoveTier);
+
+            menu->addAction(removeTier);
+        }
+        else
+        {
+            auto copyUrl         = new QAction(i18n("copy_url"), menu);
+            auto forceReannounce = new QAction(i18n("force_reannounce"), menu);
+            auto scrape          = new QAction(i18n("scrape"), menu);
+            auto remove          = new QAction(i18n("remove"), menu);
+
+            QObject::connect(copyUrl, &QAction::triggered,
+                             this,    &TorrentTrackersWidget::onCopyUrl);
+
+            QObject::connect(forceReannounce, &QAction::triggered,
+                             this,            &TorrentTrackersWidget::onForceReannounce);
+
+            QObject::connect(scrape, &QAction::triggered,
+                             this,   &TorrentTrackersWidget::onScrape);
+
+            QObject::connect(remove, &QAction::triggered,
+                             this,   &TorrentTrackersWidget::onRemove);
+
+            menu->addAction(copyUrl);
+            menu->addAction(forceReannounce);
+            menu->addAction(scrape);
+            menu->addSeparator();
+            menu->addAction(remove);
+        }
     }
     else
     {
@@ -168,7 +276,4 @@ void TorrentTrackersWidget::onTrackerContextMenu(QPoint const& point)
     }
 
     menu->popup(m_trackersView->viewport()->mapToGlobal(point));
-
-    QObject::connect(menu, &QMenu::aboutToHide,
-                     menu, &QMenu::deleteLater);
 }

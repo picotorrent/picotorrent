@@ -26,6 +26,8 @@ namespace pt
         void onCopyUrl();
         void onForceReannounce();
         void onRemove();
+        void onRemoveTier();
+        void onScrape();
         void onTrackerContextMenu(QPoint const& point);
 
     private:

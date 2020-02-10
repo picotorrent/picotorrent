@@ -30,6 +30,7 @@ namespace pt
         libtorrent::info_hash_t infoHash();
         bool isValid();
         void replaceTrackers(std::vector<libtorrent::announce_entry> const& trackers);
+        void scrapeTracker(int trackerIndex = -1);
         TorrentStatus status();
         std::vector<libtorrent::announce_entry> trackers() const;
 

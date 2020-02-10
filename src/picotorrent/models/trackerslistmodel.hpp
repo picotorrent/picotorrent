@@ -19,9 +19,35 @@ namespace pt
         {
             Url,
             Status,
+            NumDownloaded,
+            NumLeeches,
+            NumSeeds,
             Fails,
             NextAnnounce,
             _Max
+        };
+
+        enum ListItemStatus
+        {
+            unknown,
+            error,
+            working,
+            updating,
+        };
+
+        struct ListItem
+        {
+            std::string key;
+            bool isTier;
+            int tier;
+            ListItemStatus status;
+            int numDownloaded;
+            int numLeeches;
+            int numSeeds;
+            std::chrono::seconds nextAnnounce;
+            std::string errorMessage;
+            int fails;
+            int failLimit;
         };
 
         TrackersListModel();
@@ -32,30 +58,17 @@ namespace pt
 
         int columnCount(const QModelIndex&) const override;
         QVariant data(const QModelIndex&, int role) const override;
-        Qt::ItemFlags flags(const QModelIndex& index) const;
         QVariant headerData(int section, Qt::Orientation, int role) const override;
         QModelIndex parent(const QModelIndex&);
         int rowCount(const QModelIndex&) const override;
 
     private:
-        enum ListItemStatus
-        {
-            Error,
-            Working,
-            Updating,
-        };
-
-        struct ListItem
-        {
-            std::string key;
-            bool isTier;
-            std::uint8_t tier;
-            ListItemStatus status;
-            int peers;
-            int seeds;
-            std::chrono::seconds nextAnnounce;
-        };
+        ListItem* m_dhtTrackerStatus;
+        ListItem* m_lsdTrackerStatus;
+        ListItem* m_pexTrackerStatus;
 
         std::vector<ListItem> m_trackers;
     };
 }
+
+Q_DECLARE_METATYPE(pt::TrackersListModel::ListItem)
