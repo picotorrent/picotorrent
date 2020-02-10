@@ -14,6 +14,7 @@
 #include <QApplication>
 #include <QCheckBox>
 #include <QCloseEvent>
+#include <QClipboard>
 #include <QCommandLineParser>
 #include <QDebug>
 #include <QDesktopServices>
@@ -668,6 +669,13 @@ void MainWindow::onFileAddMagnetLinks()
     auto dlg = new TextInputDialog(this, i18n("magnet_link_s"), true);
     dlg->setWindowTitle(i18n("add_magnet_link_s"));
     dlg->open();
+
+    QClipboard* clipboard = QApplication::clipboard();
+    QString text = clipboard->text();
+    if (text.startsWith("magnet:", Qt::CaseSensitivity::CaseInsensitive))
+    {
+        dlg->setText(text);
+    }
 
     QObject::connect(dlg, &TextInputDialog::accepted,
                      [this, dlg]()

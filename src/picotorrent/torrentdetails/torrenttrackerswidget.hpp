@@ -34,5 +34,7 @@ namespace pt
         QList<TorrentHandle*> m_torrents;
         QTreeView* m_trackersView;
         TrackersListModel* m_trackersModel;
+
+        bool isTrackerUrl(QString url);
     };
 }
