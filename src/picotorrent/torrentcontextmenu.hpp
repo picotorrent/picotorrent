@@ -21,6 +21,7 @@ namespace pt
         void copyInfoHash();
         void move();
         void openExplorer();
+        void removeFiles();
 
         QWidget* m_parent;
         QList<TorrentHandle*> m_torrents;
