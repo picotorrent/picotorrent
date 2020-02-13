@@ -7,6 +7,7 @@
 #include <QClipboard>
 #include <QFileDialog>
 #include <QGuiApplication>
+#include <QMessageBox>
 #include <QProcess>
 
 #include "core/utils.hpp"
@@ -23,6 +24,12 @@ struct TorrentMoveFileDialog : QFileDialog
 {
     using QFileDialog::QFileDialog;
 
+    QList<pt::TorrentHandle*> torrents;
+};
+
+struct ConfirmDeleteMessageBox : QMessageBox
+{
+    using QMessageBox::QMessageBox;
     QList<pt::TorrentHandle*> torrents;
 };
 
@@ -133,9 +140,6 @@ TorrentContextMenu::TorrentContextMenu(QWidget* parent, QList<pt::TorrentHandle*
         QObject::connect(m_remove,          &QAction::triggered,
                          torrent,           &TorrentHandle::remove);
 
-        QObject::connect(m_removeFiles,     &QAction::triggered,
-                         torrent,           &TorrentHandle::removeFiles);
-
         QObject::connect(m_queueUp,         &QAction::triggered,
                          torrent,           &TorrentHandle::queueUp);
 
@@ -148,6 +152,9 @@ TorrentContextMenu::TorrentContextMenu(QWidget* parent, QList<pt::TorrentHandle*
         QObject::connect(m_queueBottom,     &QAction::triggered,
                          torrent,           &TorrentHandle::queueBottom);
     }
+
+    QObject::connect(m_removeFiles, &QAction::triggered,
+                     this,          &TorrentContextMenu::removeFiles);
 
     QObject::connect(m_move,         &QAction::triggered,
                      this,           &TorrentContextMenu::move);
@@ -190,20 +197,20 @@ void TorrentContextMenu::move()
     dlg->setOption(QFileDialog::ShowDirsOnly);
     dlg->open();
 
-    QObject::connect(
-        dlg, &QDialog::finished,
-        [dlg](int result)
-        {
-            if (result)
-            {
-                for (TorrentHandle* torrent : dlg->torrents)
-                {
-                    torrent->moveStorage(dlg->selectedFiles().first());
-                }
-            }
+    QObject::connect(dlg, &QDialog::finished,
+                     [dlg](int result)
+                     {
+                         if (result)
+                         {
+                             for (TorrentHandle* torrent : dlg->torrents)
+                             {
+                                 torrent->moveStorage(dlg->selectedFiles().first());
+                             }
+                         }
+                     });
 
-            dlg->deleteLater();
-        });
+    QObject::connect(dlg, &QDialog::finished,
+                     dlg, &QDialog::deleteLater);
 }
 
 void TorrentContextMenu::openExplorer()
@@ -224,6 +231,34 @@ void TorrentContextMenu::openExplorer()
     param += QString::fromStdWString(fs::absolute(path).wstring());
 
     QProcess::startDetached("explorer.exe", param);
+}
+
+void TorrentContextMenu::removeFiles()
+{
+    ConfirmDeleteMessageBox* mbox = new ConfirmDeleteMessageBox(m_parent);
+
+    mbox->torrents = m_torrents;
+
+    mbox->addButton(QMessageBox::Ok);
+    mbox->addButton(QMessageBox::Cancel);
+    mbox->setText(i18n("confirm_remove_description"));
+    mbox->setWindowTitle(i18n("confirm_remove"));
+    mbox->open();
+
+    QObject::connect(mbox, &QMessageBox::finished,
+                     [mbox](int result)
+                     {
+                         if (result == QMessageBox::Ok)
+                         {
+                             for (TorrentHandle* torrent : mbox->torrents)
+                             {
+                                 torrent->removeFiles();
+                             }
+                         }
+                     });
+
+    QObject::connect(mbox, &QMessageBox::finished,
+                     mbox, &QMessageBox::deleteLater);
 }
 
 /*
