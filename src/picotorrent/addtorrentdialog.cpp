@@ -44,7 +44,8 @@ AddTorrentDialog::AddTorrentDialog(QWidget* parent, std::vector<lt::add_torrent_
     m_torrentSize = new QLabel("-", this);
     m_torrentInfoHash = new QLabel("-", this);
     m_torrentComment = new QLabel("-", this);
-    m_torrentSavePath = new QLineEdit(this);
+    m_torrentSavePath = new QComboBox(this);
+    m_torrentSavePath->setEditable(true);
     m_torrentSavePathBrowse = new QPushButton(i18n("browse"), this);
     m_torrentSavePathBrowse->setMaximumWidth(30);
     m_torrentSequentialDownload = new QCheckBox(i18n("sequential_download"), this);
@@ -127,7 +128,7 @@ AddTorrentDialog::AddTorrentDialog(QWidget* parent, std::vector<lt::add_torrent_
 
     connect(
         m_torrentSavePath,
-        &QLineEdit::textChanged,
+        &QComboBox::editTextChanged,
         this,
         &AddTorrentDialog::onTorrentSavePathChanged);
 
@@ -318,7 +319,7 @@ void AddTorrentDialog::onTorrentIndexChanged(int index)
     m_torrentSize->setText(getDisplaySize(param));
     m_torrentInfoHash->setText(getDisplayHash(param));
     m_torrentComment->setText(getDisplayComment(param));
-    m_torrentSavePath->setText(QString::fromStdString(param.save_path));
+    m_torrentSavePath->setEditText(QString::fromStdString(param.save_path));
 
     m_torrentSequentialDownload->setChecked(
         ((param.flags & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download));
@@ -384,7 +385,7 @@ void AddTorrentDialog::onTorrentSavePathBrowse()
                          if (files.size() > 0)
                          {
                              QString nativePath = QDir::toNativeSeparators(files.at(0));
-                             m_torrentSavePath->setText(nativePath);
+                             m_torrentSavePath->setEditText(nativePath);
                          }
                      });
 

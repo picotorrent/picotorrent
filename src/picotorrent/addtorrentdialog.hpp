@@ -53,7 +53,7 @@ namespace pt
         QLabel* m_torrentSize;
         QLabel* m_torrentInfoHash;
         QLabel* m_torrentComment;
-        QLineEdit* m_torrentSavePath;
+        QComboBox* m_torrentSavePath;
         QPushButton* m_torrentSavePathBrowse;
         QCheckBox* m_torrentSequentialDownload;
         QCheckBox* m_torrentStart;
