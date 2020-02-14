@@ -146,6 +146,8 @@ add_executable(
     src/picotorrent/scripting/jsengine
 
     src/picotorrent/aboutdialog
+    src/picotorrent/aboutdialog.ui
+
     src/picotorrent/addtorrentdialog
     src/picotorrent/application
     src/picotorrent/buildinfo

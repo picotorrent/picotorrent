@@ -1,4 +1,5 @@
 #include "aboutdialog.hpp"
+#include "ui_aboutdialog.h"
 
 #include <QVBoxLayout>
 #include <QIcon>
@@ -10,52 +11,27 @@
 using pt::AboutDialog;
 
 AboutDialog::AboutDialog(QWidget* parent)
-    : QDialog(parent)
+    : QDialog(parent),
+    m_ui(new Ui::AboutDialog())
 {
+    QIcon ic(":res/app.ico");
+
+    m_ui->setupUi(this);
+    m_ui->icon->setPixmap(ic.pixmap(64, 64));
+    m_ui->heading->setText(i18n("picotorrent_v_format").arg(BuildInfo::version()));
+    m_ui->info->setText(i18n("picotorrent_description"));
+
     Qt::WindowFlags flags = windowFlags();
     flags |= Qt::CustomizeWindowHint;
     flags &= ~Qt::WindowContextHelpButtonHint;
     flags &= ~Qt::WindowSystemMenuHint;
 
-    QString info_str = i18n("picotorrent_description");
-    QString heading = i18n("picotorrent_v_format").arg(BuildInfo::version());
-    QString window_title = i18n("about_picotorrent");
-
-    // All widgets defined
-    QVBoxLayout* layout = new QVBoxLayout();
-    layout->addSpacing(3);
-
-    QIcon* ico = new QIcon(":res/app.ico");
-    QLabel* icon = new QLabel();
-    icon->setPixmap(ico->pixmap(64, 64));
-
-    QLabel* heading_l = new QLabel(heading);
-    heading_l->setStyleSheet("QLabel { font-size: 18px; }");
-
-    QString c = QChar(0xA9);
-    c.append(" 2015-2020");
-    QLabel* copyright = new QLabel(c);
-
-    QLabel* info = new QLabel(info_str);
-
-    QLabel* link = new QLabel("<a href=\"https://picotorrent.org?app\">https://picotorrent.org</a>", this);
-    link->setOpenExternalLinks(true);
-    link->setTextFormat(Qt::RichText);
-    link->setTextInteractionFlags(Qt::TextBrowserInteraction);
-
-    // Adding widgets
-    layout->addWidget(icon);
-    layout->addWidget(heading_l);
-    layout->addWidget(copyright);
-    layout->addWidget(info);
-    layout->addWidget(link);
-    layout->setAlignment(icon, Qt::AlignHCenter);
-    layout->setAlignment(heading_l, Qt::AlignHCenter);
-    layout->setAlignment(copyright, Qt::AlignHCenter);
-    layout->setAlignment(info, Qt::AlignHCenter);
-    layout->setAlignment(link, Qt::AlignHCenter);
-
-    this->setLayout(layout);
+    this->setFixedSize(this->sizeHint());
     this->setWindowFlags(flags);
-    this->setWindowTitle(window_title);
+    this->setWindowTitle(i18n("about_picotorrent"));
+}
+
+AboutDialog::~AboutDialog()
+{
+    delete m_ui;
 }
