@@ -122,62 +122,35 @@ AddTorrentDialog::AddTorrentDialog(std::vector<lt::add_torrent_params>& params, 
     layout->addWidget(m_buttons);
     layout->setStretch(2, 1);
 
-    connect(
-        m_paramsList,
-        QOverload<int>::of(&QComboBox::currentIndexChanged),
-        this,
-        &AddTorrentDialog::onTorrentIndexChanged);
+    QObject::connect(m_paramsList, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                     this,         &AddTorrentDialog::onTorrentIndexChanged);
 
-    connect(
-        m_torrentSavePath,
-        &QComboBox::editTextChanged,
-        this,
-        &AddTorrentDialog::onTorrentSavePathChanged);
+    QObject::connect(m_torrentSavePath, &QComboBox::editTextChanged,
+                     this,              &AddTorrentDialog::onTorrentSavePathChanged);
 
-    connect(
-        m_torrentSavePathBrowse,
-        &QPushButton::clicked,
-        this,
-        &AddTorrentDialog::onTorrentSavePathBrowse);
+    QObject::connect(m_torrentSavePathBrowse, &QPushButton::clicked,
+                     this,                    &AddTorrentDialog::onTorrentSavePathBrowse);
 
-    connect(
-        m_torrentSequentialDownload,
-        &QCheckBox::stateChanged,
-        this,
-        &AddTorrentDialog::onTorrentSequentialDownloadChanged);
+    QObject::connect(m_torrentSequentialDownload, &QCheckBox::stateChanged,
+                     this,                        &AddTorrentDialog::onTorrentSequentialDownloadChanged);
 
-    connect(
-        m_torrentStart,
-        &QCheckBox::stateChanged,
-        this,
-        &AddTorrentDialog::onTorrentStartChanged);
+    QObject::connect(m_torrentStart, &QCheckBox::stateChanged,
+                     this,           &AddTorrentDialog::onTorrentStartChanged);
 
-    connect(
-        m_torrentFiles,
-        &QTreeView::customContextMenuRequested,
-        this,
-        &AddTorrentDialog::onTorrentFileContextMenu);
+    QObject::connect(m_torrentFiles, &QTreeView::customContextMenuRequested,
+                     this,           &AddTorrentDialog::onTorrentFileContextMenu);
 
-    connect(
-        m_torrentContextMenu,
-        &QMenu::triggered,
-        this,
-        &AddTorrentDialog::onSetTorrentFilePriorities);
+    QObject::connect(m_torrentContextMenu, &QMenu::triggered,
+                     this,                 &AddTorrentDialog::onSetTorrentFilePriorities);
 
-    connect(
-        m_buttons,
-        &QDialogButtonBox::accepted,
-        this, &QDialog::accept);
+    QObject::connect(m_buttons, &QDialogButtonBox::accepted,
+                     this,      &QDialog::accept);
 
-    connect(
-        m_buttons,
-        &QDialogButtonBox::accepted,
-        this, &AddTorrentDialog::updateHistory);
+    QObject::connect(m_buttons, &QDialogButtonBox::accepted,
+                     this,      &AddTorrentDialog::updateHistory);
 
-    connect(
-        m_buttons,
-        &QDialogButtonBox::rejected,
-        this, &QDialog::reject);
+    QObject::connect(m_buttons, &QDialogButtonBox::rejected,
+                     this,      &QDialog::reject);
 
     this->setLayout(layout);
     this->setMinimumWidth(430);
