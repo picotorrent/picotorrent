@@ -397,7 +397,7 @@ void MainWindow::addTorrents(std::vector<lt::add_torrent_params>& params)
         return;
     }
 
-    auto dlg = new AddTorrentDialog(this, params);
+    auto dlg = new AddTorrentDialog(params, m_db, this);
     dlg->open();
 
     QObject::connect(dlg, &QDialog::accepted,

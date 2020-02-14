@@ -20,12 +20,13 @@ class QTreeView;
 
 namespace pt
 {
+    class Database;
     class FileStorageItemModel;
 
     class AddTorrentDialog : public QDialog
     {
     public:
-        AddTorrentDialog(QWidget* parent, std::vector<libtorrent::add_torrent_params>& params);
+        AddTorrentDialog(std::vector<libtorrent::add_torrent_params>& params, std::shared_ptr<Database> db, QWidget* parent);
 
         std::vector<libtorrent::add_torrent_params> getParams();
 
@@ -46,7 +47,10 @@ namespace pt
         void onTorrentSequentialDownloadChanged(int state);
         void onTorrentStartChanged(int state);
 
+        void updateHistory();
+
         std::vector<libtorrent::add_torrent_params> m_params;
+        std::shared_ptr<Database> m_db;
 
         QComboBox* m_paramsList;
         QLabel* m_torrentName;
