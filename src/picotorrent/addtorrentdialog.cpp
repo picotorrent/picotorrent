@@ -39,21 +39,21 @@ AddTorrentDialog::AddTorrentDialog(QWidget* parent, std::vector<lt::add_torrent_
     flags &= ~Qt::WindowContextHelpButtonHint;
     flags &= ~Qt::WindowSystemMenuHint;
 
-    m_paramsList = new QComboBox();
-    m_torrentName = new QLabel("-");
-    m_torrentSize = new QLabel("-");
-    m_torrentInfoHash = new QLabel("-");
-    m_torrentComment = new QLabel("-");
-    m_torrentSavePath = new QLineEdit();
-    m_torrentSavePathBrowse = new QPushButton(i18n("browse"));
+    m_paramsList = new QComboBox(this);
+    m_torrentName = new QLabel("-", this);
+    m_torrentSize = new QLabel("-", this);
+    m_torrentInfoHash = new QLabel("-", this);
+    m_torrentComment = new QLabel("-", this);
+    m_torrentSavePath = new QLineEdit(this);
+    m_torrentSavePathBrowse = new QPushButton(i18n("browse"), this);
     m_torrentSavePathBrowse->setMaximumWidth(30);
-    m_torrentSequentialDownload = new QCheckBox(i18n("sequential_download"));
-    m_torrentStart = new QCheckBox(i18n("start_torrent"));
+    m_torrentSequentialDownload = new QCheckBox(i18n("sequential_download"), this);
+    m_torrentStart = new QCheckBox(i18n("start_torrent"), this);
     m_filesModel = new FileStorageItemModel();
-    m_torrentContextMenu = new QMenu();
-    m_buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    m_torrentContextMenu = new QMenu(this);
+    m_buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
 
-    m_torrentFiles = new QTreeView();
+    m_torrentFiles = new QTreeView(this);
     m_torrentFiles->setContextMenuPolicy(Qt::CustomContextMenu);
     m_torrentFiles->setModel(m_filesModel);
     m_torrentFiles->hideColumn(FileStorageItemModel::Columns::Progress);
@@ -73,28 +73,28 @@ AddTorrentDialog::AddTorrentDialog(QWidget* parent, std::vector<lt::add_torrent_
     priorities->addAction(i18n("do_not_download"))
         ->setData(static_cast<uint8_t>(lt::dont_download));
 
-    auto fileGroup = new QGroupBox(i18n("file"));
+    auto fileGroup = new QGroupBox(i18n("file"), this);
     auto fileLayout = new QVBoxLayout();
     fileLayout->addWidget(m_paramsList);
     fileGroup->setLayout(fileLayout);
 
-    auto torrentGroup = new QGroupBox(i18n("torrent"));
+    auto torrentGroup = new QGroupBox(i18n("torrent"), this);
     auto torrentGrid = new QGridLayout();
-    torrentGrid->addWidget(new QLabel(i18n("name")), 0, 0);
+    torrentGrid->addWidget(new QLabel(i18n("name"), this), 0, 0);
     torrentGrid->addWidget(m_torrentName, 0, 1);
-    torrentGrid->addWidget(new QLabel(i18n("size")), 1, 0);
+    torrentGrid->addWidget(new QLabel(i18n("size"), this), 1, 0);
     torrentGrid->addWidget(m_torrentSize, 1, 1);
-    torrentGrid->addWidget(new QLabel(i18n("info_hash")), 2, 0);
+    torrentGrid->addWidget(new QLabel(i18n("info_hash"), this), 2, 0);
     torrentGrid->addWidget(m_torrentInfoHash, 2, 1);
-    torrentGrid->addWidget(new QLabel(i18n("comment")), 3, 0);
+    torrentGrid->addWidget(new QLabel(i18n("comment"), this), 3, 0);
     torrentGrid->addWidget(m_torrentComment, 3, 1);
     torrentGrid->setColumnStretch(0, 1);
     torrentGrid->setColumnStretch(1, 2);
     torrentGroup->setLayout(torrentGrid);
 
-    auto prefsGroup = new QGroupBox(i18n("storage"));
+    auto prefsGroup = new QGroupBox(i18n("storage"), this);
     auto prefsGrid = new QGridLayout();
-    prefsGrid->addWidget(new QLabel(i18n("save_path")), 0, 0);
+    prefsGrid->addWidget(new QLabel(i18n("save_path"), this), 0, 0);
 
     auto dirBrowseLayout = new QHBoxLayout();
     dirBrowseLayout->addWidget(m_torrentSavePath);
