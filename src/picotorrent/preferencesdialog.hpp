@@ -11,6 +11,11 @@ class QWidget;
 
 class SectionListView;
 
+namespace Ui
+{
+    class PreferencesDialog;
+}
+
 namespace pt
 {
     class Configuration;
@@ -27,16 +32,13 @@ namespace pt
         void load();
 
     private:
-        void createUi();
         void onOk();
         void onSectionActivated(QModelIndex const& index);
 
         std::shared_ptr<Configuration> m_cfg;
         std::shared_ptr<Environment> m_env;
 
-        QStackedWidget* m_stacked;
-        QDialogButtonBox* m_buttons;
-        SectionListView* m_sections;
+        Ui::PreferencesDialog* m_ui;
 
         GeneralSectionWidget* m_general;
         DownloadsSectionWidget* m_downloads;

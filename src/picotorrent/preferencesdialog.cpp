@@ -1,4 +1,5 @@
 #include "preferencesdialog.hpp"
+#include "ui_preferencesdialog.h"
 
 #include <QAbstractListModel>
 #include <QDialogButtonBox>
@@ -53,25 +54,13 @@ private:
     std::vector<QString> m_items;
 };
 
-class SectionListView : public QListView
-{
-public:
-    using QListView::QListView;
-
-    QSize sizeHint() const override
-    {
-        return QSize(
-            sizeHintForColumn(0),
-            QListView::sizeHint().height());
-    }
-};
-
 PreferencesDialog::PreferencesDialog(QWidget* parent, std::shared_ptr<pt::Configuration> cfg, std::shared_ptr<pt::Environment> env)
     : QDialog(parent),
     m_cfg(cfg),
-    m_env(env)
+    m_env(env),
+    m_ui(new Ui::PreferencesDialog())
 {
-    createUi();
+    m_ui->setupUi(this);
 
     auto model = new SectionListModel();
     model->addItem(i18n("general"));
@@ -79,11 +68,21 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, std::shared_ptr<pt::Config
     model->addItem(i18n("connection"));
     model->addItem(i18n("proxy"));
 
-    m_sections->setModel(model);
+    m_ui->sectionsList->setModel(model);
 
-    connect(m_sections, &QListView::clicked,         this, &PreferencesDialog::onSectionActivated);
-    connect(m_buttons,  &QDialogButtonBox::accepted, this, &PreferencesDialog::onOk);
-    connect(m_buttons,  &QDialogButtonBox::rejected, this, &PreferencesDialog::reject);
+    m_general = new GeneralSectionWidget();
+    m_downloads = new DownloadsSectionWidget();
+    m_connection = new ConnectionPreferencesPage();
+    m_proxy = new ProxySectionWidget();
+
+    m_ui->sections->addWidget(m_general);
+    m_ui->sections->addWidget(m_downloads);
+    m_ui->sections->addWidget(m_connection);
+    m_ui->sections->addWidget(m_proxy);
+
+    connect(m_ui->sectionsList, &QListView::clicked,         this, &PreferencesDialog::onSectionActivated);
+    connect(m_ui->buttons,  &QDialogButtonBox::accepted, this, &PreferencesDialog::onOk);
+    connect(m_ui->buttons,  &QDialogButtonBox::rejected, this, &PreferencesDialog::reject);
 
     Qt::WindowFlags flags = windowFlags();
     flags |= Qt::CustomizeWindowHint;
@@ -100,35 +99,6 @@ void PreferencesDialog::load()
     m_downloads->loadConfig(m_cfg);
     m_connection->loadConfig(m_cfg);
     m_proxy->loadConfig(m_cfg);
-}
-
-void PreferencesDialog::createUi()
-{
-    m_buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-    m_stacked = new QStackedWidget(this);
-    m_sections = new SectionListView();
-    m_sections->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
-
-    m_general = new GeneralSectionWidget();
-    m_downloads = new DownloadsSectionWidget();
-    m_connection = new ConnectionPreferencesPage();
-    m_proxy = new ProxySectionWidget();
-
-    m_stacked->addWidget(m_general);
-    m_stacked->addWidget(m_downloads);
-    m_stacked->addWidget(m_connection);
-    m_stacked->addWidget(m_proxy);
-
-    auto horiz = new QHBoxLayout();
-    horiz->addWidget(m_sections);
-    horiz->addWidget(m_stacked);
-
-    auto vert = new QVBoxLayout(this);
-    vert->addLayout(horiz);
-    vert->addWidget(m_buttons);
-    vert->setMargin(5);
-
-    this->setLayout(vert);
 }
 
 void PreferencesDialog::onOk()
@@ -155,5 +125,5 @@ void PreferencesDialog::onOk()
 
 void PreferencesDialog::onSectionActivated(QModelIndex const& index)
 {
-    m_stacked->setCurrentIndex(index.row());
+    m_ui->sections->setCurrentIndex(index.row());
 }

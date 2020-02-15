@@ -152,6 +152,8 @@ add_executable(
     # Preferences
     src/picotorrent/connectionpreferencespage
     src/picotorrent/connectionpreferencespage.ui
+    src/picotorrent/preferencesdialog
+    src/picotorrent/preferencesdialog.ui
 
     src/picotorrent/addtorrentdialog
     src/picotorrent/application
@@ -164,7 +166,6 @@ add_executable(
     src/picotorrent/generalsectionwidget
     src/picotorrent/main
     src/picotorrent/mainwindow
-    src/picotorrent/preferencesdialog
     src/picotorrent/proxysectionwidget
     src/picotorrent/resources.qrc
     src/picotorrent/resources.rc
