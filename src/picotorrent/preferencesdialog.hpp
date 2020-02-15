@@ -38,7 +38,7 @@ namespace pt
         std::shared_ptr<Configuration> m_cfg;
         std::shared_ptr<Environment> m_env;
 
-        Ui::PreferencesDialog* m_ui;
+        ::Ui::PreferencesDialog* m_ui;
 
         GeneralSectionWidget* m_general;
         DownloadsSectionWidget* m_downloads;

@@ -1,4 +1,5 @@
 #include "addtorrentdialog.hpp"
+#include "ui_addtorrentdialog.h"
 
 #include <filesystem>
 #include <sstream>
@@ -34,35 +35,33 @@ using pt::AddTorrentDialog;
 AddTorrentDialog::AddTorrentDialog(std::vector<lt::add_torrent_params>& params, std::shared_ptr<pt::Database> db, QWidget* parent)
     : QDialog(parent),
     m_params(params),
-    m_db(db)
+    m_db(db),
+    m_ui(new Ui::AddTorrentDialog())
 {
-    Qt::WindowFlags flags = windowFlags();
-    flags |= Qt::CustomizeWindowHint;
-    flags &= ~Qt::WindowContextHelpButtonHint;
-    flags &= ~Qt::WindowSystemMenuHint;
+    m_ui->setupUi(this);
 
-    m_paramsList = new QComboBox(this);
-    m_torrentName = new QLabel("-", this);
-    m_torrentSize = new QLabel("-", this);
-    m_torrentInfoHash = new QLabel("-", this);
-    m_torrentComment = new QLabel("-", this);
-    m_torrentSavePath = new QComboBox(this);
-    m_torrentSavePath->setEditable(true);
-    m_torrentSavePathBrowse = new QPushButton(i18n("browse"), this);
-    m_torrentSavePathBrowse->setMaximumWidth(30);
-    m_torrentSequentialDownload = new QCheckBox(i18n("sequential_download"), this);
-    m_torrentStart = new QCheckBox(i18n("start_torrent"), this);
+    // translate
+    m_ui->fileGroup->setTitle(i18n("file"));
+    m_ui->savePathBrowse->setText(i18n("browse"));
+    m_ui->savePathLabel->setText(i18n("save_path"));
+    m_ui->sequentialDownload->setText(i18n("sequential_download"));
+    m_ui->startTorrent->setText(i18n("start_torrent"));
+    m_ui->storageGroup->setTitle(i18n("storage"));
+    m_ui->torrentGroup->setTitle(i18n("torrent"));
+    m_ui->torrentCommentLabel->setText(i18n("comment"));
+    m_ui->torrentInfoHashLabel->setText(i18n("info_hash"));
+    m_ui->torrentNameLabel->setText(i18n("name"));
+    m_ui->torrentSizeLabel->setText(i18n("size"));
+
     m_filesModel = new FileStorageItemModel();
     m_torrentContextMenu = new QMenu(this);
-    m_buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
 
-    m_torrentFiles = new QTreeView(this);
-    m_torrentFiles->setContextMenuPolicy(Qt::CustomContextMenu);
-    m_torrentFiles->setModel(m_filesModel);
-    m_torrentFiles->hideColumn(FileStorageItemModel::Columns::Progress);
-    m_torrentFiles->setColumnWidth(FileStorageItemModel::Columns::Name, 240);
-    m_torrentFiles->setColumnWidth(FileStorageItemModel::Columns::Size, 60);
-    m_torrentFiles->setSelectionMode(QTreeView::ExtendedSelection);
+    m_ui->torrentFiles->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_ui->torrentFiles->setModel(m_filesModel);
+    m_ui->torrentFiles->hideColumn(FileStorageItemModel::Columns::Progress);
+    m_ui->torrentFiles->setColumnWidth(FileStorageItemModel::Columns::Name, 240);
+    m_ui->torrentFiles->setColumnWidth(FileStorageItemModel::Columns::Size, 60);
+    m_ui->torrentFiles->setSelectionMode(QTreeView::ExtendedSelection);
 
     // Menu
     QMenu* priorities = m_torrentContextMenu->addMenu(i18n("priority"));
@@ -76,83 +75,41 @@ AddTorrentDialog::AddTorrentDialog(std::vector<lt::add_torrent_params>& params, 
     priorities->addAction(i18n("do_not_download"))
         ->setData(static_cast<uint8_t>(lt::dont_download));
 
-    auto fileGroup = new QGroupBox(i18n("file"), this);
-    auto fileLayout = new QVBoxLayout();
-    fileLayout->addWidget(m_paramsList);
-    fileGroup->setLayout(fileLayout);
+    QObject::connect(m_ui->fileCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                     this,            &AddTorrentDialog::onTorrentIndexChanged);
 
-    auto torrentGroup = new QGroupBox(i18n("torrent"), this);
-    auto torrentGrid = new QGridLayout();
-    torrentGrid->addWidget(new QLabel(i18n("name"), this), 0, 0);
-    torrentGrid->addWidget(m_torrentName, 0, 1);
-    torrentGrid->addWidget(new QLabel(i18n("size"), this), 1, 0);
-    torrentGrid->addWidget(m_torrentSize, 1, 1);
-    torrentGrid->addWidget(new QLabel(i18n("info_hash"), this), 2, 0);
-    torrentGrid->addWidget(m_torrentInfoHash, 2, 1);
-    torrentGrid->addWidget(new QLabel(i18n("comment"), this), 3, 0);
-    torrentGrid->addWidget(m_torrentComment, 3, 1);
-    torrentGrid->setColumnStretch(0, 1);
-    torrentGrid->setColumnStretch(1, 2);
-    torrentGroup->setLayout(torrentGrid);
+    QObject::connect(m_ui->savePath, &QComboBox::editTextChanged,
+                     this,           &AddTorrentDialog::onTorrentSavePathChanged);
 
-    auto prefsGroup = new QGroupBox(i18n("storage"), this);
-    auto prefsGrid = new QGridLayout();
-    prefsGrid->addWidget(new QLabel(i18n("save_path"), this), 0, 0);
+    QObject::connect(m_ui->savePathBrowse, &QPushButton::clicked,
+                     this,                 &AddTorrentDialog::onTorrentSavePathBrowse);
 
-    auto dirBrowseLayout = new QHBoxLayout();
-    dirBrowseLayout->addWidget(m_torrentSavePath);
-    dirBrowseLayout->addWidget(m_torrentSavePathBrowse);
-    dirBrowseLayout->setStretch(0, 1);
-    prefsGrid->addLayout(dirBrowseLayout, 0, 1);
+    QObject::connect(m_ui->sequentialDownload, &QCheckBox::stateChanged,
+                     this,                     &AddTorrentDialog::onTorrentSequentialDownloadChanged);
 
-    auto optsLayout = new QHBoxLayout();
-    optsLayout->addWidget(m_torrentSequentialDownload);
-    optsLayout->addWidget(m_torrentStart);
-    prefsGrid->addLayout(optsLayout, 1, 1);
+    QObject::connect(m_ui->startTorrent, &QCheckBox::stateChanged,
+                     this,               &AddTorrentDialog::onTorrentStartChanged);
 
-    prefsGrid->addWidget(m_torrentFiles, 2, 0, -1, -1);
-    prefsGrid->setRowStretch(2, 1);
-
-    prefsGroup->setLayout(prefsGrid);
-
-    auto layout = new QVBoxLayout();
-    layout->addWidget(fileGroup);
-    layout->addWidget(torrentGroup);
-    layout->addWidget(prefsGroup);
-    layout->addWidget(m_buttons);
-    layout->setStretch(2, 1);
-
-    QObject::connect(m_paramsList, QOverload<int>::of(&QComboBox::currentIndexChanged),
-                     this,         &AddTorrentDialog::onTorrentIndexChanged);
-
-    QObject::connect(m_torrentSavePath, &QComboBox::editTextChanged,
-                     this,              &AddTorrentDialog::onTorrentSavePathChanged);
-
-    QObject::connect(m_torrentSavePathBrowse, &QPushButton::clicked,
-                     this,                    &AddTorrentDialog::onTorrentSavePathBrowse);
-
-    QObject::connect(m_torrentSequentialDownload, &QCheckBox::stateChanged,
-                     this,                        &AddTorrentDialog::onTorrentSequentialDownloadChanged);
-
-    QObject::connect(m_torrentStart, &QCheckBox::stateChanged,
-                     this,           &AddTorrentDialog::onTorrentStartChanged);
-
-    QObject::connect(m_torrentFiles, &QTreeView::customContextMenuRequested,
-                     this,           &AddTorrentDialog::onTorrentFileContextMenu);
+    QObject::connect(m_ui->torrentFiles, &QTreeView::customContextMenuRequested,
+                     this,               &AddTorrentDialog::onTorrentFileContextMenu);
 
     QObject::connect(m_torrentContextMenu, &QMenu::triggered,
                      this,                 &AddTorrentDialog::onSetTorrentFilePriorities);
 
-    QObject::connect(m_buttons, &QDialogButtonBox::accepted,
-                     this,      &QDialog::accept);
+    QObject::connect(m_ui->buttons, &QDialogButtonBox::accepted,
+                     this,          &QDialog::accept);
 
-    QObject::connect(m_buttons, &QDialogButtonBox::accepted,
-                     this,      &AddTorrentDialog::updateHistory);
+    QObject::connect(m_ui->buttons, &QDialogButtonBox::accepted,
+                     this,          &AddTorrentDialog::updateHistory);
 
-    QObject::connect(m_buttons, &QDialogButtonBox::rejected,
-                     this,      &QDialog::reject);
+    QObject::connect(m_ui->buttons, &QDialogButtonBox::rejected,
+                     this,          &QDialog::reject);
 
-    this->setLayout(layout);
+    Qt::WindowFlags flags = windowFlags();
+    flags |= Qt::CustomizeWindowHint;
+    flags &= ~Qt::WindowContextHelpButtonHint;
+    flags &= ~Qt::WindowSystemMenuHint;
+
     this->setMinimumWidth(430);
     this->setWindowFlags(flags);
     this->setWindowTitle(i18n("add_torrent_s"));
@@ -162,7 +119,7 @@ AddTorrentDialog::AddTorrentDialog(std::vector<lt::add_torrent_params>& params, 
 
     while (stmt->read())
     {
-        m_torrentSavePath->addItem(
+        m_ui->savePath->addItem(
             QString::fromStdString(stmt->getString(0)));
     }
 
@@ -170,8 +127,13 @@ AddTorrentDialog::AddTorrentDialog(std::vector<lt::add_torrent_params>& params, 
 
     for (lt::add_torrent_params const& p : m_params)
     {
-        m_paramsList->addItem(getDisplayName(p));
+        m_ui->fileCombo->addItem(getDisplayName(p));
     }
+}
+
+AddTorrentDialog::~AddTorrentDialog()
+{
+    delete m_ui;
 }
 
 QString AddTorrentDialog::getDisplayComment(lt::add_torrent_params const& param)
@@ -259,9 +221,9 @@ void AddTorrentDialog::refreshMetadata(std::shared_ptr<libtorrent::torrent_info>
         if (m_params.at(i).info_hash == (*ti)->info_hash())
         {
             m_params.at(i).ti = (*ti);
-            m_paramsList->setItemText(i, QString::fromStdString(m_params.at(i).ti->name()));
+            m_ui->fileCombo->setItemText(i, QString::fromStdString(m_params.at(i).ti->name()));
 
-            if (i == m_paramsList->currentIndex())
+            if (i == m_ui->fileCombo->currentIndex())
             {
                 onTorrentIndexChanged(i);
             }
@@ -271,10 +233,10 @@ void AddTorrentDialog::refreshMetadata(std::shared_ptr<libtorrent::torrent_info>
 
 void AddTorrentDialog::onSetTorrentFilePriorities(QAction* action)
 {
-    lt::add_torrent_params& params = m_params.at(m_paramsList->currentIndex());
+    lt::add_torrent_params& params = m_params.at(m_ui->fileCombo->currentIndex());
 
     lt::download_priority_t prio = lt::download_priority_t{ static_cast<uint8_t>(action->data().toInt()) };
-    auto const& indices = m_torrentFiles->selectionModel()->selectedIndexes();
+    auto const& indices = m_ui->torrentFiles->selectionModel()->selectedIndexes();
     auto fileIndices = m_filesModel->fileIndices(indices);
 
     for (int idx : fileIndices)
@@ -292,11 +254,11 @@ void AddTorrentDialog::onSetTorrentFilePriorities(QAction* action)
 
 void AddTorrentDialog::onTorrentFileContextMenu(QPoint const& point)
 {
-    QModelIndex idx = m_torrentFiles->indexAt(point);
+    QModelIndex idx = m_ui->torrentFiles->indexAt(point);
 
     if (idx.isValid())
     {
-        m_torrentContextMenu->exec(m_torrentFiles->viewport()->mapToGlobal(point));
+        m_torrentContextMenu->exec(m_ui->torrentFiles->viewport()->mapToGlobal(point));
     }
 }
 
@@ -304,16 +266,16 @@ void AddTorrentDialog::onTorrentIndexChanged(int index)
 {
     auto const& param = m_params.at(index);
 
-    m_torrentName->setText(getDisplayName(param));
-    m_torrentSize->setText(getDisplaySize(param));
-    m_torrentInfoHash->setText(getDisplayHash(param));
-    m_torrentComment->setText(getDisplayComment(param));
-    m_torrentSavePath->setEditText(QString::fromStdString(param.save_path));
+    m_ui->torrentName->setText(getDisplayName(param));
+    m_ui->torrentSize->setText(getDisplaySize(param));
+    m_ui->torrentInfoHash->setText(getDisplayHash(param));
+    m_ui->torrentComment->setText(getDisplayComment(param));
+    m_ui->savePath->setEditText(QString::fromStdString(param.save_path));
 
-    m_torrentSequentialDownload->setChecked(
+    m_ui->sequentialDownload->setChecked(
         ((param.flags & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download));
 
-    m_torrentStart->setChecked(
+    m_ui->startTorrent->setChecked(
         (param.flags & lt::torrent_flags::paused)
         && (param.flags & lt::torrent_flags::auto_managed));
 
@@ -329,15 +291,15 @@ void AddTorrentDialog::onTorrentIndexChanged(int index)
 
     if (param.ti->num_files() > 1)
     {
-        auto root = m_torrentFiles->rootIndex();
+        auto root = m_ui->torrentFiles->rootIndex();
 
         for (int i = 0; i < m_filesModel->rowCount(root); i++)
         {
             auto idx = m_filesModel->index(i, 0, root);
-            m_torrentFiles->expand(idx);
+            m_ui->torrentFiles->expand(idx);
         }
 
-        m_torrentFiles->setRootIsDecorated(true);
+        m_ui->torrentFiles->setRootIsDecorated(true);
     }
     else
     {
@@ -346,19 +308,19 @@ void AddTorrentDialog::onTorrentIndexChanged(int index)
         // the root decorator.
         if (param.ti->files().file_path(lt::file_index_t{0}) == param.ti->name())
         {
-            m_torrentFiles->setRootIsDecorated(false);
+            m_ui->torrentFiles->setRootIsDecorated(false);
         }
         else
         {
-            m_torrentFiles->expandAll();
-            m_torrentFiles->setRootIsDecorated(true);
+            m_ui->torrentFiles->expandAll();
+            m_ui->torrentFiles->setRootIsDecorated(true);
         }
     }
 }
 
 void AddTorrentDialog::onTorrentSavePathBrowse()
 {
-    lt::add_torrent_params& params = m_params.at(m_paramsList->currentIndex());
+    lt::add_torrent_params& params = m_params.at(m_ui->fileCombo->currentIndex());
 
     auto dlg = new QFileDialog(this);
     dlg->setDirectory(QString::fromStdString(params.save_path));
@@ -374,7 +336,7 @@ void AddTorrentDialog::onTorrentSavePathBrowse()
                          if (files.size() > 0)
                          {
                              QString nativePath = QDir::toNativeSeparators(files.at(0));
-                             m_torrentSavePath->setEditText(nativePath);
+                             m_ui->savePath->setEditText(nativePath);
                          }
                      });
 
@@ -384,7 +346,7 @@ void AddTorrentDialog::onTorrentSavePathBrowse()
 
 void AddTorrentDialog::onTorrentSavePathChanged(QString const& text)
 {
-    int index = m_paramsList->currentIndex();
+    int index = m_ui->fileCombo->currentIndex();
 
     if (index < 0)
     {
@@ -397,7 +359,7 @@ void AddTorrentDialog::onTorrentSavePathChanged(QString const& text)
 
 void AddTorrentDialog::onTorrentSequentialDownloadChanged(int state)
 {
-    lt::add_torrent_params& params = m_params.at(m_paramsList->currentIndex());
+    lt::add_torrent_params& params = m_params.at(m_ui->fileCombo->currentIndex());
 
     switch (state)
     {
@@ -412,7 +374,7 @@ void AddTorrentDialog::onTorrentSequentialDownloadChanged(int state)
 
 void AddTorrentDialog::onTorrentStartChanged(int state)
 {
-    lt::add_torrent_params& params = m_params.at(m_paramsList->currentIndex());
+    lt::add_torrent_params& params = m_params.at(m_ui->fileCombo->currentIndex());
 
     switch (state)
     {

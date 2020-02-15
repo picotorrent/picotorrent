@@ -155,7 +155,10 @@ add_executable(
     src/picotorrent/preferencesdialog
     src/picotorrent/preferencesdialog.ui
 
+    # add torrent dialog
     src/picotorrent/addtorrentdialog
+    src/picotorrent/addtorrentdialog.ui
+
     src/picotorrent/application
     src/picotorrent/buildinfo
     src/picotorrent/crashpad
