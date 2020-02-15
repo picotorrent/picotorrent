@@ -14,7 +14,7 @@
 
 #include "core/configuration.hpp"
 #include "core/environment.hpp"
-#include "connectionsectionwidget.hpp"
+#include "connectionpreferencespage.hpp"
 #include "downloadssectionwidget.hpp"
 #include "generalsectionwidget.hpp"
 #include "proxysectionwidget.hpp"
@@ -111,7 +111,7 @@ void PreferencesDialog::createUi()
 
     m_general = new GeneralSectionWidget();
     m_downloads = new DownloadsSectionWidget();
-    m_connection = new ConnectionSectionWidget();
+    m_connection = new ConnectionPreferencesPage();
     m_proxy = new ProxySectionWidget();
 
     m_stacked->addWidget(m_general);

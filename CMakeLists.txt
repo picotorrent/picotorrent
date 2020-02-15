@@ -145,13 +145,17 @@ add_executable(
     # Scripting
     src/picotorrent/scripting/jsengine
 
+    # Various dialogs
     src/picotorrent/aboutdialog
     src/picotorrent/aboutdialog.ui
+
+    # Preferences
+    src/picotorrent/connectionpreferencespage
+    src/picotorrent/connectionpreferencespage.ui
 
     src/picotorrent/addtorrentdialog
     src/picotorrent/application
     src/picotorrent/buildinfo
-    src/picotorrent/connectionsectionwidget
     src/picotorrent/crashpad
     src/picotorrent/downloadssectionwidget
     src/picotorrent/elidedlabel

@@ -14,7 +14,7 @@ class SectionListView;
 namespace pt
 {
     class Configuration;
-    class ConnectionSectionWidget;
+    class ConnectionPreferencesPage;
     class DownloadsSectionWidget;
     class Environment;
     class GeneralSectionWidget;
@@ -40,7 +40,7 @@ namespace pt
 
         GeneralSectionWidget* m_general;
         DownloadsSectionWidget* m_downloads;
-        ConnectionSectionWidget* m_connection;
+        ConnectionPreferencesPage* m_connection;
         ProxySectionWidget* m_proxy;
     };
 }
