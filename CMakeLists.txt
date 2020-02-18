@@ -147,27 +147,23 @@ add_executable(
 
     # Various dialogs
     src/picotorrent/aboutdialog
-    src/picotorrent/aboutdialog.ui
     src/picotorrent/addtorrentdialog
-    src/picotorrent/addtorrentdialog.ui
 
     # Preferences
     src/picotorrent/connectionpreferencespage
-    src/picotorrent/connectionpreferencespage.ui
+    src/picotorrent/downloadspreferencespage
+    src/picotorrent/generalpreferencespage
     src/picotorrent/preferencesdialog
-    src/picotorrent/preferencesdialog.ui
+    src/picotorrent/proxypreferencespage
 
     src/picotorrent/application
     src/picotorrent/buildinfo
     src/picotorrent/crashpad
-    src/picotorrent/downloadspreferencespage
     src/picotorrent/elidedlabel
     src/picotorrent/filestorageitemdelegate
     src/picotorrent/filestorageitemmodel
-    src/picotorrent/generalpreferencespage
     src/picotorrent/main
     src/picotorrent/mainwindow
-    src/picotorrent/proxypreferencespage
     src/picotorrent/resources.qrc
     src/picotorrent/resources.rc
     src/picotorrent/scriptedtorrentfilter
