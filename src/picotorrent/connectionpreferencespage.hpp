@@ -21,7 +21,7 @@ namespace pt
     class ConnectionPreferencesPage : public QWidget
     {
     public:
-        ConnectionPreferencesPage();
+        ConnectionPreferencesPage(QWidget* parent);
         ~ConnectionPreferencesPage();
 
         void loadConfig(std::shared_ptr<Configuration> cfg);

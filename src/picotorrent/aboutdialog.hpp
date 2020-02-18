@@ -18,6 +18,6 @@ namespace pt
         ~AboutDialog();
 
     private:
-        Ui::AboutDialog* m_ui;
+        ::Ui::AboutDialog* m_ui;
     };
 }

@@ -20,15 +20,17 @@ namespace pt
 {
     class Configuration;
     class ConnectionPreferencesPage;
-    class DownloadsSectionWidget;
+    class DownloadsPreferencesPage;
     class Environment;
-    class GeneralSectionWidget;
-    class ProxySectionWidget;
+    class GeneralPreferencesPage;
+    class ProxyPreferencesPage;
 
     class PreferencesDialog : public QDialog
     {
     public:
         PreferencesDialog(QWidget* parent, std::shared_ptr<Configuration> cfg, std::shared_ptr<Environment> env);
+        virtual ~PreferencesDialog();
+
         void load();
 
     private:
@@ -40,9 +42,9 @@ namespace pt
 
         ::Ui::PreferencesDialog* m_ui;
 
-        GeneralSectionWidget* m_general;
-        DownloadsSectionWidget* m_downloads;
+        GeneralPreferencesPage* m_general;
+        DownloadsPreferencesPage* m_downloads;
         ConnectionPreferencesPage* m_connection;
-        ProxySectionWidget* m_proxy;
+        ProxyPreferencesPage* m_proxy;
     };
 }

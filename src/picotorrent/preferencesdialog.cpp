@@ -16,9 +16,9 @@
 #include "core/configuration.hpp"
 #include "core/environment.hpp"
 #include "connectionpreferencespage.hpp"
-#include "downloadssectionwidget.hpp"
-#include "generalsectionwidget.hpp"
-#include "proxysectionwidget.hpp"
+#include "downloadspreferencespage.hpp"
+#include "generalpreferencespage.hpp"
+#include "proxypreferencespage.hpp"
 #include "translator.hpp"
 
 using pt::PreferencesDialog;
@@ -58,7 +58,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, std::shared_ptr<pt::Config
     : QDialog(parent),
     m_cfg(cfg),
     m_env(env),
-    m_ui(new Ui::PreferencesDialog())
+    m_ui(new ::Ui::PreferencesDialog())
 {
     m_ui->setupUi(this);
 
@@ -69,11 +69,13 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, std::shared_ptr<pt::Config
     model->addItem(i18n("proxy"));
 
     m_ui->sectionsList->setModel(model);
+    m_ui->sectionsList->selectionModel()->select(
+        model->index(0), QItemSelectionModel::Select | QItemSelectionModel::Rows);
 
-    m_general = new GeneralSectionWidget();
-    m_downloads = new DownloadsSectionWidget();
-    m_connection = new ConnectionPreferencesPage();
-    m_proxy = new ProxySectionWidget();
+    m_general = new GeneralPreferencesPage(this);
+    m_downloads = new DownloadsPreferencesPage(this);
+    m_connection = new ConnectionPreferencesPage(this);
+    m_proxy = new ProxyPreferencesPage(this);
 
     m_ui->sections->addWidget(m_general);
     m_ui->sections->addWidget(m_downloads);
@@ -81,8 +83,8 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, std::shared_ptr<pt::Config
     m_ui->sections->addWidget(m_proxy);
 
     connect(m_ui->sectionsList, &QListView::clicked,         this, &PreferencesDialog::onSectionActivated);
-    connect(m_ui->buttons,  &QDialogButtonBox::accepted, this, &PreferencesDialog::onOk);
-    connect(m_ui->buttons,  &QDialogButtonBox::rejected, this, &PreferencesDialog::reject);
+    connect(m_ui->buttons,      &QDialogButtonBox::accepted, this, &PreferencesDialog::onOk);
+    connect(m_ui->buttons,      &QDialogButtonBox::rejected, this, &PreferencesDialog::reject);
 
     Qt::WindowFlags flags = windowFlags();
     flags |= Qt::CustomizeWindowHint;
@@ -91,6 +93,11 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, std::shared_ptr<pt::Config
 
     this->setWindowFlags(flags);
     this->setWindowTitle(i18n("preferences"));
+}
+
+PreferencesDialog::~PreferencesDialog()
+{
+    delete m_ui;
 }
 
 void PreferencesDialog::load()
