@@ -145,21 +145,25 @@ add_executable(
     # Scripting
     src/picotorrent/scripting/jsengine
 
+    # Various dialogs
     src/picotorrent/aboutdialog
     src/picotorrent/addtorrentdialog
+
+    # Preferences
+    src/picotorrent/connectionpreferencespage
+    src/picotorrent/downloadspreferencespage
+    src/picotorrent/generalpreferencespage
+    src/picotorrent/preferencesdialog
+    src/picotorrent/proxypreferencespage
+
     src/picotorrent/application
     src/picotorrent/buildinfo
-    src/picotorrent/connectionsectionwidget
     src/picotorrent/crashpad
-    src/picotorrent/downloadssectionwidget
     src/picotorrent/elidedlabel
     src/picotorrent/filestorageitemdelegate
     src/picotorrent/filestorageitemmodel
-    src/picotorrent/generalsectionwidget
     src/picotorrent/main
     src/picotorrent/mainwindow
-    src/picotorrent/preferencesdialog
-    src/picotorrent/proxysectionwidget
     src/picotorrent/resources.qrc
     src/picotorrent/resources.rc
     src/picotorrent/scriptedtorrentfilter

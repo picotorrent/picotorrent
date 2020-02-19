@@ -20,9 +20,9 @@ public:
 
 using pt::TorrentPeersWidget;
 
-TorrentPeersWidget::TorrentPeersWidget(pt::GeoIP* geo)
+TorrentPeersWidget::TorrentPeersWidget()
 {
-    m_peersModel = new PeerListModel(geo);
+    m_peersModel = new PeerListModel();
     m_peersView  = new MinimumTreeView();
 
     m_peersView->setModel(m_peersModel);
@@ -49,4 +49,9 @@ void TorrentPeersWidget::refresh(QList<pt::TorrentHandle*> const& torrents)
     }
 
     m_peersModel->update(torrents.at(0));
+}
+
+void TorrentPeersWidget::setGeo(pt::GeoIP* geo)
+{
+    m_peersModel->setGeo(geo);
 }

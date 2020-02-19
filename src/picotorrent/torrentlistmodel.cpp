@@ -189,7 +189,7 @@ QVariant TorrentListModel::data(QModelIndex const& index, int role) const
 
         case Columns::DownloadSpeed:
         {
-            if (status.paused)
+            if (status.paused || status.state == TorrentStatus::Uploading)
             {
                 return "-";
             }

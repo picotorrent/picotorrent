@@ -250,6 +250,8 @@
         "enable_automatic_crash_reporting": "Enable automatic crash reporting",
         "leeches": "Leeches",
         "not_available": "N/A",
-        "tier_n": "Tier #%1"
+        "tier_n": "Tier #%1",
+        "network_adapter": "Network adapter",
+        "kb_s": "KB/s"
     }
 }
