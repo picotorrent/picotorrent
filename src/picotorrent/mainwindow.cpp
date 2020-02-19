@@ -1,4 +1,5 @@
 #include "mainwindow.hpp"
+#include "ui_mainwindow.h"
 
 #include <Windows.h>
 #include <CommCtrl.h>
@@ -74,56 +75,52 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_db(db),
     m_cfg(cfg),
     m_torrentsCount(0),
-    m_taskbarButton(nullptr)
+    m_taskbarButton(nullptr),
+    m_ui(new Ui::MainWindow())
 {
+    m_ui->setupUi(this);
+
     m_session                = new Session(this, db, cfg, env);
     m_geo                    = new GeoIP(this, env, cfg);
     m_jsEngine               = new JsEngine(this);
-    m_splitter               = new QSplitter(this);
     m_taskbarButton          = new QWinTaskbarButton(this);
-    m_statusBar              = new StatusBar(this);
     m_trayIcon               = new SystemTrayIcon(this);
-    m_torrentDetails         = new TorrentDetailsWidget(this, m_sessionState, m_geo);
     m_torrentListModel       = new TorrentListModel();
     m_torrentSortFilterModel = new TorrentSortFilterProxyModel(this);
     m_torrentSortFilterModel->setSourceModel(m_torrentListModel);
-    m_torrentList            = new TorrentListWidget(this, m_torrentSortFilterModel, m_db);
 
-    // Setup splitter
-    m_splitter->addWidget(m_torrentList);
-    m_splitter->addWidget(m_torrentDetails);
-    m_splitter->setChildrenCollapsible(false);
-    m_splitter->setOrientation(Qt::Vertical);
+    m_ui->torrentDetails->setGeo(m_geo);
 
     // Setup torrent list and sort/filter-model
-    m_torrentList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
+    m_ui->torrentList->load(m_torrentListModel, db);
+    m_ui->torrentList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
 
-    /* Create actions */
-    m_fileAddTorrent      = new QAction(i18n("amp_add_torrent"), this);
-    m_fileAddMagnetLinks  = new QAction(i18n("amp_add_magnet_link_s"), this);
-    m_fileExit            = new QAction(i18n("amp_exit"), this);
-    m_viewFiltersNone     = new QAction(i18n("amp_none"), this);
-    m_viewPreferences     = new QAction(i18n("amp_preferences"), this);
-    m_viewDetailsPanel    = new QAction(i18n("amp_details_panel"), this);
-    m_viewStatusBar       = new QAction(i18n("amp_status_bar"), this);
-    m_helpCheckForUpdates = new QAction(i18n("amp_check_for_update"), this);
-    m_helpAbout           = new QAction(i18n("amp_about"), this);
-    m_filtersGroup        = new QActionGroup(this);
-    m_filtersGroup->addAction(m_viewFiltersNone);
+    // Translate menu and actions
+    m_ui->menuFile->setTitle(i18n("amp_file"));
+    m_ui->menuFilter->setTitle(i18n("amp_filter"));
+    m_ui->menuHelp->setTitle(i18n("amp_help"));
+    m_ui->menuView->setTitle(i18n("amp_view"));
+
+    m_ui->actionAbout->setText(i18n("amp_about"));
+    m_ui->actionAddMagnetLink->setText(i18n("amp_add_magnet_link_s"));
+    m_ui->actionAddTorrent->setText(i18n("amp_add_torrent"));
+    m_ui->actionCheckForUpdates->setText(i18n("amp_check_for_update"));
+    m_ui->actionDetailsPanel->setText(i18n("amp_details_panel"));
+    m_ui->actionExit->setText(i18n("amp_exit"));
+    m_ui->actionFilterNone->setText(i18n("amp_none"));
+    m_ui->actionPreferences->setText(i18n("amp_preferences"));
+    m_ui->actionStatusBar->setText(i18n("amp_status_bar"));
+
+    m_filtersGroup = new QActionGroup(this);
+    m_filtersGroup->addAction(m_ui->actionFilterNone);
     m_filtersGroup->setExclusive(true);
 
-    m_viewFiltersNone->setCheckable(true);
-    m_viewFiltersNone->setChecked(true);
-
-    m_viewDetailsPanel->setCheckable(true);
-    m_viewDetailsPanel->setChecked(m_cfg->getBool("ui.show_details_panel"));
-
-    m_viewStatusBar->setCheckable(true);
-    m_viewStatusBar->setChecked(m_cfg->getBool("ui.show_status_bar"));
+    m_ui->actionDetailsPanel->setChecked(m_cfg->getBool("ui.show_details_panel"));
+    m_ui->actionStatusBar->setChecked(m_cfg->getBool("ui.show_status_bar"));
 
     // Shortcuts
-    m_shortcutOpenTorrent = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_O), this);
-    m_shortcutRemoveSelectedTorrent = new QShortcut(QKeySequence(Qt::Key_Delete), m_torrentList);
+    m_shortcutOpenTorrent           = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_O), this);
+    m_shortcutRemoveSelectedTorrent = new QShortcut(QKeySequence(Qt::Key_Delete), m_ui->torrentList);
 
     // Shortcut signals
     QObject::connect(m_shortcutOpenTorrent, &QShortcut::activated,
@@ -145,14 +142,14 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
                      [this](SessionStatistics* stats)
                      {
                          bool dhtEnabled = m_cfg->getBool("enable_dht");
-                         m_statusBar->updateDhtNodesCount(dhtEnabled ? stats->dhtNodes : -1);
+                         m_ui->statusBar->updateDhtNodesCount(dhtEnabled ? stats->dhtNodes : -1);
                      });
 
     QObject::connect(m_session,          &Session::torrentAdded,
                      [this](TorrentHandle* torrent)
                      {
                          m_torrentsCount++;
-                         m_statusBar->updateTorrentCount(m_torrentsCount);
+                         m_ui->statusBar->updateTorrentCount(m_torrentsCount);
                          m_torrentListModel->addTorrent(torrent);
                      });
 
@@ -163,14 +160,14 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
                      [this](TorrentHandle* torrent)
                      {
                          m_torrentsCount--;
-                         m_statusBar->updateTorrentCount(m_torrentsCount);
+                         m_ui->statusBar->updateTorrentCount(m_torrentsCount);
                          m_torrentListModel->removeTorrent(torrent);
                      });
 
     QObject::connect(m_session,          &Session::torrentStatsUpdated,
                      [this](TorrentStatistics* stats)
                      {
-                         m_statusBar->updateTransferRates(
+                         m_ui->statusBar->updateTransferRates(
                              stats->totalPayloadDownloadRate,
                              stats->totalPayloadUploadRate);
                      });
@@ -189,40 +186,40 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
                      {
                          if (m_selectedTorrents.contains(torrent))
                          {
-                             m_torrentDetails->update(m_selectedTorrents);
+                             m_ui->torrentDetails->update(m_selectedTorrents);
                          }
                      });
 
     // Main menu signals
-    QObject::connect(m_fileAddTorrent,     &QAction::triggered,
-                     this,                 &MainWindow::onFileAddTorrent);
+    QObject::connect(m_ui->actionAddTorrent,      &QAction::triggered,
+                     this,                        &MainWindow::onFileAddTorrent);
 
-    QObject::connect(m_fileAddMagnetLinks, &QAction::triggered,
-                     this,                 &MainWindow::onFileAddMagnetLinks);
+    QObject::connect(m_ui->actionAddMagnetLink,   &QAction::triggered,
+                     this,                        &MainWindow::onFileAddMagnetLinks);
 
-    QObject::connect(m_fileExit,           &QAction::triggered,
-                     this,                 &MainWindow::close);
+    QObject::connect(m_ui->actionExit,            &QAction::triggered,
+                     this,                        &MainWindow::close);
 
-    QObject::connect(m_viewPreferences,    &QAction::triggered,
-                     this,                 &MainWindow::onViewPreferences);
+    QObject::connect(m_ui->actionPreferences,     &QAction::triggered,
+                     this,                        &MainWindow::onViewPreferences);
 
-    QObject::connect(m_viewDetailsPanel,   &QAction::toggled,
-                     this,                 &MainWindow::showHideDetailsPanel);
+    QObject::connect(m_ui->actionDetailsPanel,    &QAction::toggled,
+                     this,                        &MainWindow::showHideDetailsPanel);
 
-    QObject::connect(m_viewStatusBar,      &QAction::toggled,
-                     this,                 &MainWindow::showHideStatusBar);
+    QObject::connect(m_ui->actionStatusBar,       &QAction::toggled,
+                     this,                        &MainWindow::showHideStatusBar);
 
-    QObject::connect(m_helpCheckForUpdates,&QAction::triggered,
+    QObject::connect(m_ui->actionCheckForUpdates, &QAction::triggered,
                      [this] { this->checkForUpdates(true); });
 
-    QObject::connect(m_helpAbout,          &QAction::triggered,
-                     this,                 &MainWindow::onHelpAbout);
+    QObject::connect(m_ui->actionAbout,           &QAction::triggered,
+                     this,                        &MainWindow::onHelpAbout);
 
-    QObject::connect(m_filtersGroup,       &QActionGroup::triggered,
-                    this,                  &MainWindow::setTorrentFilter);
+    QObject::connect(m_filtersGroup,              &QActionGroup::triggered,
+                    this,                         &MainWindow::setTorrentFilter);
 
     // Torrent list signals
-    QObject::connect(m_torrentList, &TorrentListWidget::torrentsDeselected,
+    QObject::connect(m_ui->torrentList, &TorrentListWidget::torrentsDeselected,
         [this](QList<TorrentHandle*> const& torrents)
         {
             for (auto th : torrents)
@@ -231,14 +228,14 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
             }
         });
 
-    QObject::connect(m_torrentList, &TorrentListWidget::torrentsSelected,
+    QObject::connect(m_ui->torrentList, &TorrentListWidget::torrentsSelected,
         [this](QList<TorrentHandle*> const& torrents)
         {
             m_selectedTorrents.append(torrents);
-            m_torrentDetails->update(m_selectedTorrents);
+            m_ui->torrentDetails->update(m_selectedTorrents);
         });
 
-    QObject::connect(m_torrentList,        &QTreeView::customContextMenuRequested,
+    QObject::connect(m_ui->torrentList,    &QTreeView::customContextMenuRequested,
                      this,                 &MainWindow::onTorrentContextMenu);
 
     // GeoIP signals
@@ -265,34 +262,9 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     QObject::connect(m_jsEngine,           &JsEngine::torrentFilterAdded,
                      this,                 &MainWindow::addTorrentFilter);
 
-    auto fileMenu = menuBar()->addMenu(i18n("amp_file"));
-    fileMenu->addAction(m_fileAddTorrent);
-    fileMenu->addAction(m_fileAddMagnetLinks);
-    fileMenu->addSeparator();
-    fileMenu->addAction(m_fileExit);
-
-    auto viewMenu = menuBar()->addMenu(i18n("amp_view"));
-
-    m_filtersMenu = viewMenu->addMenu(i18n("amp_filter"));
-    m_filtersMenu->addAction(m_viewFiltersNone);
-    m_filtersMenu->addSeparator();
-
-    viewMenu->addSeparator();
-    viewMenu->addAction(m_viewDetailsPanel);
-    viewMenu->addAction(m_viewStatusBar);
-    viewMenu->addSeparator();
-    viewMenu->addAction(m_viewPreferences);
-
-    auto helpMenu = menuBar()->addMenu(i18n("amp_help"));
-    helpMenu->addAction(m_helpCheckForUpdates);
-    helpMenu->addSeparator();
-    helpMenu->addAction(m_helpAbout);
-
     this->setAcceptDrops(true);
-    this->setCentralWidget(m_splitter);
     this->setMinimumWidth(250);
-    this->setStatusBar(m_statusBar);
-    this->setWindowIcon(QIcon(":res/app.ico"));  
+    this->setWindowIcon(QIcon(":res/app.ico"));
     this->setWindowTitle("PicoTorrent");
 
     this->resize(
@@ -311,7 +283,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
             splitterSizes.push_back(part.toInt());
         }
 
-        m_splitter->setSizes(splitterSizes);
+        m_ui->splitter->setSizes(splitterSizes);
     }
 
     if (m_cfg->getBool("geoip.enabled"))
@@ -322,8 +294,9 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     this->showHideDetailsPanel(m_cfg->getBool("ui.show_details_panel"));
     this->showHideStatusBar(m_cfg->getBool("ui.show_status_bar"));
 
-    m_statusBar->updateDhtNodesCount(m_cfg->getBool("enable_dht") ? 0 : -1);
-    m_statusBar->updateTorrentCount(m_torrentsCount);
+    m_ui->statusBar->updateDhtNodesCount(m_cfg->getBool("enable_dht") ? 0 : -1);
+    m_ui->statusBar->updateTorrentCount(m_torrentsCount);
+
     m_trayIcon->show();
 
     if (m_cfg->getBool("update_checks.enabled"))
@@ -351,7 +324,7 @@ MainWindow::~MainWindow()
     // Store splitter sizes
     QStringList sizes;
 
-    for (int size : m_splitter->sizes())
+    for (int size : m_ui->splitter->sizes())
     {
         sizes << QString::number(size);
     }
@@ -538,7 +511,7 @@ void MainWindow::changeEvent(QEvent* event)
 
 void MainWindow::addTorrentFilter(pt::ScriptedTorrentFilter* filter)
 {
-    auto action = m_filtersMenu->addAction(filter->name());
+    auto action = m_ui->menuFilter->addAction(filter->name());
     action->setCheckable(true);
     action->setData(QVariant::fromValue(static_cast<void*>(filter)));
 
@@ -726,12 +699,12 @@ void MainWindow::onHelpAbout()
 
 void MainWindow::onTorrentContextMenu(QPoint const& point)
 {
-    QModelIndex idx = m_torrentList->indexAt(point);
+    QModelIndex idx = m_ui->torrentList->indexAt(point);
 
     if (idx.isValid())
     {
         auto menu = new TorrentContextMenu(this, m_selectedTorrents);
-        menu->popup(m_torrentList->viewport()->mapToGlobal(point));
+        menu->popup(m_ui->torrentList->viewport()->mapToGlobal(point));
 
         QObject::connect(menu, &QMenu::aboutToHide,
                          menu, &QMenu::deleteLater);
@@ -798,12 +771,12 @@ void MainWindow::showHideDetailsPanel(bool show)
 {
     if (show)
     {
-        m_torrentDetails->show();
+        m_ui->torrentDetails->show();
         this->setMinimumHeight(300);
     }
     else
     {
-        m_torrentDetails->hide();
+        m_ui->torrentDetails->hide();
         this->setMinimumHeight(150);
     }
 
@@ -814,11 +787,11 @@ void MainWindow::showHideStatusBar(bool show)
 {
     if (show)
     {
-        m_statusBar->show();
+        m_ui->statusBar->show();
     }
     else
     {
-        m_statusBar->hide();
+        m_ui->statusBar->hide();
     }
 
     m_cfg->setBool("ui.show_status_bar", show);

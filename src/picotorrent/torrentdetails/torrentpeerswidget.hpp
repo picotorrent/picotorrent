@@ -15,10 +15,11 @@ namespace pt
     class TorrentPeersWidget : public DetailsTab
     {
     public:
-        TorrentPeersWidget(GeoIP* geo);
+        TorrentPeersWidget();
 
         virtual void clear() override;
         virtual void refresh(QList<TorrentHandle*> const& torrents) override;
+        void setGeo(GeoIP* geo);
 
     private:
         QTreeView* m_peersView;

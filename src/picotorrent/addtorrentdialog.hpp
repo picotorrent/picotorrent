@@ -23,10 +23,16 @@ namespace pt
     class Database;
     class FileStorageItemModel;
 
+    namespace Ui
+    {
+        class AddTorrentDialog;
+    }
+
     class AddTorrentDialog : public QDialog
     {
     public:
         AddTorrentDialog(std::vector<libtorrent::add_torrent_params>& params, std::shared_ptr<Database> db, QWidget* parent);
+        ~AddTorrentDialog();
 
         std::vector<libtorrent::add_torrent_params> getParams();
 
@@ -52,17 +58,7 @@ namespace pt
         std::vector<libtorrent::add_torrent_params> m_params;
         std::shared_ptr<Database> m_db;
 
-        QComboBox* m_paramsList;
-        QLabel* m_torrentName;
-        QLabel* m_torrentSize;
-        QLabel* m_torrentInfoHash;
-        QLabel* m_torrentComment;
-        QComboBox* m_torrentSavePath;
-        QPushButton* m_torrentSavePathBrowse;
-        QCheckBox* m_torrentSequentialDownload;
-        QCheckBox* m_torrentStart;
-        QTreeView* m_torrentFiles;
-        QDialogButtonBox* m_buttons;
+        Ui::AddTorrentDialog* m_ui;
 
         QMenu* m_torrentContextMenu;
 

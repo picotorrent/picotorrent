@@ -136,8 +136,9 @@ static const std::map<std::string, QPoint> FlagPositions =
     { "YE", QPoint(72,  150) }, // Yemen
 };
 
-PeerListModel::PeerListModel(pt::GeoIP* geo)
-    : m_geo(geo)
+PeerListModel::PeerListModel()
+    : QAbstractListModel(),
+    m_geo(nullptr)
 {
     QIcon icn(":/flags.svg");
     QPixmap pm = icn.pixmap(537, 185).scaledToWidth(537);
@@ -154,6 +155,11 @@ void PeerListModel::clear()
     this->beginResetModel();
     m_peers.clear();
     this->endResetModel();
+}
+
+void PeerListModel::setGeo(pt::GeoIP* geo)
+{
+    m_geo = geo;
 }
 
 void PeerListModel::update(pt::TorrentHandle* torrent)
@@ -222,6 +228,11 @@ QVariant PeerListModel::data(QModelIndex const& index, int role) const
         {
         case Columns::IP:
         {
+            if (m_geo == nullptr)
+            {
+                break;
+            }
+
             std::string code = m_geo->lookupCountryCode(peer.ip.address().to_string());
 
             if (FlagPositions.find(code) != FlagPositions.end())

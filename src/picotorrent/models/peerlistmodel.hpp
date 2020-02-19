@@ -28,10 +28,11 @@ namespace pt
             _Max
         };
 
-        PeerListModel(GeoIP* geo);
+        PeerListModel();
         virtual ~PeerListModel();
 
         void clear();
+        void setGeo(GeoIP* geo);
         void update(TorrentHandle* torrent);
 
         int columnCount(const QModelIndex&) const override;
