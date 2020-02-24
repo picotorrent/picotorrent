@@ -21,9 +21,10 @@ namespace pt
         Q_OBJECT
 
     public:
-        TorrentListWidget(QWidget* parent, QAbstractItemModel* model, std::shared_ptr<Database> db);
+        TorrentListWidget(QWidget* parent);
         virtual ~TorrentListWidget();
 
+        void load(QAbstractItemModel* model, std::shared_ptr<Database> db);
         QSize sizeHint() const override;
 
     signals:

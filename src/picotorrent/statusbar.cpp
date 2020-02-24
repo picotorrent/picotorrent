@@ -10,16 +10,13 @@ using pt::StatusBar;
 StatusBar::StatusBar(QWidget* parent)
     : QStatusBar(parent)
 {
-    m_torrentsCount = new QLabel();
-    m_torrentsCount->setMinimumWidth(100);
-    m_dhtNodeCount = new QLabel();
-    m_dhtNodeCount->setMinimumWidth(100);
-    m_transferSpeeds = new QLabel();
-    m_transferSpeeds->setMinimumWidth(100);
+    m_torrentsCount = new QLabel(this);
+    m_dhtNodeCount = new QLabel(this);
+    m_transferSpeeds = new QLabel(this);
 
-    this->addWidget(m_torrentsCount);
-    this->addWidget(m_dhtNodeCount);
-    this->addWidget(m_transferSpeeds);
+    this->addWidget(m_torrentsCount, 1);
+    this->addWidget(m_dhtNodeCount, 1);
+    this->addWidget(m_transferSpeeds, 1);
 }
 
 void StatusBar::updateDhtNodesCount(int64_t nodes)
@@ -36,13 +33,15 @@ void StatusBar::updateDhtNodesCount(int64_t nodes)
 
 void StatusBar::updateTorrentCount(int64_t torrents)
 {
-    m_torrentsCount->setText(i18n("i64d_torrents").arg(torrents));
+    m_torrentsCount->setText(
+        i18n("i64d_torrents")
+            .arg(torrents));
 }
 
 void StatusBar::updateTransferRates(int64_t downSpeed, int64_t upSpeed)
 {
     m_transferSpeeds->setText(
-        i18n("dl_s_ul_s").arg(
-            downSpeed < 1024 ? "-" : QString::fromStdWString(Utils::toHumanFileSize(downSpeed)),
-            upSpeed   < 1024 ? "-" : QString::fromStdWString(Utils::toHumanFileSize(upSpeed))));
+        i18n("dl_s_ul_s")
+            .arg(downSpeed < 1024 ? "-" : QString::fromStdWString(Utils::toHumanFileSize(downSpeed)))
+            .arg(upSpeed   < 1024 ? "-" : QString::fromStdWString(Utils::toHumanFileSize(upSpeed))));
 }
