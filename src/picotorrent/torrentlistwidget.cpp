@@ -16,9 +16,48 @@
 namespace fs = std::filesystem;
 using pt::TorrentListWidget;
 
-TorrentListWidget::TorrentListWidget(QWidget* parent, QAbstractItemModel* model, std::shared_ptr<pt::Database> db)
-    : m_db(db)
+TorrentListWidget::TorrentListWidget(QWidget* parent)
 {
+}
+
+TorrentListWidget::~TorrentListWidget()
+{
+    const char* sql = "INSERT INTO column_state (list_id, column_id, position, width, is_visible) VALUES (?, ?, ?, ?, ?)\n"
+        "ON CONFLICT(list_id, column_id) DO UPDATE SET position = excluded.position, width = excluded.width, is_visible = excluded.is_visible;";
+
+    auto header = this->header();
+
+    for (int i = 0; i < header->count(); i++)
+    {
+        bool sectionHidden = header->isSectionHidden(i);
+        int sectionSize = header->sectionSize(i);
+
+        if (sectionHidden)
+        {
+            header->showSection(i);
+            sectionSize = header->sectionSize(i);
+        }
+
+        auto stmt = m_db->statement(sql);
+        stmt->bind(1, "torrent_list");
+        stmt->bind(2, i);
+        stmt->bind(3, header->visualIndex(i));
+        stmt->bind(4, sectionSize);
+        stmt->bind(5, !sectionHidden);
+        stmt->execute();
+    }
+
+    auto sortStmt = m_db->statement("INSERT INTO list_state (id, sort_column_index, sort_column_order) VALUES (?, ?, ?) ON CONFLICT (id) DO UPDATE SET sort_column_index = excluded.sort_column_index, sort_column_order = excluded.sort_column_order");
+    sortStmt->bind(1, "torrent_list");
+    sortStmt->bind(2, header->sortIndicatorSection());
+    sortStmt->bind(3, (int)header->sortIndicatorOrder());
+    sortStmt->execute();
+}
+
+void TorrentListWidget::load(QAbstractItemModel* model, std::shared_ptr<pt::Database> db)
+{
+    m_db = db;
+
     this->setModel(model);
     this->setContextMenuPolicy(Qt::CustomContextMenu);
     this->setItemDelegate(new TorrentItemDelegate(this));
@@ -33,9 +72,9 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, QAbstractItemModel* model,
     header->setStretchLastSection(false);
 
     // These are default sizes for the columns. Real values are set from the database.
-    header->resizeSection(TorrentListModel::Columns::Name,          160);
+    header->resizeSection(TorrentListModel::Columns::Name, 160);
     header->resizeSection(TorrentListModel::Columns::QueuePosition, 30);
-    header->resizeSection(TorrentListModel::Columns::Size,          60);
+    header->resizeSection(TorrentListModel::Columns::Size, 60);
 
     // Hidden columns
     header->hideSection(TorrentListModel::Columns::SizeRemaining);
@@ -77,48 +116,14 @@ TorrentListWidget::TorrentListWidget(QWidget* parent, QAbstractItemModel* model,
             static_cast<Qt::SortOrder>(sortColumnOrder));
     }
 
-    QObject::connect(header,                 &QHeaderView::customContextMenuRequested,
-                     this,                   &TorrentListWidget::showHeaderContextMenu);
+    QObject::connect(header, &QHeaderView::customContextMenuRequested,
+        this, &TorrentListWidget::showHeaderContextMenu);
 
     QObject::connect(this->selectionModel(), &QItemSelectionModel::selectionChanged,
-                     this,                   &TorrentListWidget::torrentSelectionChanged);
+        this, &TorrentListWidget::torrentSelectionChanged);
 
-    QObject::connect(this,                   &TorrentListWidget::activated,
-                     this,                   &TorrentListWidget::showTorrentExplorer);
-}
-
-TorrentListWidget::~TorrentListWidget()
-{
-    const char* sql = "INSERT INTO column_state (list_id, column_id, position, width, is_visible) VALUES (?, ?, ?, ?, ?)\n"
-        "ON CONFLICT(list_id, column_id) DO UPDATE SET position = excluded.position, width = excluded.width, is_visible = excluded.is_visible;";
-
-    auto header = this->header();
-
-    for (int i = 0; i < header->count(); i++)
-    {
-        bool sectionHidden = header->isSectionHidden(i);
-        int sectionSize = header->sectionSize(i);
-
-        if (sectionHidden)
-        {
-            header->showSection(i);
-            sectionSize = header->sectionSize(i);
-        }
-
-        auto stmt = m_db->statement(sql);
-        stmt->bind(1, "torrent_list");
-        stmt->bind(2, i);
-        stmt->bind(3, header->visualIndex(i));
-        stmt->bind(4, sectionSize);
-        stmt->bind(5, !sectionHidden);
-        stmt->execute();
-    }
-
-    auto sortStmt = m_db->statement("INSERT INTO list_state (id, sort_column_index, sort_column_order) VALUES (?, ?, ?) ON CONFLICT (id) DO UPDATE SET sort_column_index = excluded.sort_column_index, sort_column_order = excluded.sort_column_order");
-    sortStmt->bind(1, "torrent_list");
-    sortStmt->bind(2, header->sortIndicatorSection());
-    sortStmt->bind(3, (int)header->sortIndicatorOrder());
-    sortStmt->execute();
+    QObject::connect(this, &TorrentListWidget::activated,
+        this, &TorrentListWidget::showTorrentExplorer);
 }
 
 QSize TorrentListWidget::sizeHint() const

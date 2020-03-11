@@ -237,6 +237,16 @@
         "encrypt_config_file": "Criptografar arquivo de configuração",
         "amp_details_panel": "&Painel de detalhes",
         "s_of_s": "%1 (de %2)",
-        "downloaded_size": "Baixado"
+        "downloaded_size": "Baixado",
+        "amp_status_bar": "&Barra de status",
+        "amp_filter": "&Filtro",
+        "amp_none": "&Nenhum",
+        "filter_downloading_active": "Baixando (ativo)",
+        "filter_uploading_active": "Enviando (ativo)",
+        "size_remaining": "Tamanho (restante)",
+        "pause_on_low_disk_space": "Pausar quando o espaço em disco estiver baixo",
+        "pause_on_low_disk_space_alert": "Torrent pausado (pouco espaço em disco)",
+        "enable_geoip": "Habilitar pesquisas GeoIP",
+        "enable_automatic_crash_reporting": "Ativar relatórios automáticos de falhas"
     }
 }

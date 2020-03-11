@@ -1,4 +1,5 @@
 #include "torrentdetailswidget.hpp"
+#include "ui_torrentdetailswidget.h"
 
 #include "../sessionstate.hpp"
 #include "../torrenthandle.hpp"
@@ -12,22 +13,21 @@
 
 using pt::TorrentDetailsWidget;
 
-TorrentDetailsWidget::TorrentDetailsWidget(QWidget* parent, std::shared_ptr<pt::SessionState> state, pt::GeoIP* geo)
+TorrentDetailsWidget::TorrentDetailsWidget(QWidget* parent)
     : QTabWidget(parent),
-    m_state(state)
+    m_ui(new Ui::TorrentDetailsWidget())
 {
-    m_overview = new TorrentOverviewWidget();
-    m_files    = new TorrentFilesWidget();
-    m_peers    = new TorrentPeersWidget(geo);
-    m_trackers = new TorrentTrackersWidget();
+    m_ui->setupUi(this);
 
-    QTabWidget::addTab(m_overview, i18n("overview"));
-    QTabWidget::addTab(m_files,    i18n("files"));
-    QTabWidget::addTab(m_peers,    i18n("peers"));
-    QTabWidget::addTab(m_trackers, i18n("trackers"));
+    this->setTabText(0, i18n("overview"));
+    this->setTabText(1, i18n("files"));
+    this->setTabText(2, i18n("peers"));
+    this->setTabText(3, i18n("trackers"));
+}
 
-    this->setMinimumHeight(120);
-    this->setMovable(false);
+void TorrentDetailsWidget::setGeo(pt::GeoIP* geo)
+{
+    m_ui->peers->setGeo(geo);
 }
 
 void TorrentDetailsWidget::update(QList<pt::TorrentHandle*> const& torrents)

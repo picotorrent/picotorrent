@@ -42,10 +42,13 @@ namespace pt
     struct TorrentStatistics;
     struct UpdateInformation;
 
+    namespace Ui
+    {
+        class MainWindow;
+    }
+
     class MainWindow : public QMainWindow
     {
-        Q_OBJECT
-
     public:
         MainWindow(std::shared_ptr<Environment> env, std::shared_ptr<Database> db, std::shared_ptr<Configuration> cfg);
         ~MainWindow();
@@ -88,37 +91,25 @@ namespace pt
         std::shared_ptr<Configuration> m_cfg;
         std::shared_ptr<SessionState> m_sessionState;
 
-        QAction* m_fileAddTorrent;
-        QAction* m_fileAddMagnetLinks;
-        QAction* m_fileExit;
-        QAction* m_viewFiltersNone;
-        QAction* m_viewPreferences;
-        QAction* m_viewDetailsPanel;
-        QAction* m_viewStatusBar;
-        QAction* m_helpCheckForUpdates;
-        QAction* m_helpAbout;
-
         // Shortcuts
         QShortcut* m_shortcutOpenTorrent;
         QShortcut* m_shortcutRemoveSelectedTorrent;
 
         QActionGroup* m_filtersGroup;
-        QMenu* m_filtersMenu;
 
         QList<TorrentHandle*> m_selectedTorrents;
 
-        QSplitter* m_splitter;
         QWinTaskbarButton* m_taskbarButton;
 
         GeoIP* m_geo;
         JsEngine* m_jsEngine;
         Session* m_session;
         SystemTrayIcon* m_trayIcon;
-        StatusBar* m_statusBar;
-        TorrentDetailsWidget* m_torrentDetails;
+        // TODO: move these into the list widget?
         TorrentListModel* m_torrentListModel;
-        TorrentListWidget* m_torrentList;
         TorrentSortFilterProxyModel* m_torrentSortFilterModel;
         int m_torrentsCount;
+
+        Ui::MainWindow* m_ui;
     };
 }

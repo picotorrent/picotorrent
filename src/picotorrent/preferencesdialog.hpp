@@ -11,36 +11,40 @@ class QWidget;
 
 class SectionListView;
 
+namespace Ui
+{
+    class PreferencesDialog;
+}
+
 namespace pt
 {
     class Configuration;
-    class ConnectionSectionWidget;
-    class DownloadsSectionWidget;
+    class ConnectionPreferencesPage;
+    class DownloadsPreferencesPage;
     class Environment;
-    class GeneralSectionWidget;
-    class ProxySectionWidget;
+    class GeneralPreferencesPage;
+    class ProxyPreferencesPage;
 
     class PreferencesDialog : public QDialog
     {
     public:
         PreferencesDialog(QWidget* parent, std::shared_ptr<Configuration> cfg, std::shared_ptr<Environment> env);
+        virtual ~PreferencesDialog();
+
         void load();
 
     private:
-        void createUi();
         void onOk();
         void onSectionActivated(QModelIndex const& index);
 
         std::shared_ptr<Configuration> m_cfg;
         std::shared_ptr<Environment> m_env;
 
-        QStackedWidget* m_stacked;
-        QDialogButtonBox* m_buttons;
-        SectionListView* m_sections;
+        ::Ui::PreferencesDialog* m_ui;
 
-        GeneralSectionWidget* m_general;
-        DownloadsSectionWidget* m_downloads;
-        ConnectionSectionWidget* m_connection;
-        ProxySectionWidget* m_proxy;
+        GeneralPreferencesPage* m_general;
+        DownloadsPreferencesPage* m_downloads;
+        ConnectionPreferencesPage* m_connection;
+        ProxyPreferencesPage* m_proxy;
     };
 }
