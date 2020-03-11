@@ -234,6 +234,21 @@
         "dht_i64d_nodes": "DHT: %1 κόμβος(οι)",
         "i64d_torrents": "%1 torrent(s)",
         "dl_s_ul_s": "DL: %1/δευτ, UL: %2/δευτ",
-        "encrypt_config_file": "Κρυπτογράφηση αρχείου ρυθμίσεων"
+        "encrypt_config_file": "Κρυπτογράφηση αρχείου ρυθμίσεων",
+        "amp_details_panel": "Λεπτομέρειες",
+        "s_of_s": "%1 (από %2)",
+        "downloaded_size": "Μέγεθος ληφθέντων",
+        "amp_status_bar": "Μπάρα κατάστασης",
+        "amp_filter": "Φίλτρο",
+        "amp_none": "Κανένα",
+        "filter_downloading_active": "Λήψη (ενεργά)",
+        "filter_uploading_active": "Αποστολή (ενεργά)",
+        "size_remaining": "Μέγεθος (που απομένει)",
+        "pause_on_low_disk_space": "Παύση όταν υπάρχει λίγος χώρος στο δίσκο",
+        "pause_on_low_disk_space_alert": "Torrent σε παύση (λίγος χώρος στο δίσκο)",
+        "enable_geoip": "Ενεργοποίηση αναζητήσεων GeoIP",
+        "enable_automatic_crash_reporting": "Ενεργοποίηση αυτόματης αναφοράς σφαλμάτων",
+        "network_adapter": "Προσαρμογέας δικτύου",
+        "kb_s": "KB/s"
     }
 }
