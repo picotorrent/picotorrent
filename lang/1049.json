@@ -247,6 +247,8 @@
         "pause_on_low_disk_space": "Приостановить, когда на диске мало места",
         "pause_on_low_disk_space_alert": "Торрент приостановлен (мало места на диске)",
         "enable_geoip": "Включить отображение страны для IP-адреса",
-        "enable_automatic_crash_reporting": "Включить автоматическое отправление отчётов о сбоях"
+        "enable_automatic_crash_reporting": "Включить автоматическое отправление отчётов о сбоях",
+        "network_adapter": "Сетевой адаптер",
+        "kb_s": "КБ/с"
     }
 }
