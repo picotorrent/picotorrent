@@ -15,6 +15,7 @@
 
 #include "buildinfo.hpp"
 #include "core/environment.hpp"
+#include "core/utils.hpp"
 #include "loguru.hpp"
 #include "translator.hpp"
 
@@ -50,7 +51,7 @@ void CrashpadInitializer::init(std::shared_ptr<pt::Environment> env)
 
     if (database == nullptr || database->GetSettings() == nullptr)
     {
-        LOG_F(ERROR, "Failed to initialize Crashpad database from path: %s", databasePath.string().c_str());
+        LOG_F(ERROR, "Failed to initialize Crashpad database from path: %s", Utils::toStdString(databasePath.wstring()).c_str());
         return;
     }
 
