@@ -133,10 +133,11 @@ Database::Database(std::shared_ptr<pt::Environment> env)
     : m_env(env)
 {
     fs::path dbFile = env->getDatabaseFilePath();
+    std::string convertedPath = Utils::toStdString(dbFile.wstring());
 
-    LOG_F(INFO, "Loading PicoTorrent database from %s", dbFile.string().c_str());
+    LOG_F(INFO, "Loading PicoTorrent database from %s", convertedPath.c_str());
 
-    sqlite3_open(dbFile.string().c_str(), &m_db);
+    sqlite3_open(convertedPath.c_str(), &m_db);
 
     execute("PRAGMA foreign_keys = ON;");
 

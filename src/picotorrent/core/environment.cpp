@@ -5,6 +5,7 @@
 #include <Shlwapi.h>
 
 #include "loguru.hpp"
+#include "utils.hpp"
 
 namespace fs = std::filesystem;
 using pt::Environment;
@@ -49,7 +50,9 @@ std::shared_ptr<Environment> Environment::create()
     // which represents the start up time.
 
     fs::path logFilePath = env->getLogFilePath();
-    loguru::add_file(logFilePath.string().c_str(), loguru::Truncate, loguru::Verbosity_INFO);
+
+    std::string s = Utils::toStdString(logFilePath.wstring());
+    loguru::add_file(s.c_str(), loguru::Truncate, loguru::Verbosity_INFO);
 
     LOG_F(INFO, "PicoTorrent starting up...");
 

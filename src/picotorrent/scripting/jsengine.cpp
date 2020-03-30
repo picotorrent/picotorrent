@@ -8,6 +8,7 @@
 #include "loguru.hpp"
 #include "../scriptedtorrentfilter.hpp"
 #include "../translator.hpp"
+#include "../core/utils.hpp"
 
 namespace fs = std::filesystem;
 using pt::JsEngine;
@@ -25,19 +26,22 @@ JsEngine::~JsEngine()
 
 void JsEngine::loadDirectory(fs::path const& path)
 {
+    std::string convertedPath = Utils::toStdString(path.wstring());
+
     if (!fs::exists(path))
     {
-        LOG_F(INFO, "Script path does not exist (%s)", path.string().c_str());
+        LOG_F(INFO, "Script path does not exist (%s)", convertedPath.c_str());
         return;
     }
 
     for (auto const& entry : fs::directory_iterator(path))
     {
         fs::path scriptFilePath = entry.path();
+        std::string convertedScriptFilePath = Utils::toStdString(scriptFilePath.wstring());
 
         if (scriptFilePath.extension() != ".js")
         {
-            LOG_F(WARNING, "File with ignored extension in scripts path: %s", scriptFilePath.string());
+            LOG_F(WARNING, "File with ignored extension in scripts path: %s", convertedScriptFilePath.c_str());
             continue;
         }
 
@@ -97,7 +101,7 @@ void JsEngine::loadFile(fs::path const& path)
         std::string err(len, '\0');
         JsCopyString(stringEx, &err[0], err.size(), nullptr);
 
-        LOG_F(ERROR, "Error when loading script (%s): %s", path.string().data(), err.data());
+        LOG_F(ERROR, "Error when loading script (%s): %s", Utils::toStdString(path.wstring()).c_str(), err.c_str());
     }
 }
 
