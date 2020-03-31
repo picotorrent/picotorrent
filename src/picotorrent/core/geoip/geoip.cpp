@@ -90,6 +90,12 @@ void GeoIP::update()
 
 void GeoIP::databaseDownloaded(pt::HttpResponse* response)
 {
+    if (response->statusCode != 200)
+    {
+        LOG_F(WARNING, "GeoIP database HTTP error: %d", response->statusCode);
+        return;
+    }
+
     LOG_F(INFO, "GeoIP database downloaded... Decompressing");
 
     GZipDecompressor gzip;
