@@ -92,7 +92,7 @@ MainWindow::MainWindow(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt:
     m_ui->torrentDetails->setGeo(m_geo);
 
     // Setup torrent list and sort/filter-model
-    m_ui->torrentList->load(m_torrentListModel, db);
+    m_ui->torrentList->load(m_torrentSortFilterModel, db);
     m_ui->torrentList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
 
     // Translate menu and actions
