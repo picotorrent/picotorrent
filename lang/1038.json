@@ -216,7 +216,7 @@
         "enable_pex": "PeX engedélyezése",
 	"encrypt_config_file": "Konfigurációs fájl titkosítása",
 	"error_s": "Hiba: %1",
-	"exclude": "Mellőz"
+	"exclude": "Mellőz",
 	"fails": "Hibák",
         "file": "Fájl",
         "file_types": "Fájltípusok",
