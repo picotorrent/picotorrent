@@ -11,3 +11,6 @@
 [submodule "vendor/loguru"]
 	path = vendor/loguru
 	url = https://github.com/emilk/loguru
+[submodule "vendor/wx"]
+	path = vendor/wx
+	url = https://github.com/wxWidgets/wxWidgets
