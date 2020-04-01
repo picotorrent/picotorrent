@@ -110,18 +110,11 @@ void TorrentHandle::forceReannounce(int seconds, int trackerIndex)
 
 void TorrentHandle::forceRecheck()
 {
-    /*th.force_recheck();
-
-    lt::torrent_status ts = th.status();
-
-    bool paused = ((ts.flags & lt::torrent_flags::paused)
-        && !(ts.flags & lt::torrent_flags::auto_managed));
-
-    if (paused)
+    if (status().paused)
     {
-        th.resume();
-        m_state->pauseAfterChecking.insert(hash);
-    }*/
+        m_session->pauseAfterRecheck(this);
+        resume();
+    }
 
     m_th->force_recheck();
 }

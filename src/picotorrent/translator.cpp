@@ -43,7 +43,15 @@ BOOL Translator::enumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lps
 
     if (!err.empty())
     {
-        LOG_F(ERROR, "Failed to parse language json: %s", err.data());
+        if (IS_INTRESOURCE(lpszName))
+        {
+            LOG_F(ERROR, "Failed to parse language json (%d): %s", reinterpret_cast<int>(lpszName), err.data());
+        }
+        else
+        {
+            LOG_F(ERROR, "Failed to parse language json: %s", err.data());
+        }
+
         return TRUE;
     }
 

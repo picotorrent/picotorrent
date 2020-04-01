@@ -26,6 +26,8 @@ namespace pt
         Q_OBJECT
 
     public:
+        friend class TorrentHandle;
+
         Session(QObject* parent, std::shared_ptr<Database> db, std::shared_ptr<Configuration> cfg, std::shared_ptr<Environment> env);
         virtual ~Session();
 
@@ -51,6 +53,7 @@ namespace pt
     private:
         void loadTorrents();
         void loadTorrentsOld();
+        void pauseAfterRecheck(TorrentHandle*);
         void postUpdates();
         void saveState();
         void saveTorrents();
@@ -60,6 +63,7 @@ namespace pt
         std::shared_ptr<Configuration> m_cfg;
         std::shared_ptr<Environment> m_env;
 
+        std::map<libtorrent::info_hash_t, TorrentHandle*> m_pauseAfterRecheck;
         std::map<libtorrent::info_hash_t, TorrentHandle*> m_torrents;
         std::map<libtorrent::info_hash_t, libtorrent::torrent_handle> m_metadataSearches;
 

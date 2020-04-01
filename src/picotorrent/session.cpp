@@ -467,6 +467,17 @@ void Session::loadTorrentsOld()
     }
 }
 
+void Session::pauseAfterRecheck(pt::TorrentHandle* th)
+{
+    if (m_pauseAfterRecheck.find(th->infoHash()) != m_pauseAfterRecheck.end())
+    {
+        LOG_F(WARNING, "Torrent already rechecking (%s)", th->infoHash().v1.data());
+        return;
+    }
+
+    m_pauseAfterRecheck.insert({ th->infoHash(), th });
+}
+
 void Session::postUpdates()
 {
     m_session->post_dht_stats();
@@ -658,6 +669,21 @@ void Session::readAlerts()
             }
 
             emit torrentStatsUpdated(&stats);
+
+            break;
+        }
+
+        case lt::torrent_checked_alert::alert_type:
+        {
+            lt::torrent_checked_alert* tca = lt::alert_cast<lt::torrent_checked_alert>(alert);
+
+            auto torrentToResume = m_pauseAfterRecheck.find(tca->handle.info_hash());
+
+            if (torrentToResume != m_pauseAfterRecheck.end())
+            {
+                torrentToResume->second->pause();
+                m_pauseAfterRecheck.erase(torrentToResume);
+            }
 
             break;
         }
