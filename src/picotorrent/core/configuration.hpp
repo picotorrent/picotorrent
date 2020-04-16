@@ -5,6 +5,8 @@
 
 namespace pt
 {
+namespace Core
+{
     class Database;
     class Environment;
 
@@ -32,17 +34,18 @@ namespace pt
         Configuration(std::shared_ptr<Database> db);
         ~Configuration();
 
-        static void migrate(std::shared_ptr<Environment> env, std::shared_ptr<Configuration> cfg);
+        static void Migrate(std::shared_ptr<Environment> env, std::shared_ptr<Configuration> cfg);
 
-        bool getBool(std::string const& key);
-        int getInt(std::string const& key);
-        std::string getString(std::string const& key);
+        bool GetBool(std::string const& key);
+        int GetInt(std::string const& key);
+        std::string GetString(std::string const& key);
 
-        void setBool(std::string const& key, bool value);
-        void setInt(std::string const& key, int value);
-        void setString(std::string const& key, std::string const& value);
+        void SetBool(std::string const& key, bool value);
+        void SetInt(std::string const& key, int value);
+        void SetString(std::string const& key, std::string const& value);
 
     private:
         std::shared_ptr<Database> m_db;
     };
+}
 }

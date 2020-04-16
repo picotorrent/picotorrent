@@ -1,33 +1,33 @@
 #include "translator.hpp"
 
 #include "loguru.hpp"
-#include "picojson.hpp"
+#include "../picojson.hpp"
 
 namespace pj = picojson;
-using pt::Translator;
+using pt::UI::Translator;
 
 Translator::Translator()
 {
 }
 
-Translator& Translator::instance()
+Translator& Translator::GetInstance()
 {
     static Translator translator;
     return translator;
 }
 
-void Translator::loadEmbedded(HINSTANCE hInstance)
+void Translator::LoadEmbedded(HINSTANCE hInstance)
 {
     EnumResourceNames(
         hInstance,
         TEXT("LANGFILE"),
-        enumLanguageFiles,
+        EnumLanguageFiles,
         reinterpret_cast<LONG_PTR>(this));
 
     LOG_F(INFO, "Found %d embedded translation files", m_languages.size());
 }
 
-BOOL Translator::enumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
+BOOL Translator::EnumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
 {
     Translator* translator = reinterpret_cast<Translator*>(lParam);
 
@@ -62,12 +62,11 @@ BOOL Translator::enumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lps
 
     Language l;
     l.code = langId;
-    l.name = QString::fromStdString(langName);
+    l.name = langName;
 
     for (auto& p : obj.at("strings").get<pj::object>())
     {
-        QString val = QString::fromStdString(p.second.get<std::string>());
-        l.translations.insert({ QString::fromStdString(p.first), val });
+        l.translations.insert({ p.first, p.second.get<std::string>() });
     }
 
     translator->m_languages.insert({ l.code, l });
@@ -75,7 +74,7 @@ BOOL Translator::enumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lps
     return TRUE;
 }
 
-std::vector<Translator::Language> Translator::languages()
+std::vector<Translator::Language> Translator::Languages()
 {
     std::vector<Language> result;
 
@@ -87,7 +86,7 @@ std::vector<Translator::Language> Translator::languages()
     return result;
 }
 
-QString Translator::translate(QString const& key)
+std::string Translator::Translate(std::string const& key)
 {
     auto lang = m_languages.find(m_selectedLanguage);
     if (lang == m_languages.end()) { lang = m_languages.find(1033); }
@@ -103,7 +102,7 @@ QString Translator::translate(QString const& key)
     return translation->second;
 }
 
-void Translator::setLanguage(int langCode)
+void Translator::SetLanguage(int langCode)
 {
     m_selectedLanguage = langCode;
 }

@@ -1,7 +1,5 @@
 #include "torrenthandle.hpp"
 
-#include <QDir>
-
 #include <libtorrent/announce_entry.hpp>
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_handle.hpp>
@@ -11,9 +9,10 @@
 #include "torrentstatus.hpp"
 
 namespace lt = libtorrent;
-using pt::TorrentHandle;
+using pt::BitTorrent::TorrentHandle;
+using pt::BitTorrent::TorrentStatus;
 
-pt::TorrentStatus::State getTorrentStatusState(lt::torrent_status const& ts)
+TorrentStatus::State getTorrentStatusState(lt::torrent_status const& ts)
 {
     bool paused = ((ts.flags & lt::torrent_flags::paused)
         && !(ts.flags & lt::torrent_flags::auto_managed));
@@ -31,23 +30,23 @@ pt::TorrentStatus::State getTorrentStatusState(lt::torrent_status const& ts)
     {
         if (ts.errc)
         {
-            return pt::TorrentStatus::State::Error;
+            return TorrentStatus::State::Error;
         }
 
         if (seeding)
         {
-            return pt::TorrentStatus::State::UploadingPaused;
+            return TorrentStatus::State::UploadingPaused;
         }
 
-        return pt::TorrentStatus::State::DownloadingPaused;
+        return TorrentStatus::State::DownloadingPaused;
     }
     else
     {
         if (queued && !checking)
         {
             return seeding
-                ? pt::TorrentStatus::State::UploadingQueued
-                : pt::TorrentStatus::State::DownloadingQueued;
+                ? TorrentStatus::State::UploadingQueued
+                : TorrentStatus::State::DownloadingQueued;
         }
         else
         {
@@ -56,28 +55,28 @@ pt::TorrentStatus::State getTorrentStatusState(lt::torrent_status const& ts)
             case lt::torrent_status::state_t::finished:
             case lt::torrent_status::state_t::seeding:
                 return paused
-                    ? pt::TorrentStatus::State::UploadingPaused
-                    : pt::TorrentStatus::State::Uploading;
+                    ? TorrentStatus::State::UploadingPaused
+                    : TorrentStatus::State::Uploading;
 
             case lt::torrent_status::state_t::checking_resume_data:
-                return pt::TorrentStatus::State::CheckingResumeData;
+                return TorrentStatus::State::CheckingResumeData;
 
             case lt::torrent_status::state_t::checking_files:
-                return pt::TorrentStatus::State::DownloadingChecking;
+                return TorrentStatus::State::DownloadingChecking;
 
             case lt::torrent_status::state_t::downloading_metadata:
-                return pt::TorrentStatus::State::DownloadingMetadata;
+                return TorrentStatus::State::DownloadingMetadata;
 
             case lt::torrent_status::state_t::downloading:
-                return pt::TorrentStatus::State::Downloading;
+                return TorrentStatus::State::Downloading;
             }
         }
     }
 
-    return pt::TorrentStatus::State::Unknown;
+    return TorrentStatus::State::Unknown;
 }
 
-TorrentHandle::TorrentHandle(pt::Session* session, lt::torrent_handle const& th)
+TorrentHandle::TorrentHandle(pt::BitTorrent::Session* session, lt::torrent_handle const& th)
     : m_session(session)
 {
     m_th = std::make_unique<lt::torrent_handle>(th);
@@ -88,129 +87,128 @@ TorrentHandle::~TorrentHandle()
 {
 }
 
-void TorrentHandle::addTracker(lt::announce_entry const& entry)
+void TorrentHandle::AddTracker(lt::announce_entry const& entry)
 {
     m_th->add_tracker(entry);
 }
 
-void TorrentHandle::fileProgress(std::vector<std::int64_t>& progress, int flags) const
+void TorrentHandle::FileProgress(std::vector<std::int64_t>& progress, int flags) const
 {
     m_th->file_progress(progress, flags);
 }
 
-void TorrentHandle::forceReannounce()
+void TorrentHandle::ForceReannounce()
 {
     m_th->force_reannounce();
 }
 
-void TorrentHandle::forceReannounce(int seconds, int trackerIndex)
+void TorrentHandle::ForceReannounce(int seconds, int trackerIndex)
 {
     m_th->force_reannounce(seconds, trackerIndex);
 }
 
-void TorrentHandle::forceRecheck()
+void TorrentHandle::ForceRecheck()
 {
-    if (status().paused)
+    if (Status().paused)
     {
-        m_session->pauseAfterRecheck(this);
-        resume();
+        m_session->PauseAfterRecheck(this);
+        Resume();
     }
 
     m_th->force_recheck();
 }
 
-std::vector<lt::download_priority_t> TorrentHandle::getFilePriorities() const
+std::vector<lt::download_priority_t> TorrentHandle::GetFilePriorities() const
 {
     return m_th->get_file_priorities();
 }
 
-void TorrentHandle::getPeerInfo(std::vector<lt::peer_info>& peers) const
+void TorrentHandle::GetPeerInfo(std::vector<lt::peer_info>& peers) const
 {
     m_th->get_peer_info(peers);
 }
 
-lt::info_hash_t TorrentHandle::infoHash()
+lt::info_hash_t TorrentHandle::InfoHash()
 {
     return m_th->info_hash();
 }
 
-bool TorrentHandle::isValid()
+bool TorrentHandle::IsValid()
 {
     return m_th->is_valid();
 }
 
-void TorrentHandle::moveStorage(QString const& newPath)
+void TorrentHandle::MoveStorage(std::string const& newPath)
 {
-    QString native = QDir::toNativeSeparators(newPath);
-    m_th->move_storage(native.toStdString());
+    m_th->move_storage(newPath);
 }
 
-void TorrentHandle::pause()
+void TorrentHandle::Pause()
 {
     m_th->unset_flags(lt::torrent_flags::auto_managed);
     m_th->pause(lt::torrent_handle::graceful_pause);
 }
 
-void TorrentHandle::queueUp()
+void TorrentHandle::QueueUp()
 {
     m_th->queue_position_up();
 }
 
-void TorrentHandle::queueDown()
+void TorrentHandle::QueueDown()
 {
     m_th->queue_position_down();
 }
 
-void TorrentHandle::queueTop()
+void TorrentHandle::QueueTop()
 {
     m_th->queue_position_top();
 }
 
-void TorrentHandle::queueBottom()
+void TorrentHandle::QueueBottom()
 {
     m_th->queue_position_bottom();
 }
 
-void TorrentHandle::replaceTrackers(std::vector<lt::announce_entry> const& trackers)
+void TorrentHandle::ReplaceTrackers(std::vector<lt::announce_entry> const& trackers)
 {
     m_th->replace_trackers(trackers);
 }
 
-void TorrentHandle::remove()
+void TorrentHandle::Remove()
 {
-    m_session->removeTorrent(this);
+    m_session->RemoveTorrent(this);
 }
 
-void TorrentHandle::removeFiles()
+void TorrentHandle::RemoveFiles()
 {
-    m_session->removeTorrent(this, lt::session_handle::delete_files);
+    m_session->RemoveTorrent(this, lt::session_handle::delete_files);
 }
 
-void TorrentHandle::resume()
+void TorrentHandle::Resume()
 {
     m_th->set_flags(lt::torrent_flags::auto_managed);
     m_th->clear_error();
     m_th->resume();
 }
 
-void TorrentHandle::resumeForce()
+void TorrentHandle::ResumeForce()
 {
     m_th->unset_flags(lt::torrent_flags::auto_managed);
     m_th->clear_error();
     m_th->resume();
 }
 
-void TorrentHandle::setFilePriorities(std::vector<lt::download_priority_t> priorities)
+void TorrentHandle::SetFilePriorities(std::vector<lt::download_priority_t> priorities)
 {
     m_th->prioritize_files(priorities);
 }
 
-void TorrentHandle::setFilePriority(lt::file_index_t index, lt::download_priority_t priority)
+void TorrentHandle::SetFilePriority(lt::file_index_t index, lt::download_priority_t priority)
 {
     m_th->file_priority(index, priority);
 }
 
-pt::TorrentStatus TorrentHandle::status()
+TorrentStatus TorrentHandle::Status()
 {
     std::stringstream hash;
 
@@ -226,7 +224,7 @@ pt::TorrentStatus TorrentHandle::status()
     if (!m_th->is_valid())
     {
         TorrentStatus ts;
-        ts.infoHash = QString::fromStdString(hash.str());
+        ts.infoHash = hash.str();
         return ts;
     }
 
@@ -245,15 +243,15 @@ pt::TorrentStatus TorrentHandle::status()
     }
 
     TorrentStatus ts;
-    ts.addedOn              = QDateTime::fromSecsSinceEpoch(m_ts->added_time);
+    ts.addedOn              = wxDateTime(m_ts->added_time);
     ts.availability         = m_ts->distributed_copies;
-    ts.completedOn          = m_ts->completed_time > 0 ? QDateTime::fromSecsSinceEpoch(m_ts->completed_time) : QDateTime();
+    ts.completedOn          = m_ts->completed_time > 0 ? wxDateTime(m_ts->completed_time) : wxDateTime();
     ts.downloadPayloadRate  = m_ts->download_payload_rate;
-    ts.error                = m_ts->errc ? QString::fromStdString(m_ts->errc.message()) : "";
+    ts.error                = m_ts->errc ? m_ts->errc.message() : "";
     ts.eta                  = eta;
     ts.forced               = (!(m_ts->flags & lt::torrent_flags::paused) && !(m_ts->flags & lt::torrent_flags::auto_managed));
-    ts.infoHash             = QString::fromStdString(hash.str());
-    ts.name                 = QString::fromStdString(m_ts->name);
+    ts.infoHash             = hash.str();
+    ts.name                 = m_ts->name;
     ts.paused               = (m_th->flags() & lt::torrent_flags::paused) == lt::torrent_flags::paused;
     ts.peersCurrent         = m_ts->num_peers - m_ts->num_seeds;
     ts.peersTotal           = m_ts->list_peers - m_ts->list_seeds;
@@ -261,7 +259,7 @@ pt::TorrentStatus TorrentHandle::status()
     ts.progress             = m_ts->progress;
     ts.queuePosition        = static_cast<int>(m_ts->queue_position);
     ts.ratio                = ratio;
-    ts.savePath             = QString::fromStdString(m_ts->save_path);
+    ts.savePath             = m_ts->save_path;
     ts.seedsCurrent         = m_ts->num_seeds;
     ts.seedsTotal           = m_ts->list_seeds;
     ts.state                = getTorrentStatusState(*m_ts.get());
@@ -272,17 +270,17 @@ pt::TorrentStatus TorrentHandle::status()
     return ts;
 }
 
-std::vector<lt::announce_entry> TorrentHandle::trackers() const
+std::vector<lt::announce_entry> TorrentHandle::Trackers() const
 {
     return m_th->trackers();
 }
 
-void TorrentHandle::updateStatus(lt::torrent_status const& ts)
+void TorrentHandle::UpdateStatus(lt::torrent_status const& ts)
 {
     m_ts = std::make_unique<lt::torrent_status>(ts);
 }
 
-lt::torrent_handle& TorrentHandle::wrappedHandle()
+lt::torrent_handle& TorrentHandle::WrappedHandle()
 {
     return *m_th.get();
 }

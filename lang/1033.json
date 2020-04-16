@@ -121,7 +121,7 @@
         "state_downloading_paused": "Paused",
         "state_downloading_queued": "Queued",
         "state_downloading_stalled": "Stalled",
-        "state_error": "Error: %1",
+        "state_error": "Error: %s",
         "state_unknown": "Unknown",
         "state_uploading": "Seeding",
         "state_uploading_checking": "Checking",
@@ -229,10 +229,10 @@
         "start_torrent": "Start torrent",
         "auto_managed": "Auto managed",
         "copy": "Copy",
-        "d_of_d": "%1 (of %2)",
+        "d_of_d": "%d (of %d)",
         "dht_disabled": "DHT: disabled",
-        "dht_i64d_nodes": "DHT: %1 node(s)",
-        "i64d_torrents": "%1 torrent(s)",
+        "dht_i64d_nodes": "DHT: %I64d node(s)",
+        "i64d_torrents": "%I64d torrent(s)",
         "dl_s_ul_s": "DL: %1/s, UL: %2/s",
         "encrypt_config_file": "Encrypt configuration file",
         "amp_details_panel": "&Details panel",
@@ -249,6 +249,7 @@
         "enable_geoip": "Enable GeoIP lookups",
         "enable_automatic_crash_reporting": "Enable automatic crash reporting",
         "network_adapter": "Network adapter",
-        "kb_s": "KB/s"
+        "kb_s": "KB/s",
+        "add_magnet_link_s_description": "Magnet links or info hashes (one per line)"
     }
 }

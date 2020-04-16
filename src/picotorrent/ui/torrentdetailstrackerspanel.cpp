@@ -1,0 +1,176 @@
+#include "torrentdetailstrackerspanel.hpp"
+
+#include <libtorrent/announce_entry.hpp>
+
+#include <wx/dataview.h>
+#include <wx/sizer.h>
+
+#include "../bittorrent/torrenthandle.hpp"
+#include "../bittorrent/torrentstatus.hpp"
+#include "models/trackerlistmodel.hpp"
+#include "translator.hpp"
+
+using pt::UI::TorrentDetailsTrackersPanel;
+using pt::UI::Models::TrackerListModel;
+
+TorrentDetailsTrackersPanel::TorrentDetailsTrackersPanel(wxWindow* parent, wxWindowID id)
+    : wxPanel(parent, id),
+    m_trackersModel(new Models::TrackerListModel()),
+    m_trackersView(new wxDataViewCtrl(this, wxID_ANY)),
+    m_torrent(nullptr)
+{
+    m_trackersView->AppendTextColumn(
+        i18n("url"),
+        TrackerListModel::Column::Url,
+        wxDATAVIEW_CELL_INERT,
+        FromDIP(220));
+
+    m_trackersView->AppendTextColumn(
+        i18n("status"),
+        TrackerListModel::Column::Status,
+        wxDATAVIEW_CELL_INERT,
+        FromDIP(160));
+
+    m_trackersView->AppendTextColumn(
+        i18n("downloaded"),
+        TrackerListModel::Column::NumDownloaded,
+        wxDATAVIEW_CELL_INERT,
+        FromDIP(80),
+        wxALIGN_RIGHT);
+
+    m_trackersView->AppendTextColumn(
+        i18n("leeches"),
+        TrackerListModel::Column::NumLeeches,
+        wxDATAVIEW_CELL_INERT,
+        FromDIP(80),
+        wxALIGN_RIGHT);
+
+    m_trackersView->AppendTextColumn(
+        i18n("seeds"),
+        TrackerListModel::Column::NumSeeds,
+        wxDATAVIEW_CELL_INERT,
+        FromDIP(80),
+        wxALIGN_RIGHT);
+
+    m_trackersView->AppendTextColumn(
+        i18n("fails"),
+        TrackerListModel::Column::Fails,
+        wxDATAVIEW_CELL_INERT,
+        FromDIP(80),
+        wxALIGN_RIGHT);
+
+    m_trackersView->AppendTextColumn(
+        i18n("next_announce"),
+        TrackerListModel::Column::NextAnnounce,
+        wxDATAVIEW_CELL_INERT,
+        FromDIP(120),
+        wxALIGN_RIGHT)->SetMinWidth(FromDIP(100));
+
+    m_trackersView->AssociateModel(m_trackersModel);
+    m_trackersModel->DecRef();
+
+    auto mainSizer = new wxBoxSizer(wxVERTICAL);
+    mainSizer->Add(m_trackersView, 1, wxEXPAND);
+    this->SetSizerAndFit(mainSizer);
+
+    this->Bind(wxEVT_COMMAND_DATAVIEW_ITEM_CONTEXT_MENU, &TorrentDetailsTrackersPanel::ShowTrackerContextMenu, this);
+}
+
+void TorrentDetailsTrackersPanel::Refresh(BitTorrent::TorrentHandle* torrent)
+{
+    if (!torrent->IsValid())
+    {
+        this->Reset();
+        return;
+    }
+
+    m_trackersModel->Update(torrent);
+
+    if (m_torrent == nullptr
+        || m_torrent->InfoHash() != torrent->InfoHash())
+    {
+        for (auto const& node : m_trackersModel->GetTierNodes())
+        {
+            m_trackersView->Expand(node);
+        }
+    }
+
+    m_torrent = torrent;
+}
+
+void TorrentDetailsTrackersPanel::Reset()
+{
+    m_torrent = nullptr;
+    m_trackersModel->ResetTrackers();
+}
+
+void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
+{
+    auto item = static_cast<TrackerListModel::ListItem*>(evt.GetItem().GetID());
+
+    if (item->tier < 0)
+    {
+        // one of the static items. do nothing
+        return;
+    }
+
+    wxMenu menu;
+
+    if (item->children.size() > 0)
+    {
+        menu.Append(ptID_CONTEXT_MENU_REMOVE_TIER, i18n("remove_tier"));
+    }
+    else
+    {
+        menu.Append(ptID_CONTEXT_MENU_REMOVE_TRACKER, i18n("copy_url"));
+        menu.Append(ptID_CONTEXT_MENU_REMOVE_TRACKER, i18n("force_reannounce"));
+        menu.Append(ptID_CONTEXT_MENU_REMOVE_TRACKER, i18n("scrape"));
+        menu.AppendSeparator();
+        menu.Append(ptID_CONTEXT_MENU_REMOVE_TRACKER, i18n("remove"));
+    }
+
+    menu.Bind(
+        wxEVT_MENU,
+        [this, item](wxCommandEvent& evt)
+        {
+            auto originalTrackers = m_torrent->Trackers();
+
+            switch (evt.GetId())
+            {
+            case ptID_CONTEXT_MENU_REMOVE_TIER:
+            {
+                originalTrackers.erase(
+                    std::remove_if(
+                        originalTrackers.begin(),
+                        originalTrackers.end(),
+                        [item](auto const& ae)
+                        {
+                            return ae.tier == item->tier;
+                        }));
+
+                m_torrent->ReplaceTrackers(originalTrackers);
+
+                break;
+            }
+            case ptID_CONTEXT_MENU_REMOVE_TRACKER:
+            {
+                originalTrackers.erase(
+                    std::remove_if(
+                        originalTrackers.begin(),
+                        originalTrackers.end(),
+                        [item](auto const& ae)
+                        {
+                            return ae.tier == item->tier && ae.url == item->key;
+                        }));
+
+                m_torrent->ReplaceTrackers(originalTrackers);
+
+                break;
+            }
+            }
+        });
+
+    PopupMenu(&menu);
+
+    m_trackersModel->Update(m_torrent);
+}

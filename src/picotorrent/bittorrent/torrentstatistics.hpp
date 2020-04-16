@@ -2,6 +2,8 @@
 
 namespace pt
 {
+namespace BitTorrent
+{
     struct TorrentStatistics
     {
         int64_t totalPayloadDownloadRate;
@@ -9,4 +11,5 @@ namespace pt
         int64_t totalWanted;
         int64_t totalWantedDone;
     };
+}
 }

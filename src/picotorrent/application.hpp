@@ -1,29 +1,29 @@
-#pragma once
-
-#include <QApplication>
+#include <wx/wxprec.h>
+#ifndef WX_PRECOMP
+#include <wx/wx.h>
+#endif
 
 #include <memory>
 
-namespace google_breakpad
-{
-    class ExceptionHandler;
-}
-
 namespace pt
 {
-    class Application : public QApplication
+    namespace UI
+    {
+        class MainFrame;
+    }
+
+    class PersistenceManager;
+
+    class Application : public wxApp
     {
     public:
-        Application(int& argc, char **argv);
+        Application();
         virtual ~Application();
 
-        void activateOtherInstance();
-        bool isSingleInstance();
+        virtual bool OnInit();
 
     private:
-        struct Mutex;
-
-        std::unique_ptr<Mutex> m_singleInstanceMutex;
-        bool m_isSingleInstance;
+        std::unique_ptr<PersistenceManager> m_persistence;
+        UI::MainFrame* m_mainFrame;
     };
 }

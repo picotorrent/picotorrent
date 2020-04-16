@@ -1,4 +1,4 @@
-#include "crashpad.hpp"
+#include "crashpadinitializer.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -17,17 +17,16 @@
 #include "core/environment.hpp"
 #include "core/utils.hpp"
 #include "loguru.hpp"
-#include "translator.hpp"
 
 namespace fs = std::filesystem;
 using pt::CrashpadInitializer;
 
-void CrashpadInitializer::init(std::shared_ptr<pt::Environment> env)
+void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
 {
     LOG_F(INFO, "Initializing Crashpad");
 
-    auto databasePath = env->getApplicationDataPath() / "Crashpad" / "db";
-    auto handlerPath = env->getApplicationPath() / "crashpad_handler.exe";
+    auto databasePath = env->GetApplicationDataPath() / "Crashpad" / "db";
+    auto handlerPath = env->GetApplicationPath() / "crashpad_handler.exe";
 
     if (!fs::exists(handlerPath))
     {
@@ -86,9 +85,9 @@ void CrashpadInitializer::init(std::shared_ptr<pt::Environment> env)
         base::FilePath(databasePath.wstring()),
         "https://api.picotorrent.org/crashpad",
         {
-            { "branch", pt::BuildInfo::branch().toStdString() },
-            { "commitish", pt::BuildInfo::commitish().toStdString() },
-            { "version", pt::BuildInfo::version().toStdString() }
+            { "branch", pt::BuildInfo::branch() },
+            { "commitish", pt::BuildInfo::commitish() },
+            { "version", pt::BuildInfo::version() }
         },
         {
 #if _DEBUG

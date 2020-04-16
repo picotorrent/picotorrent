@@ -2,17 +2,17 @@
 
 using pt::BuildInfo;
 
-QString BuildInfo::branch()
+std::string BuildInfo::branch()
 {
     return "@GIT_BRANCH@";
 }
 
-QString BuildInfo::commitish()
+std::string BuildInfo::commitish()
 {
     return "@GIT_COMMITISH@";
 }
 
-QString BuildInfo::version()
+std::string BuildInfo::version()
 {
     return "@VERSION@";
 }

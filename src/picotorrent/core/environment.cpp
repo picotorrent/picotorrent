@@ -8,18 +8,18 @@
 #include "utils.hpp"
 
 namespace fs = std::filesystem;
-using pt::Environment;
+using pt::Core::Environment;
 
 Environment::Environment()
     : m_startupTime(std::chrono::system_clock::now())
 {
 }
 
-std::shared_ptr<Environment> Environment::create()
+std::shared_ptr<Environment> Environment::Create()
 {
     auto env = new Environment();
 
-    fs::path appData = env->getApplicationDataPath();
+    fs::path appData = env->GetApplicationDataPath();
 
     if (!fs::exists(appData))
     {
@@ -49,7 +49,7 @@ std::shared_ptr<Environment> Environment::create()
     // - PicoTorrent.YYYYMMDDHHmmss.log
     // which represents the start up time.
 
-    fs::path logFilePath = env->getLogFilePath();
+    fs::path logFilePath = env->GetLogFilePath();
 
     std::string s = Utils::toStdString(logFilePath.wstring());
     loguru::add_file(s.c_str(), loguru::Truncate, loguru::Verbosity_INFO);
@@ -59,17 +59,17 @@ std::shared_ptr<Environment> Environment::create()
     return std::shared_ptr<Environment>(env);
 }
 
-fs::path Environment::getApplicationDataPath()
+fs::path Environment::GetApplicationDataPath()
 {
-    if (isInstalled() || isAppContainerProcess())
+    if (IsInstalled() || IsAppContainerProcess())
     {
-        return fs::path(getKnownFolderPath(KnownFolder::LocalAppData)) / "PicoTorrent";
+        return fs::path(GetKnownFolderPath(KnownFolder::LocalAppData)) / "PicoTorrent";
     }
 
-    return getApplicationPath();
+    return GetApplicationPath();
 }
 
-fs::path Environment::getApplicationPath()
+fs::path Environment::GetApplicationPath()
 {
     TCHAR path[MAX_PATH];
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
@@ -78,12 +78,12 @@ fs::path Environment::getApplicationPath()
     return path;
 }
 
-fs::path Environment::getDatabaseFilePath()
+fs::path Environment::GetDatabaseFilePath()
 {
-    return getApplicationDataPath() / "PicoTorrent.sqlite";
+    return GetApplicationDataPath() / "PicoTorrent.sqlite";
 }
 
-fs::path Environment::getKnownFolderPath(Environment::KnownFolder knownFolder)
+fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
 {
     KNOWNFOLDERID fid = { 0 };
 
@@ -117,7 +117,7 @@ fs::path Environment::getKnownFolderPath(Environment::KnownFolder knownFolder)
     throw std::runtime_error("Could not get known folder path");
 }
 
-fs::path Environment::getLogFilePath()
+fs::path Environment::GetLogFilePath()
 {
     std::time_t tim = std::chrono::system_clock::to_time_t(m_startupTime);
     tm t;
@@ -134,10 +134,10 @@ fs::path Environment::getLogFilePath()
         t.tm_min,
         t.tm_sec);
 
-    return getApplicationDataPath() / "logs" / frmt;
+    return GetApplicationDataPath() / "logs" / frmt;
 }
 
-bool Environment::isAppContainerProcess()
+bool Environment::IsAppContainerProcess()
 {
     TCHAR path[MAX_PATH];
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
@@ -148,7 +148,7 @@ bool Environment::isAppContainerProcess()
     return (dwAttr != INVALID_FILE_ATTRIBUTES && !(dwAttr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool Environment::isInstalled()
+bool Environment::IsInstalled()
 {
     HKEY hKey = NULL;
 

@@ -1,15 +1,21 @@
 #pragma once
 
+#include <wx/wxprec.h>
+#ifndef WX_PRECOMP
+#include <wx/wx.h>
+#endif
+
 #include <cstdint>
 #include <memory>
-
-#include <QDateTime>
-#include <QString>
+#include <string>
 
 #include <libtorrent/bitfield.hpp>
 #include <libtorrent/torrent_info.hpp>
+#include <wx/datetime.h>
 
 namespace pt
+{
+namespace BitTorrent
 {
     struct TorrentStatus
     {
@@ -29,15 +35,15 @@ namespace pt
             UploadingQueued
         };
 
-        QDateTime                                     addedOn;
+        wxDateTime                                    addedOn;
         float                                         availability;
-        QDateTime                                     completedOn;
+        wxDateTime                                    completedOn;
         int                                           downloadPayloadRate;
         bool                                          forced;
-        QString                                       error;
+        std::string                                   error;
         std::chrono::seconds                          eta;
-        QString                                       infoHash;
-        QString                                       name;
+        std::string                                   infoHash;
+        std::string                                   name;
         bool                                          paused;
         int                                           peersCurrent;
         int                                           peersTotal;
@@ -45,7 +51,7 @@ namespace pt
         float                                         progress;
         int                                           queuePosition;
         float                                         ratio;
-        QString                                       savePath;
+        std::string                                   savePath;
         int                                           seedsCurrent;
         int                                           seedsTotal;
         State                                         state;
@@ -54,4 +60,5 @@ namespace pt
         std::int64_t                                  totalWantedRemaining;
         int                                           uploadPayloadRate;
     };
+}
 }

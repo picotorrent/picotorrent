@@ -1,64 +1,62 @@
 #include "application.hpp"
 
-#include <Windows.h>
+#include <wx/persist.h>
 
-#include "loguru.hpp"
-#include "picojson.hpp"
+#include "crashpadinitializer.hpp"
+#include "persistencemanager.hpp"
+#include "core/configuration.hpp"
+#include "core/database.hpp"
+#include "core/environment.hpp"
+#include "ui/mainframe.hpp"
+#include "ui/translator.hpp"
 
 using pt::Application;
 
-struct Application::Mutex
+Application::Application()
+    : wxApp(),
+    m_mainFrame(nullptr)
 {
-    HANDLE hndl;
-};
-
-Application::Application(int& argc, char **argv)
-    : QApplication(argc, argv),
-    m_singleInstanceMutex(std::make_unique<Mutex>())
-{
-    m_singleInstanceMutex->hndl = CreateMutex(NULL, FALSE, TEXT("PicoTorrent/1.0"));
-    m_isSingleInstance = (GetLastError() != ERROR_ALREADY_EXISTS);
+    SetProcessDPIAware();
 }
 
 Application::~Application()
 {
-    CloseHandle(m_singleInstanceMutex->hndl);
 }
 
-void Application::activateOtherInstance()
+bool Application::OnInit()
 {
-    LOG_F(INFO, "Activating other instance");
+    auto env = pt::Core::Environment::Create();
 
-    picojson::array arr;
-
-    for (QString const& arg : QApplication::arguments())
+    if (env == nullptr)
     {
-        arr.push_back(picojson::value(arg.toStdString()));
+        // TODO: show some dialog
+        return false;
     }
 
-    picojson::value val(arr);
-    std::string encodedArgs = val.serialize();
+    pt::CrashpadInitializer::Initialize(env);
 
-    COPYDATASTRUCT cds;
-    cds.cbData = static_cast<DWORD>(encodedArgs.size());
-    cds.dwData = 1;
-    cds.lpData = reinterpret_cast<PVOID>(&encodedArgs[0]);
+    auto db = std::make_shared<pt::Core::Database>(env);
 
-    // Activate other window
-    HWND hWndOther = FindWindow(NULL, TEXT("PicoTorrent"));
-
-    if (hWndOther == NULL)
+    if (!db->Migrate())
     {
-        LOG_F(WARNING, "Could not find the window to send COPYDATASTRUCT to");
-        return;
+        return false;
     }
 
-    SetForegroundWindow(hWndOther);
-    ShowWindow(hWndOther, SW_RESTORE);
-    SendMessage(hWndOther, WM_COPYDATA, NULL, (LPARAM)&cds);
-}
+    auto cfg = std::make_shared<pt::Core::Configuration>(db);
 
-bool Application::isSingleInstance()
-{
-    return m_isSingleInstance;
+    // Migrate old configuration to new database
+    pt::Core::Configuration::Migrate(env, cfg);
+
+    pt::UI::Translator& translator = pt::UI::Translator::GetInstance();
+    translator.LoadEmbedded(GetModuleHandle(NULL));
+    translator.SetLanguage(cfg->GetInt("language_id"));
+
+    // Set up persistence manager
+    m_persistence = std::make_unique<PersistenceManager>(db);
+    wxPersistenceManager::Set(*m_persistence);
+
+    m_mainFrame = new UI::MainFrame(env, db, cfg);
+    m_mainFrame->Show();
+
+    return true;
 }

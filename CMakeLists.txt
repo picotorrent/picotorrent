@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project("PicoTorrent")
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -18,8 +15,6 @@ endif()
 
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenSSL REQUIRED)
-find_package(Qt5 REQUIRED COMPONENTS Core Gui Svg Widgets)
-find_package(Qt5WinExtras REQUIRED)
 
 message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
 message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
@@ -31,6 +26,9 @@ option(deprecated-functions "" off)
 
 add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/zlib)
+
+# wxWidgets
+add_subdirectory(vendor/wx)
 
 # Generate version information file
 file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
@@ -126,69 +124,49 @@ add_executable(
     PicoTorrent
     WIN32
 
+    src/picotorrent/application
+    src/picotorrent/buildinfo
+    src/picotorrent/crashpadinitializer
+    src/picotorrent/main
+    src/picotorrent/persistencemanager
+    src/picotorrent/resources.rc
+
+    # BitTorrent
+    src/picotorrent/bittorrent/session
+    src/picotorrent/bittorrent/torrenthandle
+
     # Core
     src/picotorrent/core/configuration
     src/picotorrent/core/database
     src/picotorrent/core/environment
     src/picotorrent/core/utils
 
-    # GeoIP
-    src/picotorrent/core/geoip/geoip
-    src/picotorrent/core/geoip/gzipdecompressor
-    src/picotorrent/core/geoip/maxminddatabase
+    # Dialogs
+    src/picotorrent/ui/dialogs/aboutdialog
+    src/picotorrent/ui/dialogs/addmagnetlinkdialog
+    src/picotorrent/ui/dialogs/addtorrentdialog
 
-    # HTTP
-    src/picotorrent/core/http/httpclient
-    src/picotorrent/core/http/httprequest
-    src/picotorrent/core/http/httpresponse
+    # Models
+    src/picotorrent/ui/models/filestoragemodel
+    src/picotorrent/ui/models/peerlistmodel
+    src/picotorrent/ui/models/torrentlistmodel
+    src/picotorrent/ui/models/trackerlistmodel
 
-    # Scripting
-    src/picotorrent/scripting/jsengine
+    # Persistence
+    src/picotorrent/ui/persistence/persistenttorrentlistview
 
-    # Various dialogs
-    src/picotorrent/aboutdialog
-    src/picotorrent/addtorrentdialog
-
-    # Preferences
-    src/picotorrent/connectionpreferencespage
-    src/picotorrent/downloadspreferencespage
-    src/picotorrent/generalpreferencespage
-    src/picotorrent/preferencesdialog
-    src/picotorrent/proxypreferencespage
-
-    src/picotorrent/application
-    src/picotorrent/buildinfo
-    src/picotorrent/crashpad
-    src/picotorrent/elidedlabel
-    src/picotorrent/filestorageitemdelegate
-    src/picotorrent/filestorageitemmodel
-    src/picotorrent/main
-    src/picotorrent/mainwindow
-    src/picotorrent/resources.qrc
-    src/picotorrent/resources.rc
-    src/picotorrent/scriptedtorrentfilter
-    src/picotorrent/session
-    src/picotorrent/sessionstate
-    src/picotorrent/statusbar
-    src/picotorrent/systemtrayicon
-    src/picotorrent/textinputdialog
-    src/picotorrent/torrentcontextmenu
-    src/picotorrent/torrentitemdelegate
-    src/picotorrent/torrenthandle
-    src/picotorrent/torrentlistmodel
-    src/picotorrent/torrentlistwidget
-    src/picotorrent/torrentsortfilterproxymodel
-    src/picotorrent/translator
-    src/picotorrent/updatechecker
-
-    src/picotorrent/models/peerlistmodel
-    src/picotorrent/models/trackerslistmodel
-
-    src/picotorrent/torrentdetails/torrentdetailswidget
-    src/picotorrent/torrentdetails/torrentfileswidget
-    src/picotorrent/torrentdetails/torrentoverviewwidget
-    src/picotorrent/torrentdetails/torrentpeerswidget
-    src/picotorrent/torrentdetails/torrenttrackerswidget
+    # UI
+    src/picotorrent/ui/mainframe
+    src/picotorrent/ui/statusbar
+    src/picotorrent/ui/torrentcontextmenu
+    src/picotorrent/ui/torrentdetailsfilespanel
+    src/picotorrent/ui/torrentdetailsoverviewpanel
+    src/picotorrent/ui/torrentdetailspeerspanel
+    src/picotorrent/ui/torrentdetailstrackerspanel
+    src/picotorrent/ui/torrentdetailsview
+    src/picotorrent/ui/torrentfilelistview
+    src/picotorrent/ui/torrentlistview
+    src/picotorrent/ui/translator
 )
 
 target_compile_definitions(
@@ -232,7 +210,6 @@ target_include_directories(
     "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/build/native/mini_chromium/include"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
     "${CMAKE_SOURCE_DIR}/vendor/loguru"
-    "${Qt5WinExtras_INCLUDE_DIRS}"
 )
 
 target_link_directories(
@@ -244,6 +221,9 @@ target_link_directories(
 
 target_link_libraries(
     PicoTorrent
+
+    # wxWidgets
+    core base
 
     # Windows
     Comctl32
@@ -278,11 +258,6 @@ target_link_libraries(
     maxminddb
     sqlite
     zlibstatic
-
-    # Qt
-    Qt5::Svg
-    Qt5::Widgets
-    Qt5::WinExtras
 )
 
 
@@ -292,42 +267,6 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_SOURCE_DIR}/src/scripts"
         "$<TARGET_FILE_DIR:PicoTorrent>/scripts"
-)
-
-# Copy base Qt dependencies
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:Qt5::Core>
-        $<TARGET_FILE:Qt5::Gui>
-        $<TARGET_FILE:Qt5::Svg>
-        $<TARGET_FILE:Qt5::Widgets>
-        $<TARGET_FILE:Qt5::WinExtras>
-        $<TARGET_FILE_DIR:PicoTorrent>
-)
-
-# Copy image format plugins
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:Qt5::QICOPlugin>
-        "$<TARGET_FILE_DIR:PicoTorrent>/imageformats/$<TARGET_FILE_NAME:Qt5::QICOPlugin>"
-)
-
-# Copy platform plugins
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:Qt5::QWindowsIntegrationPlugin>
-        "$<TARGET_FILE_DIR:PicoTorrent>/platforms/$<TARGET_FILE_NAME:Qt5::QWindowsIntegrationPlugin>"
-)
-
-# Copy style plugins
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:Qt5::QWindowsVistaStylePlugin>
-        "$<TARGET_FILE_DIR:PicoTorrent>/styles/$<TARGET_FILE_NAME:Qt5::QWindowsVistaStylePlugin>"
 )
 
 # Copy ChakraCore
