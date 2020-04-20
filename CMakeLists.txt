@@ -16,19 +16,14 @@ endif()
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenSSL REQUIRED)
 
-message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
-message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
-
 # --------- libtorrent options
 option(BUILD_SHARED_LIBS    "" off)
 option(deprecated-functions "" off)
 # ----------------------------
 
 add_subdirectory(vendor/libtorrent)
-add_subdirectory(vendor/zlib)
-
-# wxWidgets
 add_subdirectory(vendor/wx)
+add_subdirectory(vendor/zlib)
 
 # Generate version information file
 file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
@@ -130,6 +125,7 @@ add_executable(
     src/picotorrent/main
     src/picotorrent/persistencemanager
     src/picotorrent/resources.rc
+    src/picotorrent/updatechecker
 
     # BitTorrent
     src/picotorrent/bittorrent/session
@@ -140,6 +136,9 @@ add_executable(
     src/picotorrent/core/database
     src/picotorrent/core/environment
     src/picotorrent/core/utils
+
+    # Http
+    src/picotorrent/http/httpclient
 
     # Dialogs
     src/picotorrent/ui/dialogs/aboutdialog
@@ -158,6 +157,7 @@ add_executable(
     # UI
     src/picotorrent/ui/mainframe
     src/picotorrent/ui/statusbar
+    src/picotorrent/ui/taskbaricon
     src/picotorrent/ui/torrentcontextmenu
     src/picotorrent/ui/torrentdetailsfilespanel
     src/picotorrent/ui/torrentdetailsoverviewpanel

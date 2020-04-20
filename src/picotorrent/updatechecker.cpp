@@ -1,24 +1,22 @@
 #include "updatechecker.hpp"
 
-#include <QMessageBox>
+#include <Windows.h>
+#include <CommCtrl.h>
 
-#include "core/configuration.hpp"
-#include "core/http/httpclient.hpp"
-#include "core/http/httprequest.hpp"
-#include "core/http/httpresponse.hpp"
+#include <loguru.hpp>
 
 #include "buildinfo.hpp"
-#include "loguru.hpp"
+#include "core/configuration.hpp"
+#include "http/httpclient.hpp"
 #include "picojson.hpp"
 #include "semver.hpp"
-#include "translator.hpp"
-#include "updateinformation.hpp"
+#include "ui/translator.hpp"
 
 using pt::UpdateChecker;
 
-UpdateChecker::UpdateChecker(std::shared_ptr<pt::Configuration> cfg, bool forced)
-    : m_cfg(cfg),
-    m_forced(forced)
+UpdateChecker::UpdateChecker(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg)
+    : m_parent(parent),
+    m_cfg(cfg)
 {
 }
 
@@ -26,73 +24,123 @@ UpdateChecker::~UpdateChecker()
 {
 }
 
-void UpdateChecker::check()
+void UpdateChecker::Check(bool force)
 {
-    QString url = QString::fromStdString(m_cfg->getString("update_checks.url"));
-    HttpRequest req(url);
+    std::string url = m_cfg->GetString("update_checks.url");
 
-    auto httpClient = new HttpClient("PicoTorrent/" + BuildInfo::version());
-    auto response   = httpClient->get(req);
+    if (url.empty())
+    {
+        LOG_F(WARNING, "No update check URL set. Skipping...");
+        return;
+    }
 
-    QObject::connect(response,   &HttpResponse::finished,
-                     this,       &UpdateChecker::parseResponse);
+    auto client = std::make_shared<Http::HttpClient>();
+    client->Get(url,
+        [this, client, force](int statusCode, std::string const& body)
+        {
+            if (statusCode != 200)
+            {
+                LOG_F(ERROR, "HTTP response status not 200, was %d", statusCode);
+                return;
+            }
 
-    QObject::connect(response,   &HttpResponse::finished,
-                     response,   &HttpResponse::deleteLater);
+            picojson::value res;
+            std::string err = picojson::parse(res, body);
 
-    QObject::connect(response,   &HttpResponse::finished,
-                     httpClient, &HttpClient::deleteLater);
+            if (!err.empty())
+            {
+                LOG_F(ERROR, "Failed to parse release JSON: %s", err.data());
+                return;
+            }
+
+            picojson::object obj = res.get<picojson::object>();
+
+            std::string version = obj["version"].get<std::string>();
+            std::string ignoredVersion = m_cfg->GetString("update_checks.ignored_version");
+
+            // If we haven't forced an update (via the menu item)
+            // and the version is the same as the stored ignored version,
+            // just return silently.
+
+            if (version == ignoredVersion && !force)
+            {
+                return;
+            }
+
+            semver::version parsedVersion(version);
+            semver::version currentVersion(BuildInfo::version());
+
+            if (parsedVersion > currentVersion)
+            {
+                // Show update available
+                this->ShowUpdateDialog(
+                    version,
+                    obj["url"].get<std::string>());
+            }
+            else if (force)
+            {
+                this->ShowNoUpdateDialog();
+            }
+
+            wxCommandEvent evt;
+            wxPostEvent(this, evt);
+        });
 }
 
-void UpdateChecker::parseResponse(pt::HttpResponse* response)
+void UpdateChecker::ShowNoUpdateDialog()
 {
-    if (response->statusCode != 200)
+    // Load translations
+    wxString main = i18n("no_update_available");
+
+    TASKDIALOGCONFIG tdf = { sizeof(TASKDIALOGCONFIG) };
+    tdf.dwCommonButtons = TDCBF_OK_BUTTON;
+    tdf.dwFlags = TDF_POSITION_RELATIVE_TO_WINDOW;
+    tdf.hwndParent = m_parent->GetHWND();
+    tdf.pszMainIcon = TD_INFORMATION_ICON;
+    tdf.pszMainInstruction = main.c_str();
+    tdf.pszWindowTitle = TEXT("PicoTorrent");
+
+    TaskDialogIndirect(&tdf, nullptr, nullptr, nullptr);
+}
+
+void UpdateChecker::ShowUpdateDialog(std::string const& version, std::string& url)
+{
+    // Load translations
+    wxString content = i18n("new_version_available");
+    wxString main = i18n("picotorrent_v_available");
+    wxString mainFormatted = wxString::Format(main, version);
+    wxString verification = i18n("ignore_update");
+    wxString show = i18n("show_on_github");
+
+    const TASKDIALOG_BUTTON pButtons[] =
     {
-        LOG_F(ERROR, "HTTP response status not 200, was %d", response->statusCode);
-        return;
+        { 1000, show.c_str() },
+    };
+
+    TASKDIALOGCONFIG tdf = { sizeof(TASKDIALOGCONFIG) };
+    tdf.cButtons = ARRAYSIZE(pButtons);
+    tdf.dwCommonButtons = TDCBF_CLOSE_BUTTON;
+    tdf.dwFlags = TDF_POSITION_RELATIVE_TO_WINDOW | TDF_USE_COMMAND_LINKS;
+    tdf.hwndParent = m_parent->GetHWND();
+    tdf.pButtons = pButtons;
+    tdf.pszMainIcon = TD_INFORMATION_ICON;
+    tdf.pszMainInstruction = mainFormatted;
+    tdf.pszVerificationText = verification.c_str();
+    tdf.pszWindowTitle = TEXT("PicoTorrent");
+
+    int pnButton = -1;
+    int pnRadioButton = -1;
+    BOOL pfVerificationFlagChecked = FALSE;
+
+    TaskDialogIndirect(&tdf, &pnButton, &pnRadioButton, &pfVerificationFlagChecked);
+
+    if (pnButton == 1000)
+    {
+        wxLaunchDefaultBrowser(url, wxBROWSER_NEW_WINDOW);
     }
 
-    picojson::value res;
-    std::string err;
-    picojson::parse(res, response->body.begin(), response->body.end(), &err);
-
-    if (!err.empty())
+    if (pfVerificationFlagChecked)
     {
-        LOG_F(ERROR, "Failed to parse release JSON: %s", err.data());
-        return;
-    }
-
-    picojson::object obj = res.get<picojson::object>();
-
-    std::string version = obj["version"].get<std::string>();
-    std::string ignoredVersion = m_cfg->getString("update_checks.ignored_version");
-
-    // If we haven't forced an update (via the menu item)
-    // and the version is the same as the stored ignored version,
-    // just return silently.
-
-    if (version == ignoredVersion && !m_forced)
-    {
-        return;
-    }
-
-    semver::version parsedVersion(version);
-    semver::version currentVersion(BuildInfo::version().toStdString());
-
-    if (parsedVersion > currentVersion)
-    {
-        UpdateInformation info;
-        info.available = true;
-        info.version = QString::fromStdString(version);
-        info.url = QString::fromStdString(obj["url"].get<std::string>());
-
-        emit finished(&info);
-    }
-    else if (m_forced)
-    {
-        UpdateInformation info = { 0 };
-        info.available = false;
-
-        emit finished(&info);
+        m_cfg->SetString("update_checks.ignored_version", version);
     }
 }

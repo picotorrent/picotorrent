@@ -19,12 +19,15 @@
 #include "dialogs/aboutdialog.hpp"
 #include "dialogs/addmagnetlinkdialog.hpp"
 #include "dialogs/addtorrentdialog.hpp"
+#include "ids.hpp"
 #include "models/torrentlistmodel.hpp"
 #include "statusbar.hpp"
+#include "taskbaricon.hpp"
 #include "torrentcontextmenu.hpp"
 #include "torrentdetailsview.hpp"
 #include "torrentlistview.hpp"
 #include "translator.hpp"
+#include "../updatechecker.hpp"
 
 namespace fs = std::filesystem;
 using pt::UI::MainFrame;
@@ -39,10 +42,12 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_session(new BitTorrent::Session(this, db, cfg, env)),
     m_splitter(new wxSplitterWindow(this, ptID_MAIN_SPLITTER)),
     m_statusBar(new StatusBar(this)),
-    m_torrentDetails(new TorrentDetailsView(m_splitter, ptID_TORRENT_DETAILS)),
-    m_torrentList(new TorrentListView(m_splitter, ptID_TORRENT_LIST)),
+    m_taskBarIcon(new TaskBarIcon(this)),
+    m_torrentDetails(new TorrentDetailsView(m_splitter, ptID_MAIN_TORRENT_DETAILS)),
+    m_torrentList(new TorrentListView(m_splitter, ptID_MAIN_TORRENT_LIST)),
     m_torrentListModel(new Models::TorrentListModel()),
-    m_torrentsCount(0)
+    m_torrentsCount(0),
+    m_updateChecker(new UpdateChecker(this, cfg))
 {
     m_splitter->SetMinimumPaneSize(10);
     m_splitter->SetSashGravity(0.5);
@@ -66,7 +71,10 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_menuItemDetailsPanel->SetCheckable(true);
     m_menuItemDetailsPanel->Check(m_cfg->GetBool("ui.show_details_panel"));
     m_menuItemStatusBar->SetCheckable(true);
-    m_menuItemStatusBar->Check(m_cfg->GetBool("ui.show_details_panel"));
+    m_menuItemStatusBar->Check(m_cfg->GetBool("ui.show_status_bar"));
+
+    if (!m_cfg->GetBool("ui.show_details_panel")) { m_splitter->Unsplit(); }
+    if (!m_cfg->GetBool("ui.show_status_bar")) { m_statusBar->Hide(); }
 
     if (!wxPersistenceManager::Get().RegisterAndRestore(this))
     {
@@ -117,9 +125,9 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
             }
         });
 
-    this->Bind(wxEVT_DATAVIEW_COLUMN_SORTED, [this](wxDataViewEvent&) { m_torrentList->Sort(); }, ptID_TORRENT_LIST);
+    this->Bind(wxEVT_DATAVIEW_COLUMN_SORTED, [this](wxDataViewEvent&) { m_torrentList->Sort(); }, ptID_MAIN_TORRENT_LIST);
 
-    this->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &MainFrame::ShowTorrentContextMenu, this, ptID_TORRENT_LIST);
+    this->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &MainFrame::ShowTorrentContextMenu, this, ptID_MAIN_TORRENT_LIST);
 
     this->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, [this](wxCommandEvent& evt)
         {
@@ -141,17 +149,78 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
             }
 
             m_torrentDetails->Refresh(m_selection);
-        }, ptID_TORRENT_LIST);
+        }, ptID_MAIN_TORRENT_LIST);
 
     // connect events
-    this->Bind(wxEVT_MENU, &MainFrame::OnFileAddTorrent, this, ptID_MENU_ADD_TORRENT);
-    this->Bind(wxEVT_MENU, &MainFrame::OnFileAddMagnetLink, this, ptID_MENU_ADD_MAGNET_LINK);
-    this->Bind(wxEVT_MENU, [this](wxCommandEvent&) { this->Close(true); }, ptID_MENU_EXIT);
-    this->Bind(wxEVT_MENU, &MainFrame::OnHelpAbout, this, ptID_MENU_ABOUT);
+    this->Bind(wxEVT_MENU, &MainFrame::OnFileAddTorrent, this, ptID_EVT_ADD_TORRENT);
+    this->Bind(wxEVT_MENU, &MainFrame::OnFileAddMagnetLink, this, ptID_EVT_ADD_MAGNET_LINK);
+    this->Bind(wxEVT_MENU, [this](wxCommandEvent&) { this->Close(true); }, ptID_EVT_EXIT);
+    this->Bind(wxEVT_MENU, &MainFrame::OnHelpAbout, this, ptID_EVT_ABOUT);
+
+    m_taskBarIcon->Bind(wxEVT_MENU, &MainFrame::OnFileAddTorrent, this, ptID_EVT_ADD_TORRENT);
+    m_taskBarIcon->Bind(wxEVT_MENU, &MainFrame::OnFileAddMagnetLink, this, ptID_EVT_ADD_MAGNET_LINK);
+    m_taskBarIcon->Bind(wxEVT_MENU, [this](wxCommandEvent&) { this->Close(true); }, ptID_EVT_EXIT);
+
+    this->Bind(
+        wxEVT_MENU,
+        [this](wxCommandEvent&)
+        {
+            m_updateChecker->Check(true);
+        },
+        ptID_EVT_CHECK_FOR_UPDATE);
+
+    this->Bind(
+        wxEVT_MENU,
+        [this](wxCommandEvent&)
+        {
+            m_cfg->SetBool("ui.show_details_panel", m_menuItemDetailsPanel->IsChecked());
+
+            if (m_menuItemDetailsPanel->IsChecked())
+            {
+                m_splitter->SplitHorizontally(
+                    m_torrentList,
+                    m_torrentDetails);
+            }
+            else
+            {
+                m_splitter->Unsplit();
+            }
+        }, ptID_EVT_SHOW_DETAILS);
+
+    this->Bind(
+        wxEVT_MENU,
+        [this](wxCommandEvent&)
+        {
+            m_cfg->SetBool("ui.show_status_bar", m_menuItemStatusBar->IsChecked());
+
+            if (m_menuItemStatusBar->IsChecked()) { m_statusBar->Show(); }
+            else { m_statusBar->Hide(); }
+            this->SendSizeEvent();
+        }, ptID_EVT_SHOW_STATUS_BAR);
+
+    // Update status bar
+    m_statusBar->UpdateDhtNodesCount(m_cfg->GetBool("enable_dht") ? 0 : -1);
+    m_statusBar->UpdateTorrentCount(m_torrentsCount);
+
+    // Show taskbar icon
+    if (m_cfg->GetBool("show_in_notification_area"))
+    {
+        m_taskBarIcon->Show();
+    }
+
+    // Check for updates
+    if (m_cfg->GetBool("update_checks.enabled"))
+    {
+        m_updateChecker->Check();
+    }
 }
 
 MainFrame::~MainFrame()
 {
+    m_taskBarIcon->Hide();
+    this->Hide();
+
+    delete m_taskBarIcon;
     delete m_session;
 }
 
@@ -217,22 +286,22 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
 wxMenuBar* MainFrame::CreateMainMenu()
 {
     auto fileMenu = new wxMenu();
-    fileMenu->Append(ptID_MENU_ADD_TORRENT, i18n("amp_add_torrent"));
-    fileMenu->Append(ptID_MENU_ADD_MAGNET_LINK, i18n("amp_add_magnet_link_s"));
+    fileMenu->Append(ptID_EVT_ADD_TORRENT, i18n("amp_add_torrent"));
+    fileMenu->Append(ptID_EVT_ADD_MAGNET_LINK, i18n("amp_add_magnet_link_s"));
     fileMenu->AppendSeparator();
-    fileMenu->Append(ptID_MENU_EXIT, i18n("amp_exit"));
+    fileMenu->Append(ptID_EVT_EXIT, i18n("amp_exit"));
 
     auto viewMenu = new wxMenu();
     // TODO filter
-    m_menuItemDetailsPanel = viewMenu->Append(ptID_MENU_SHOW_DETAILS_PANEL, i18n("amp_details_panel"));
-    m_menuItemStatusBar = viewMenu->Append(ptID_MENU_SHOW_STATUS_BAR, i18n("amp_status_bar"));
+    m_menuItemDetailsPanel = viewMenu->Append(ptID_EVT_SHOW_DETAILS, i18n("amp_details_panel"));
+    m_menuItemStatusBar = viewMenu->Append(ptID_EVT_SHOW_STATUS_BAR, i18n("amp_status_bar"));
     viewMenu->AppendSeparator();
-    viewMenu->Append(ptID_MENU_PREFERENCES, i18n("amp_preferences"));
+    viewMenu->Append(ptID_EVT_VIEW_PREFERENCES, i18n("amp_preferences"));
 
     auto helpMenu = new wxMenu();
-    helpMenu->Append(ptID_MENU_CHECK_FOR_UPDATE, i18n("amp_check_for_update"));
+    helpMenu->Append(ptID_EVT_CHECK_FOR_UPDATE, i18n("amp_check_for_update"));
     helpMenu->AppendSeparator();
-    helpMenu->Append(ptID_MENU_ABOUT, i18n("amp_about"));
+    helpMenu->Append(ptID_EVT_ABOUT, i18n("amp_about"));
 
     auto mainMenu = new wxMenuBar();
     mainMenu->Append(fileMenu, i18n("amp_file"));

@@ -1,35 +1,32 @@
 #pragma once
 
+#include <wx/wxprec.h>
+#ifndef WX_PRECOMP
+#include <wx/wx.h>
+#endif
+
 #include <memory>
-
-#include <QObject>
-
-class QWidget;
 
 namespace pt
 {
+namespace Core
+{
     class Configuration;
-    class HttpResponse;
-    struct UpdateInformation;
+}
 
-    class UpdateChecker : public QObject
+    class UpdateChecker : private wxEvtHandler
     {
-        Q_OBJECT
-
     public:
-        UpdateChecker(std::shared_ptr<Configuration> cfg, bool forced = false);
+        UpdateChecker(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg);
         ~UpdateChecker();
 
-        void check();
-
-    signals:
-        void finished(UpdateInformation* info);
-
-    private slots:
-        void parseResponse(HttpResponse* response);
+        void Check(bool force = false);
 
     private:
-        std::shared_ptr<Configuration> m_cfg;
-        bool m_forced;
+        void ShowNoUpdateDialog();
+        void ShowUpdateDialog(std::string const& version, std::string& url);
+
+        wxWindow* m_parent;
+        std::shared_ptr<Core::Configuration> m_cfg;
     };
 }
