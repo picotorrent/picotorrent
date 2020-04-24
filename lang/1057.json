@@ -247,6 +247,8 @@
         "pause_on_low_disk_space": "Jeda saat ruang diska hampir penuh",
         "pause_on_low_disk_space_alert": "Torrent dijeda (ruang diska hampir penuh)",
         "enable_geoip": "Aktifkan GeoIP",
-        "enable_automatic_crash_reporting": "Aktifkan pelaporan crash otomatis"
+        "enable_automatic_crash_reporting": "Aktifkan pelaporan crash otomatis",
+        "network_adapter": "Penyesuai jaringan",
+        "kb_s": "KB/s"
     }
 }
