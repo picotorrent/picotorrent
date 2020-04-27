@@ -13,10 +13,14 @@ namespace pt
 {
 namespace UI
 {
+namespace Models
+{
+    class TorrentListModel;
+}
     class TorrentListView : public wxDataViewCtrl
     {
     public:
-        TorrentListView(wxWindow* parent, wxWindowID id);
+        TorrentListView(wxWindow* parent, wxWindowID id, Models::TorrentListModel* model);
         virtual ~TorrentListView();
 
         virtual wxSize GetMinSize() const wxOVERRIDE;
@@ -38,6 +42,7 @@ namespace UI
         };
 
         std::vector<ColumnMetadata> m_columns;
+        Models::TorrentListModel* m_model;
     };
 }
 }

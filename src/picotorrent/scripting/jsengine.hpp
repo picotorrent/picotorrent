@@ -1,33 +1,28 @@
 #pragma once
 
 #include <filesystem>
+#include <string>
 
-#include <ChakraCore.h>
-#include <QObject>
+#include <duktape.h>
+
+namespace fs = std::filesystem;
 
 namespace pt
 {
-    class ScriptedTorrentFilter;
-
-    class JsEngine : public QObject
+namespace Scripting
+{
+    class JsEngine
     {
-        Q_OBJECT
-
     public:
-        JsEngine(QObject* parent = nullptr);
+        JsEngine();
         virtual ~JsEngine();
 
-        void loadDirectory(std::filesystem::path const& path);
-        void loadFile(std::filesystem::path const& path);
+        void Run(fs::path const& path);
 
-    signals:
-        void torrentFilterAdded(ScriptedTorrentFilter* filter);
+        void Emit(std::string const& name);
 
     private:
-        // JS callbacks
-        static JsValueRef CALLBACK addFilter(JsValueRef callee, bool isConstructCall, JsValueRef* args, unsigned short argsCount, void* callbackState);
-        static JsValueRef CALLBACK translate(JsValueRef callee, bool isConstructCall, JsValueRef* args, unsigned short argsCount, void* callbackState);
-
-        JsRuntimeHandle m_runtime;
+        duk_context* m_ctx;
     };
+}
 }

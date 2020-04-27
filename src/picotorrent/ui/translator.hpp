@@ -1,5 +1,10 @@
 #pragma once
 
+#include <wx/wxprec.h>
+#ifndef WX_PRECOMP
+#include <wx/wx.h>
+#endif
+
 #include <Windows.h>
 
 #include <map>
@@ -19,8 +24,8 @@ namespace UI
         struct Language
         {
             int code;
-            std::string name;
-            std::map<std::string, std::string> translations;
+            wxString name;
+            std::map<wxString, wxString> translations;
         };
 
         static Translator& GetInstance();
@@ -31,7 +36,7 @@ namespace UI
         std::vector<Language> Languages();
         void LoadEmbedded(HINSTANCE hInstance);
         void SetLanguage(int languageCode);
-        std::string Translate(std::string const& key);
+        wxString Translate(wxString const& key);
 
     private:
         Translator();

@@ -4,7 +4,8 @@
 #include <ShlObj.h>
 #include <Shlwapi.h>
 
-#include "loguru.hpp"
+#include <loguru.hpp>
+
 #include "utils.hpp"
 
 namespace fs = std::filesystem;

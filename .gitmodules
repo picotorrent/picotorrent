@@ -14,3 +14,6 @@
 [submodule "vendor/wx"]
 	path = vendor/wx
 	url = https://github.com/wxWidgets/wxWidgets
+[submodule "vendor/duktape"]
+	path = vendor/duktape
+	url = https://github.com/svaarala/duktape-releases

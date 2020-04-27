@@ -12,11 +12,11 @@
 #include <client/crash_report_database.h>
 #include <client/settings.h>
 #include <client/crashpad_client.h>
+#include <loguru.hpp>
 
 #include "buildinfo.hpp"
 #include "core/environment.hpp"
 #include "core/utils.hpp"
-#include "loguru.hpp"
 
 namespace fs = std::filesystem;
 using pt::CrashpadInitializer;

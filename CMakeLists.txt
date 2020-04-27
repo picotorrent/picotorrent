@@ -23,7 +23,6 @@ option(deprecated-functions "" off)
 
 add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/wx)
-add_subdirectory(vendor/zlib)
 
 # Generate version information file
 file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
@@ -70,6 +69,18 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:IC
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
 add_library(
+    duktape
+    STATIC
+    vendor/duktape/src/duktape
+)
+
+target_include_directories(
+    duktape
+    INTERFACE
+    vendor/duktape/src
+)
+
+add_library(
     loguru
     STATIC
     vendor/loguru/loguru
@@ -81,38 +92,22 @@ target_compile_definitions(
     -D_CRT_SECURE_NO_WARNINGS
 )
 
+target_include_directories(
+    loguru
+    INTERFACE
+    vendor/loguru
+)
+
 add_library(
     sqlite
     STATIC
     src/sqlite/sqlite3
 )
 
-# MaxMind DB library
-add_library(
-    maxminddb
-    STATIC
-    vendor/libmaxminddb/src/data-pool
-    vendor/libmaxminddb/src/maxminddb
-)
-
-target_compile_definitions(
-    maxminddb
-    PRIVATE
-    -DUNICODE
-    -DWIN32
-    -DWIN32_LEAN_AND_MEAN
-)
-
 target_include_directories(
-    maxminddb
-    PRIVATE
-    vendor/libmaxminddb/include
-    vendor/libmaxminddb/projects/VS12
-)
-
-target_link_libraries(
-    maxminddb
-    Ws2_32
+    sqlite
+    INTERFACE
+    src/sqlite
 )
 
 add_executable(
@@ -144,6 +139,11 @@ add_executable(
     src/picotorrent/ui/dialogs/aboutdialog
     src/picotorrent/ui/dialogs/addmagnetlinkdialog
     src/picotorrent/ui/dialogs/addtorrentdialog
+    src/picotorrent/ui/dialogs/preferencesconnectionpage
+    src/picotorrent/ui/dialogs/preferencesdialog
+    src/picotorrent/ui/dialogs/preferencesdownloadspage
+    src/picotorrent/ui/dialogs/preferencesgeneralpage
+    src/picotorrent/ui/dialogs/preferencesproxypage
 
     # Models
     src/picotorrent/ui/models/filestoragemodel
@@ -153,6 +153,9 @@ add_executable(
 
     # Persistence
     src/picotorrent/ui/persistence/persistenttorrentlistview
+
+    # Scripting
+    src/picotorrent/scripting/jsengine
 
     # UI
     src/picotorrent/ui/mainframe
@@ -195,27 +198,16 @@ target_include_directories(
     PicoTorrent
     PRIVATE
 
-    # libmaxminddb
-    vendor/libmaxminddb/include
-    vendor/libmaxminddb/projects/VS12
-
-    # zlib
-    vendor/zlib
-    "$<TARGET_FILE_DIR:zlibstatic>/../"
-
     "${Boost_INCLUDE_DIRS}"
 
-    "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/build/native/include"
     "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/build/native/crashpad/include"
     "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/build/native/mini_chromium/include"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
-    "${CMAKE_SOURCE_DIR}/vendor/loguru"
 )
 
 target_link_directories(
     PicoTorrent
     PRIVATE
-    "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/lib/native/v140/${PICO_ARCH}"
     "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/lib/native/v142/${PICO_ARCH}"
 )
 
@@ -242,8 +234,8 @@ target_link_libraries(
     crashpad_util
     mini_chromium
 
-    # ChakraCore
-    ChakraCore
+    # Duktape
+    duktape
 
     # loguru
     loguru
@@ -255,11 +247,8 @@ target_link_libraries(
     OpenSSL::Crypto
     OpenSSL::SSL
 
-    maxminddb
     sqlite
-    zlibstatic
 )
-
 
 # Copy scripts
 add_custom_command(
@@ -269,14 +258,6 @@ add_custom_command(
         "$<TARGET_FILE_DIR:PicoTorrent>/scripts"
 )
 
-# Copy ChakraCore
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/lib/native/v140/${PICO_ARCH}/$<CONFIG>/ChakraCore.dll"
-        $<TARGET_FILE_DIR:PicoTorrent>
-)
-
 # Copy Crashpad handler
 add_custom_command(
     TARGET PicoTorrent POST_BUILD
@@ -284,4 +265,3 @@ add_custom_command(
         "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/lib/native/v142/${PICO_ARCH}/$<CONFIG>/crashpad_handler.exe"
         $<TARGET_FILE_DIR:PicoTorrent>
 )
-

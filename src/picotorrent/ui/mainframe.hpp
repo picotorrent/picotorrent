@@ -12,6 +12,7 @@
 #include <vector>
 
 class wxSplitterWindow;
+class wxTaskBarIconEvent;
 
 namespace pt
 {
@@ -27,6 +28,10 @@ namespace Core
     class Configuration;
     class Database;
     class Environment;
+}
+namespace Scripting
+{
+    class JsEngine;
 }
 namespace UI
 {
@@ -52,14 +57,19 @@ namespace Models
         wxMenuBar* CreateMainMenu();
 
         void AddTorrents(std::vector<libtorrent::add_torrent_params>& params);
+        void OnClose(wxCloseEvent&);
         void OnFileAddMagnetLink(wxCommandEvent&);
         void OnFileAddTorrent(wxCommandEvent&);
         void OnHelpAbout(wxCommandEvent&);
+        void OnIconize(wxIconizeEvent&);
+        void OnTaskBarLeftDown(wxTaskBarIconEvent&);
+        void OnViewPreferences(wxCommandEvent&);
         void ParseTorrentFiles(std::vector<libtorrent::add_torrent_params>& params, wxArrayString const& paths);
         void ShowTorrentContextMenu(wxCommandEvent&);
 
         wxSplitterWindow* m_splitter;
 
+        Scripting::JsEngine* m_jsEngine;
         StatusBar* m_statusBar;
         TaskBarIcon* m_taskBarIcon;
         TorrentDetailsView* m_torrentDetails;

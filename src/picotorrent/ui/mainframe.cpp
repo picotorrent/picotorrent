@@ -9,6 +9,7 @@
 #include <wx/persist/toplevel.h>
 #include <wx/sizer.h>
 #include <wx/splitter.h>
+#include <wx/taskbarbutton.h>
 
 #include "../bittorrent/session.hpp"
 #include "../bittorrent/sessionstatistics.hpp"
@@ -19,8 +20,10 @@
 #include "dialogs/aboutdialog.hpp"
 #include "dialogs/addmagnetlinkdialog.hpp"
 #include "dialogs/addtorrentdialog.hpp"
+#include "dialogs/preferencesdialog.hpp"
 #include "ids.hpp"
 #include "models/torrentlistmodel.hpp"
+#include "../scripting/jsengine.hpp"
 #include "statusbar.hpp"
 #include "taskbaricon.hpp"
 #include "torrentcontextmenu.hpp"
@@ -44,19 +47,17 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_statusBar(new StatusBar(this)),
     m_taskBarIcon(new TaskBarIcon(this)),
     m_torrentDetails(new TorrentDetailsView(m_splitter, ptID_MAIN_TORRENT_DETAILS)),
-    m_torrentList(new TorrentListView(m_splitter, ptID_MAIN_TORRENT_LIST)),
     m_torrentListModel(new Models::TorrentListModel()),
+    m_torrentList(new TorrentListView(m_splitter, ptID_MAIN_TORRENT_LIST, m_torrentListModel)),
     m_torrentsCount(0),
-    m_updateChecker(new UpdateChecker(this, cfg))
+    m_updateChecker(new UpdateChecker(this, cfg)),
+    m_jsEngine(new Scripting::JsEngine())
 {
     m_splitter->SetMinimumPaneSize(10);
     m_splitter->SetSashGravity(0.5);
     m_splitter->SplitHorizontally(
         m_torrentList,
         m_torrentDetails);
-
-    m_torrentList->AssociateModel(m_torrentListModel);
-    m_torrentListModel->DecRef();
 
     auto sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(m_splitter, 1, wxEXPAND, 0);
@@ -152,14 +153,19 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         }, ptID_MAIN_TORRENT_LIST);
 
     // connect events
+    this->Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this, wxID_ANY);
+    this->Bind(wxEVT_ICONIZE, &MainFrame::OnIconize, this, wxID_ANY);
     this->Bind(wxEVT_MENU, &MainFrame::OnFileAddTorrent, this, ptID_EVT_ADD_TORRENT);
     this->Bind(wxEVT_MENU, &MainFrame::OnFileAddMagnetLink, this, ptID_EVT_ADD_MAGNET_LINK);
     this->Bind(wxEVT_MENU, [this](wxCommandEvent&) { this->Close(true); }, ptID_EVT_EXIT);
+    this->Bind(wxEVT_MENU, &MainFrame::OnViewPreferences, this, ptID_EVT_VIEW_PREFERENCES);
     this->Bind(wxEVT_MENU, &MainFrame::OnHelpAbout, this, ptID_EVT_ABOUT);
 
     m_taskBarIcon->Bind(wxEVT_MENU, &MainFrame::OnFileAddTorrent, this, ptID_EVT_ADD_TORRENT);
     m_taskBarIcon->Bind(wxEVT_MENU, &MainFrame::OnFileAddMagnetLink, this, ptID_EVT_ADD_MAGNET_LINK);
     m_taskBarIcon->Bind(wxEVT_MENU, [this](wxCommandEvent&) { this->Close(true); }, ptID_EVT_EXIT);
+    m_taskBarIcon->Bind(wxEVT_MENU, &MainFrame::OnViewPreferences, this, ptID_EVT_VIEW_PREFERENCES);
+    m_taskBarIcon->Bind(wxEVT_TASKBAR_LEFT_DOWN, &MainFrame::OnTaskBarLeftDown, this, wxID_ANY);
 
     this->Bind(
         wxEVT_MENU,
@@ -213,13 +219,22 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     {
         m_updateChecker->Check();
     }
+
+    // Load scripts
+    fs::path mainScript = m_env->GetApplicationPath() / "scripts" / "main.js";
+
+    if (fs::exists(mainScript) && fs::is_regular_file(mainScript))
+    {
+        m_jsEngine->Run(mainScript);
+    }
 }
 
 MainFrame::~MainFrame()
 {
+    m_jsEngine->Emit("unload");
     m_taskBarIcon->Hide();
-    this->Hide();
 
+    delete m_jsEngine;
     delete m_taskBarIcon;
     delete m_session;
 }
@@ -311,6 +326,27 @@ wxMenuBar* MainFrame::CreateMainMenu()
     return mainMenu;
 }
 
+void MainFrame::OnClose(wxCloseEvent& evt)
+{
+    if (evt.CanVeto()
+        && m_cfg->GetBool("show_in_notification_area")
+        && m_cfg->GetBool("close_to_notification_area"))
+    {
+        Hide();
+        MSWGetTaskBarButton()->Hide();
+    }
+    else
+    {
+        // We hide early while closing to not occupy the
+        // screen more than necessary. Otherwise the window
+        // would be visible (and unresponsive) for a few seconds
+        // before being destroyed.
+        Hide();
+
+        evt.Skip();
+    }
+}
+
 void MainFrame::OnFileAddMagnetLink(wxCommandEvent&)
 {
     Dialogs::AddMagnetLinkDialog dlg(this, wxID_ANY);
@@ -348,6 +384,44 @@ void MainFrame::OnHelpAbout(wxCommandEvent&)
 {
     Dialogs::AboutDialog dlg(this, wxID_ANY);
     dlg.ShowModal();
+}
+
+void MainFrame::OnIconize(wxIconizeEvent& ev)
+{
+    if (ev.IsIconized()
+        && m_cfg->GetBool("show_in_notification_area")
+        && m_cfg->GetBool("minimize_to_notification_area"))
+    {
+        MSWGetTaskBarButton()->Hide();
+    }
+}
+
+void MainFrame::OnTaskBarLeftDown(wxTaskBarIconEvent&)
+{
+    this->MSWGetTaskBarButton()->Show();
+    this->Restore();
+    this->Raise();
+    this->Show();
+}
+
+void MainFrame::OnViewPreferences(wxCommandEvent&)
+{
+    Dialogs::PreferencesDialog dlg(this, m_cfg);
+    
+    if (dlg.ShowModal() == wxID_OK)
+    {
+        // Reload settings
+        m_session->ReloadSettings();
+
+        if (m_cfg->GetBool("show_in_notification_area") && !m_taskBarIcon->IsIconInstalled())
+        {
+            m_taskBarIcon->Show();
+        }
+        else if (!m_cfg->GetBool("show_in_notification_area") && m_taskBarIcon->IsIconInstalled())
+        {
+            m_taskBarIcon->Hide();
+        }
+    }
 }
 
 void MainFrame::ParseTorrentFiles(std::vector<lt::add_torrent_params>& params, wxArrayString const& paths)

@@ -1,6 +1,8 @@
 #include "translator.hpp"
 
-#include "loguru.hpp"
+#include <loguru.hpp>
+
+#include "../core/utils.hpp"
 #include "../picojson.hpp"
 
 namespace pj = picojson;
@@ -62,11 +64,15 @@ BOOL Translator::EnumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lps
 
     Language l;
     l.code = langId;
-    l.name = langName;
+    l.name = Utils::toStdWString(langName);
 
     for (auto& p : obj.at("strings").get<pj::object>())
     {
-        l.translations.insert({ p.first, p.second.get<std::string>() });
+        wxString key = p.first; // Specifically do not use ToStdWString here
+                                // since we do not want to find Unicode keys
+        wxString val = Utils::toStdWString(p.second.get<std::string>());
+
+        l.translations.insert({ key, val });
     }
 
     translator->m_languages.insert({ l.code, l });
@@ -86,7 +92,7 @@ std::vector<Translator::Language> Translator::Languages()
     return result;
 }
 
-std::string Translator::Translate(std::string const& key)
+wxString Translator::Translate(wxString const& key)
 {
     auto lang = m_languages.find(m_selectedLanguage);
     if (lang == m_languages.end()) { lang = m_languages.find(1033); }

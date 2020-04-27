@@ -17,8 +17,7 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 #include <libtorrent/write_resume_data.hpp>
-
-#include "loguru.hpp"
+#include <loguru.hpp>
 
 #include "../core/configuration.hpp"
 #include "../core/database.hpp"

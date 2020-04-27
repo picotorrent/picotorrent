@@ -10,9 +10,13 @@
 using pt::UI::TorrentListView;
 using pt::UI::Models::TorrentListModel;
 
-TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id)
-    : wxDataViewCtrl(parent, id, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE, wxDefaultValidator, "TorrentListView")
+TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, Models::TorrentListModel* model)
+    : wxDataViewCtrl(parent, id, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE, wxDefaultValidator, "TorrentListView"),
+    m_model(model)
 {
+    this->AssociateModel(m_model);
+    m_model->DecRef();
+
     auto defaultFlags = wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_SORTABLE;
 
     m_columns.push_back(
@@ -201,8 +205,6 @@ void TorrentListView::Sort()
 {
     if (auto sortingColumn = GetSortingColumn())
     {
-        auto model = reinterpret_cast<TorrentListModel*>(GetModel());
-
         if (HasSelection())
         {
             std::vector<BitTorrent::TorrentHandle*> torrents;
@@ -212,22 +214,22 @@ void TorrentListView::Sort()
 
             for (auto item : items)
             {
-                torrents.push_back(model->GetTorrentFromItem(item));
+                torrents.push_back(m_model->GetTorrentFromItem(item));
             }
 
-            model->Sort(
+            m_model->Sort(
                 GetColumnIndex(sortingColumn),
                 sortingColumn->IsSortOrderAscending());
 
             for (auto torrent : torrents)
             {
-                int sortedRowIndex = model->GetRowIndex(torrent);
-                Select(model->GetItem(sortedRowIndex));
+                int sortedRowIndex = m_model->GetRowIndex(torrent);
+                Select(m_model->GetItem(sortedRowIndex));
             }
         }
         else
         {
-            model->Sort(
+            m_model->Sort(
                 GetColumnIndex(sortingColumn),
                 sortingColumn->IsSortOrderAscending());
         }

@@ -7,11 +7,11 @@
 #include <filesystem>
 #include <vector>
 
-#include "loguru.hpp"
+#include <loguru.hpp>
+#include <sqlite3.h>
+
 #include "environment.hpp"
 #include "utils.hpp"
-
-#include "../../sqlite/sqlite3.h"
 
 namespace fs = std::filesystem;
 using pt::Core::Database;
