@@ -13,14 +13,12 @@ if(DEFINED ENV{OPENSSL_ROOT_DIR})
     set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
 endif()
 
-find_package(Boost REQUIRED COMPONENTS system)
-find_package(OpenSSL REQUIRED)
-
 # --------- libtorrent options
 option(BUILD_SHARED_LIBS    "" off)
 option(deprecated-functions "" off)
 # ----------------------------
 
+add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/wx)
 
@@ -69,18 +67,6 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:IC
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
 add_library(
-    duktape
-    STATIC
-    vendor/duktape/src/duktape
-)
-
-target_include_directories(
-    duktape
-    INTERFACE
-    vendor/duktape/src
-)
-
-add_library(
     loguru
     STATIC
     vendor/loguru/loguru
@@ -120,7 +106,9 @@ add_executable(
     src/picotorrent/main
     src/picotorrent/persistencemanager
     src/picotorrent/resources.rc
-    src/picotorrent/updatechecker
+
+    # API
+    src/picotorrent/api/libpico
 
     # BitTorrent
     src/picotorrent/bittorrent/session
@@ -154,9 +142,6 @@ add_executable(
     # Persistence
     src/picotorrent/ui/persistence/persistenttorrentlistview
 
-    # Scripting
-    src/picotorrent/scripting/jsengine
-
     # UI
     src/picotorrent/ui/mainframe
     src/picotorrent/ui/statusbar
@@ -178,25 +163,24 @@ target_compile_definitions(
     -D_UNICODE
     -D_WIN32
     -D_WIN32_WINNT=0x0600
-    -DBOOST_ALL_NO_LIB
-    -DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
     -DNOMINMAX
     -DPICOJSON_USE_INT64
-    -DTORRENT_NO_DEPRECATE
-    -DTORRENT_USE_OPENSSL
     -DUNICODE
     -DWIN32
     -DWIN32_LEAN_AND_MEAN
+
+    -DLIBPICO_API_EXPORT
     -DPICO_GIT_COMMITISH=${GIT_COMMITISH}
     -DPICO_VERSION_MAJOR=${VERSION_MAJOR}
     -DPICO_VERSION_MINOR=${VERSION_MINOR}
     -DPICO_VERSION_REVISION=${VERSION_REVISION}
-    -DZLIB_CONST
 )
 
 target_include_directories(
     PicoTorrent
     PRIVATE
+
+    include
 
     "${Boost_INCLUDE_DIRS}"
 
@@ -214,6 +198,8 @@ target_link_directories(
 target_link_libraries(
     PicoTorrent
 
+    PRIVATE
+
     # wxWidgets
     core base
 
@@ -226,16 +212,13 @@ target_link_libraries(
     wininet
     winhttp
 
-    # Boost
-    ${Boost_LIBRARIES}
-
     # Crashpad
     crashpad_client
     crashpad_util
     mini_chromium
 
-    # Duktape
-    duktape
+    # fmt
+    fmt
 
     # loguru
     loguru
@@ -243,20 +226,30 @@ target_link_libraries(
     # Rasterbar-libtorrent
     "torrent-rasterbar"
 
-    # OpenSSL
-    OpenSSL::Crypto
-    OpenSSL::SSL
-
     sqlite
 )
 
-# Copy scripts
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/src/scripts"
-        "$<TARGET_FILE_DIR:PicoTorrent>/scripts"
+set_property(TARGET PicoTorrent PROPERTY ENABLE_EXPORTS 1)
+
+# Plugins
+add_library(
+    Plugin_Filters
+    SHARED
+    src/plugins/filters/filters
 )
+
+target_include_directories(Plugin_Filters PRIVATE include)
+target_link_libraries(Plugin_Filters PRIVATE PicoTorrent)
+
+add_library(
+    Plugin_Updater
+    SHARED
+    src/plugins/updater/updater
+)
+
+target_compile_definitions(Plugin_Updater PRIVATE -D_UNICODE -D_WIN32 -DWIN32_LEAN_AND_MEAN)
+target_include_directories(Plugin_Updater PRIVATE include)
+target_link_libraries(Plugin_Updater PRIVATE PicoTorrent Comctl32)
 
 # Copy Crashpad handler
 add_custom_command(

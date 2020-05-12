@@ -29,10 +29,6 @@ namespace Core
     class Database;
     class Environment;
 }
-namespace Scripting
-{
-    class JsEngine;
-}
 namespace UI
 {
 namespace Models
@@ -53,10 +49,13 @@ namespace Models
             std::shared_ptr<Core::Configuration> cfg);
         virtual ~MainFrame();
 
+        void AddFilter(wxString const& name, std::function<bool(BitTorrent::TorrentHandle*)> const& filter);
+
     private:
         wxMenuBar* CreateMainMenu();
 
         void AddTorrents(std::vector<libtorrent::add_torrent_params>& params);
+        void CheckDiskSpace(std::vector<BitTorrent::TorrentHandle*> const& updatedTorrents);
         void OnClose(wxCloseEvent&);
         void OnFileAddMagnetLink(wxCommandEvent&);
         void OnFileAddTorrent(wxCommandEvent&);
@@ -69,20 +68,23 @@ namespace Models
 
         wxSplitterWindow* m_splitter;
 
-        Scripting::JsEngine* m_jsEngine;
         StatusBar* m_statusBar;
         TaskBarIcon* m_taskBarIcon;
         TorrentDetailsView* m_torrentDetails;
         Models::TorrentListModel* m_torrentListModel;
         TorrentListView* m_torrentList;
-        UpdateChecker* m_updateChecker;
 
         std::shared_ptr<Core::Environment> m_env;
         std::shared_ptr<Core::Database> m_db;
         std::shared_ptr<Core::Configuration> m_cfg;
 
+        wxMenu* m_viewMenu;
+        wxMenu* m_filtersMenu;
+        wxMenuItem* m_menuItemFilters;
         wxMenuItem* m_menuItemDetailsPanel;
         wxMenuItem* m_menuItemStatusBar;
+
+        std::map<size_t, std::function<bool(BitTorrent::TorrentHandle*)>> m_filters;
 
         BitTorrent::Session* m_session;
         std::map<libtorrent::info_hash_t, BitTorrent::TorrentHandle*> m_selection;

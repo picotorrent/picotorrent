@@ -24,6 +24,9 @@ namespace UI
         ptID_EVT_SHOW_DETAILS,
         ptID_EVT_SHOW_STATUS_BAR,
         ptID_EVT_VIEW_PREFERENCES,
+
+        ptID_EVT_FILTERS_NONE,
+        ptID_EVT_FILTERS_USER,
     };
 }
 }

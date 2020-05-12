@@ -23,7 +23,7 @@
 #include "../core/database.hpp"
 #include "../core/environment.hpp"
 #include "../buildinfo.hpp"
-#include "../semver.hpp"
+#include "semver.hpp"
 #include "sessionstatistics.hpp"
 #include "torrenthandle.hpp"
 #include "torrentstatistics.hpp"
@@ -38,8 +38,8 @@ wxDEFINE_EVENT(ptEVT_TORRENT_ADDED, wxCommandEvent);
 wxDEFINE_EVENT(ptEVT_TORRENT_FINISHED, wxCommandEvent);
 wxDEFINE_EVENT(ptEVT_TORRENT_METADATA_FOUND, pt::BitTorrent::MetadataFoundEvent);
 wxDEFINE_EVENT(ptEVT_TORRENT_REMOVED, pt::BitTorrent::InfoHashEvent);
-wxDEFINE_EVENT(ptEVT_TORRENT_UPDATED, wxCommandEvent);
-wxDEFINE_EVENT(ptEVT_TORRENT_STATISTICS, wxCommandEvent);
+wxDEFINE_EVENT(ptEVT_TORRENT_STATISTICS, pt::BitTorrent::TorrentStatisticsEvent);
+wxDEFINE_EVENT(ptEVT_TORRENTS_UPDATED, pt::BitTorrent::TorrentsUpdatedEvent);
 
 struct SessionLoadItem
 {
@@ -462,6 +462,7 @@ void Session::OnAlert()
         {
             lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
 
+            std::vector<TorrentHandle*> handles;
             TorrentStatistics stats = { 0 };
 
             for (lt::torrent_status const& status : sua->status)
@@ -478,21 +479,24 @@ void Session::OnAlert()
 
                 if (status.state == lt::torrent_status::state_t::downloading)
                 {
+                    stats.isDownloadingAny = true;
                     stats.totalWanted += status.total_wanted;
                     stats.totalWantedDone += status.total_wanted_done;
                 }
 
                 auto handle = m_torrents.at(status.info_hash);
                 handle->UpdateStatus(status);
-                
-                wxCommandEvent evt(ptEVT_TORRENT_UPDATED);
-                evt.SetClientData(handle);
-                wxPostEvent(m_parent, evt);
+
+                handles.push_back(handle);
             }
 
-            wxCommandEvent evt(ptEVT_TORRENT_STATISTICS);
-            evt.SetClientData(&stats);
+            TorrentStatisticsEvent evt(ptEVT_TORRENT_STATISTICS);
+            evt.SetData(stats);
             wxPostEvent(m_parent, evt);
+
+            TorrentsUpdatedEvent evtUpdated(ptEVT_TORRENTS_UPDATED);
+            evtUpdated.SetData(handles);
+            wxPostEvent(m_parent, evtUpdated);
 
             break;
         }

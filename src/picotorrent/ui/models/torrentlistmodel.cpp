@@ -1,5 +1,7 @@
 #include "torrentlistmodel.hpp"
 
+#include <fmt/format.h>
+
 #include "../../bittorrent/torrenthandle.hpp"
 #include "../../bittorrent/torrentstatus.hpp"
 #include "../../core/utils.hpp"
@@ -10,6 +12,7 @@ using pt::BitTorrent::TorrentStatus;
 using pt::UI::Models::TorrentListModel;
 
 TorrentListModel::TorrentListModel()
+    : m_filter(nullptr)
 {
 }
 
@@ -19,24 +22,47 @@ TorrentListModel::~TorrentListModel()
 
 void TorrentListModel::AddTorrent(BitTorrent::TorrentHandle* torrent)
 {
-    m_order.push_back(torrent->InfoHash());
     m_torrents.insert({ torrent->InfoHash(), torrent });
-    RowAppended();
+
+    if (m_filter == nullptr || m_filter(torrent))
+    {
+        m_filtered.push_back(torrent->InfoHash());
+        RowAppended();
+    }
+}
+
+void TorrentListModel::ClearFilter()
+{
+    m_filter = nullptr;
+    m_filtered.clear();
+
+    for (auto const& [hash, torrent] : m_torrents)
+    {
+        m_filtered.push_back(hash);
+    }
+
+    Reset(m_filtered.size());
+}
+
+void TorrentListModel::SetFilter(std::function<bool(BitTorrent::TorrentHandle*)> const& filter)
+{
+    m_filter = filter;
+    ApplyFilter();
 }
 
 int TorrentListModel::GetRowIndex(TorrentHandle* torrent)
 {
     return std::distance(
-        m_order.begin(),
+        m_filtered.begin(),
         std::find(
-            m_order.begin(),
-            m_order.end(), torrent->InfoHash()));
+            m_filtered.begin(),
+            m_filtered.end(), torrent->InfoHash()));
 }
 
 TorrentHandle* TorrentListModel::GetTorrentFromItem(wxDataViewItem const& item)
 {
     uint32_t row = this->GetRow(item);
-    auto const& hash = m_order.at(row);
+    auto const& hash = m_filtered.at(row);
     return m_torrents.at(hash);
 }
 
@@ -44,164 +70,144 @@ void TorrentListModel::RemoveTorrent(lt::info_hash_t const& hash)
 {
     m_torrents.erase(hash);
 
-    auto iter = std::find(m_order.begin(), m_order.end(), hash);
-    auto dist = std::distance(m_order.begin(), iter);
+    auto iter = std::find(m_filtered.begin(), m_filtered.end(), hash);
+    auto dist = std::distance(m_filtered.begin(), iter);
 
-    m_order.erase(iter);
+    m_filtered.erase(iter);
 
     RowDeleted(dist);
 }
 
-void TorrentListModel::UpdateTorrent(TorrentHandle* torrent)
+void TorrentListModel::UpdateTorrents(std::vector<TorrentHandle*> torrents)
 {
-    m_torrents.at(torrent->InfoHash()) = torrent;
+    for (auto torrent : torrents)
+    {
+        auto iter = std::find(
+            m_filtered.begin(),
+            m_filtered.end(),
+            torrent->InfoHash());
 
-    auto iter = std::find(
-        m_order.begin(),
-        m_order.end(),
-        torrent->InfoHash());
+        auto dist = std::distance(
+            m_filtered.begin(),
+            iter);
 
-    auto dist = std::distance(
-        m_order.begin(),
-        iter);
-
-    RowChanged(dist);
+        if (iter == m_filtered.end())
+        {
+            if ((m_filter && m_filter(torrent))
+                || !m_filter)
+            {
+                m_filtered.push_back(torrent->InfoHash());
+                RowAppended();
+            }
+        }
+        else
+        {
+            if (m_filter && !m_filter(torrent))
+            {
+                m_filtered.erase(iter);
+                RowDeleted(dist);
+            }
+            else if ((m_filter && m_filter(torrent))
+                || !m_filter)
+            {
+                RowChanged(dist);
+            }
+        }
+    }
 }
 
-
-void TorrentListModel::Sort(uint32_t columnId, bool ascending)
+int TorrentListModel::Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending) const
 {
-    std::function<bool(TorrentStatus const&, TorrentStatus const&)> sorter;
+    auto const& hash1 = m_filtered.at(GetRow(item1));
+    auto const& hash2 = m_filtered.at(GetRow(item2));
 
-    switch (columnId)
+    auto const& lhs = m_torrents.at(hash1)->Status();
+    auto const& rhs = m_torrents.at(hash2)->Status();
+
+    auto hashSort = [](bool ascending, TorrentStatus const& l, TorrentStatus const& r) -> int
+    {
+        if (l.infoHash < r.infoHash) { return ascending ? -1 :  1; }
+        if (l.infoHash > r.infoHash) { return ascending ?  1 : -1; }
+        return 0;
+    };
+
+    switch (column)
     {
     case Columns::Name:
     {
-        sorter = [ascending](auto const& ts1, auto const& ts2)
-        {
-            if (ascending) { return ts1.name < ts2.name; }
-            return ts1.name > ts2.name;
-        };
-
-        break;
+        if (lhs.name < rhs.name)  { return ascending ? -1 :  1; }
+        if (lhs.name > rhs.name)  { return ascending ?  1 : -1; }
+        if (lhs.name == rhs.name) { return hashSort(ascending, lhs, rhs); }
     }
     case Columns::QueuePosition:
     {
-        sorter = [ascending](auto const& ts1, auto const& ts2)
-        {
-            if (ascending) { return ts1.queuePosition < ts2.queuePosition; }
-            return ts1.queuePosition > ts2.queuePosition;
-        };
-
-        break;
+        if (lhs.queuePosition < rhs.queuePosition)  { return ascending ? -1 :  1; }
+        if (lhs.queuePosition > rhs.queuePosition)  { return ascending ?  1 : -1; }
+        if (lhs.queuePosition == rhs.queuePosition) { return hashSort(ascending, lhs, rhs); }
     }
     case Columns::Size:
     {
-        sorter = [ascending](auto const& ts1, auto const& ts2)
-        {
-            if (ascending) { return ts1.totalWanted < ts2.totalWanted; }
-            return ts1.totalWanted > ts2.totalWanted;
-        };
-
-        break;
+        if (lhs.totalWanted < rhs.totalWanted) { return ascending ? -1 :  1; }
+        if (lhs.totalWanted > rhs.totalWanted) { return ascending ?  1 : -1; }
+        if (lhs.totalWanted == rhs.totalWanted) { return hashSort(ascending, lhs, rhs); }
+    }
+    case Columns::SizeRemaining:
+    {
+        if (lhs.totalWantedRemaining < rhs.totalWantedRemaining) { return ascending ? -1 : 1; }
+        if (lhs.totalWantedRemaining > rhs.totalWantedRemaining) { return ascending ? 1 : -1; }
+        if (lhs.totalWantedRemaining == rhs.totalWantedRemaining) { return hashSort(ascending, lhs, rhs); }
     }
     case Columns::Progress:
     {
-        sorter = [ascending](auto const& ts1, auto const& ts2)
-        {
-            if (ascending) { return ts1.progress < ts2.progress; }
-            return ts1.progress > ts2.progress;
-        };
-
-        break;
+        if (lhs.progress < rhs.progress) { return ascending ? -1 : 1; }
+        if (lhs.progress > rhs.progress) { return ascending ? 1 : -1; }
+        if (lhs.progress == rhs.progress) { return hashSort(ascending, lhs, rhs); }
     }
     case Columns::ETA:
     {
-        sorter = [ascending](auto const& ts1, auto const& ts2)
-        {
-            if (ascending) { return ts1.eta < ts2.eta; }
-            return ts1.eta > ts2.eta;
-        };
-
-        break;
+        if (lhs.eta < rhs.eta) { return ascending ? -1 : 1; }
+        if (lhs.eta > rhs.eta) { return ascending ? 1 : -1; }
+        if (lhs.eta == rhs.eta) { return hashSort(ascending, lhs, rhs); }
     }
     case Columns::DownloadSpeed:
     {
-        sorter = [ascending](auto const& ts1, auto const& ts2)
-        {
-            if (ascending) { return ts1.downloadPayloadRate < ts2.downloadPayloadRate; }
-            return ts1.downloadPayloadRate > ts2.downloadPayloadRate;
-        };
-
-        break;
+        if (lhs.downloadPayloadRate < rhs.downloadPayloadRate) { return ascending ? -1 : 1; }
+        if (lhs.downloadPayloadRate > rhs.downloadPayloadRate) { return ascending ? 1 : -1; }
+        if (lhs.downloadPayloadRate == rhs.downloadPayloadRate) { return hashSort(ascending, lhs, rhs); }
     }
     case Columns::UploadSpeed:
     {
-        sorter = [ascending](auto const& ts1, auto const& ts2)
-        {
-            if (ascending) { return ts1.uploadPayloadRate < ts2.uploadPayloadRate; }
-            return ts1.uploadPayloadRate > ts2.uploadPayloadRate;
-        };
-
-        break;
+        if (lhs.uploadPayloadRate < rhs.uploadPayloadRate) { return ascending ? -1 : 1; }
+        if (lhs.uploadPayloadRate > rhs.uploadPayloadRate) { return ascending ? 1 : -1; }
+        if (lhs.uploadPayloadRate == rhs.uploadPayloadRate) { return hashSort(ascending, lhs, rhs); }
     }
     case Columns::Availability:
     {
-        sorter = [ascending](auto const& ts1, auto const& ts2)
-        {
-            if (ascending) { return ts1.availability < ts2.availability; }
-            return ts1.availability > ts2.availability;
-        };
-
-        break;
+        if (lhs.availability < rhs.availability) { return ascending ? -1 : 1; }
+        if (lhs.availability > rhs.availability) { return ascending ? 1 : -1; }
+        if (lhs.availability == rhs.availability) { return hashSort(ascending, lhs, rhs); }
     }
     case Columns::Ratio:
     {
-        sorter = [ascending](auto const& ts1, auto const& ts2)
-        {
-            if (ascending) { return ts1.ratio < ts2.ratio; }
-            return ts1.ratio > ts2.ratio;
-        };
-
-        break;
+        if (lhs.ratio < rhs.ratio) { return ascending ? -1 : 1; }
+        if (lhs.ratio > rhs.ratio) { return ascending ? 1 : -1; }
+        if (lhs.ratio == rhs.ratio) { return hashSort(ascending, lhs, rhs); }
     }
     case Columns::AddedOn:
     {
-        sorter = [ascending](auto const& ts1, auto const& ts2)
-        {
-            if (ascending) { return ts1.addedOn < ts2.addedOn; }
-            return ts1.addedOn > ts2.addedOn;
-        };
-
-        break;
+        if (lhs.addedOn < rhs.addedOn) { return ascending ? -1 : 1; }
+        if (lhs.addedOn > rhs.addedOn) { return ascending ? 1 : -1; }
+        if (lhs.addedOn == rhs.addedOn) { return hashSort(ascending, lhs, rhs); }
     }
     case Columns::CompletedOn:
     {
-        sorter = [ascending](auto const& ts1, auto const& ts2)
-        {
-            if (ascending) { return ts1.completedOn < ts2.completedOn; }
-            return ts1.completedOn > ts2.completedOn;
-        };
-
-        break;
+        if (lhs.completedOn < rhs.completedOn) { return ascending ? -1 : 1; }
+        if (lhs.completedOn > rhs.completedOn) { return ascending ? 1 : -1; }
+        if (lhs.completedOn == rhs.completedOn) { return hashSort(ascending, lhs, rhs); }
     }
     }
 
-    if (sorter)
-    {
-        std::sort(
-            m_order.begin(),
-            m_order.end(),
-            [this, sorter](lt::info_hash_t& h1, lt::info_hash_t h2)
-            {
-                auto const& ts1 = m_torrents.at(h1)->Status();
-                auto const& ts2 = m_torrents.at(h2)->Status();
-
-                return sorter(ts1, ts2);
-            });
-
-        Reset(m_torrents.size());
-    }
+    return 0;
 }
 
 wxString TorrentListModel::GetColumnType(unsigned int column) const
@@ -211,12 +217,12 @@ wxString TorrentListModel::GetColumnType(unsigned int column) const
 
 unsigned int TorrentListModel::GetCount() const
 {
-    return m_torrents.size();
+    return m_filtered.size();
 }
 
 void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t col) const
 {
-    auto const& hash = m_order.at(row);
+    auto const& hash = m_filtered.at(row);
     BitTorrent::TorrentHandle* torrent = m_torrents.at(hash);
     BitTorrent::TorrentStatus  status = torrent->Status();
 
@@ -276,7 +282,7 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
 
         case TorrentStatus::State::Error:
-            variant = wxString::Format(wxString(i18n("state_error")), status.error.c_str());
+            variant = fmt::format(i18n("state_error"), Utils::toStdWString(status.error).c_str());
             break;
 
         case TorrentStatus::State::Unknown:
@@ -323,16 +329,16 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
         {
             if (min_left.count() <= 0)
             {
-                variant = wxString::Format("%I64ds", sec_left.count());
+                variant = fmt::format("{0}s", sec_left.count());
                 break;
             }
 
-            variant = wxString::Format("%dm %I64ds", min_left.count(), sec_left.count());
+            variant = fmt::format("{0}m {1}s", min_left.count(), sec_left.count());
             break;
         }
 
-        variant = wxString::Format(
-            "%dh %dm %I64ds",
+        variant = fmt::format(
+            "{0}h {1}m {2}s",
             hours_left.count(),
             min_left.count(),
             sec_left.count());
@@ -343,14 +349,12 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
     {
         variant = "-";
 
-        if (status.paused || status.state == TorrentStatus::Uploading)
+        if (status.paused || status.state == TorrentStatus::Uploading || status.downloadPayloadRate == 0)
         {
             break;
         }
 
-        variant = wxString::Format(
-            "%s/s",
-            Utils::toHumanFileSize(status.downloadPayloadRate));
+        variant = fmt::format(L"{0}/s", Utils::toHumanFileSize(status.downloadPayloadRate));
 
         break;
     }
@@ -358,14 +362,12 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
     {
         variant = "-";
 
-        if (status.paused)
+        if (status.paused || status.uploadPayloadRate == 0)
         {
             break;
         }
 
-        variant = wxString::Format(
-            "%s/s",
-            Utils::toHumanFileSize(status.uploadPayloadRate));
+        variant = fmt::format(L"{0}/s", Utils::toHumanFileSize(status.uploadPayloadRate));
 
         break;
     }
@@ -378,13 +380,13 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = wxString::Format("%.3f", status.availability);
+        variant = fmt::format("{:.3f}", status.availability);
 
         break;
     }
     case Columns::Ratio:
     {
-        variant = wxString::Format("%.3f", status.ratio);
+        variant = fmt::format("{:.3f}", status.ratio);
         break;
     }
     case Columns::Seeds:
@@ -396,8 +398,8 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = wxString::Format(
-            wxString(i18n("d_of_d")),
+        variant = fmt::format(
+            i18n("d_of_d"),
             status.seedsCurrent,
             status.seedsTotal);
 
@@ -412,8 +414,8 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = wxString::Format(
-            wxString(i18n("d_of_d")),
+        variant = fmt::format(
+            i18n("d_of_d"),
             status.peersCurrent,
             status.peersTotal);
 
@@ -433,4 +435,41 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
         break;
     }
     }
+}
+
+bool TorrentListModel::ApplyFilter()
+{
+    if (m_filter)
+    {
+        for (auto const& [hash, torrent] : m_torrents)
+        {
+            auto isAdded = std::find(
+                m_filtered.begin(),
+                m_filtered.end(),
+                hash);
+
+            if (m_filter(torrent))
+            {
+                // Torrent should be included.
+                if (isAdded == m_filtered.end())
+                {
+                    m_filtered.push_back(hash);
+                    RowAppended();
+                }
+            }
+            else
+            {
+                if (isAdded != m_filtered.end())
+                {
+                    auto distance = std::distance(m_filtered.begin(), isAdded);
+                    m_filtered.erase(isAdded);
+                    RowDeleted(distance);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    return false;
 }

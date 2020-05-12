@@ -10,7 +10,7 @@ namespace Core
     class Environment
     {
     public:
-        enum KnownFolder
+        enum class KnownFolder
         {
             LocalAppData,
             UserDownloads

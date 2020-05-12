@@ -21,6 +21,8 @@ PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared
     m_moveCompletedEnabled = new wxCheckBox(transfersSizer->GetStaticBox(), wxID_ANY, i18n("move_completed_downloads"));
     m_moveCompletedPathCtrl = new wxDirPickerCtrl(transfersSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
     m_moveCompletedOnlyFromDefault = new wxCheckBox(transfersSizer->GetStaticBox(), wxID_ANY, i18n("only_move_from_default_save_path"));
+    m_pauseLowDiskSpace = new wxCheckBox(transfersSizer->GetStaticBox(), wxID_ANY, i18n("pause_on_low_disk_space"));
+    m_pauseLowDiskSpace->SetValue(cfg->GetBool("pause_on_low_disk_space"));
 
     transfersGrid->AddGrowableCol(1, 1);
     transfersGrid->Add(new wxStaticText(transfersSizer->GetStaticBox(), wxID_ANY, i18n("save_path")), 0, wxALIGN_CENTER_VERTICAL);
@@ -39,6 +41,8 @@ PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared
 
     transfersSizer->Add(bs1, 0, wxEXPAND | wxALL, 5);
     transfersSizer->Add(bs2, 0, wxALL, 5);
+    transfersSizer->Add(new wxStaticLine(transfersSizer->GetStaticBox(), wxID_ANY), 0, wxEXPAND | wxALL, 5);
+    transfersSizer->Add(m_pauseLowDiskSpace, 0, wxALL, 5);
 
     wxStaticBoxSizer* limitsSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("limits"));
 
@@ -51,7 +55,7 @@ PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared
     m_downloadLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
     m_downloadLimit->Enable(m_cfg->GetBool("enable_download_rate_limit"));
     m_downloadLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
-    m_downloadLimit->SetValue(wxString::Format("%i", m_cfg->GetInt("download_rate_limit")));
+    m_downloadLimit->SetValue(std::to_string(m_cfg->GetInt("download_rate_limit")));
 
     m_enableUploadLimit = new wxCheckBox(limitsSizer->GetStaticBox(), wxID_ANY, i18n("ul_limit"));
     m_enableUploadLimit->SetValue(m_cfg->GetBool("enable_upload_rate_limit"));
@@ -59,7 +63,7 @@ PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared
     m_uploadLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
     m_uploadLimit->Enable(m_cfg->GetBool("enable_upload_rate_limit"));
     m_uploadLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
-    m_uploadLimit->SetValue(wxString::Format("%i", m_cfg->GetInt("upload_rate_limit")));
+    m_uploadLimit->SetValue(std::to_string(m_cfg->GetInt("upload_rate_limit")));
 
     m_enableDownloadLimit->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { m_downloadLimit->Enable(m_enableDownloadLimit->GetValue()); });
     m_enableUploadLimit->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { m_uploadLimit->Enable(m_enableUploadLimit->GetValue()); });
@@ -77,15 +81,15 @@ PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared
 
     m_activeLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
     m_activeLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
-    m_activeLimit->SetValue(wxString::Format("%i", m_cfg->GetInt("active_limit")));
+    m_activeLimit->SetValue(std::to_string(m_cfg->GetInt("active_limit")));
 
     m_activeDownloadsLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
     m_activeDownloadsLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
-    m_activeDownloadsLimit->SetValue(wxString::Format("%i", m_cfg->GetInt("active_download")));
+    m_activeDownloadsLimit->SetValue(std::to_string(m_cfg->GetInt("active_downloads")));
 
     m_activeSeedsLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
     m_activeSeedsLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
-    m_activeSeedsLimit->SetValue(wxString::Format("%i", m_cfg->GetInt("active_seeds")));
+    m_activeSeedsLimit->SetValue(std::to_string(m_cfg->GetInt("active_seeds")));
 
     activeLimitsGrid->AddGrowableCol(0, 1);
     activeLimitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, i18n("total_active")));
@@ -134,6 +138,8 @@ void PreferencesDownloadsPage::Save()
     m_cfg->SetInt("download_rate_limit", static_cast<int>(dlLimit));
     m_cfg->SetBool("enable_upload_rate_limit", m_enableUploadLimit->GetValue());
     m_cfg->SetInt("upload_rate_limit", static_cast<int>(ulLimit));
+
+    m_cfg->SetBool("pause_on_low_disk_space", m_pauseLowDiskSpace->IsChecked());
 
     // Move
     m_cfg->SetBool("move_completed_downloads", m_moveCompletedEnabled->IsChecked());

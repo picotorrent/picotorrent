@@ -112,7 +112,6 @@ bool PersistentTorrentListView::Restore()
         && RestoreValue("SortAscending", &sortAscending))
     {
         m_tlv->GetColumn(sortIndex)->SetSortOrder(sortAscending);
-        m_tlv->Sort();
     }
 
     return true;

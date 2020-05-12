@@ -1,5 +1,7 @@
 #include "statusbar.hpp"
 
+#include <fmt/format.h>
+
 #include "translator.hpp"
 #include "../core/utils.hpp"
 
@@ -27,21 +29,16 @@ void StatusBar::UpdateDhtNodesCount(int64_t nodes)
     }
     else
     {
-        SetStatusText(wxString::Format(wxString::FromUTF8(i18n("dht_i64d_nodes")), nodes), 1);
+        SetStatusText(fmt::format(i18n("dht_num_nodes"), nodes), 1);
     }
 }
 
 void StatusBar::UpdateTorrentCount(int64_t torrents)
 {
-    SetStatusText(wxString::Format(wxString::FromUTF8(i18n("i64d_torrents")), torrents), 0);
+    SetStatusText(fmt::format(i18n("num_torrents"), torrents), 0);
 }
 
 void StatusBar::UpdateTransferRates(int64_t downSpeed, int64_t upSpeed)
 {
-    SetStatusText(
-        wxString::Format(
-            wxString::FromUTF8(i18n("dl_s_ul_s")),
-            Utils::toHumanFileSize(downSpeed),
-            Utils::toHumanFileSize(upSpeed)),
-        2);
+    SetStatusText(fmt::format(i18n("dl_s_ul_s"), Utils::toHumanFileSize(downSpeed), Utils::toHumanFileSize(upSpeed)), 2);
 }

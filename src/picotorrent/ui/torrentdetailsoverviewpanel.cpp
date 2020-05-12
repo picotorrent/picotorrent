@@ -1,5 +1,6 @@
 #include "torrentdetailsoverviewpanel.hpp"
 
+#include <fmt/format.h>
 #include <wx/clipbrd.h>
 #include <wx/sizer.h>
 
@@ -82,8 +83,8 @@ void TorrentDetailsOverviewPanel::Refresh(BitTorrent::TorrentHandle* torrent)
     m_savePath->SetLabel(status.savePath);
     m_infoHash->SetLabel(status.infoHash);
     m_pieces->SetLabel(
-        wxString::Format(
-            wxString(i18n("d_of_d")),
+        fmt::format(
+            i18n("d_of_d"),
             status.pieces.count(),
             status.pieces.size()));
 

@@ -1,7 +1,9 @@
 #include "application.hpp"
 
+#include <loguru.hpp>
 #include <wx/persist.h>
 
+#include "api/libpico_impl.hpp"
 #include "crashpadinitializer.hpp"
 #include "persistencemanager.hpp"
 #include "core/configuration.hpp"
@@ -13,8 +15,7 @@
 using pt::Application;
 
 Application::Application()
-    : wxApp(),
-    m_mainFrame(nullptr)
+    : wxApp()
 {
     SetProcessDPIAware();
 }
@@ -26,13 +27,6 @@ Application::~Application()
 bool Application::OnInit()
 {
     auto env = pt::Core::Environment::Create();
-
-    if (env == nullptr)
-    {
-        // TODO: show some dialog
-        return false;
-    }
-
     pt::CrashpadInitializer::Initialize(env);
 
     auto db = std::make_shared<pt::Core::Database>(env);
@@ -51,12 +45,38 @@ bool Application::OnInit()
     translator.LoadEmbedded(GetModuleHandle(NULL));
     translator.SetLanguage(cfg->GetInt("language_id"));
 
+    // Load plugins
+    for (auto& p : fs::directory_iterator(env->GetApplicationPath()))
+    {
+        if (p.path().extension() != ".dll") { continue; }
+
+        auto const& filename = p.path().filename().string();
+
+        if (filename.size() < 6) { continue; }
+        if (filename.substr(0, 6) != "Plugin") { continue; }
+
+        LOG_F(INFO, "Loading plugin from %s", p.path().c_str());
+
+        auto plugin = API::IPlugin::Load(p, env.get(), cfg.get());
+
+        if (plugin != nullptr)
+        {
+            m_plugins.push_back(plugin);
+        }
+    }
+
     // Set up persistence manager
     m_persistence = std::make_unique<PersistenceManager>(db);
     wxPersistenceManager::Set(*m_persistence);
 
-    m_mainFrame = new UI::MainFrame(env, db, cfg);
-    m_mainFrame->Show();
+    auto mainFrame = new UI::MainFrame(env, db, cfg);
+
+    std::for_each(
+        m_plugins.begin(),
+        m_plugins.end(),
+        [mainFrame](auto plugin) { plugin->EmitEvent(libpico_event_mainwnd_created, mainFrame); });
+
+    mainFrame->Show();
 
     return true;
 }

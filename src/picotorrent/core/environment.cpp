@@ -19,41 +19,10 @@ Environment::Environment()
 std::shared_ptr<Environment> Environment::Create()
 {
     auto env = new Environment();
-
-    fs::path appData = env->GetApplicationDataPath();
-
-    if (!fs::exists(appData))
-    {
-        std::error_code ec;
-        fs::create_directories(appData, ec);
-
-        if (ec)
-        {
-            return nullptr;
-        }
-    }
-
-    fs::path logPath = appData / "logs";
-
-    if (!fs::exists(logPath))
-    {
-        std::error_code ec;
-        fs::create_directories(logPath, ec);
-
-        if (ec)
-        {
-            return nullptr;
-        }
-    }
-
-    // Set up logging. PicoTorrent will log to the file,
-    // - PicoTorrent.YYYYMMDDHHmmss.log
-    // which represents the start up time.
-
-    fs::path logFilePath = env->GetLogFilePath();
-
-    std::string s = Utils::toStdString(logFilePath.wstring());
-    loguru::add_file(s.c_str(), loguru::Truncate, loguru::Verbosity_INFO);
+    loguru::add_file(
+        Utils::toStdString(env->GetLogFilePath().generic_wstring()).c_str(),
+        loguru::Truncate,
+        loguru::Verbosity_INFO);
 
     LOG_F(INFO, "PicoTorrent starting up...");
 

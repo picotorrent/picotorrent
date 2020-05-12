@@ -25,8 +25,6 @@ namespace Models
 
         virtual wxSize GetMinSize() const wxOVERRIDE;
 
-        void Sort();
-
     private:
         void ShowHeaderContextMenu(wxCommandEvent&);
 

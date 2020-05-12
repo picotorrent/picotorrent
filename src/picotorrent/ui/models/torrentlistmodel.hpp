@@ -16,12 +16,13 @@ namespace pt
 namespace BitTorrent
 {
     class TorrentHandle;
+    struct TorrentStatus;
 }
 namespace UI
 {
 namespace Models
 {
-    class TorrentListModel : public wxDataViewVirtualListModel
+    class TorrentListModel : public wxDataViewIndexListModel
     {
     public:
         enum Columns
@@ -51,7 +52,12 @@ namespace Models
         int GetRowIndex(BitTorrent::TorrentHandle* torrent);
         BitTorrent::TorrentHandle* GetTorrentFromItem(wxDataViewItem const& item);
         void RemoveTorrent(libtorrent::info_hash_t const& hash);
-        void UpdateTorrent(BitTorrent::TorrentHandle* torrent);
+        void UpdateTorrents(std::vector<BitTorrent::TorrentHandle*> torrents);
+
+        void ClearFilter();
+        void SetFilter(std::function<bool(BitTorrent::TorrentHandle*)> const& filter);
+
+        int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending) const wxOVERRIDE;
 
         unsigned int GetColumnCount() const wxOVERRIDE { return Columns::_Max; }
 
@@ -63,10 +69,11 @@ namespace Models
 
         bool SetValueByRow(const wxVariant& variant, uint32_t row, uint32_t col) wxOVERRIDE { return false; }
 
-        void Sort(uint32_t col, bool ascending);
-
     private:
-        std::vector<libtorrent::info_hash_t> m_order;
+        bool ApplyFilter();
+
+        std::function<bool(BitTorrent::TorrentHandle*)> m_filter;
+        std::vector<libtorrent::info_hash_t> m_filtered;
         std::map<libtorrent::info_hash_t, BitTorrent::TorrentHandle*> m_torrents;
     };
 }

@@ -94,7 +94,11 @@ void TorrentHandle::AddTracker(lt::announce_entry const& entry)
 
 void TorrentHandle::FileProgress(std::vector<std::int64_t>& progress, int flags) const
 {
-    m_th->file_progress(progress, flags);
+    m_th->file_progress(
+        progress,
+        flags >= 1
+            ? lt::torrent_handle::piece_granularity
+            : lt::file_progress_flags_t{});
 }
 
 void TorrentHandle::ForceReannounce()

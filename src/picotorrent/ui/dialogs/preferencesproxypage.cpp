@@ -72,7 +72,7 @@ PreferencesProxyPage::PreferencesProxyPage(wxWindow* parent, std::shared_ptr<Con
 
     if (m_cfg->GetInt("proxy_port") > 0)
     {
-        m_port->SetValue(wxString::Format("%i", m_cfg->GetInt("proxy_port")));
+        m_port->SetValue(std::to_string(m_cfg->GetInt("proxy_port")));
     }
 
     m_username->SetValue(m_cfg->GetString("proxy_username"));

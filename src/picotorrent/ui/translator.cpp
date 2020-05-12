@@ -68,9 +68,9 @@ BOOL Translator::EnumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lps
 
     for (auto& p : obj.at("strings").get<pj::object>())
     {
-        wxString key = p.first; // Specifically do not use ToStdWString here
+        std::string key = p.first; // Specifically do not use ToStdWString here
                                 // since we do not want to find Unicode keys
-        wxString val = Utils::toStdWString(p.second.get<std::string>());
+        std::wstring val = Utils::toStdWString(p.second.get<std::string>());
 
         l.translations.insert({ key, val });
     }
@@ -92,17 +92,17 @@ std::vector<Translator::Language> Translator::Languages()
     return result;
 }
 
-wxString Translator::Translate(wxString const& key)
+std::wstring Translator::Translate(std::string const& key)
 {
     auto lang = m_languages.find(m_selectedLanguage);
     if (lang == m_languages.end()) { lang = m_languages.find(1033); }
-    if (lang == m_languages.end()) { return key; }
+    if (lang == m_languages.end()) { return Utils::toStdWString(key); }
 
     auto translation = lang->second.translations.find(key);
 
     if (translation == lang->second.translations.end())
     {
-        return key;
+        return Utils::toStdWString(key);
     }
 
     return translation->second;

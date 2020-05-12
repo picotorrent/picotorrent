@@ -1,14 +1,12 @@
 #pragma once
 
-#include <string>
-
 namespace pt
 {
     class BuildInfo
     {
     public:
-        static std::string branch();
-        static std::string commitish();
-        static std::string version();
+        static const char* branch();
+        static const char* commitish();
+        static const char* version();
     };
 }

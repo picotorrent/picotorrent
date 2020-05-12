@@ -1,5 +1,6 @@
 #include "trackerlistmodel.hpp"
 
+#include <fmt/format.h>
 #include <libtorrent/announce_entry.hpp>
 #include <libtorrent/peer_info.hpp>
 
@@ -307,7 +308,7 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
         }
 
         variant = li->numDownloaded >= 0
-            ? std::to_string(li->numDownloaded)
+            ? std::to_wstring(li->numDownloaded)
             : i18n("not_available");
         break;
     }
@@ -319,7 +320,7 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
         }
 
         variant = li->numLeeches >= 0
-            ? std::to_string(li->numLeeches)
+            ? std::to_wstring(li->numLeeches)
             : i18n("not_available");
         break;
     }
@@ -331,7 +332,7 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
         }
 
         variant = li->numSeeds >= 0
-            ? std::to_string(li->numSeeds)
+            ? std::to_wstring(li->numSeeds)
             : i18n("not_available");
         break;
     }
@@ -355,8 +356,8 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
             break;
         }
 
-        variant = wxString::Format(
-            wxString(i18n("d_of_d")),
+        variant = fmt::format(
+            i18n("d_of_d"),
             li->fails,
             li->failLimit);
 
@@ -381,7 +382,8 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
         std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(li->nextAnnounce - hours_left);
         std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(li->nextAnnounce - hours_left - min_left);
 
-        variant = wxString::Format("%dh %dm %I64ds",
+        variant = fmt::format(
+            L"{0}h {1}m {2}s",
             hours_left.count(),
             min_left.count(),
             sec_left.count());

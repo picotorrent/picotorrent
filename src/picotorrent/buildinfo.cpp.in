@@ -2,17 +2,17 @@
 
 using pt::BuildInfo;
 
-std::string BuildInfo::branch()
+const char* BuildInfo::branch()
 {
     return "@GIT_BRANCH@";
 }
 
-std::string BuildInfo::commitish()
+const char* BuildInfo::commitish()
 {
     return "@GIT_COMMITISH@";
 }
 
-std::string BuildInfo::version()
+const char* BuildInfo::version()
 {
     return "@VERSION@";
 }

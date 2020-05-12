@@ -17,3 +17,6 @@
 [submodule "vendor/duktape"]
 	path = vendor/duktape
 	url = https://github.com/svaarala/duktape-releases
+[submodule "vendor/fmt"]
+	path = vendor/fmt
+	url = https://github.com/fmtlib/fmt

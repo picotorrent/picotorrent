@@ -13,6 +13,7 @@
 #include <libtorrent/session_types.hpp>
 
 #include "sessionstatistics.hpp"
+#include "torrentstatistics.hpp"
 
 template<typename T>
 class PicoCommandEvent : public wxCommandEvent
@@ -37,9 +38,13 @@ private:
     T m_data;
 };
 
+namespace pt { namespace BitTorrent { class TorrentHandle; } }
+
 namespace pt { namespace BitTorrent { typedef PicoCommandEvent<pt::BitTorrent::SessionStatistics> SessionStatisticsEvent; } }
 namespace pt { namespace BitTorrent { typedef PicoCommandEvent<libtorrent::info_hash_t> InfoHashEvent; } }
 namespace pt { namespace BitTorrent { typedef PicoCommandEvent<std::shared_ptr<libtorrent::torrent_info>> MetadataFoundEvent; } }
+namespace pt { namespace BitTorrent { typedef PicoCommandEvent<pt::BitTorrent::TorrentStatistics> TorrentStatisticsEvent; } }
+namespace pt { namespace BitTorrent { typedef PicoCommandEvent<std::vector<pt::BitTorrent::TorrentHandle*>> TorrentsUpdatedEvent; } }
 
 wxDECLARE_EVENT(ptEVT_SESSION_DEBUG_MESSAGE, wxCommandEvent);
 wxDECLARE_EVENT(ptEVT_SESSION_STATISTICS, pt::BitTorrent::SessionStatisticsEvent);
@@ -47,14 +52,16 @@ wxDECLARE_EVENT(ptEVT_TORRENT_ADDED, wxCommandEvent);
 wxDECLARE_EVENT(ptEVT_TORRENT_FINISHED, wxCommandEvent);
 wxDECLARE_EVENT(ptEVT_TORRENT_METADATA_FOUND, pt::BitTorrent::MetadataFoundEvent);
 wxDECLARE_EVENT(ptEVT_TORRENT_REMOVED, pt::BitTorrent::InfoHashEvent);
-wxDECLARE_EVENT(ptEVT_TORRENT_UPDATED, wxCommandEvent);
-wxDECLARE_EVENT(ptEVT_TORRENT_STATISTICS, wxCommandEvent);
+wxDECLARE_EVENT(ptEVT_TORRENT_STATISTICS, pt::BitTorrent::TorrentStatisticsEvent);
+wxDECLARE_EVENT(ptEVT_TORRENTS_UPDATED, pt::BitTorrent::TorrentsUpdatedEvent);
 
 typedef void (wxEvtHandler::* SessionStatisticsEventFunction)(pt::BitTorrent::SessionStatisticsEvent&);
 typedef void (wxEvtHandler::* InfoHashEventFunction)(pt::BitTorrent::InfoHashEvent&);
+typedef void (wxEvtHandler::* TorrentStatisticsEventFunction)(pt::BitTorrent::TorrentStatisticsEvent&);
 
 #define SessionStatisticsEventHandler(func) wxEVENT_HANDLER_CAST(SessionStatisticsEventFunction, func)
 #define InfoHashEventHandler(func) wxEVENT_HANDLER_CAST(InfoHashEventFunction, func)
+#define TorrentStatisticsEventHandler(func) wxEVENT_HANDLER_CAST(TorrentStatisticsEventFunction, func)
 
 namespace pt
 {
@@ -66,8 +73,6 @@ namespace Core
 }
 namespace BitTorrent
 {
-    class TorrentHandle;
-
     class Session : public wxEvtHandler
     {
     public:

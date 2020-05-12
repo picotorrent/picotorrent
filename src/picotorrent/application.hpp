@@ -4,13 +4,14 @@
 #endif
 
 #include <memory>
+#include <vector>
 
 namespace pt
 {
-    namespace UI
-    {
-        class MainFrame;
-    }
+namespace API
+{
+    class IPlugin;
+}
 
     class PersistenceManager;
 
@@ -23,7 +24,7 @@ namespace pt
         virtual bool OnInit();
 
     private:
+        std::vector<API::IPlugin*> m_plugins;
         std::unique_ptr<PersistenceManager> m_persistence;
-        UI::MainFrame* m_mainFrame;
     };
 }

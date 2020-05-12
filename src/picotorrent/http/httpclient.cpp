@@ -2,8 +2,16 @@
 
 #include <sstream>
 
+wxDEFINE_EVENT(ptEVT_HTTP_RESPONSE, wxCommandEvent);
+
 struct State
 {
+    ~State()
+    {
+        WinHttpCloseHandle(hRequest);
+        WinHttpCloseHandle(hConnect);
+    }
+
     pt::Http::HttpClient* client;
     std::function<void(int, std::string const&)> callback;
     HINTERNET hConnect;
@@ -30,6 +38,15 @@ HttpClient::HttpClient()
         &HttpClient::StatusCallbackProxy,
         WINHTTP_CALLBACK_FLAG_ALL_COMPLETIONS,
         NULL);
+
+    this->Bind(
+        ptEVT_HTTP_RESPONSE,
+        [](wxCommandEvent const& evt)
+        {
+            auto state = reinterpret_cast<State*>(evt.GetClientData());
+            state->callback(state->statusCode, state->response.str());
+            delete state;
+        });
 }
 
 HttpClient::~HttpClient()
@@ -107,10 +124,9 @@ void HttpClient::StatusCallbackProxy(HINTERNET hInternet, DWORD_PTR dwContext, D
 
         if (state->dataSize == 0)
         {
-            state->callback(state->statusCode, state->response.str());
-            WinHttpCloseHandle(state->hRequest);
-            WinHttpCloseHandle(state->hConnect);
-            delete state;
+            wxCommandEvent evt(ptEVT_HTTP_RESPONSE);
+            evt.SetClientData(state);
+            wxPostEvent(state->client, evt);
         }
         else
         {

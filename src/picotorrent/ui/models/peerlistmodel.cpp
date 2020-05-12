@@ -1,5 +1,6 @@
 #include "peerlistmodel.hpp"
 
+#include <fmt/format.h>
 #include <libtorrent/peer_info.hpp>
 
 #include "../../core//utils.hpp"
@@ -182,9 +183,7 @@ void PeerListModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned
         }
         else
         {
-            variant = wxString::Format(
-                "%s/s",
-                Utils::toHumanFileSize(peer.payload_down_speed));
+            variant = fmt::format(L"{0}/s", Utils::toHumanFileSize(peer.payload_down_speed));
         }
 
         break;
@@ -197,9 +196,7 @@ void PeerListModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned
         }
         else
         {
-            variant = wxString::Format(
-                "%s/s",
-                Utils::toHumanFileSize(peer.payload_up_speed));
+            variant = fmt::format(L"{0}/s", Utils::toHumanFileSize(peer.payload_up_speed));
         }
 
         break;

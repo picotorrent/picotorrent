@@ -68,7 +68,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, Models::Torren
                 TorrentListModel::Columns::Status,
                 FromDIP(120),
                 wxALIGN_NOT,
-                wxDATAVIEW_COL_REORDERABLE)));
+                wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE)));
 
     m_columns.push_back(
         ColumnMetadata(
@@ -138,7 +138,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, Models::Torren
                 TorrentListModel::Columns::Seeds,
                 FromDIP(80),
                 wxALIGN_RIGHT,
-                wxDATAVIEW_COL_REORDERABLE)));
+                wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE)));
 
     m_columns.push_back(
         ColumnMetadata(
@@ -148,7 +148,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, Models::Torren
                 TorrentListModel::Columns::Peers,
                 FromDIP(80),
                 wxALIGN_RIGHT,
-                wxDATAVIEW_COL_REORDERABLE)));
+                wxDATAVIEW_COL_REORDERABLE | wxDATAVIEW_COL_RESIZABLE)));
 
     m_columns.push_back(
         ColumnMetadata(
@@ -199,41 +199,6 @@ TorrentListView::~TorrentListView()
 wxSize TorrentListView::GetMinSize() const
 {
     return FromDIP(wxSize(400, 100));
-}
-
-void TorrentListView::Sort()
-{
-    if (auto sortingColumn = GetSortingColumn())
-    {
-        if (HasSelection())
-        {
-            std::vector<BitTorrent::TorrentHandle*> torrents;
-
-            wxDataViewItemArray items;
-            GetSelections(items);
-
-            for (auto item : items)
-            {
-                torrents.push_back(m_model->GetTorrentFromItem(item));
-            }
-
-            m_model->Sort(
-                GetColumnIndex(sortingColumn),
-                sortingColumn->IsSortOrderAscending());
-
-            for (auto torrent : torrents)
-            {
-                int sortedRowIndex = m_model->GetRowIndex(torrent);
-                Select(m_model->GetItem(sortedRowIndex));
-            }
-        }
-        else
-        {
-            m_model->Sort(
-                GetColumnIndex(sortingColumn),
-                sortingColumn->IsSortOrderAscending());
-        }
-    }
 }
 
 void TorrentListView::ShowHeaderContextMenu(wxCommandEvent& evt)

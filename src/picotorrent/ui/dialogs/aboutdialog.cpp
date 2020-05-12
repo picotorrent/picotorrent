@@ -4,6 +4,8 @@
 #include <wx/statbmp.h>
 #include <wx/sizer.h>
 
+#include "../translator.hpp"
+
 using pt::UI::Dialogs::AboutDialog;
 
 AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
@@ -23,12 +25,11 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
     sizer->Add(picoTitle, 0, wxALL | wxCENTER, border);
     sizer->Add(new wxStaticText(this, wxID_ANY, "© 2015-2020"), 0, wxALL | wxCENTER, border);
     sizer->AddStretchSpacer();
-    sizer->Add(new wxStaticText(this, wxID_ANY, "Built with love, using Boost, Rasterbar-libtorrent, OpenSSL and wxWidgets."), 0, wxALL | wxCENTER, border);
+    sizer->Add(new wxStaticText(this, wxID_ANY, i18n("picotorrent_description")), 0, wxALL | wxCENTER, border);
     sizer->Add(new wxHyperlinkCtrl(this, wxID_ANY, "https://picotorrent.org", "https://picotorrent.org?app"), 0, wxALL | wxCENTER, border);
 
     this->SetSizerAndFit(sizer);
-    // this->SetSize(FromDIP(wxSize(250, 300)));
-    this->SetTitle("about picotorrent");
+    this->SetTitle(i18n("about_picotorrent"));
 }
 
 AboutDialog::~AboutDialog()

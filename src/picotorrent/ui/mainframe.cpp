@@ -14,16 +14,18 @@
 #include "../bittorrent/session.hpp"
 #include "../bittorrent/sessionstatistics.hpp"
 #include "../bittorrent/torrenthandle.hpp"
+#include "../bittorrent/torrentstatistics.hpp"
+#include "../bittorrent/torrentstatus.hpp"
 #include "../core/configuration.hpp"
 #include "../core/database.hpp"
 #include "../core/environment.hpp"
+#include "../core/utils.hpp"
 #include "dialogs/aboutdialog.hpp"
 #include "dialogs/addmagnetlinkdialog.hpp"
 #include "dialogs/addtorrentdialog.hpp"
 #include "dialogs/preferencesdialog.hpp"
 #include "ids.hpp"
 #include "models/torrentlistmodel.hpp"
-#include "../scripting/jsengine.hpp"
 #include "statusbar.hpp"
 #include "taskbaricon.hpp"
 #include "torrentcontextmenu.hpp"
@@ -50,8 +52,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_torrentListModel(new Models::TorrentListModel()),
     m_torrentList(new TorrentListView(m_splitter, ptID_MAIN_TORRENT_LIST, m_torrentListModel)),
     m_torrentsCount(0),
-    m_updateChecker(new UpdateChecker(this, cfg)),
-    m_jsEngine(new Scripting::JsEngine())
+    m_menuItemFilters(nullptr)
 {
     m_splitter->SetMinimumPaneSize(10);
     m_splitter->SetSashGravity(0.5);
@@ -96,6 +97,14 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
             m_torrentListModel->AddTorrent(static_cast<BitTorrent::TorrentHandle*>(evt.GetClientData()));
         });
 
+    this->Bind(ptEVT_TORRENT_FINISHED, [this](wxCommandEvent& evt)
+        {
+            auto torrent = static_cast<BitTorrent::TorrentHandle*>(evt.GetClientData());
+            m_taskBarIcon->ShowBalloon(
+                i18n("torrent_finished"),
+                torrent->Status().name);
+        });
+
     this->Bind(ptEVT_TORRENT_REMOVED, [this](pt::BitTorrent::InfoHashEvent& evt)
         {
             m_torrentsCount--;
@@ -112,21 +121,55 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
             }
         });
 
-    this->Bind(ptEVT_TORRENT_UPDATED, [this](wxCommandEvent& evt)
+    this->Bind(ptEVT_TORRENT_STATISTICS, [this](pt::BitTorrent::TorrentStatisticsEvent& evt)
         {
-            auto torrent = static_cast<BitTorrent::TorrentHandle*>(evt.GetClientData());
-            m_torrentListModel->UpdateTorrent(torrent);
+            auto stats = evt.GetData();
 
-            // If this torrent is in our selection, update the details view
-            auto iter = m_selection.find(torrent->InfoHash());
+            m_statusBar->UpdateTransferRates(
+                stats.totalPayloadDownloadRate,
+                stats.totalPayloadUploadRate);
 
-            if (iter != m_selection.end())
+            if (wxTaskBarButton* tbb = MSWGetTaskBarButton())
             {
-                m_torrentDetails->Refresh({ *iter });
+                if (stats.isDownloadingAny && stats.totalWanted > 0)
+                {
+                    float totalProgress = stats.totalWantedDone / static_cast<float>(stats.totalWanted);
+
+                    tbb->SetProgressState(wxTaskBarButtonState::wxTASKBAR_BUTTON_NORMAL);
+                    tbb->SetProgressRange(static_cast<int>(100));
+                    tbb->SetProgressValue(static_cast<int>(totalProgress * 100));
+                }
+                else
+                {
+                    tbb->SetProgressState(wxTaskBarButtonState::wxTASKBAR_BUTTON_NO_PROGRESS);
+                }
             }
         });
 
-    this->Bind(wxEVT_DATAVIEW_COLUMN_SORTED, [this](wxDataViewEvent&) { m_torrentList->Sort(); }, ptID_MAIN_TORRENT_LIST);
+    this->Bind(ptEVT_TORRENTS_UPDATED, [this](pt::BitTorrent::TorrentsUpdatedEvent& evt)
+        {
+            auto torrents = evt.GetData();
+            m_torrentListModel->UpdateTorrents(torrents);
+
+            std::map<lt::info_hash_t, pt::BitTorrent::TorrentHandle*> selectedUpdated;
+
+            for (auto torrent : torrents)
+            {
+                auto infoHash = torrent->InfoHash();
+
+                if (m_selection.find(infoHash) != m_selection.end())
+                {
+                    selectedUpdated.insert({ infoHash, torrent });
+                }
+            }
+
+            if (selectedUpdated.size() > 0)
+            {
+                m_torrentDetails->Refresh(selectedUpdated);
+            }
+
+            this->CheckDiskSpace(torrents);
+        });
 
     this->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &MainFrame::ShowTorrentContextMenu, this, ptID_MAIN_TORRENT_LIST);
 
@@ -171,14 +214,6 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         wxEVT_MENU,
         [this](wxCommandEvent&)
         {
-            m_updateChecker->Check(true);
-        },
-        ptID_EVT_CHECK_FOR_UPDATE);
-
-    this->Bind(
-        wxEVT_MENU,
-        [this](wxCommandEvent&)
-        {
             m_cfg->SetBool("ui.show_details_panel", m_menuItemDetailsPanel->IsChecked());
 
             if (m_menuItemDetailsPanel->IsChecked())
@@ -213,30 +248,46 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     {
         m_taskBarIcon->Show();
     }
-
-    // Check for updates
-    if (m_cfg->GetBool("update_checks.enabled"))
-    {
-        m_updateChecker->Check();
-    }
-
-    // Load scripts
-    fs::path mainScript = m_env->GetApplicationPath() / "scripts" / "main.js";
-
-    if (fs::exists(mainScript) && fs::is_regular_file(mainScript))
-    {
-        m_jsEngine->Run(mainScript);
-    }
 }
 
 MainFrame::~MainFrame()
 {
-    m_jsEngine->Emit("unload");
     m_taskBarIcon->Hide();
 
-    delete m_jsEngine;
     delete m_taskBarIcon;
     delete m_session;
+}
+
+void MainFrame::AddFilter(wxString const& name, std::function<bool(BitTorrent::TorrentHandle*)> const& filter)
+{
+    if (m_menuItemFilters == nullptr)
+    {
+        m_filtersMenu = new wxMenu();
+        m_filtersMenu->AppendRadioItem(ptID_EVT_FILTERS_NONE, i18n("amp_none"));
+        m_filtersMenu->Bind(
+            wxEVT_MENU,
+            [this](wxCommandEvent& evt)
+            {
+                auto filter = m_filters.find(evt.GetId());
+                if (filter == m_filters.end())
+                {
+                    m_torrentListModel->ClearFilter();
+                }
+                else
+                {
+                    m_torrentListModel->SetFilter(filter->second);
+                }
+            });
+
+        m_viewMenu->InsertSeparator(0);
+        m_menuItemFilters = m_viewMenu->Insert(0, wxID_ANY, i18n("amp_filter"), m_filtersMenu);
+    }
+
+    m_filters.insert({ ptID_EVT_FILTERS_USER + m_filtersMenu->GetMenuItemCount(), filter });
+
+    m_filtersMenu->AppendRadioItem(
+        ptID_EVT_FILTERS_USER + m_filtersMenu->GetMenuItemCount(),
+        name);
 }
 
 void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
@@ -298,6 +349,52 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
     }
 }
 
+void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const& torrents)
+{
+    bool shouldCheck = m_cfg->GetBool("pause_on_low_disk_space");
+    int limit = m_cfg->GetInt("pause_on_low_disk_space_limit");
+
+    if (!shouldCheck)
+    {
+        return;
+    }
+
+    for (auto torrent : torrents)
+    {
+        auto status = torrent->Status();
+
+        ULARGE_INTEGER freeBytesAvailableToCaller;
+        ULARGE_INTEGER totalNumberOfBytes;
+        ULARGE_INTEGER totalNumberOfFreeBytes;
+
+        BOOL res = GetDiskFreeSpaceEx(
+            Utils::toStdWString(status.savePath).c_str(),
+            &freeBytesAvailableToCaller,
+            &totalNumberOfBytes,
+            &totalNumberOfFreeBytes);
+
+        if (res)
+        {
+            float diskSpaceAvailable = static_cast<float>(freeBytesAvailableToCaller.QuadPart) / static_cast<float>(totalNumberOfBytes.QuadPart);
+            float diskSpaceLimit = limit / 100.0f;
+
+            if (diskSpaceAvailable < diskSpaceLimit)
+            {
+                LOG_F(INFO, "Pausing torrent %s due to disk space too low (avail: %.2f, limit: %.2f)",
+                    status.infoHash.c_str(),
+                    diskSpaceAvailable,
+                    diskSpaceLimit);
+
+                torrent->Pause();
+
+                m_taskBarIcon->ShowBalloon(
+                    i18n("pause_on_low_disk_space_alert"),
+                    status.name);
+            }
+        }
+    }
+}
+
 wxMenuBar* MainFrame::CreateMainMenu()
 {
     auto fileMenu = new wxMenu();
@@ -306,21 +403,18 @@ wxMenuBar* MainFrame::CreateMainMenu()
     fileMenu->AppendSeparator();
     fileMenu->Append(ptID_EVT_EXIT, i18n("amp_exit"));
 
-    auto viewMenu = new wxMenu();
-    // TODO filter
-    m_menuItemDetailsPanel = viewMenu->Append(ptID_EVT_SHOW_DETAILS, i18n("amp_details_panel"));
-    m_menuItemStatusBar = viewMenu->Append(ptID_EVT_SHOW_STATUS_BAR, i18n("amp_status_bar"));
-    viewMenu->AppendSeparator();
-    viewMenu->Append(ptID_EVT_VIEW_PREFERENCES, i18n("amp_preferences"));
+    m_viewMenu = new wxMenu();
+    m_menuItemDetailsPanel = m_viewMenu->Append(ptID_EVT_SHOW_DETAILS, i18n("amp_details_panel"));
+    m_menuItemStatusBar = m_viewMenu->Append(ptID_EVT_SHOW_STATUS_BAR, i18n("amp_status_bar"));
+    m_viewMenu->AppendSeparator();
+    m_viewMenu->Append(ptID_EVT_VIEW_PREFERENCES, i18n("amp_preferences"));
 
     auto helpMenu = new wxMenu();
-    helpMenu->Append(ptID_EVT_CHECK_FOR_UPDATE, i18n("amp_check_for_update"));
-    helpMenu->AppendSeparator();
     helpMenu->Append(ptID_EVT_ABOUT, i18n("amp_about"));
 
     auto mainMenu = new wxMenuBar();
     mainMenu->Append(fileMenu, i18n("amp_file"));
-    mainMenu->Append(viewMenu, i18n("amp_view"));
+    mainMenu->Append(m_viewMenu, i18n("amp_view"));
     mainMenu->Append(helpMenu, i18n("amp_help"));
 
     return mainMenu;
@@ -361,7 +455,7 @@ void MainFrame::OnFileAddTorrent(wxCommandEvent&)
 {
     wxFileDialog openDialog(
         this,
-        "add_torrent_s",
+        i18n("add_torrent_s"),
         wxEmptyString,
         wxEmptyString,
         "Torrent files (*.torrent)|*.torrent|All files (*.*)|*.*",

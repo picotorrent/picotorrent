@@ -135,7 +135,7 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::vector<BitTorrent:
                 wxOK | wxCANCEL | wxICON_INFORMATION,
                 m_parent) != wxOK) { return; }
 
-            for (auto torrent : selectedTorrents) { torrent->Remove(); }
+            for (auto torrent : selectedTorrents) { torrent->RemoveFiles(); }
         },
         TorrentContextMenu::ptID_REMOVE_FILES);
 
