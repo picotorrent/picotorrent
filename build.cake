@@ -95,19 +95,6 @@ Task("Setup-Publish-Directory")
     {
         MakeAbsolute(BuildDirectory + File("PicoTorrent.exe")),
         MakeAbsolute(BuildDirectory + File("crashpad_handler.exe")),
-
-        MakeAbsolute(BuildDirectory + File("ChakraCore.dll")),
-        MakeAbsolute(BuildDirectory + Directory("scripts") + File("filters.js")),
-
-        MakeAbsolute(BuildDirectory + File($"Qt5Core{LibrarySuffix}.dll")),
-        MakeAbsolute(BuildDirectory + File($"Qt5Gui{LibrarySuffix}.dll")),
-        MakeAbsolute(BuildDirectory + File($"Qt5Svg{LibrarySuffix}.dll")),
-        MakeAbsolute(BuildDirectory + File($"Qt5Widgets{LibrarySuffix}.dll")),
-        MakeAbsolute(BuildDirectory + File($"Qt5WinExtras{LibrarySuffix}.dll")),
-
-        MakeAbsolute(BuildDirectory + Directory("imageformats") + File($"qico{LibrarySuffix}.dll")),
-        MakeAbsolute(BuildDirectory + Directory("platforms")    + File($"qwindows{LibrarySuffix}.dll")),
-        MakeAbsolute(BuildDirectory + Directory("styles")       + File($"qwindowsvistastyle{LibrarySuffix}.dll")),
     };
 
     CreateDirectory(PublishDirectory);
@@ -138,7 +125,7 @@ Task("Build-AppX-Package")
                  + Directory(platform)
                  + Directory("Microsoft.VC142.CRT");
 
-    var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\10.0.17763.0\\ucrt\\DLLs")
+    var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\10.0.18362.0\\ucrt\\DLLs")
                   + Directory(platform);
 
     TransformTextFile("./packaging/AppX/PicoTorrent.mapping.template", "%{", "}")
@@ -147,7 +134,6 @@ Task("Build-AppX-Package")
         .WithToken("PublishDirectory", MakeAbsolute(PublishDirectory))
         .WithToken("ResourceDirectory", MakeAbsolute(ResourceDirectory))
         .WithToken("PackagingDirectory", MakeAbsolute(Directory("./packaging/AppX")))
-        .WithToken("QtLibrarySuffix", LibrarySuffix)
         .Save("./packaging/AppX/PicoTorrent.mapping");
 
     TransformTextFile("./packaging/AppX/PicoTorrentManifest.xml.template", "%{", "}")
@@ -162,7 +148,7 @@ Task("Build-AppX-Package")
     argsBuilder.Append("/f {0}", MakeAbsolute(File("./packaging/AppX/PicoTorrent.mapping")));
     argsBuilder.Append("/p {0}", MakeAbsolute(PackagesDirectory + File(AppXPackage)));
 
-    var makeAppXTool = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.17763.0\\x86\\makeappx.exe";
+    var makeAppXTool = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.18362.0\\x86\\makeappx.exe";
     int exitCode = StartProcess(makeAppXTool, new ProcessSettings
     {
         Arguments = argsBuilder
