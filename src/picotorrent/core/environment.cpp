@@ -48,6 +48,16 @@ fs::path Environment::GetApplicationPath()
     return path;
 }
 
+std::string Environment::GetCrashpadReportUrl()
+{
+    if (const char* url = std::getenv("PICOTORRENT_CRASHPAD_URL"))
+    {
+        return url;
+    }
+
+    return "https://api.picotorrent.org/crashpad";
+}
+
 fs::path Environment::GetDatabaseFilePath()
 {
     return GetApplicationDataPath() / "PicoTorrent.sqlite";

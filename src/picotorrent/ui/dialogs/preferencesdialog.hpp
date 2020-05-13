@@ -20,6 +20,7 @@ namespace UI
 {
 namespace Dialogs
 {
+    class PreferencesAdvancedPage;
     class PreferencesConnectionPage;
     class PreferencesDownloadsPage;
     class PreferencesGeneralPage;
@@ -38,6 +39,7 @@ namespace Dialogs
         PreferencesDownloadsPage* m_downloads;
         PreferencesConnectionPage* m_connection;
         PreferencesProxyPage* m_proxy;
+        PreferencesAdvancedPage* m_advanced;
     };
 }
 }

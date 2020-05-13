@@ -7,6 +7,8 @@
 
 #include <memory>
 
+class wxListView;
+
 namespace pt
 {
 namespace Core
@@ -17,13 +19,11 @@ namespace UI
 {
 namespace Dialogs
 {
-    class Configuration;
-    class Translator;
-
     class PreferencesConnectionPage : public wxPanel
     {
     public:
         PreferencesConnectionPage(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg);
+        virtual ~PreferencesConnectionPage();
 
         bool IsValid();
         void Save();
@@ -32,8 +32,8 @@ namespace Dialogs
     private:
         wxWindow* m_parent;
 
-        wxChoice* m_listenInterfaces;
-        wxTextCtrl* m_listenPort;
+        wxListView* m_listenInterfaces;
+
         wxCheckBox* m_incomingEncryption;
         wxCheckBox* m_outgoingEncryption;
 
@@ -42,6 +42,7 @@ namespace Dialogs
         wxCheckBox* m_enablePex;
 
         std::shared_ptr<Core::Configuration> m_cfg;
+        std::vector<int> m_removedListenInterfaces;
     };
 }
 }

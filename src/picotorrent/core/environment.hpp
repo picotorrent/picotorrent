@@ -20,6 +20,7 @@ namespace Core
 
         std::filesystem::path GetApplicationDataPath();
         std::filesystem::path GetApplicationPath();
+        std::string GetCrashpadReportUrl();
         std::filesystem::path GetDatabaseFilePath();
         std::filesystem::path GetKnownFolderPath(KnownFolder knownFolder);
         std::filesystem::path GetLogFilePath();

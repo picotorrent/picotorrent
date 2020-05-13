@@ -38,6 +38,8 @@ AppIcon ICON "..\\..\\res\\app.ico"
 20191222212037_create_torrent_magnet_uri_table  DBMIGRATION "..\\..\\res\\dbmigrations\\20191222212037_create_torrent_magnet_uri_table.sql"
 20200214214712_create_path_history_table        DBMIGRATION "..\\..\\res\\dbmigrations\\20200214214712_create_path_history_table.sql"
 20200403220617_create_persistence_table         DBMIGRATION "..\\..\\res\\dbmigrations\\20200403220617_create_persistence_table.sql"
+20200512234312_create_listen_interface_table    DBMIGRATION "..\\..\\res\\dbmigrations\\20200512234312_create_listen_interface_table.sql"
+20200512234426_insert_default_listen_interface  DBMIGRATION "..\\..\\res\\dbmigrations\\20200512234426_insert_default_listen_interface.sql"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION        VER_FILE_VERSION

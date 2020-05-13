@@ -23,10 +23,12 @@ using pt::CrashpadInitializer;
 
 void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
 {
-    LOG_F(INFO, "Initializing Crashpad");
-
     auto databasePath = env->GetApplicationDataPath() / "Crashpad" / "db";
     auto handlerPath = env->GetApplicationPath() / "crashpad_handler.exe";
+
+    LOG_F(INFO, "Initializing Crashpad (path: %s, url: %s)",
+        handlerPath.string().c_str(),
+        env->GetCrashpadReportUrl().c_str());
 
     if (!fs::exists(handlerPath))
     {
@@ -34,9 +36,17 @@ void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
         return;
     }
 
-    if (!fs::exists(databasePath))
+    std::error_code ec;
+    bool exists = fs::exists(databasePath, ec);
+
+    if (ec)
     {
-        std::error_code ec;
+        LOG_F(ERROR, "Failed to check if database path exists: %s", ec.message().c_str());
+        return;
+    }
+
+    if (!exists)
+    {
         fs::create_directories(databasePath, ec);
 
         if (ec)
@@ -50,40 +60,22 @@ void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
 
     if (database == nullptr || database->GetSettings() == nullptr)
     {
-        LOG_F(ERROR, "Failed to initialize Crashpad database from path: %s", Utils::toStdString(databasePath.wstring()).c_str());
+        LOG_F(ERROR, "Failed to initialize Crashpad database from path: %s", databasePath.string().c_str());
         return;
     }
 
-    auto consentFile = databasePath / "consent";
-    bool enabled = false;
-
-    if (fs::exists(consentFile))
-    {
-        std::ifstream input(consentFile, std::ios::binary);
-
-        char consentFlag[1] = { '0' };
-        input.read(consentFlag, 1);
-
-        if (consentFlag[0] == '1')
-        {
-            enabled = true;
-        }
-    }
-
-    LOG_F(INFO, "Crashpad consent %s", enabled ? "given" : "not given");
-
-    // check if file CrashpadReporting exists and contains a 1. Then enable
-    if (!database->GetSettings()->SetUploadsEnabled(enabled))
+    if (!database->GetSettings()->SetUploadsEnabled(true))
     {
         LOG_F(ERROR, "Failed to set uploads in Crashpad database");
         return;
     }
 
     crashpad::CrashpadClient client;
-    if (!client.StartHandler(base::FilePath(handlerPath.wstring()),
+    if (!client.StartHandlerForBacktrace(base::FilePath(handlerPath.wstring()),
         base::FilePath(databasePath.wstring()),
         base::FilePath(databasePath.wstring()),
-        "https://api.picotorrent.org/crashpad",
+        env->GetCrashpadReportUrl(),
+        // annotations
         {
             { "branch", pt::BuildInfo::branch() },
             { "commitish", pt::BuildInfo::commitish() },
@@ -94,6 +86,10 @@ void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
             "--no-rate-limit"
 #endif
         },
+        // attachments
+        {
+            { "log_file", env->GetLogFilePath().string() }
+        },
         true,
         true))
     {
@@ -101,8 +97,11 @@ void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
         return;
     }
 
-    if (!client.WaitForHandlerStart(INFINITE))
+    if (!client.WaitForHandlerStart(10000))
     {
         LOG_F(ERROR, "Failed to wait for Crashpad handler start");
+        return;
     }
+
+    LOG_F(INFO, "Crashpad handler started");
 }

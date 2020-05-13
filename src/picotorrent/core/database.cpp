@@ -221,6 +221,7 @@ std::shared_ptr<Database::Statement> Database::CreateStatement(std::string const
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_ERROR)
     {
         const char* err = sqlite3_errmsg(m_db);
+        LOG_F(ERROR, "Failed to execute SQL statement: %s", err);
         throw std::runtime_error(err);
     }
 

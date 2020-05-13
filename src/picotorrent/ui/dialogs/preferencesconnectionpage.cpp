@@ -6,11 +6,13 @@
 #include <WS2tcpip.h>
 #include <iphlpapi.h>
 
+#include <wx/listctrl.h>
 #include <wx/tokenzr.h>
 
 #include "../clientdata.hpp"
 #include "../../core/configuration.hpp"
 #include "../../core/utils.hpp"
+#include "listeninterfacedialog.hpp"
 #include "../translator.hpp"
 
 struct NetworkAdapter
@@ -27,18 +29,22 @@ PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shar
     m_parent(parent),
     m_cfg(cfg)
 {
-    wxStaticBoxSizer* listenSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("listen_interface"));
-    wxFlexGridSizer* listenGrid = new wxFlexGridSizer(2, 10, 10);
+    wxStaticBoxSizer* listenSizer = new wxStaticBoxSizer(wxHORIZONTAL, this, i18n("listen_interface"));
+ 
+    m_listenInterfaces = new wxListView(listenSizer->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL);
+    m_listenInterfaces->AppendColumn(i18n("address"), wxLIST_FORMAT_LEFT, FromDIP(180));
+    m_listenInterfaces->AppendColumn(i18n("port"), wxLIST_FORMAT_RIGHT);
 
-    m_listenInterfaces = new wxChoice(listenSizer->GetStaticBox(), wxID_ANY);
-    m_listenPort = new wxTextCtrl(listenSizer->GetStaticBox(), wxID_ANY, std::to_string(m_cfg->GetInt("listen_port")));
+    auto buttonSizer = new wxBoxSizer(wxVERTICAL);
+    auto addInterface = new wxButton(listenSizer->GetStaticBox(), wxID_ANY, "+");
+    auto editInterface = new wxButton(listenSizer->GetStaticBox(), wxID_ANY, i18n("edit"));
+    auto removeInterface = new wxButton(listenSizer->GetStaticBox(), wxID_ANY, "-");
+    buttonSizer->Add(addInterface);
+    buttonSizer->Add(editInterface);
+    buttonSizer->Add(removeInterface);
 
-    listenGrid->AddGrowableCol(1, 1);
-    listenGrid->Add(new wxStaticText(listenSizer->GetStaticBox(), wxID_ANY, i18n("network_adapter")));
-    listenGrid->Add(m_listenInterfaces, 1, wxEXPAND);
-    listenGrid->Add(new wxStaticText(listenSizer->GetStaticBox(), wxID_ANY, i18n("port")));
-    listenGrid->Add(m_listenPort, 0, wxALIGN_RIGHT);
-    listenSizer->Add(listenGrid, 1, wxEXPAND | wxALL, 5);
+    listenSizer->Add(m_listenInterfaces, 1, wxEXPAND | wxALL, FromDIP(5));
+    listenSizer->Add(buttonSizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
     wxStaticBoxSizer* encryptionSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("encryption"));
     wxFlexGridSizer* encryptionGrid = new wxFlexGridSizer(1, 10, 10);
@@ -84,57 +90,86 @@ PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shar
 
     this->SetSizerAndFit(sizer);
 
-    SetupNetworkAdapters();
-
-    wxString iface = cfg->GetString("listen_interface");
-
-    if (iface == "{any}")
+    for (auto const& li : cfg->GetListenInterfaces())
     {
-        m_listenInterfaces->SetSelection(0);
+        int row = m_listenInterfaces->GetItemCount();
+        m_listenInterfaces->InsertItem(row, li.address);
+        m_listenInterfaces->SetItem(row, 1, std::to_string(li.port));
+        m_listenInterfaces->SetItemPtrData(row, li.id);
     }
 
-    for (unsigned int i = 0; i < m_listenInterfaces->GetCount(); i++)
-    {
-        auto clientData = static_cast<ClientData<NetworkAdapter*>*>(m_listenInterfaces->GetClientObject(i));
-        auto adapter = clientData->GetValue();
-
-        if (adapter->ipv4 == iface || adapter->ipv6 == iface)
+    addInterface->Bind(
+        wxEVT_BUTTON,
+        [this](wxCommandEvent&)
         {
-            m_listenInterfaces->SetSelection(i);
-        }
-        else if (iface.Contains("|"))
-        {
-            auto pos = iface.find_first_of("|");
-            auto first = iface.substr(0, pos);
-            auto second = iface.substr(pos + 1);
+            ListenInterfaceDialog dlg(this, wxID_ANY);
 
-            if (adapter->ipv4 == first || adapter->ipv6 == second)
+            if (dlg.ShowModal() == wxID_OK)
             {
-                m_listenInterfaces->SetSelection(i);
+                int row = m_listenInterfaces->GetItemCount();
+                m_listenInterfaces->InsertItem(row, dlg.GetAddress());
+                m_listenInterfaces->SetItem(row, 1, std::to_string(dlg.GetPort()));
+                m_listenInterfaces->SetItemPtrData(row, -1);
             }
-        }
-    }
+        });
+
+    editInterface->Bind(
+        wxEVT_BUTTON,
+        [this](wxCommandEvent&)
+        {
+            long sel = m_listenInterfaces->GetFirstSelected();
+            if (sel < 0) { return; }
+
+            std::string address = m_listenInterfaces->GetItemText(sel);
+            int port = std::atoi(m_listenInterfaces->GetItemText(sel, 1));
+
+            ListenInterfaceDialog dlg(this, wxID_ANY, address, port);
+
+            if (dlg.ShowModal() == wxID_OK)
+            {
+                int row = m_listenInterfaces->GetItemCount();
+                m_listenInterfaces->SetItem(sel, 0, dlg.GetAddress());
+                m_listenInterfaces->SetItem(sel, 1, std::to_string(dlg.GetPort()));
+            }
+        });
+
+    removeInterface->Bind(
+        wxEVT_BUTTON,
+        [this](wxCommandEvent&)
+        {
+            long sel = m_listenInterfaces->GetFirstSelected();
+            if (sel < 0) { return; }
+
+            int id = m_listenInterfaces->GetItemData(sel);
+            m_listenInterfaces->DeleteItem(sel);
+
+            if (id > 0)
+            {
+                m_removedListenInterfaces.push_back(id);
+            }
+        });
+}
+
+PreferencesConnectionPage::~PreferencesConnectionPage()
+{
 }
 
 void PreferencesConnectionPage::Save()
 {
-    auto clientData = static_cast<ClientData<NetworkAdapter*>*>(
-        m_listenInterfaces->GetClientObject(m_listenInterfaces->GetSelection()));
-    auto adapter = clientData->GetValue();
-
-    std::stringstream ifaces;
-    ifaces << adapter->ipv4;
-
-    if (adapter->ipv6.size() > 0)
+    for (int removed : m_removedListenInterfaces)
     {
-        ifaces << "|" << adapter->ipv6;
+        m_cfg->DeleteListenInterface(removed);
     }
 
-    long port;
-    m_listenPort->GetValue().ToLong(&port);
+    for (int i = 0; i < m_listenInterfaces->GetItemCount(); i++)
+    {
+        Core::Configuration::ListenInterface li;
+        li.address = m_listenInterfaces->GetItemText(i, 0);
+        li.id = m_listenInterfaces->GetItemData(i);
+        li.port = std::atoi(m_listenInterfaces->GetItemText(i, 1));
 
-    m_cfg->SetString("listen_interface", ifaces.str());
-    m_cfg->SetInt("listen_port", static_cast<int>(port));
+        m_cfg->UpsertListenInterface(li);
+    }
 
     m_cfg->SetBool("require_incoming_encryption", m_incomingEncryption->GetValue());
     m_cfg->SetBool("require_outgoing_encryption", m_outgoingEncryption->GetValue());
@@ -160,7 +195,7 @@ bool PreferencesConnectionPage::IsValid()
 
 void PreferencesConnectionPage::SetupNetworkAdapters()
 {
-    // Add the <any> adapter
+    /*// Add the <any> adapter
     auto any = new NetworkAdapter();
     any->description = "<any>";
     any->ipv4 = "0.0.0.0";
@@ -229,5 +264,5 @@ void PreferencesConnectionPage::SetupNetworkAdapters()
             }
     }
 
-    delete[] pAddresses;
+    delete[] pAddresses;*/
 }

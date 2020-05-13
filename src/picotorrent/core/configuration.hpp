@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace pt
 {
@@ -13,6 +14,13 @@ namespace Core
     class Configuration
     {
     public:
+        struct ListenInterface
+        {
+            int id;
+            std::string address;
+            int32_t port;
+        };
+
         enum ConnectionProxyType
         {
             None,
@@ -43,6 +51,10 @@ namespace Core
         void SetBool(std::string const& key, bool value);
         void SetInt(std::string const& key, int value);
         void SetString(std::string const& key, std::string const& value);
+
+        std::vector<ListenInterface> GetListenInterfaces();
+        void DeleteListenInterface(int id);
+        void UpsertListenInterface(ListenInterface const& iface);
 
     private:
         std::shared_ptr<Database> m_db;

@@ -92,34 +92,15 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
         "dht.transmissionbt.com:6881" ","
         "dht.aelitis.com:6881");
 
-    std::string listenInterface = cfg->GetString("listen_interface");
-    int listenPort = cfg->GetInt("listen_port");
     std::stringstream ifaces;
 
-    // If the string starts with '{', i.e '{any}' or a network interface guid (which did not work),
-    // set to listen to any interface.
-    if (listenInterface.find_first_of('{') == 0)
+    for (auto const& li : cfg->GetListenInterfaces())
     {
-        ifaces << "0.0.0.0:" << listenPort << "," << "[::]:" << listenPort;
-    }
-    else
-    {
-        size_t pipeIndex = listenInterface.find_first_of("|");
-        
-        if (pipeIndex != std::string::npos)
-        {
-            // Set up both IPv4 and IPv6
-            ifaces << listenInterface.substr(0, pipeIndex) << ":" << listenPort << ",[" << listenInterface.substr(pipeIndex) << "]:" << listenPort;
-        }
-        else
-        {
-            // Only IPv4 here
-            ifaces << listenInterface << ":" << listenPort;
-        }
+        ifaces << "," << li.address << ":" << li.port;
     }
 
     // Listen interface
-    settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str());
+    settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
 
     // Features
     settings.set_bool(lt::settings_pack::enable_dht, cfg->GetBool("enable_dht"));
@@ -356,6 +337,18 @@ void Session::OnAlert()
             torrentAdded.SetClientData(handle);
             wxPostEvent(m_parent, torrentAdded);
 
+            break;
+        }
+
+        case lt::listen_failed_alert::alert_type:
+        {
+            LOG_F(WARNING, alert->message().c_str());
+            break;
+        }
+
+        case lt::listen_succeeded_alert::alert_type:
+        {
+            LOG_F(INFO, alert->message().c_str());
             break;
         }
 

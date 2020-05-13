@@ -18,6 +18,10 @@ option(BUILD_SHARED_LIBS    "" off)
 option(deprecated-functions "" off)
 # ----------------------------
 
+# --------- wx options
+set(wxUSE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
+# --------------------
+
 add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/wx)
@@ -127,6 +131,8 @@ add_executable(
     src/picotorrent/ui/dialogs/aboutdialog
     src/picotorrent/ui/dialogs/addmagnetlinkdialog
     src/picotorrent/ui/dialogs/addtorrentdialog
+    src/picotorrent/ui/dialogs/listeninterfacedialog
+    src/picotorrent/ui/dialogs/preferencesadvancedpage
     src/picotorrent/ui/dialogs/preferencesconnectionpage
     src/picotorrent/ui/dialogs/preferencesdialog
     src/picotorrent/ui/dialogs/preferencesdownloadspage
@@ -184,15 +190,15 @@ target_include_directories(
 
     "${Boost_INCLUDE_DIRS}"
 
-    "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/build/native/crashpad/include"
-    "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/build/native/mini_chromium/include"
+    "${CMAKE_SOURCE_DIR}/tools/PicoTorrent.Crashpad.vc142/build/native/crashpad/include"
+    "${CMAKE_SOURCE_DIR}/tools/PicoTorrent.Crashpad.vc142/build/native/mini_chromium/include"
     "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
 )
 
 target_link_directories(
     PicoTorrent
     PRIVATE
-    "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/lib/native/v142/${PICO_ARCH}"
+    "${CMAKE_SOURCE_DIR}/tools/PicoTorrent.Crashpad.vc142/lib/native/v142/${PICO_ARCH}"
 )
 
 target_link_libraries(
@@ -201,7 +207,7 @@ target_link_libraries(
     PRIVATE
 
     # wxWidgets
-    core base
+    core base propgrid
 
     # Windows
     Comctl32
@@ -255,6 +261,6 @@ target_link_libraries(Plugin_Updater PRIVATE PicoTorrent Comctl32)
 add_custom_command(
     TARGET PicoTorrent POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/lib/native/v142/${PICO_ARCH}/$<CONFIG>/crashpad_handler.exe"
+        "${CMAKE_SOURCE_DIR}/tools/PicoTorrent.Crashpad.vc142/lib/native/v142/${PICO_ARCH}/$<CONFIG>/crashpad_handler.exe"
         $<TARGET_FILE_DIR:PicoTorrent>
 )

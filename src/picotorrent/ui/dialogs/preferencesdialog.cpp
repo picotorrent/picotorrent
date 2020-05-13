@@ -7,6 +7,7 @@
 #include <wx/persist/toplevel.h>
 
 #include "../../core/configuration.hpp"
+#include "preferencesadvancedpage.hpp"
 #include "preferencesconnectionpage.hpp"
 #include "preferencesdownloadspage.hpp"
 #include "preferencesgeneralpage.hpp"
@@ -33,14 +34,13 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Con
     m_downloads = new PreferencesDownloadsPage(book, cfg);
     m_connection = new PreferencesConnectionPage(book, cfg);
     m_proxy = new PreferencesProxyPage(book, cfg);
-    /*m_advanced = new AdvancedPage(book, cfg, tran);*/
+    //m_advanced = new PreferencesAdvancedPage(book);
 
     book->AddPage(m_general, i18n("general"), true);
     book->AddPage(m_downloads, i18n("downloads"));
     book->AddPage(m_connection, i18n("connection"));
     book->AddPage(m_proxy, i18n("proxy"));
-
-    /*book->AddPage(m_advanced, i18n("advanced"), false);*/
+    //book->AddPage(m_advanced, i18n("advanced"));
 
     CreateButtons();
     LayoutDialog();
