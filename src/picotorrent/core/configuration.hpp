@@ -14,9 +14,16 @@ namespace Core
     class Configuration
     {
     public:
+        struct DhtBootstrapNode
+        {
+            int32_t id;
+            std::string hostname;
+            int32_t port;
+        };
+
         struct ListenInterface
         {
-            int id;
+            int32_t id;
             std::string address;
             int32_t port;
         };
@@ -51,6 +58,8 @@ namespace Core
         void SetBool(std::string const& key, bool value);
         void SetInt(std::string const& key, int value);
         void SetString(std::string const& key, std::string const& value);
+
+        std::vector<DhtBootstrapNode> GetDhtBootstrapNodes();
 
         std::vector<ListenInterface> GetListenInterfaces();
         void DeleteListenInterface(int id);

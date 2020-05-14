@@ -202,11 +202,43 @@ bool Database::Migrate()
             continue;
         }
 
-        Execute(m.sql);
+        const char* sql = m.sql.c_str();
+        sqlite3_stmt* statement = nullptr;
+
+        // Use raw sqlite code here to support multiple statements in one migration.
+        do {
+            if (sqlite3_prepare_v2(
+                m_db,
+                sql,
+                -1,
+                &statement,
+                &sql) != SQLITE_OK)
+            {
+                LOG_F(ERROR, "Failed to prepare migration %s: (%s)", m.name.c_str(), sqlite3_errmsg(m_db));
+                return false;
+            }
+
+            if (statement == nullptr)
+            {
+                break;
+            }
+
+            int stepResult = sqlite3_step(statement);
+
+            if (stepResult != SQLITE_OK && stepResult != SQLITE_DONE)
+            {
+                LOG_F(ERROR, "Failed to step/execute migration %s: (%s)", m.name.c_str(), sqlite3_errmsg(m_db));
+                return false;
+            }
+
+            sqlite3_finalize(statement);
+        } while (sql && sql[0] != '\0');
 
         auto stmt = CreateStatement("insert into migration_history (name) values (?);");
         stmt->Bind(1, m.name.c_str());
         stmt->Execute();
+
+        LOG_F(INFO, "Migration %s applied", m.name.c_str());
     }
 
     Execute("COMMIT;");

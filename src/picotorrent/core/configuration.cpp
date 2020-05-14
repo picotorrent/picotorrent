@@ -159,6 +159,25 @@ int Configuration::GetInt(std::string const& key)
     return stmt->GetInt(0);
 }
 
+std::vector<Configuration::DhtBootstrapNode> Configuration::GetDhtBootstrapNodes()
+{
+    std::vector<DhtBootstrapNode> result;
+
+    auto stmt = m_db->CreateStatement("select id, hostname, port from dht_bootstrap_node");
+
+    while (stmt->Read())
+    {
+        DhtBootstrapNode node;
+        node.id = stmt->GetInt(0);
+        node.hostname = stmt->GetString(1);
+        node.port = stmt->GetInt(2);
+
+        result.push_back(node);
+    }
+
+    return result;
+}
+
 std::vector<Configuration::ListenInterface> Configuration::GetListenInterfaces()
 {
     std::vector<ListenInterface> result;

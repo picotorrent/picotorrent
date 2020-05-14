@@ -86,20 +86,21 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
 {
     lt::settings_pack settings;
     settings.set_int(lt::settings_pack::alert_mask, lt::alert::all_categories);
-    settings.set_str(lt::settings_pack::string_types::dht_bootstrap_nodes,
-        "router.bittorrent.com:6881" ","
-        "router.utorrent.com:6881" ","
-        "dht.transmissionbt.com:6881" ","
-        "dht.aelitis.com:6881");
 
+    std::stringstream dhtNodes;
     std::stringstream ifaces;
+
+    for (auto const& node : cfg->GetDhtBootstrapNodes())
+    {
+        dhtNodes << "," << node.hostname << ":" << node.port;
+    }
 
     for (auto const& li : cfg->GetListenInterfaces())
     {
         ifaces << "," << li.address << ":" << li.port;
     }
 
-    // Listen interface
+    settings.set_str(lt::settings_pack::dht_bootstrap_nodes, dhtNodes.str().substr(1));
     settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
 
     // Features

@@ -22,6 +22,10 @@ Application::Application()
 
 Application::~Application()
 {
+    for (auto plugin : m_plugins)
+    {
+        delete plugin;
+    }
 }
 
 bool Application::OnInit()
@@ -33,6 +37,10 @@ bool Application::OnInit()
 
     if (!db->Migrate())
     {
+        wxMessageBox(
+            "Failed to run database migrations. Please check log file.",
+            "PicoTorrent",
+            wxICON_ERROR);
         return false;
     }
 
@@ -55,7 +63,7 @@ bool Application::OnInit()
         if (filename.size() < 6) { continue; }
         if (filename.substr(0, 6) != "Plugin") { continue; }
 
-        LOG_F(INFO, "Loading plugin from %s", p.path().c_str());
+        LOG_F(INFO, "Loading plugin from %s", p.path().string().c_str());
 
         auto plugin = API::IPlugin::Load(p, env.get(), cfg.get());
 
