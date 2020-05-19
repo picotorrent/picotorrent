@@ -32,7 +32,6 @@
 #include "torrentdetailsview.hpp"
 #include "torrentlistview.hpp"
 #include "translator.hpp"
-#include "../updatechecker.hpp"
 
 namespace fs = std::filesystem;
 using pt::UI::MainFrame;
