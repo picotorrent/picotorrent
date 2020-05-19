@@ -64,6 +64,14 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     sizer->Add(m_splitter, 1, wxEXPAND, 0);
     sizer->SetSizeHints(this);
 
+    // Keyboard accelerators
+    std::vector<wxAcceleratorEntry> entries =
+    {
+        wxAcceleratorEntry(wxACCEL_CTRL, int('A'), ptID_KEY_SELECT_ALL),
+        wxAcceleratorEntry(wxACCEL_NORMAL, WXK_DELETE, ptID_KEY_DELETE),
+    };
+
+    this->SetAcceleratorTable(wxAcceleratorTable(static_cast<int>(entries.size()), entries.data()));
     this->SetIcon(wxICON(AppIcon));
     this->SetMenuBar(this->CreateMainMenu());
     this->SetSizerAndFit(sizer);
@@ -203,6 +211,34 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     this->Bind(wxEVT_MENU, [this](wxCommandEvent&) { this->Close(true); }, ptID_EVT_EXIT);
     this->Bind(wxEVT_MENU, &MainFrame::OnViewPreferences, this, ptID_EVT_VIEW_PREFERENCES);
     this->Bind(wxEVT_MENU, &MainFrame::OnHelpAbout, this, ptID_EVT_ABOUT);
+
+    // Keyboard shortcuts
+    this->Bind(
+        wxEVT_MENU,
+        [&](wxCommandEvent&)
+        {
+            wxDataViewItemArray items;
+            m_torrentList->GetSelections(items);
+
+            if (items.IsEmpty()) { return; }
+
+            for (wxDataViewItem& item : items)
+            {
+                m_torrentListModel->GetTorrentFromItem(item)->Remove();
+            }
+        },
+        ptID_KEY_DELETE);
+
+    this->Bind(
+        wxEVT_MENU,
+        [&](wxCommandEvent&)
+        {
+            m_torrentList->SelectAll();
+            wxPostEvent(
+                this,
+                wxCommandEvent(wxEVT_DATAVIEW_SELECTION_CHANGED, ptID_MAIN_TORRENT_LIST));
+        },
+        ptID_KEY_SELECT_ALL);
 
     m_taskBarIcon->Bind(wxEVT_MENU, &MainFrame::OnFileAddTorrent, this, ptID_EVT_ADD_TORRENT);
     m_taskBarIcon->Bind(wxEVT_MENU, &MainFrame::OnFileAddMagnetLink, this, ptID_EVT_ADD_MAGNET_LINK);

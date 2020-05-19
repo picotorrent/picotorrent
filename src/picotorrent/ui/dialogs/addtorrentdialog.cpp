@@ -13,7 +13,7 @@
 using pt::UI::Dialogs::AddTorrentDialog;
 
 AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<lt::add_torrent_params>& params, std::shared_ptr<Core::Database> db)
-    : wxDialog(parent, id, i18n("add_torrent_s")),
+    : wxDialog(parent, id, i18n("add_torrent_s"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     m_params(params),
     m_db(db),
     m_filesModel(new Models::FileStorageModel())
@@ -25,12 +25,13 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
 
     auto infoSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("torrent"));
 
-    m_torrentName = new wxStaticText(infoSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
+    m_torrentName = new wxStaticText(infoSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
     m_torrentSize = new wxStaticText(infoSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
     m_torrentInfoHash = new wxStaticText(infoSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
     m_torrentComment = new wxStaticText(infoSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
 
-    auto infoGrid = new wxFlexGridSizer(2, FromDIP(10), FromDIP(25));
+    auto infoGrid = new wxFlexGridSizer(2, FromDIP(7), FromDIP(25));
+    infoGrid->AddGrowableCol(1, 1);
     infoGrid->Add(new wxStaticText(infoSizer->GetStaticBox(), wxID_ANY, i18n("name")));
     infoGrid->Add(m_torrentName);
     infoGrid->Add(new wxStaticText(infoSizer->GetStaticBox(), wxID_ANY, i18n("size")));
@@ -47,7 +48,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
     m_torrentSavePathBrowse = new wxButton(storageSizer->GetStaticBox(), ptID_SAVE_PATH_BROWSE, i18n("browse"));
     m_filesView = new wxDataViewCtrl(storageSizer->GetStaticBox(), ptID_FILE_LIST, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE);
 
-    auto storageGrid = new wxFlexGridSizer(2, FromDIP(10), FromDIP(10));
+    auto storageGrid = new wxFlexGridSizer(2, FromDIP(7), FromDIP(10));
     storageGrid->AddGrowableCol(1, 1);
 
     auto savePathSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -91,16 +92,18 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
     ok->SetDefault();
 
     buttonsSizer->Add(ok);
+    buttonsSizer->AddSpacer(FromDIP(7));
     buttonsSizer->Add(new wxButton(this, wxID_CANCEL));
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
-    mainSizer->Add(fileSizer, 0, wxEXPAND | wxALL, FromDIP(3));
-    mainSizer->Add(infoSizer, 0, wxEXPAND | wxALL, FromDIP(3));
-    mainSizer->Add(storageSizer, 1, wxEXPAND | wxALL, FromDIP(3));
-    mainSizer->Add(buttonsSizer, 0, wxALL | wxALIGN_RIGHT, FromDIP(3));
+    mainSizer->Add(fileSizer, 0, wxEXPAND | wxALL, FromDIP(11));
+    mainSizer->Add(infoSizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(11));
+    mainSizer->Add(storageSizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(11));
+    mainSizer->Add(buttonsSizer, 0, wxALIGN_RIGHT | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(11));
 
     this->SetSizerAndFit(mainSizer);
-    this->SetSize(FromDIP(wxSize(400, 450)));
+    this->SetSize(FromDIP(wxSize(400, 500)));
+    this->SetMinSize(FromDIP(wxSize(400, 450)));
 
     // Load save path history
     auto stmt = m_db->CreateStatement("SELECT path FROM path_history WHERE type = 'add_torrent_dialog' ORDER BY timestamp DESC LIMIT 5");

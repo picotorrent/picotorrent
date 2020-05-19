@@ -52,6 +52,22 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# Get the latest abbreviated commit hash from wxWidgets
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/fmt
+    OUTPUT_VARIABLE PICO_FMT_GIT_COMMITISH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash from wxWidgets
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/wx
+    OUTPUT_VARIABLE PICO_WX_GIT_COMMITISH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 # Get current architecture
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PICO_ARCH "x64")
@@ -180,6 +196,8 @@ target_compile_definitions(
     -DPICO_VERSION_MAJOR=${VERSION_MAJOR}
     -DPICO_VERSION_MINOR=${VERSION_MINOR}
     -DPICO_VERSION_REVISION=${VERSION_REVISION}
+    -DPICO_FMT_GIT_COMMITISH=${PICO_FMT_GIT_COMMITISH}
+    -DPICO_WX_GIT_COMMITISH=${PICO_WX_GIT_COMMITISH}
 )
 
 target_include_directories(
@@ -187,8 +205,6 @@ target_include_directories(
     PRIVATE
 
     include
-
-    "${Boost_INCLUDE_DIRS}"
 
     "${CMAKE_SOURCE_DIR}/tools/PicoTorrent.Crashpad.vc142/build/native/crashpad/include"
     "${CMAKE_SOURCE_DIR}/tools/PicoTorrent.Crashpad.vc142/build/native/mini_chromium/include"

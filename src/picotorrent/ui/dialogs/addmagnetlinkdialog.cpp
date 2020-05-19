@@ -13,7 +13,7 @@ namespace lt = libtorrent;
 using pt::UI::Dialogs::AddMagnetLinkDialog;
 
 AddMagnetLinkDialog::AddMagnetLinkDialog(wxWindow* parent, wxWindowID id)
-    : wxDialog(parent, id, i18n("add_magnet_link_s")),
+    : wxDialog(parent, id, i18n("add_magnet_link_s"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     m_links(new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxHSCROLL | wxTE_MULTILINE))
 {
     auto buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -34,6 +34,7 @@ AddMagnetLinkDialog::AddMagnetLinkDialog(wxWindow* parent, wxWindowID id)
     this->SetSizerAndFit(mainSizer);
     this->SetSize(FromDIP(wxSize(400, 250)));
 
+    m_links->SetFocus();
     m_links->SetFont(
         wxFont(9, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Consolas")));
 
@@ -89,7 +90,7 @@ std::vector<libtorrent::add_torrent_params> AddMagnetLinkDialog::GetParams()
 
         if (ec)
         {
-            // TODO log warning
+            LOG_F(WARNING, "Failed to parse magnet uri: %s, error: %s", token.c_str(), ec.message().c_str());
             continue;
         }
 

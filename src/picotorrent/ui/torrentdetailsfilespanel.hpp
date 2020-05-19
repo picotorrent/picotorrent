@@ -29,6 +29,8 @@ namespace Models
         void Reset();
 
     private:
+        void ShowFileContextMenu(wxCommandEvent&);
+
         Models::FileStorageModel* m_filesModel;
         TorrentFileListView* m_fileList;
         BitTorrent::TorrentHandle* m_torrent;
