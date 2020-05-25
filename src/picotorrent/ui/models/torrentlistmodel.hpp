@@ -59,6 +59,8 @@ namespace Models
 
         int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending) const wxOVERRIDE;
 
+        bool GetAttrByRow(unsigned int row, unsigned int col, wxDataViewItemAttr& attr) const wxOVERRIDE;
+
         unsigned int GetColumnCount() const wxOVERRIDE { return Columns::_Max; }
 
         wxString GetColumnType(unsigned int column) const wxOVERRIDE;

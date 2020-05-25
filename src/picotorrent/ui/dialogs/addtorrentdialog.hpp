@@ -5,6 +5,7 @@
 #include <wx/wx.h>
 #endif
 
+#include <libtorrent/download_priority.hpp>
 #include <libtorrent/fwd.hpp>
 #include <memory>
 #include <vector>
@@ -12,6 +13,7 @@
 class wxChoice;
 class wxDataViewCtrl;
 class wxDataViewEvent;
+class wxDataViewItemArray;
 
 namespace pt
 {
@@ -56,6 +58,7 @@ namespace Dialogs
         wxString GetTorrentDisplayComment(libtorrent::add_torrent_params const& params);
 
         void Load(size_t index);
+        void SetFilePriorities(wxDataViewItemArray& items, libtorrent::download_priority_t prio);
         void ShowFileContextMenu(wxDataViewEvent&);
 
         wxChoice* m_torrents;

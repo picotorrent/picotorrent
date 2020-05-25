@@ -341,6 +341,19 @@ void Session::OnAlert()
             break;
         }
 
+        case lt::file_error_alert::alert_type:
+        {
+            lt::file_error_alert* fea = lt::alert_cast<lt::file_error_alert>(alert);
+
+            auto torrent = m_torrents.at(fea->handle.info_hash());
+
+            TorrentsUpdatedEvent evtUpdated(ptEVT_TORRENTS_UPDATED);
+            evtUpdated.SetData({ torrent });
+            wxPostEvent(m_parent, evtUpdated);
+
+            break;
+        }
+
         case lt::listen_failed_alert::alert_type:
         {
             LOG_F(WARNING, alert->message().c_str());
@@ -507,6 +520,12 @@ void Session::OnAlert()
                 m_pauseAfterRecheck.erase(torrentToResume);
             }
 
+            break;
+        }
+
+        case lt::torrent_error_alert::alert_type:
+        {
+            LOG_F(ERROR, "Torrent error: %s", alert->message().c_str());
             break;
         }
 

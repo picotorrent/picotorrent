@@ -16,7 +16,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
     : wxDialog(parent, id, i18n("add_torrent_s"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     m_params(params),
     m_db(db),
-    m_filesModel(new Models::FileStorageModel())
+    m_filesModel(new Models::FileStorageModel(std::bind(&AddTorrentDialog::SetFilePriorities, this, std::placeholders::_1, std::placeholders::_2)))
 {
     auto fileSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("file"));
 
@@ -61,12 +61,14 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
     storageSizer->Add(storageGrid, 0, wxEXPAND);
     storageSizer->Add(m_filesView, 1, wxEXPAND | wxALL, FromDIP(3));
 
-    auto nameCol = m_filesView->AppendIconTextColumn(
+    auto nameCol = new wxDataViewColumn(
         i18n("name"),
+        new wxDataViewCheckIconTextRenderer(),
         Models::FileStorageModel::Columns::Name,
-        wxDATAVIEW_CELL_INERT,
         FromDIP(180),
         wxALIGN_LEFT);
+
+    m_filesView->AppendColumn(nameCol);
 
     m_filesView->AppendTextColumn(
         i18n("size"),
@@ -299,6 +301,22 @@ void AddTorrentDialog::Load(size_t index)
     }
 }
 
+void AddTorrentDialog::SetFilePriorities(wxDataViewItemArray& items, lt::download_priority_t prio)
+{
+    auto& param = m_params.at(m_torrents->GetSelection());
+    auto fileIndices = m_filesModel->GetFileIndices(items);
+
+    for (int idx : fileIndices)
+    {
+        if (param.file_priorities.size() <= idx)
+        {
+            param.file_priorities.resize(size_t(idx) + 1, lt::default_priority);
+        }
+
+        param.file_priorities.at(idx) = prio;
+    }
+}
+
 void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent& evt)
 {
     wxDataViewItemArray items;
@@ -341,34 +359,21 @@ void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent& evt)
     menu.AppendSubMenu(prioMenu, i18n("priority"));
     menu.Bind(
         wxEVT_MENU,
-        [&fileIndices, &param](wxCommandEvent& evt)
+        [this, &items, &param](wxCommandEvent& evt)
         {
-            auto set = [&fileIndices, &param](lt::download_priority_t p)
-            {
-                for (int idx : fileIndices)
-                {
-                    if (param.file_priorities.size() <= idx)
-                    {
-                        param.file_priorities.resize(size_t(idx) + 1, lt::default_priority);
-                    }
-
-                    param.file_priorities.at(idx) = p;
-                }
-            };
-
             switch (evt.GetId())
             {
             case ptID_CONTEXT_MENU_DO_NOT_DOWNLOAD:
-                set(lt::dont_download);
+                SetFilePriorities(items, lt::dont_download);
                 break;
             case ptID_CONTEXT_MENU_LOW:
-                set(lt::low_priority);
+                SetFilePriorities(items, lt::low_priority);
                 break;
             case ptID_CONTEXT_MENU_MAXIMUM:
-                set(lt::top_priority);
+                SetFilePriorities(items, lt::top_priority);
                 break;
             case ptID_CONTEXT_MENU_NORMAL:
-                set(lt::default_priority);
+                SetFilePriorities(items, lt::default_priority);
                 break;
             }
         });

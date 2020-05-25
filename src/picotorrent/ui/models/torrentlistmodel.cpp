@@ -210,6 +210,29 @@ int TorrentListModel::Compare(const wxDataViewItem& item1, const wxDataViewItem&
     return 0;
 }
 
+bool TorrentListModel::GetAttrByRow(unsigned int row, unsigned int col, wxDataViewItemAttr& attr) const
+{
+    switch (col)
+    {
+    case Columns::Status:
+    {
+        auto const& hash = m_filtered.at(row);
+        BitTorrent::TorrentHandle* torrent = m_torrents.at(hash);
+        BitTorrent::TorrentStatus  status = torrent->Status();
+
+        if (status.state == TorrentStatus::State::Error)
+        {
+            attr.SetColour(*wxRED);
+            return true;
+        }
+
+        return false;
+    }
+    }
+
+    return false;
+}
+
 wxString TorrentListModel::GetColumnType(unsigned int column) const
 {
     return "string";
@@ -282,7 +305,20 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
 
         case TorrentStatus::State::Error:
-            variant = fmt::format(i18n("state_error"), Utils::toStdWString(status.error).c_str());
+            if (status.errorDetails.empty())
+            {
+                variant = fmt::format(
+                    i18n("state_error"),
+                    Utils::toStdWString(status.error).c_str());
+            }
+            else
+            {
+                variant = fmt::format(
+                    i18n("state_error_details"),
+                    Utils::toStdWString(status.error).c_str(),
+                    Utils::toStdWString(status.errorDetails).c_str());
+            }
+
             break;
 
         case TorrentStatus::State::Unknown:

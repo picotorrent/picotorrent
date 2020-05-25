@@ -41,6 +41,7 @@ namespace BitTorrent
         int                                           downloadPayloadRate;
         bool                                          forced;
         std::string                                   error;
+        std::string                                   errorDetails;
         std::chrono::seconds                          eta;
         std::string                                   infoHash;
         std::string                                   name;

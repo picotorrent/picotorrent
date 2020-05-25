@@ -26,13 +26,13 @@ TorrentStatus::State getTorrentStatusState(lt::torrent_status const& ts)
     bool checking = (ts.state == lt::torrent_status::state_t::checking_files
         || ts.state == lt::torrent_status::state_t::checking_resume_data);
 
+    if (ts.errc)
+    {
+        return TorrentStatus::State::Error;
+    }
+
     if (paused)
     {
-        if (ts.errc)
-        {
-            return TorrentStatus::State::Error;
-        }
-
         if (seeding)
         {
             return TorrentStatus::State::UploadingPaused;
@@ -246,12 +246,29 @@ TorrentStatus TorrentHandle::Status()
         ratio = static_cast<float>(m_ts->all_time_upload) / static_cast<float>(m_ts->all_time_download);
     }
 
+    std::string error;
+    std::string error_details;
+
+    if (m_ts->errc)
+    {
+        error = m_ts->errc.message();
+
+        // If we have an error in a file, get file info
+        auto ti = m_ts->torrent_file.lock();
+
+        if (m_ts->error_file >= lt::file_index_t{ 0 } && ti)
+        {
+            error_details = ti->files().file_path(m_ts->error_file);
+        }
+    }
+
     TorrentStatus ts;
     ts.addedOn              = wxDateTime(m_ts->added_time);
     ts.availability         = m_ts->distributed_copies;
     ts.completedOn          = m_ts->completed_time > 0 ? wxDateTime(m_ts->completed_time) : wxDateTime();
     ts.downloadPayloadRate  = m_ts->download_payload_rate;
-    ts.error                = m_ts->errc ? m_ts->errc.message() : "";
+    ts.error                = error;
+    ts.errorDetails         = error_details;
     ts.eta                  = eta;
     ts.forced               = (!(m_ts->flags & lt::torrent_flags::paused) && !(m_ts->flags & lt::torrent_flags::auto_managed));
     ts.infoHash             = hash.str();

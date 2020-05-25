@@ -122,6 +122,7 @@
         "state_downloading_queued": "Queued",
         "state_downloading_stalled": "Stalled",
         "state_error": "Error: {0}",
+        "state_error_details": "Error: {0} ({1})",
         "state_unknown": "Unknown",
         "state_uploading": "Seeding",
         "state_uploading_checking": "Checking",

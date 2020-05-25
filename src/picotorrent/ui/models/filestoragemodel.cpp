@@ -16,7 +16,8 @@ using pt::UI::Models::FileStorageModel;
 
 static wxIcon FolderIcon;
 
-FileStorageModel::FileStorageModel()
+FileStorageModel::FileStorageModel(std::function<void(wxDataViewItemArray&, lt::download_priority_t)> const& priorityChanged)
+    : m_priorityChangedCallback(priorityChanged)
 {
     if (!FolderIcon.IsOk())
     {
@@ -90,6 +91,7 @@ void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
 
     m_root = std::make_shared<Node>();
     m_root->name = ti->name();
+    m_root->priority = lt::default_priority;
 
     lt::file_storage const& files = ti->files();
 
@@ -118,6 +120,7 @@ void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
                     std::shared_ptr<Node> node = std::make_shared<Node>();
                     node->name = part;
                     node->parent = current;
+                    node->priority = lt::default_priority;
 
                     current->children.insert({ node->name, node });
 
@@ -131,7 +134,7 @@ void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
                         {
                             SHFILEINFO shfi = { 0 };
                             SHGetFileInfo(
-                                wxString(extension).ToStdWstring().c_str(),
+                                Utils::toStdWString(extension).c_str(),
                                 FILE_ATTRIBUTE_NORMAL,
                                 &shfi,
                                 sizeof(SHFILEINFO),
@@ -259,11 +262,23 @@ void FileStorageModel::GetValue(wxVariant &variant, const wxDataViewItem &item, 
     {
     case Columns::Name:
     {
-        variant << wxDataViewIconText(
-            wxString::FromUTF8(node->name),
-            node->children.empty()
+        if (m_priorityChangedCallback)
+        {
+            variant << wxDataViewCheckIconText(
+                node->name,
+                node->children.empty()
+                ? GetIconForFile(node->name)
+                : FolderIcon,
+                node->priority == lt::dont_download ? wxCHK_UNCHECKED : wxCHK_CHECKED);
+        }
+        else
+        {
+            variant << wxDataViewIconText(
+                node->name,
+                node->children.empty()
                 ? GetIconForFile(node->name)
                 : FolderIcon);
+        }
 
         break;
     }
@@ -301,6 +316,43 @@ void FileStorageModel::GetValue(wxVariant &variant, const wxDataViewItem &item, 
 
 bool FileStorageModel::SetValue(const wxVariant &variant, const wxDataViewItem &item, unsigned int col)
 {
+    wxASSERT(item.IsOk());
+
+    Node* node = reinterpret_cast<Node*>(item.GetID());
+
+    switch (col)
+    {
+    case Columns::Name:
+    {
+        std::function<void(wxDataViewItemArray&, Node*, lt::download_priority_t)> recursiveSkip = [&](auto& arr, Node* node, auto prio)
+        {
+            if (node->priority != prio)
+            {
+                node->priority = prio;
+                arr.push_back(wxDataViewItem(reinterpret_cast<void*>(node)));
+            }
+
+            for (auto const [key,n] : node->children) { recursiveSkip(arr, n.get(), prio); }
+        };
+
+        wxDataViewCheckIconText checkIconText;
+        checkIconText << variant;
+
+        wxDataViewItemArray changed;
+        lt::download_priority_t prio = checkIconText.GetCheckedState() == wxCHK_CHECKED
+            ? lt::default_priority
+            : lt::dont_download;
+
+        recursiveSkip(changed, node, prio);
+
+        this->ItemsChanged(changed);
+
+        m_priorityChangedCallback(changed, prio);
+
+        return true;
+    }
+    }
+
     return false;
 }
 

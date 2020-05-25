@@ -30,7 +30,7 @@ namespace Models
             _Max
         };
 
-        FileStorageModel();
+        FileStorageModel(std::function<void(wxDataViewItemArray&, libtorrent::download_priority_t)> const& priorityChanged = nullptr);
 
         // Things we need to override
         unsigned int GetColumnCount() const wxOVERRIDE;
@@ -68,6 +68,8 @@ namespace Models
         std::shared_ptr<Node> m_root;
         std::map<int, std::shared_ptr<Node>> m_map;
         std::map<std::string, wxIcon> m_icons;
+
+        std::function<void(wxDataViewItemArray&, libtorrent::download_priority_t)> m_priorityChangedCallback;
     };
 }
 }

@@ -23,7 +23,7 @@ class CopyableStaticText : public wxStaticText
 {
 public:
     CopyableStaticText(wxWindow* parent)
-        : wxStaticText(parent, wxID_ANY, "-", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END, wxStaticTextNameStr)
+        : wxStaticText(parent, wxID_ANY, "-", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END)
     {
         this->Bind(wxEVT_RIGHT_DOWN, [this](wxMouseEvent const& ev)
             {
@@ -56,8 +56,8 @@ TorrentDetailsOverviewPanel::TorrentDetailsOverviewPanel(wxWindow* parent, wxWin
     m_pieces(new CopyableStaticText(this))
 {
     auto sizer = new wxFlexGridSizer(4, FromDIP(10), FromDIP(10));
-    sizer->AddGrowableCol(1);
-    sizer->AddGrowableCol(3);
+    sizer->AddGrowableCol(1, 1);
+    sizer->AddGrowableCol(3, 1);
 
     sizer->Add(BoldLabel(this, wxID_ANY, i18n("name")));
     sizer->Add(m_name, 1, wxEXPAND);
