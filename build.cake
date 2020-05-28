@@ -95,6 +95,8 @@ Task("Setup-Publish-Directory")
     {
         MakeAbsolute(BuildDirectory + File("PicoTorrent.exe")),
         MakeAbsolute(BuildDirectory + File("crashpad_handler.exe")),
+        MakeAbsolute(BuildDirectory + File("Plugin_Filters.dll")),
+        MakeAbsolute(BuildDirectory + File("Plugin_Updater.dll")),
     };
 
     CreateDirectory(PublishDirectory);
