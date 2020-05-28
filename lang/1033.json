@@ -240,6 +240,9 @@
         "network_adapter": "Network adapter",
         "kb_s": "KB/s",
         "add_magnet_link_s_description": "Magnet links or info hashes (one per line)",
-        "label": "Label"
+        "label": "Label",
+        "component": "Component",
+        "version": "Version",
+        "commitish": "Commitish"
     }
 }
