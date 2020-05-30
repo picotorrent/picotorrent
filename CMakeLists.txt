@@ -52,11 +52,19 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-# Get the latest abbreviated commit hash from wxWidgets
+# Get the latest abbreviated commit hash from fmt
 execute_process(
     COMMAND git log -1 --format=%h
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/fmt
     OUTPUT_VARIABLE PICO_FMT_GIT_COMMITISH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash from libtorrent
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/libtorrent
+    OUTPUT_VARIABLE PICO_LIBTORRENT_GIT_COMMITISH
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
@@ -197,6 +205,7 @@ target_compile_definitions(
     -DPICO_VERSION_MINOR=${VERSION_MINOR}
     -DPICO_VERSION_REVISION=${VERSION_REVISION}
     -DPICO_FMT_GIT_COMMITISH=${PICO_FMT_GIT_COMMITISH}
+    -DPICO_LIBTORRENT_GIT_COMMITISH=${PICO_LIBTORRENT_GIT_COMMITISH}
     -DPICO_WX_GIT_COMMITISH=${PICO_WX_GIT_COMMITISH}
 )
 
