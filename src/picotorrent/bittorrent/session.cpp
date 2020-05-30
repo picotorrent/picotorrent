@@ -298,23 +298,23 @@ void Session::OnAlert()
                 continue;
             }
 
-            if (m_metadataSearches.count(ata->handle.info_hash()))
+            if (m_metadataSearches.count(ata->handle.info_hashes()))
             {
                 // Part of a metadata search - update the metadata search map
                 // with the new handle, then ignore it.
-                m_metadataSearches[ata->handle.info_hash()] = ata->handle;
+                m_metadataSearches[ata->handle.info_hashes()] = ata->handle;
                 continue;
             }
 
             std::stringstream ss;
 
-            if (ata->handle.info_hash().has_v2())
+            if (ata->handle.info_hashes().has_v2())
             {
-                ss << ata->handle.info_hash().v2;
+                ss << ata->handle.info_hashes().v2;
             }
             else
             {
-                ss << ata->handle.info_hash().v1;
+                ss << ata->handle.info_hashes().v1;
             }
 
             std::string ih = ss.str();
@@ -332,7 +332,7 @@ void Session::OnAlert()
 
             auto handle = new TorrentHandle(this, ata->handle);
 
-            m_torrents.insert({ ata->handle.info_hash(), handle });
+            m_torrents.insert({ ata->handle.info_hashes(), handle });
 
             wxCommandEvent torrentAdded(ptEVT_TORRENT_ADDED);
             torrentAdded.SetClientData(handle);
@@ -345,7 +345,7 @@ void Session::OnAlert()
         {
             lt::file_error_alert* fea = lt::alert_cast<lt::file_error_alert>(alert);
 
-            auto torrent = m_torrents.at(fea->handle.info_hash());
+            auto torrent = m_torrents.at(fea->handle.info_hashes());
 
             TorrentsUpdatedEvent evtUpdated(ptEVT_TORRENTS_UPDATED);
             evtUpdated.SetData({ torrent });
@@ -369,7 +369,7 @@ void Session::OnAlert()
         case lt::metadata_received_alert::alert_type:
         {
             lt::metadata_received_alert* mra = lt::alert_cast<lt::metadata_received_alert>(alert);
-            lt::info_hash_t infoHash = mra->handle.info_hash();
+            lt::info_hash_t infoHash = mra->handle.info_hashes();
 
             if (m_metadataSearches.count(infoHash) > 0)
             {
@@ -416,13 +416,13 @@ void Session::OnAlert()
 
             std::stringstream ss;
 
-            if (srda->handle.info_hash().has_v2())
+            if (srda->handle.info_hashes().has_v2())
             {
-                ss << srda->handle.info_hash().v2;
+                ss << srda->handle.info_hashes().v2;
             }
             else
             {
-                ss << srda->handle.info_hash().v1;
+                ss << srda->handle.info_hashes().v1;
             }
 
             std::string ih = ss.str();
@@ -512,7 +512,7 @@ void Session::OnAlert()
         {
             lt::torrent_checked_alert* tca = lt::alert_cast<lt::torrent_checked_alert>(alert);
 
-            auto torrentToResume = m_pauseAfterRecheck.find(tca->handle.info_hash());
+            auto torrentToResume = m_pauseAfterRecheck.find(tca->handle.info_hashes());
 
             if (torrentToResume != m_pauseAfterRecheck.end())
             {
@@ -919,13 +919,13 @@ void Session::SaveTorrents()
 
             std::stringstream ss;
 
-            if (rd->handle.info_hash().has_v2())
+            if (rd->handle.info_hashes().has_v2())
             {
-                ss << rd->handle.info_hash().v2;
+                ss << rd->handle.info_hashes().v2;
             }
             else
             {
-                ss << rd->handle.info_hash().v1;
+                ss << rd->handle.info_hashes().v1;
             }
 
             std::string ih = ss.str();

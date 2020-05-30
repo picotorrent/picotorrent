@@ -134,7 +134,7 @@ void TorrentHandle::GetPeerInfo(std::vector<lt::peer_info>& peers) const
 
 lt::info_hash_t TorrentHandle::InfoHash()
 {
-    return m_th->info_hash();
+    return m_th->info_hashes();
 }
 
 bool TorrentHandle::IsValid()

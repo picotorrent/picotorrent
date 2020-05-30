@@ -185,7 +185,7 @@ void AddTorrentDialog::MetadataFound(std::shared_ptr<lt::torrent_info> const& ti
     {
         auto& params = m_params.at(i);
 
-        if (params.info_hash == ti->info_hash())
+        if (params.info_hash == ti->info_hashes())
         {
             params.ti = ti;
 
@@ -235,13 +235,13 @@ wxString AddTorrentDialog::GetTorrentDisplayInfoHash(libtorrent::add_torrent_par
 
     if (params.ti)
     {
-        if (params.ti->info_hash().has_v2())
+        if (params.ti->info_hashes().has_v2())
         {
-            hash << params.ti->info_hash().v2;
+            hash << params.ti->info_hashes().v2;
         }
         else
         {
-            hash << params.ti->info_hash().v1;
+            hash << params.ti->info_hashes().v1;
         }
     }
     else if (params.info_hash.has_v1() || params.info_hash.has_v2())
