@@ -108,6 +108,22 @@ void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
 {
     auto item = static_cast<TrackerListModel::ListItem*>(evt.GetItem().GetID());
 
+    if (item == nullptr)
+    {
+        // add tracker
+        wxMenu addTrackerMenu;
+        addTrackerMenu.Append(ptID_CONTEXT_MENU_ADD_TRACKER, i18n("add_tracker"));
+        addTrackerMenu.Bind(
+            wxEVT_MENU,
+            [](wxCommandEvent const& evt)
+            {
+            },
+            ptID_CONTEXT_MENU_ADD_TRACKER);
+        PopupMenu(&addTrackerMenu);
+
+        return;
+    }
+
     if (item->tier < 0)
     {
         // one of the static items. do nothing
@@ -122,9 +138,9 @@ void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
     }
     else
     {
-        menu.Append(ptID_CONTEXT_MENU_REMOVE_TRACKER, i18n("copy_url"));
-        menu.Append(ptID_CONTEXT_MENU_REMOVE_TRACKER, i18n("force_reannounce"));
-        menu.Append(ptID_CONTEXT_MENU_REMOVE_TRACKER, i18n("scrape"));
+        menu.Append(ptID_CONTEXT_MENU_COPY_URL, i18n("copy_url"));
+        menu.Append(ptID_CONTEXT_MENU_FORCE_REANNOUNCE, i18n("force_reannounce"));
+        menu.Append(ptID_CONTEXT_MENU_SCRAPE, i18n("scrape"));
         menu.AppendSeparator();
         menu.Append(ptID_CONTEXT_MENU_REMOVE_TRACKER, i18n("remove"));
     }

@@ -59,6 +59,8 @@ void TrackerListModel::Update(BitTorrent::TorrentHandle* torrent)
         m_items.insert(
             m_items.begin(),
             m_dht);
+
+        this->ItemAdded(wxDataViewItem(), wxDataViewItem(m_dht.get()));
     }
 
     if (m_lsd == nullptr)
@@ -70,6 +72,8 @@ void TrackerListModel::Update(BitTorrent::TorrentHandle* torrent)
         m_items.insert(
             m_items.begin() + 1,
             m_lsd);
+
+        this->ItemAdded(wxDataViewItem(), wxDataViewItem(m_lsd.get()));
     }
 
     if (m_pex == nullptr)
@@ -81,6 +85,8 @@ void TrackerListModel::Update(BitTorrent::TorrentHandle* torrent)
         m_items.insert(
             m_items.begin() + 2,
             m_pex);
+
+        this->ItemAdded(wxDataViewItem(), wxDataViewItem(m_pex.get()));
     }
 
     auto trackers = torrent->Trackers();

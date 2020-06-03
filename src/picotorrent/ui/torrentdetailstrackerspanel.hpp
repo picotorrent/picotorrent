@@ -36,6 +36,7 @@ namespace Models
             ptID_CONTEXT_MENU_COPY_URL,
             ptID_CONTEXT_MENU_FORCE_REANNOUNCE,
             ptID_CONTEXT_MENU_SCRAPE,
+            ptID_CONTEXT_MENU_ADD_TRACKER
         };
 
         void ShowTrackerContextMenu(wxDataViewEvent&);
