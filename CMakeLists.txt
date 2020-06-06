@@ -154,6 +154,7 @@ add_executable(
     # Dialogs
     src/picotorrent/ui/dialogs/aboutdialog
     src/picotorrent/ui/dialogs/addmagnetlinkdialog
+    src/picotorrent/ui/dialogs/addtrackerdialog
     src/picotorrent/ui/dialogs/addtorrentdialog
     src/picotorrent/ui/dialogs/listeninterfacedialog
     src/picotorrent/ui/dialogs/preferencesadvancedpage

@@ -258,15 +258,16 @@ void TrackerListModel::Update(BitTorrent::TorrentHandle* torrent)
             }
             else if (ah.last_error)
             {
-                // TODO
-                /*QString error = i18n("error_s")
-                    .arg(ah.message.empty()
-                        ? ah.last_error.message().c_str()
-                        : QString("%1 \"%2\"")
-                        .arg(QString::fromStdString(ah.last_error.message()))
-                        .arg(QString::fromStdString(ah.message)));*/
+                std::wstring error = fmt::format(
+                    i18n("error_s"),
+                    ah.message.empty()
+                        ? Utils::toStdWString(ah.last_error.message())
+                        : fmt::format(
+                            L"{0} \"{1}\"",
+                            Utils::toStdWString(ah.last_error.message()),
+                            Utils::toStdWString(ah.message)));
 
-                (*trackerIter)->errorMessage = "err";// error.toStdString();
+                (*trackerIter)->errorMessage = error;
                 (*trackerIter)->status = ListItemStatus::error;
             }
             else if (iter->verified)
@@ -304,6 +305,29 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
     }
     case Column::Status:
     {
+        switch (li->status)
+        {
+        case ListItemStatus::error:
+        {
+            variant = li->errorMessage;
+            break;
+        }
+        case ListItemStatus::unknown:
+        {
+            variant = "-";
+            break;
+        }
+        case ListItemStatus::updating:
+        {
+            variant = i18n("updating");
+            break;
+        }
+        case ListItemStatus::working:
+        {
+            variant = i18n("working");
+            break;
+        }
+        }
         break;
     }
     case Column::NumDownloaded:

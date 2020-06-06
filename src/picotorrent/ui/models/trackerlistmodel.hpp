@@ -54,7 +54,7 @@ namespace Models
             int numLeeches;
             int numSeeds;
             std::chrono::seconds nextAnnounce;
-            std::string errorMessage;
+            std::wstring errorMessage;
             int fails;
             int failLimit;
 

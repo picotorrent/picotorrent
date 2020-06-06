@@ -202,6 +202,11 @@ void TorrentHandle::ResumeForce()
     m_th->resume();
 }
 
+void TorrentHandle::ScrapeTracker(int trackerIndex)
+{
+    m_th->scrape_tracker(trackerIndex);
+}
+
 void TorrentHandle::SetFilePriorities(std::vector<lt::download_priority_t> priorities)
 {
     m_th->prioritize_files(priorities);

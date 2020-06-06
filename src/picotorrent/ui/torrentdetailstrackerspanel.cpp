@@ -2,11 +2,14 @@
 
 #include <libtorrent/announce_entry.hpp>
 
+#include <loguru.hpp>
+#include <wx/clipbrd.h>
 #include <wx/dataview.h>
 #include <wx/sizer.h>
 
 #include "../bittorrent/torrenthandle.hpp"
 #include "../bittorrent/torrentstatus.hpp"
+#include "dialogs/addtrackerdialog.hpp"
 #include "models/trackerlistmodel.hpp"
 #include "translator.hpp"
 
@@ -115,8 +118,27 @@ void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
         addTrackerMenu.Append(ptID_CONTEXT_MENU_ADD_TRACKER, i18n("add_tracker"));
         addTrackerMenu.Bind(
             wxEVT_MENU,
-            [](wxCommandEvent const& evt)
+            [this](wxCommandEvent const& evt)
             {
+                Dialogs::AddTrackerDialog addDialog(this, wxID_ANY);
+                
+                if (addDialog.ShowModal() == wxID_OK
+                    && addDialog.GetUrl().size() > 0)
+                {
+                    // Get max tier
+                    auto trackers = m_torrent->Trackers();
+                    auto maxTier = std::max_element(
+                        trackers.begin(),
+                        trackers.end(),
+                        [](lt::announce_entry const& lhs, lt::announce_entry const& rhs)
+                        { return lhs.tier < rhs.tier; });
+
+                    lt::announce_entry ae;
+                    ae.tier = maxTier != trackers.end() ? maxTier->tier + 1 : 0;
+                    ae.url = addDialog.GetUrl();
+                    m_torrent->AddTracker(ae);
+                    m_trackersModel->Update(m_torrent);
+                }
             },
             ptID_CONTEXT_MENU_ADD_TRACKER);
         PopupMenu(&addTrackerMenu);
@@ -150,9 +172,44 @@ void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
         [this, item](wxCommandEvent& evt)
         {
             auto originalTrackers = m_torrent->Trackers();
+            auto selectedTracker = std::find_if(
+                originalTrackers.begin(),
+                originalTrackers.end(),
+                [&item](lt::announce_entry const& ae)
+                {
+                    return ae.tier == item->tier && ae.url == item->key;
+                });
+
+            if (selectedTracker == originalTrackers.end())
+            {
+                LOG_F(WARNING, "Could not find selected tracker in torrent trackers: %s", item->key.c_str());
+                return;
+            }
 
             switch (evt.GetId())
             {
+            case ptID_CONTEXT_MENU_COPY_URL:
+            {
+                if (wxTheClipboard->Open())
+                {
+                    wxTheClipboard->SetData(new wxTextDataObject(selectedTracker->url));
+                    wxTheClipboard->Close();
+                }
+                break;
+            }
+            case ptID_CONTEXT_MENU_FORCE_REANNOUNCE:
+            {
+                m_torrent->ForceReannounce(
+                    0,
+                    static_cast<int>(std::distance(originalTrackers.begin(), selectedTracker)));
+                break;
+            }
+            case ptID_CONTEXT_MENU_SCRAPE:
+            {
+                m_torrent->ScrapeTracker(
+                    static_cast<int>(std::distance(originalTrackers.begin(), selectedTracker)));
+                break;
+            }
             case ptID_CONTEXT_MENU_REMOVE_TIER:
             {
                 originalTrackers.erase(
