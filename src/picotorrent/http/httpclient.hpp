@@ -29,7 +29,7 @@ namespace Http
         void Get(wxString const& url, std::function<void(int, std::string const&)> const& callback);
     private:
         static std::wstring ReadHeader(HINTERNET hRequest, DWORD dwHeader);
-        static void StatusCallbackProxy(HINTERNET hInternet, DWORD_PTR dwContext, DWORD dwInternetStatus, LPVOID lpStatusInformation, DWORD dwStatusInformationLength);
+        static void CALLBACK StatusCallbackProxy(HINTERNET hInternet, DWORD_PTR dwContext, DWORD dwInternetStatus, LPVOID lpStatusInformation, DWORD dwStatusInformationLength);
 
         HINTERNET m_session;
     };

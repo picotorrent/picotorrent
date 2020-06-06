@@ -9,8 +9,8 @@ set(Boost_USE_STATIC_LIBS ON)
 set(OPENSSL_USE_STATIC_LIBS TRUE)
 
 if(DEFINED ENV{OPENSSL_ROOT_DIR})
-    message("Using OpenSSL dir from env variable")
     set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
+    message("Using OpenSSL dir from env variable: ${OPENSSL_ROOT_DIR}")
 endif()
 
 # --------- libtorrent options
