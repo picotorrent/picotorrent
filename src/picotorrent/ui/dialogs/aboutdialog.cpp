@@ -6,6 +6,7 @@
 #include <fmt/core.h>
 #include <libtorrent/version.hpp>
 #include <openssl/opensslv.h>
+#include <sqlite3.h>
 #include <wx/hyperlink.h>
 #include <wx/listctrl.h>
 #include <wx/statbmp.h>
@@ -57,6 +58,10 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
     lv->InsertItem(lv->GetItemCount(), "Rasterbar-libtorrent");
     lv->SetItem(lv->GetItemCount() - 1, 1, LIBTORRENT_VERSION);
     lv->SetItem(lv->GetItemCount() - 1, 2, BOOST_STRINGIZE(PICO_LIBTORRENT_GIT_COMMITISH));
+
+    lv->InsertItem(lv->GetItemCount(), "SQLite");
+    lv->SetItem(lv->GetItemCount() - 1, 1, SQLITE_VERSION);
+    lv->SetItem(lv->GetItemCount() - 1, 2, "-");
 
     lv->InsertItem(lv->GetItemCount(), "wxWidgets");
     lv->SetItem(lv->GetItemCount() - 1, 1, wxVERSION_NUM_DOT_STRING_T);
