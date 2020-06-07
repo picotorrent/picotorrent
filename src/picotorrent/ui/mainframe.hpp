@@ -29,6 +29,10 @@ namespace Core
     class Database;
     class Environment;
 }
+namespace IPC
+{
+    class Server;
+}
 namespace UI
 {
 namespace Models
@@ -50,6 +54,7 @@ namespace Models
         virtual ~MainFrame();
 
         void AddFilter(wxString const& name, std::function<bool(BitTorrent::TorrentHandle*)> const& filter);
+        void HandleParams(std::vector<std::string> const& files, std::vector<std::string> const& magnets);
 
     private:
         wxMenuBar* CreateMainMenu();
@@ -63,7 +68,7 @@ namespace Models
         void OnIconize(wxIconizeEvent&);
         void OnTaskBarLeftDown(wxTaskBarIconEvent&);
         void OnViewPreferences(wxCommandEvent&);
-        void ParseTorrentFiles(std::vector<libtorrent::add_torrent_params>& params, wxArrayString const& paths);
+        void ParseTorrentFiles(std::vector<libtorrent::add_torrent_params>& params, std::vector<std::string> const& paths);
         void ShowTorrentContextMenu(wxCommandEvent&);
 
         wxSplitterWindow* m_splitter;
@@ -77,6 +82,7 @@ namespace Models
         std::shared_ptr<Core::Environment> m_env;
         std::shared_ptr<Core::Database> m_db;
         std::shared_ptr<Core::Configuration> m_cfg;
+        std::unique_ptr<IPC::Server> m_ipc;
 
         wxMenu* m_viewMenu;
         wxMenu* m_filtersMenu;

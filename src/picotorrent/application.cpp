@@ -1,7 +1,11 @@
 #include "application.hpp"
 
 #include <loguru.hpp>
+#include <nlohmann/json.hpp>
+#include <wx/cmdline.h>
+#include <wx/ipc.h>
 #include <wx/persist.h>
+#include <wx/snglinst.h>
 
 #include "api/libpico_impl.hpp"
 #include "crashpadinitializer.hpp"
@@ -9,13 +13,16 @@
 #include "core/configuration.hpp"
 #include "core/database.hpp"
 #include "core/environment.hpp"
+#include "core/utils.hpp"
 #include "ui/mainframe.hpp"
 #include "ui/translator.hpp"
 
+using json = nlohmann::json;
 using pt::Application;
 
 Application::Application()
-    : wxApp()
+    : wxApp(),
+    m_singleInstance(std::make_unique<wxSingleInstanceChecker>())
 {
     SetProcessDPIAware();
 }
@@ -28,8 +35,35 @@ Application::~Application()
     }
 }
 
+bool Application::OnCmdLineParsed(wxCmdLineParser& parser)
+{
+    for (size_t i = 0; i < parser.GetParamCount(); i++)
+    {
+        std::string arg = Utils::toStdString(parser.GetParam(i).ToStdWstring());
+
+        if (arg.rfind("magnet:?xt", 0) == 0)
+        {
+            m_options.magnets.push_back(arg);
+        }
+        else
+        {
+            m_options.files.push_back(std::filesystem::absolute(arg).string());
+        }
+    }
+
+    return true;
+}
+
 bool Application::OnInit()
 {
+    if (!wxApp::OnInit()) { return false; }
+
+    if (m_singleInstance->IsAnotherRunning())
+    {
+        ActivateOtherInstance();
+        return false;
+    }
+
     auto env = pt::Core::Environment::Create();
     pt::CrashpadInitializer::Initialize(env);
 
@@ -85,6 +119,38 @@ bool Application::OnInit()
         [mainFrame](auto plugin) { plugin->EmitEvent(libpico_event_mainwnd_created, mainFrame); });
 
     mainFrame->Show();
+    mainFrame->HandleParams(m_options.files, m_options.magnets);
 
     return true;
+}
+
+void Application::OnInitCmdLine(wxCmdLineParser& parser)
+{
+    static const wxCmdLineEntryDesc cmdLineDesc[] =
+    {
+        { wxCMD_LINE_PARAM, NULL, NULL, "params", wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_PARAM_MULTIPLE },
+        { wxCMD_LINE_NONE }
+    };
+
+    parser.SetDesc(cmdLineDesc);
+    parser.SetSwitchChars("-");
+}
+
+void Application::ActivateOtherInstance()
+{
+    json j;
+    j["files"] = m_options.files;
+    j["magnet_links"] = m_options.magnets;
+
+    wxClient client;
+    auto conn = client.MakeConnection(
+        "localhost",
+        "PicoTorrent",
+        "ApplicationOptions");
+
+    if (conn)
+    {
+        conn->Execute(j.dump());
+        conn->Disconnect();
+    }
 }

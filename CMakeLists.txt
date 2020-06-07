@@ -18,12 +18,17 @@ option(BUILD_SHARED_LIBS    "" off)
 option(deprecated-functions "" off)
 # ----------------------------
 
+# --------- nlohmann-json options
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+# ---------
+
 # --------- wx options
 set(wxUSE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
 # --------------------
 
 add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/libtorrent)
+add_subdirectory(vendor/nlohmann-json)
 add_subdirectory(vendor/wx)
 
 # Generate version information file
@@ -65,6 +70,14 @@ execute_process(
     COMMAND git log -1 --format=%h
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/libtorrent
     OUTPUT_VARIABLE PICO_LIBTORRENT_GIT_COMMITISH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash from nlohmann-json
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/nlohmann-json
+    OUTPUT_VARIABLE PICO_NLOHMANN_JSON_GIT_COMMITISH
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
@@ -151,6 +164,10 @@ add_executable(
     # Http
     src/picotorrent/http/httpclient
 
+    # IPC
+    src/picotorrent/ipc/applicationoptionsconnection
+    src/picotorrent/ipc/server
+
     # Dialogs
     src/picotorrent/ui/dialogs/aboutdialog
     src/picotorrent/ui/dialogs/addmagnetlinkdialog
@@ -207,6 +224,7 @@ target_compile_definitions(
     -DPICO_VERSION_REVISION=${VERSION_REVISION}
     -DPICO_FMT_GIT_COMMITISH=${PICO_FMT_GIT_COMMITISH}
     -DPICO_LIBTORRENT_GIT_COMMITISH=${PICO_LIBTORRENT_GIT_COMMITISH}
+    -DPICO_NLOHMANN_JSON_GIT_COMMITISH=${PICO_NLOHMANN_JSON_GIT_COMMITISH}
     -DPICO_WX_GIT_COMMITISH=${PICO_WX_GIT_COMMITISH}
 )
 
@@ -254,6 +272,9 @@ target_link_libraries(
 
     # loguru
     loguru
+
+    # nlohmann-json
+    nlohmann_json::nlohmann_json
 
     # Rasterbar-libtorrent
     "torrent-rasterbar"

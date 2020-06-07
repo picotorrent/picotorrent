@@ -6,6 +6,8 @@
 #include <memory>
 #include <vector>
 
+class wxSingleInstanceChecker;
+
 namespace pt
 {
 namespace API
@@ -21,10 +23,22 @@ namespace API
         Application();
         virtual ~Application();
 
-        virtual bool OnInit();
+        virtual bool OnCmdLineParsed(wxCmdLineParser& parser) wxOVERRIDE;
+        virtual bool OnInit() wxOVERRIDE;
+        virtual void OnInitCmdLine(wxCmdLineParser&) wxOVERRIDE;
 
     private:
+        struct Options
+        {
+            std::vector<std::string> files;
+            std::vector<std::string> magnets;
+        };
+
+        void ActivateOtherInstance();
+
+        Options m_options;
         std::vector<API::IPlugin*> m_plugins;
         std::unique_ptr<PersistenceManager> m_persistence;
+        std::unique_ptr<wxSingleInstanceChecker> m_singleInstance;
     };
 }

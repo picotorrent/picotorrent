@@ -20,6 +20,7 @@
 #include "../core/database.hpp"
 #include "../core/environment.hpp"
 #include "../core/utils.hpp"
+#include "../ipc/server.hpp"
 #include "dialogs/aboutdialog.hpp"
 #include "dialogs/addmagnetlinkdialog.hpp"
 #include "dialogs/addtorrentdialog.hpp"
@@ -51,7 +52,8 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_torrentListModel(new Models::TorrentListModel()),
     m_torrentList(new TorrentListView(m_splitter, ptID_MAIN_TORRENT_LIST, m_torrentListModel)),
     m_torrentsCount(0),
-    m_menuItemFilters(nullptr)
+    m_menuItemFilters(nullptr),
+    m_ipc(std::make_unique<IPC::Server>(this))
 {
     m_splitter->SetMinimumPaneSize(10);
     m_splitter->SetSashGravity(0.5);
@@ -384,6 +386,18 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
     }
 }
 
+void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<std::string> const& magnets)
+{
+    std::vector<lt::add_torrent_params> params;
+
+    if (!files.empty())
+    {
+        ParseTorrentFiles(params, files);
+    }
+
+    AddTorrents(params);
+}
+
 void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const& torrents)
 {
     bool shouldCheck = m_cfg->GetBool("pause_on_low_disk_space");
@@ -504,8 +518,17 @@ void MainFrame::OnFileAddTorrent(wxCommandEvent&)
     wxArrayString paths;
     openDialog.GetPaths(paths);
 
+    std::vector<std::string> converted;
+    std::for_each(
+        paths.begin(),
+        paths.end(),
+        [&converted](wxString const& str)
+        {
+            converted.push_back(Utils::toStdString(str.wc_str()));
+        });
+
     std::vector<lt::add_torrent_params> params;
-    this->ParseTorrentFiles(params, paths);
+    this->ParseTorrentFiles(params, converted);
     this->AddTorrents(params);
 }
 
@@ -553,16 +576,14 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
     }
 }
 
-void MainFrame::ParseTorrentFiles(std::vector<lt::add_torrent_params>& params, wxArrayString const& paths)
+void MainFrame::ParseTorrentFiles(std::vector<lt::add_torrent_params>& params, std::vector<std::string> const& paths)
 {
-    for (wxString const& path : paths)
+    for (std::string const& path : paths)
     {
-        fs::path p = fs::absolute(path.ToStdWstring());
-
         lt::error_code ec;
         lt::add_torrent_params param;
 
-        param.ti = std::make_shared<lt::torrent_info>(p.string(), ec);
+        param.ti = std::make_shared<lt::torrent_info>(path, ec);
 
         if (ec)
         {

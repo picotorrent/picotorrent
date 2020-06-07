@@ -5,6 +5,7 @@
 #include <boost/version.hpp>
 #include <fmt/core.h>
 #include <libtorrent/version.hpp>
+#include <nlohmann/json.hpp>
 #include <openssl/opensslv.h>
 #include <sqlite3.h>
 #include <wx/hyperlink.h>
@@ -16,6 +17,7 @@
 #include "../../buildinfo.hpp"
 #include "../translator.hpp"
 
+using json = nlohmann::json;
 using pt::UI::Dialogs::AboutDialog;
 
 AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
@@ -39,6 +41,11 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
         << FMT_VERSION % 10000 / 100 << "."
         << FMT_VERSION % 100;
 
+    std::stringstream nljson;
+    nljson << NLOHMANN_JSON_VERSION_MAJOR << "."
+        << NLOHMANN_JSON_VERSION_MINOR << "."
+        << NLOHMANN_JSON_VERSION_PATCH;
+
     lv->InsertItem(lv->GetItemCount(), "Boost");
     lv->SetItem(lv->GetItemCount() - 1, 1, boostVersion.str());
     lv->SetItem(lv->GetItemCount() - 1, 2, "-");
@@ -46,6 +53,10 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
     lv->InsertItem(lv->GetItemCount(), "fmt");
     lv->SetItem(lv->GetItemCount() - 1, 1, fmtVersion.str());
     lv->SetItem(lv->GetItemCount() - 1, 2, BOOST_STRINGIZE(PICO_FMT_GIT_COMMITISH));
+
+    lv->InsertItem(lv->GetItemCount(), "nlohmann-json");
+    lv->SetItem(lv->GetItemCount() - 1, 1, nljson.str());
+    lv->SetItem(lv->GetItemCount() - 1, 2, BOOST_STRINGIZE(PICO_NLOHMANN_JSON_GIT_COMMITISH));
 
     lv->InsertItem(lv->GetItemCount(), OPENSSL_VERSION_TEXT);
     lv->SetItem(lv->GetItemCount() - 1, 1, "-");
@@ -86,6 +97,7 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
     sizer->Add(footerSizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, border);
 
     this->SetSizerAndFit(sizer);
+    this->SetSize(FromDIP(wxSize(300, 450)));
 }
 
 AboutDialog::~AboutDialog()
