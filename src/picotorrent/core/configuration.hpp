@@ -49,8 +49,6 @@ namespace Core
         Configuration(std::shared_ptr<Database> db);
         ~Configuration();
 
-        static void Migrate(std::shared_ptr<Environment> env, std::shared_ptr<Configuration> cfg);
-
         bool GetBool(std::string const& key);
         int GetInt(std::string const& key);
         std::string GetString(std::string const& key);

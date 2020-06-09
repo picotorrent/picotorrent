@@ -1,11 +1,11 @@
 #include "translator.hpp"
 
 #include <loguru.hpp>
+#include <nlohmann/json.hpp>
 
 #include "../core/utils.hpp"
-#include "../picojson.hpp"
 
-namespace pj = picojson;
+using json = nlohmann::json;
 using pt::UI::Translator;
 
 Translator::Translator()
@@ -38,39 +38,39 @@ BOOL Translator::EnumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lps
     HGLOBAL data = LoadResource(hModule, rc);
     const char* buffer = reinterpret_cast<const char*>(LockResource(data));
 
-    std::string json(buffer, static_cast<size_t>(size));
+    std::string jsonData(buffer, static_cast<size_t>(size));
+    json j;
 
-    pj::value v;
-    std::string err = pj::parse(v, json);
-
-    if (!err.empty())
+    try
+    {
+        j = json::parse(jsonData);
+    }
+    catch (std::exception const& ex)
     {
         if (IS_INTRESOURCE(lpszName))
         {
-            LOG_F(ERROR, "Failed to parse language json (%d): %s", reinterpret_cast<int>(lpszName), err.data());
+            LOG_F(ERROR, "Failed to parse language json (%d): %s", reinterpret_cast<int>(lpszName), ex.what());
         }
         else
         {
-            LOG_F(ERROR, "Failed to parse language json: %s", err.data());
+            LOG_F(ERROR, "Failed to parse language json: %s", ex.what());
         }
 
         return TRUE;
     }
 
-    pj::object obj = v.get<pj::object>();
-
-    int langId = static_cast<int>(obj.at("lang_id").get<int64_t>());
-    std::string langName = obj.at("lang_name").get<std::string>();
+    int langId = j["lang_id"];
+    std::string langName = j["lang_name"];
 
     Language l;
     l.code = langId;
     l.name = Utils::toStdWString(langName);
 
-    for (auto& p : obj.at("strings").get<pj::object>())
+    for (auto& p : j["strings"].items())
     {
-        std::string key = p.first; // Specifically do not use ToStdWString here
-                                // since we do not want to find Unicode keys
-        std::wstring val = Utils::toStdWString(p.second.get<std::string>());
+        std::string key = p.key(); // Specifically do not use ToStdWString here
+                                   // since we do not want to find Unicode keys
+        std::wstring val = Utils::toStdWString(p.value());
 
         l.translations.insert({ key, val });
     }

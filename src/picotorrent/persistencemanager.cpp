@@ -1,8 +1,11 @@
 #include "persistencemanager.hpp"
 
-#include "core/database.hpp"
-#include "picojson.hpp"
+#include <loguru.hpp>
+#include <nlohmann/json.hpp>
 
+#include "core/database.hpp"
+
+using json = nlohmann::json;
 using pt::PersistenceManager;
 
 PersistenceManager::PersistenceManager(std::shared_ptr<Core::Database> db)
@@ -21,13 +24,16 @@ bool PersistenceManager::RestoreValue(const wxPersistentObject& who, const wxStr
     
     if (stmt->Read())
     {
-        picojson::value v;
-        std::string err = picojson::parse(v, stmt->GetString(0));
-
-        if (err.empty())
+        try
         {
-            *value = v.get<bool>();
+            json j = json::parse(stmt->GetString(0));
+            *value = j.get<bool>();
             return true;
+        }
+        catch (std::exception const& ex)
+        {
+            LOG_F(ERROR, "Failed to parse JSON as bool: %s", ex.what());
+            return false;
         }
     }
 
@@ -41,13 +47,16 @@ bool PersistenceManager::RestoreValue(const wxPersistentObject& who, const wxStr
 
     if (stmt->Read())
     {
-        picojson::value v;
-        std::string err = picojson::parse(v, stmt->GetString(0));
-
-        if (err.empty())
+        try
         {
-            *value = static_cast<int>(v.get<int64_t>());
+            json j = json::parse(stmt->GetString(0));
+            *value = j.get<int>();
             return true;
+        }
+        catch (std::exception const& ex)
+        {
+            LOG_F(ERROR, "Failed to parse JSON as int: %s", ex.what());
+            return false;
         }
     }
 
@@ -61,13 +70,16 @@ bool PersistenceManager::RestoreValue(const wxPersistentObject& who, const wxStr
 
     if (stmt->Read())
     {
-        picojson::value v;
-        std::string err = picojson::parse(v, stmt->GetString(0));
-
-        if (err.empty())
+        try
         {
-            *value = static_cast<long>(v.get<int64_t>());
+            json j = json::parse(stmt->GetString(0));
+            *value = j.get<long>();
             return true;
+        }
+        catch (std::exception const& ex)
+        {
+            LOG_F(ERROR, "Failed to parse JSON as long: %s", ex.what());
+            return false;
         }
     }
 
@@ -81,13 +93,16 @@ bool PersistenceManager::RestoreValue(const wxPersistentObject& who, const wxStr
 
     if (stmt->Read())
     {
-        picojson::value v;
-        std::string err = picojson::parse(v, stmt->GetString(0));
-
-        if (err.empty())
+        try
         {
-            *value = wxString(v.get<std::string>());
+            json j = json::parse(stmt->GetString(0));
+            *value = j.get<std::string>();
             return true;
+        }
+        catch (std::exception const& ex)
+        {
+            LOG_F(ERROR, "Failed to parse JSON as string: %s", ex.what());
+            return false;
         }
     }
 
@@ -98,7 +113,7 @@ bool PersistenceManager::SaveValue(const wxPersistentObject& who, const wxString
 {
     SaveValue(
         GetKey(who, name),
-        picojson::value(value).serialize());
+        json(value).dump());
 
     return true;
 }
@@ -107,7 +122,7 @@ bool PersistenceManager::SaveValue(const wxPersistentObject& who, const wxString
 {
     SaveValue(
         GetKey(who, name),
-        picojson::value(static_cast<int64_t>(value)).serialize());
+        json(value).dump());
 
     return true;
 }
@@ -116,7 +131,7 @@ bool PersistenceManager::SaveValue(const wxPersistentObject& who, const wxString
 {
     SaveValue(
         GetKey(who, name),
-        picojson::value(static_cast<int64_t>(value)).serialize());
+        json(value).dump());
 
     return true;
 }
@@ -125,7 +140,7 @@ bool PersistenceManager::SaveValue(const wxPersistentObject& who, const wxString
 {
     SaveValue(
         GetKey(who, name),
-        picojson::value(value).serialize());
+        json(value.ToStdString()).dump());
 
     return true;
 }

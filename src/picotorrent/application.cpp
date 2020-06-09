@@ -80,9 +80,6 @@ bool Application::OnInit()
 
     auto cfg = std::make_shared<pt::Core::Configuration>(db);
 
-    // Migrate old configuration to new database
-    pt::Core::Configuration::Migrate(env, cfg);
-
     pt::UI::Translator& translator = pt::UI::Translator::GetInstance();
     translator.LoadEmbedded(GetModuleHandle(NULL));
     translator.SetLanguage(cfg->GetInt("language_id"));

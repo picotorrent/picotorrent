@@ -2,10 +2,12 @@
 
 #include <map>
 
-#include "../../picojson.hpp"
+#include <nlohmann/json.hpp>
+
 #include "../models/torrentlistmodel.hpp"
 #include "../torrentlistview.hpp"
 
+using json = nlohmann::json;
 using pt::UI::TorrentListView;
 using pt::UI::Models::TorrentListModel;
 using pt::UI::Persistence::PersistentTorrentListView;
@@ -53,20 +55,20 @@ bool PersistentTorrentListView::Restore()
         return false;
     }
 
-    picojson::value hiddenValue;
-    picojson::value modelsValue;
-    picojson::value widthsValue;
+    json hidden;
+    json models;
+    json widths;
 
-    if (!picojson::parse(hiddenValue, hiddenJson.ToStdString()).empty()
-        || !picojson::parse(modelsValue, modelsJson.ToStdString()).empty()
-        || !picojson::parse(widthsValue, widthsJson.ToStdString()).empty())
+    try
+    {
+        hidden = json::parse(hiddenJson.ToStdString());
+        models = json::parse(modelsJson.ToStdString());
+        widths = json::parse(widthsJson.ToStdString());
+    }
+    catch (std::exception)
     {
         return false;
     }
-
-    picojson::array hidden = hiddenValue.get<picojson::array>();
-    picojson::array models = modelsValue.get<picojson::array>();
-    picojson::array widths = widthsValue.get<picojson::array>();
 
     if (hidden.size() != m_tlv->GetColumnCount()
         || models.size() != m_tlv->GetColumnCount()
@@ -86,7 +88,7 @@ bool PersistentTorrentListView::Restore()
 
         int64_t modelIndex = static_cast<int64_t>(col->GetModelColumn());
 
-        auto iter = std::find(models.begin(), models.end(), picojson::value(modelIndex));
+        auto iter = std::find(models.begin(), models.end(), modelIndex);
         if (iter == models.end()) { return false; }
         auto dist = std::distance(models.begin(), iter);
 
@@ -101,8 +103,8 @@ bool PersistentTorrentListView::Restore()
 
         m_tlv->AppendColumn(col);
 
-        col->SetHidden(hidden[i].get<bool>());
-        col->SetWidth(static_cast<int>(widths[i].get<int64_t>()));
+        col->SetHidden(hidden[i]);
+        col->SetWidth(widths[i]);
     }
 
     int sortIndex;
@@ -125,22 +127,22 @@ void PersistentTorrentListView::Save() const
         SaveValue("SortAscending", sortingColumn->IsSortOrderAscending());
     }
 
-    picojson::array hidden;
-    picojson::array models;
-    picojson::array widths;
+    json hidden;
+    json models;
+    json widths;
 
     for (uint32_t i = 0; i < m_tlv->GetColumnCount(); i++)
     {
         auto col = m_tlv->GetColumnAt(i);
 
-        hidden.push_back(picojson::value(col->IsHidden()));
-        models.push_back(picojson::value(static_cast<int64_t>(col->GetModelColumn())));
-        widths.push_back(picojson::value(static_cast<int64_t>(col->GetWidth())));
+        hidden.push_back(col->IsHidden());
+        models.push_back(col->GetModelColumn());
+        widths.push_back(col->GetWidth());
     }
 
-    SaveValue("Hidden", picojson::value(hidden).serialize());
-    SaveValue("Models", picojson::value(models).serialize());
-    SaveValue("Widths", picojson::value(widths).serialize());
+    SaveValue("Hidden", hidden.dump());
+    SaveValue("Models", models.dump());
+    SaveValue("Widths", widths.dump());
 }
 
 PersistentTorrentListView* wxCreatePersistentObject(TorrentListView* lv)
