@@ -11,12 +11,10 @@ Picking a VPN provider
 
 There are many VPN providers, and you can even host your own somewhere.
 However, for those looking for a quick and easy way of getting started, we've
-compiled a small list of VPN providers we like.
+compiled a single-entry list of the VPN provider we like.
 
-- NordVPN_
 - Mullvad_
 
-.. _NordVPN: https://nordvpn.com
 .. _Mullvad: https://mullvad.net
 
 

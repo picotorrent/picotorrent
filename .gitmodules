@@ -14,3 +14,6 @@
 [submodule "vendor/nlohmann-json"]
 	path = vendor/nlohmann-json
 	url = https://github.com/nlohmann/json
+[submodule "vendor/crashpad"]
+	path = vendor/crashpad
+	url = https://github.com/picotorrent/crashpad

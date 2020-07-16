@@ -40,6 +40,7 @@ public:
 
     virtual ~Plugin()
     {
+        EmitEvent(libpico_event_shutdown, nullptr);
     }
 
     pt::Core::Configuration* Configuration() { return m_cfg; }

@@ -29,6 +29,6 @@ wxMenu* TaskBarIcon::CreatePopupMenu()
     menu->AppendSeparator();
     menu->Append(ptID_EVT_VIEW_PREFERENCES, i18n("preferences"));
     menu->AppendSeparator();
-    menu->Append(wxID_EXIT, i18n("amp_exit"));
+    menu->Append(ptID_EVT_EXIT, i18n("amp_exit"));
     return menu;
 }

@@ -33,7 +33,8 @@ typedef struct libpico_torrent_t libpico_torrent_t;
 
 enum libpico_event_t
 {
-    libpico_event_mainwnd_created
+    libpico_event_mainwnd_created,
+    libpico_event_shutdown
 };
 
 enum libpico_http_status_t

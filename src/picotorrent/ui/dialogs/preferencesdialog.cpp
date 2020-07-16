@@ -34,13 +34,13 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Con
     m_downloads = new PreferencesDownloadsPage(book, cfg);
     m_connection = new PreferencesConnectionPage(book, cfg);
     m_proxy = new PreferencesProxyPage(book, cfg);
-    //m_advanced = new PreferencesAdvancedPage(book);
+    m_advanced = new PreferencesAdvancedPage(book, cfg);
 
     book->AddPage(m_general, i18n("general"), true);
     book->AddPage(m_downloads, i18n("downloads"));
     book->AddPage(m_connection, i18n("connection"));
     book->AddPage(m_proxy, i18n("proxy"));
-    //book->AddPage(m_advanced, i18n("advanced"));
+    book->AddPage(m_advanced, i18n("advanced"));
 
     CreateButtons();
     LayoutDialog();
@@ -76,10 +76,16 @@ void PreferencesDialog::OnOk(wxCommandEvent& evt)
         return;
     }
 
+    if (!m_advanced->IsValid())
+    {
+        return;
+    }
+
     m_general->Save();
     m_downloads->Save();
     m_connection->Save();
     m_proxy->Save();
+    m_advanced->Save();
 
     evt.Skip();
 }

@@ -26,6 +26,7 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(wxUSE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
 # --------------------
 
+add_subdirectory(vendor/crashpad)
 add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/nlohmann-json)
@@ -233,16 +234,6 @@ target_include_directories(
     PRIVATE
 
     include
-
-    "${CMAKE_SOURCE_DIR}/tools/PicoTorrent.Crashpad.vc142/build/native/crashpad/include"
-    "${CMAKE_SOURCE_DIR}/tools/PicoTorrent.Crashpad.vc142/build/native/mini_chromium/include"
-    "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
-)
-
-target_link_directories(
-    PicoTorrent
-    PRIVATE
-    "${CMAKE_SOURCE_DIR}/tools/PicoTorrent.Crashpad.vc142/lib/native/v142/${PICO_ARCH}"
 )
 
 target_link_libraries(
@@ -308,6 +299,6 @@ target_link_libraries(Plugin_Updater PRIVATE PicoTorrent Comctl32)
 add_custom_command(
     TARGET PicoTorrent POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/tools/PicoTorrent.Crashpad.vc142/lib/native/v142/${PICO_ARCH}/$<CONFIG>/crashpad_handler.exe"
+        $<TARGET_FILE:crashpad_handler>
         $<TARGET_FILE_DIR:PicoTorrent>
 )

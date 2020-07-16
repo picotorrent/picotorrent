@@ -27,6 +27,7 @@ namespace UI
 
         ptID_KEY_SELECT_ALL,
         ptID_KEY_DELETE,
+        ptID_KEY_DELETE_FILES,
 
         ptID_EVT_FILTERS_NONE,
         ptID_EVT_FILTERS_USER,
