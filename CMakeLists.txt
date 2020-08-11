@@ -33,7 +33,7 @@ add_subdirectory(vendor/nlohmann-json)
 add_subdirectory(vendor/wx)
 
 # Generate version information file
-file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
+file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION.txt" VERSION)
 
 # Build version parts
 set(VERSION_TMP "${VERSION}")
