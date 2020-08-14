@@ -89,6 +89,14 @@ std::vector<Translator::Language> Translator::Languages()
         result.push_back(p.second);
     }
 
+    std::sort(
+        result.begin(),
+        result.end(),
+        [](Language const& lhs, Language const& rhs)
+        {
+            return lhs.name < rhs.name;
+        });
+
     return result;
 }
 
