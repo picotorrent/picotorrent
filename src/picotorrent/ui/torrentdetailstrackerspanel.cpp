@@ -109,6 +109,11 @@ void TorrentDetailsTrackersPanel::Reset()
 
 void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
 {
+    if (m_torrent == nullptr)
+    {
+        return;
+    }
+
     auto item = static_cast<TrackerListModel::ListItem*>(evt.GetItem().GetID());
 
     if (item == nullptr)
