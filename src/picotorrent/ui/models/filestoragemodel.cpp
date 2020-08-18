@@ -145,14 +145,19 @@ void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
 
                             m_icons.insert({ extension, icon });
                         }
+                    }
 
-                        if (tokenizer.CountTokens() == 0)
-                        {
-                            node->index = i;
-                            node->size = files.file_size(idx);
+                    if (tokenizer.CountTokens() == 0)
+                    {
+                        node->index = i;
+                        node->size = files.file_size(idx);
 
-                            m_map.insert({ i, node });
-                        }
+                        m_map.insert({ i, node });
+                    }
+                    else
+                    {
+                        OutputDebugStringA(path.c_str());
+                        OutputDebugStringA("\n");
                     }
                 }
 
@@ -232,7 +237,10 @@ void FileStorageModel::UpdateProgress(std::vector<int64_t> const& progress)
 
 wxIcon FileStorageModel::GetIconForFile(std::string const& fileName) const
 {
-    std::string extension = fileName.substr(fileName.find_last_of("."));
+    std::size_t pos = fileName.find_last_of(".");
+    if (pos == std::string::npos) { return wxNullIcon; }
+
+    std::string extension = fileName.substr(pos);
 
     if (m_icons.find(extension) != m_icons.end())
     {
