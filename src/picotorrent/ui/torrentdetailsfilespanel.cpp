@@ -47,9 +47,13 @@ void TorrentDetailsFilesPanel::Refresh(BitTorrent::TorrentHandle* torrent)
     {
         m_fileList->Freeze();
 
-        if (m_torrent == nullptr || m_torrent->InfoHash() != torrent->InfoHash())
+        if (m_torrent == nullptr
+            || m_torrent->InfoHash() != torrent->InfoHash()
+            || m_torrentPrevFileCount != tf->num_files())
         {
             m_torrent = torrent;
+            m_torrentPrevFileCount = tf->num_files();
+
             m_filesModel->RebuildTree(tf);
             m_fileList->Expand(m_filesModel->GetRootItem());
         }

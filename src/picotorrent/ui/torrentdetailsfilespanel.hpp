@@ -34,6 +34,7 @@ namespace Models
         Models::FileStorageModel* m_filesModel;
         TorrentFileListView* m_fileList;
         BitTorrent::TorrentHandle* m_torrent;
+        int m_torrentPrevFileCount;
     };
 }
 }
