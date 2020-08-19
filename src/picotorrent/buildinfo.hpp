@@ -1,14 +1,12 @@
 #pragma once
 
-#include <QString>
-
 namespace pt
 {
     class BuildInfo
     {
     public:
-        static QString branch();
-        static QString commitish();
-        static QString version();
+        static const char* branch();
+        static const char* commitish();
+        static const char* version();
     };
 }

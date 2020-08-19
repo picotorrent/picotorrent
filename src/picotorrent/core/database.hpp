@@ -11,6 +11,8 @@ typedef struct sqlite3_value sqlite3_value;
 
 namespace pt
 {
+namespace Core
+{
     class Environment;
 
     class Database
@@ -21,15 +23,15 @@ namespace pt
             friend class Database;
 
             ~Statement();
-            void bind(int idx, int value);
-            void bind(int idx, std::string const& value);
-            void bind(int idx, std::vector<char> const& value);
-            void execute();
-            void getBlob(int idx, std::vector<char>& res);
-            bool getBool(int idx);
-            int getInt(int idx);
-            std::string getString(int idx);
-            bool read();
+            void Bind(int idx, int value);
+            void Bind(int idx, std::string const& value);
+            void Bind(int idx, std::vector<char> const& value);
+            void Execute();
+            void GetBlob(int idx, std::vector<char>& res);
+            bool GetBool(int idx);
+            int GetInt(int idx);
+            std::string GetString(int idx);
+            bool Read();
 
         private:
             Statement(sqlite3_stmt* stmt);
@@ -39,17 +41,18 @@ namespace pt
         Database(std::shared_ptr<Environment> env);
         ~Database();
 
-        void execute(std::string const& sql);
-        bool migrate();
-        std::shared_ptr<Statement> statement(std::string const& sql);
+        void Execute(std::string const& sql);
+        bool Migrate();
+        std::shared_ptr<Statement> CreateStatement(std::string const& sql);
 
     private:
-        static void getKnownFolderPath(sqlite3_context* ctx, int argc, sqlite3_value** argv);
-        static void getUserDefaultUILanguage(sqlite3_context* ctx, int argc, sqlite3_value** argv);
+        static void GetKnownFolderPath(sqlite3_context* ctx, int argc, sqlite3_value** argv);
+        static void GetUserDefaultUILanguage(sqlite3_context* ctx, int argc, sqlite3_value** argv);
 
-        bool migrationExists(std::string const& name);
+        bool MigrationExists(std::string const& name);
 
         sqlite3* m_db;
         std::shared_ptr<Environment> m_env;
     };
+}
 }

@@ -5,27 +5,31 @@
 
 namespace pt
 {
+namespace Core
+{
     class Environment
     {
     public:
-        enum KnownFolder
+        enum class KnownFolder
         {
             LocalAppData,
             UserDownloads
         };
 
-        static std::shared_ptr<Environment> create();
+        static std::shared_ptr<Environment> Create();
 
-        std::filesystem::path getApplicationDataPath();
-        std::filesystem::path getApplicationPath();
-        std::filesystem::path getDatabaseFilePath();
-        std::filesystem::path getKnownFolderPath(KnownFolder knownFolder);
-        std::filesystem::path getLogFilePath();
-        bool isAppContainerProcess();
-        bool isInstalled();
+        std::filesystem::path GetApplicationDataPath();
+        std::filesystem::path GetApplicationPath();
+        std::string GetCrashpadReportUrl();
+        std::filesystem::path GetDatabaseFilePath();
+        std::filesystem::path GetKnownFolderPath(KnownFolder knownFolder);
+        std::filesystem::path GetLogFilePath();
+        bool IsAppContainerProcess();
+        bool IsInstalled();
 
     private:
         Environment();
         std::chrono::system_clock::time_point m_startupTime;
     };
+}
 }

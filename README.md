@@ -7,14 +7,13 @@ A tiny, hackable BitTorrent client written in modern C++. Based on
 Rasterbar-libtorrent to provide high performance and low memory usage.
 
 <p align="center">
-    <img src="res/screenshot1.png?raw=true" />
+    <img src="res/screenshot1.png?raw=true" width="614" />
 </p>
 
 
 ## Quick facts
 
 - Supports DHT, PeX, LSD, UPnP.
-- Geo IP lookups based on libmaxminddb.
 - (Azureus-style) peer ID: `-PI-`. Example: `-PI0151-` (major: 0, minor: 15, patch: 1).
 - User agent: `PicoTorrent/x.y.z`.
 - Native look-and-feel across Windows versions.
@@ -33,21 +32,20 @@ applications installed,
  * [OpenSSL v1.1.1](https://slproweb.com/products/Win32OpenSSL.html) (*not*
    the light version) for the architecture you plan on building. Both Win32
    and Win64 can be installed side by side.
- * [Qt v5.12.3](https://www.qt.io/download-qt-installer) for the architecture
-   you plan on building. Both Win32 and Win64 is recommended, as well as debug
-   symbols.
+ * [Boost 1.73.0](https://www.boost.org).
  * [Chocolatey](https://chocolatey.org/install) (Optional) if you plan to build
    or test the Chocolatey package.
 
-Next, set the `CMAKE_PREFIX_PATH` environment variable to your Qt prefix path
-(ie. `C:\Qt\5.12.3\msvc2017` or `C:\Qt\5.12.3\msvc2017_64`).
-
-Make sure all Git submodules are updated, then run `.\build.ps1` to start
-building and packaging PicoTorrent. If you want to build for x86, you can pass
-the target platform to the script.
+Make sure all submodules are updated.
 
 ```
-PS> .\build.ps1 --platform [x86|x64] --configuration [Debug|Release]
+λ git submodule update --init --recursive
+```
+
+Build your desired configuration and architecture.
+
+```
+λ .\build.ps1 --platform [x86|x64] --configuration [Debug|Release]
 ```
 
 
@@ -55,5 +53,3 @@ PS> .\build.ps1 --platform [x86|x64] --configuration [Debug|Release]
 
 Copyright (c) Viktor Elofsson and contributors. PicoTorrent is provided
 as-is under the MIT license. For more information see [LICENSE](LICENSE).
-
-*This product includes GeoLite2 data created by MaxMind, available from https://www.maxmind.com.*

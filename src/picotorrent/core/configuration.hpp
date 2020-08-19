@@ -2,8 +2,11 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace pt
+{
+namespace Core
 {
     class Database;
     class Environment;
@@ -11,6 +14,20 @@ namespace pt
     class Configuration
     {
     public:
+        struct DhtBootstrapNode
+        {
+            int32_t id;
+            std::string hostname;
+            int32_t port;
+        };
+
+        struct ListenInterface
+        {
+            int32_t id;
+            std::string address;
+            int32_t port;
+        };
+
         enum ConnectionProxyType
         {
             None,
@@ -32,17 +49,22 @@ namespace pt
         Configuration(std::shared_ptr<Database> db);
         ~Configuration();
 
-        static void migrate(std::shared_ptr<Environment> env, std::shared_ptr<Configuration> cfg);
+        bool GetBool(std::string const& key);
+        int GetInt(std::string const& key);
+        std::string GetString(std::string const& key);
 
-        bool getBool(std::string const& key);
-        int getInt(std::string const& key);
-        std::string getString(std::string const& key);
+        void SetBool(std::string const& key, bool value);
+        void SetInt(std::string const& key, int value);
+        void SetString(std::string const& key, std::string const& value);
 
-        void setBool(std::string const& key, bool value);
-        void setInt(std::string const& key, int value);
-        void setString(std::string const& key, std::string const& value);
+        std::vector<DhtBootstrapNode> GetDhtBootstrapNodes();
+
+        std::vector<ListenInterface> GetListenInterfaces();
+        void DeleteListenInterface(int id);
+        void UpsertListenInterface(ListenInterface const& iface);
 
     private:
         std::shared_ptr<Database> m_db;
     };
+}
 }

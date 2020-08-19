@@ -1,13 +1,19 @@
 [submodule "vendor/libtorrent"]
 	path = vendor/libtorrent
 	url = https://github.com/arvidn/libtorrent
-[submodule "vendor/zlib"]
-	path = vendor/zlib
-	url = https://github.com/madler/zlib
-	ignore = dirty
-[submodule "vendor/libmaxminddb"]
-	path = vendor/libmaxminddb
-	url = https://github.com/maxmind/libmaxminddb
 [submodule "vendor/loguru"]
 	path = vendor/loguru
 	url = https://github.com/emilk/loguru
+[submodule "vendor/wx"]
+	path = vendor/wx
+	url = https://github.com/wxWidgets/wxWidgets
+[submodule "vendor/duktape"]
+[submodule "vendor/fmt"]
+	path = vendor/fmt
+	url = https://github.com/fmtlib/fmt
+[submodule "vendor/nlohmann-json"]
+	path = vendor/nlohmann-json
+	url = https://github.com/nlohmann/json
+[submodule "vendor/crashpad"]
+	path = vendor/crashpad
+	url = https://github.com/picotorrent/crashpad

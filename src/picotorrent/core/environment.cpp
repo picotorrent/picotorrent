@@ -4,72 +4,42 @@
 #include <ShlObj.h>
 #include <Shlwapi.h>
 
-#include "loguru.hpp"
+#include <loguru.hpp>
+
 #include "utils.hpp"
 
 namespace fs = std::filesystem;
-using pt::Environment;
+using pt::Core::Environment;
 
 Environment::Environment()
     : m_startupTime(std::chrono::system_clock::now())
 {
 }
 
-std::shared_ptr<Environment> Environment::create()
+std::shared_ptr<Environment> Environment::Create()
 {
     auto env = new Environment();
-
-    fs::path appData = env->getApplicationDataPath();
-
-    if (!fs::exists(appData))
-    {
-        std::error_code ec;
-        fs::create_directories(appData, ec);
-
-        if (ec)
-        {
-            return nullptr;
-        }
-    }
-
-    fs::path logPath = appData / "logs";
-
-    if (!fs::exists(logPath))
-    {
-        std::error_code ec;
-        fs::create_directories(logPath, ec);
-
-        if (ec)
-        {
-            return nullptr;
-        }
-    }
-
-    // Set up logging. PicoTorrent will log to the file,
-    // - PicoTorrent.YYYYMMDDHHmmss.log
-    // which represents the start up time.
-
-    fs::path logFilePath = env->getLogFilePath();
-
-    std::string s = Utils::toStdString(logFilePath.wstring());
-    loguru::add_file(s.c_str(), loguru::Truncate, loguru::Verbosity_INFO);
+    loguru::add_file(
+        Utils::toStdString(env->GetLogFilePath().generic_wstring()).c_str(),
+        loguru::Truncate,
+        loguru::Verbosity_INFO);
 
     LOG_F(INFO, "PicoTorrent starting up...");
 
     return std::shared_ptr<Environment>(env);
 }
 
-fs::path Environment::getApplicationDataPath()
+fs::path Environment::GetApplicationDataPath()
 {
-    if (isInstalled() || isAppContainerProcess())
+    if (IsInstalled() || IsAppContainerProcess())
     {
-        return fs::path(getKnownFolderPath(KnownFolder::LocalAppData)) / "PicoTorrent";
+        return fs::path(GetKnownFolderPath(KnownFolder::LocalAppData)) / "PicoTorrent";
     }
 
-    return getApplicationPath();
+    return GetApplicationPath();
 }
 
-fs::path Environment::getApplicationPath()
+fs::path Environment::GetApplicationPath()
 {
     TCHAR path[MAX_PATH];
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
@@ -78,12 +48,22 @@ fs::path Environment::getApplicationPath()
     return path;
 }
 
-fs::path Environment::getDatabaseFilePath()
+std::string Environment::GetCrashpadReportUrl()
 {
-    return getApplicationDataPath() / "PicoTorrent.sqlite";
+    if (const char* url = std::getenv("PICOTORRENT_CRASHPAD_URL"))
+    {
+        return url;
+    }
+
+    return "https://api.picotorrent.org/crashpad";
 }
 
-fs::path Environment::getKnownFolderPath(Environment::KnownFolder knownFolder)
+fs::path Environment::GetDatabaseFilePath()
+{
+    return GetApplicationDataPath() / "PicoTorrent.sqlite";
+}
+
+fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
 {
     KNOWNFOLDERID fid = { 0 };
 
@@ -117,7 +97,7 @@ fs::path Environment::getKnownFolderPath(Environment::KnownFolder knownFolder)
     throw std::runtime_error("Could not get known folder path");
 }
 
-fs::path Environment::getLogFilePath()
+fs::path Environment::GetLogFilePath()
 {
     std::time_t tim = std::chrono::system_clock::to_time_t(m_startupTime);
     tm t;
@@ -134,10 +114,10 @@ fs::path Environment::getLogFilePath()
         t.tm_min,
         t.tm_sec);
 
-    return getApplicationDataPath() / "logs" / frmt;
+    return GetApplicationDataPath() / "logs" / frmt;
 }
 
-bool Environment::isAppContainerProcess()
+bool Environment::IsAppContainerProcess()
 {
     TCHAR path[MAX_PATH];
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
@@ -148,7 +128,7 @@ bool Environment::isAppContainerProcess()
     return (dwAttr != INVALID_FILE_ATTRIBUTES && !(dwAttr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool Environment::isInstalled()
+bool Environment::IsInstalled()
 {
     HKEY hKey = NULL;
 

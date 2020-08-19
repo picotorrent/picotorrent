@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project("PicoTorrent")
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -12,28 +9,31 @@ set(Boost_USE_STATIC_LIBS ON)
 set(OPENSSL_USE_STATIC_LIBS TRUE)
 
 if(DEFINED ENV{OPENSSL_ROOT_DIR})
-    message("Using OpenSSL dir from env variable")
     set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
+    message("Using OpenSSL dir from env variable: ${OPENSSL_ROOT_DIR}")
 endif()
-
-find_package(Boost REQUIRED COMPONENTS system)
-find_package(OpenSSL REQUIRED)
-find_package(Qt5 REQUIRED COMPONENTS Core Gui Svg Widgets)
-find_package(Qt5WinExtras REQUIRED)
-
-message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
-message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
 
 # --------- libtorrent options
 option(BUILD_SHARED_LIBS    "" off)
 option(deprecated-functions "" off)
 # ----------------------------
 
+# --------- nlohmann-json options
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+# ---------
+
+# --------- wx options
+set(wxUSE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
+# --------------------
+
+add_subdirectory(vendor/crashpad)
+add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/libtorrent)
-add_subdirectory(vendor/zlib)
+add_subdirectory(vendor/nlohmann-json)
+add_subdirectory(vendor/wx)
 
 # Generate version information file
-file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION" VERSION)
+file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION.txt" VERSION)
 
 # Build version parts
 set(VERSION_TMP "${VERSION}")
@@ -58,6 +58,38 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# Get the latest abbreviated commit hash from fmt
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/fmt
+    OUTPUT_VARIABLE PICO_FMT_GIT_COMMITISH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash from libtorrent
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/libtorrent
+    OUTPUT_VARIABLE PICO_LIBTORRENT_GIT_COMMITISH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash from nlohmann-json
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/nlohmann-json
+    OUTPUT_VARIABLE PICO_NLOHMANN_JSON_GIT_COMMITISH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash from wxWidgets
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/wx
+    OUTPUT_VARIABLE PICO_WX_GIT_COMMITISH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 # Get current architecture
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PICO_ARCH "x64")
@@ -72,8 +104,8 @@ configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_S
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
 
 # Release flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GUARD:CF /Zi")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /GUARD:CF /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
 add_library(
@@ -88,43 +120,41 @@ target_compile_definitions(
     -D_CRT_SECURE_NO_WARNINGS
 )
 
+target_include_directories(
+    loguru
+    INTERFACE
+    vendor/loguru
+)
+
 add_library(
     sqlite
     STATIC
     src/sqlite/sqlite3
 )
 
-# MaxMind DB library
-add_library(
-    maxminddb
-    STATIC
-    vendor/libmaxminddb/src/data-pool
-    vendor/libmaxminddb/src/maxminddb
-)
-
-target_compile_definitions(
-    maxminddb
-    PRIVATE
-    -DUNICODE
-    -DWIN32
-    -DWIN32_LEAN_AND_MEAN
-)
-
 target_include_directories(
-    maxminddb
-    PRIVATE
-    vendor/libmaxminddb/include
-    vendor/libmaxminddb/projects/VS12
-)
-
-target_link_libraries(
-    maxminddb
-    Ws2_32
+    sqlite
+    INTERFACE
+    src/sqlite
 )
 
 add_executable(
     PicoTorrent
     WIN32
+
+    src/picotorrent/application
+    src/picotorrent/buildinfo
+    src/picotorrent/crashpadinitializer
+    src/picotorrent/main
+    src/picotorrent/persistencemanager
+    src/picotorrent/resources.rc
+
+    # API
+    src/picotorrent/api/libpico
+
+    # BitTorrent
+    src/picotorrent/bittorrent/session
+    src/picotorrent/bittorrent/torrenthandle
 
     # Core
     src/picotorrent/core/configuration
@@ -132,63 +162,48 @@ add_executable(
     src/picotorrent/core/environment
     src/picotorrent/core/utils
 
-    # GeoIP
-    src/picotorrent/core/geoip/geoip
-    src/picotorrent/core/geoip/gzipdecompressor
-    src/picotorrent/core/geoip/maxminddatabase
+    # Http
+    src/picotorrent/http/httpclient
 
-    # HTTP
-    src/picotorrent/core/http/httpclient
-    src/picotorrent/core/http/httprequest
-    src/picotorrent/core/http/httpresponse
+    # IPC
+    src/picotorrent/ipc/applicationoptionsconnection
+    src/picotorrent/ipc/server
 
-    # Scripting
-    src/picotorrent/scripting/jsengine
+    # Dialogs
+    src/picotorrent/ui/dialogs/aboutdialog
+    src/picotorrent/ui/dialogs/addmagnetlinkdialog
+    src/picotorrent/ui/dialogs/addtrackerdialog
+    src/picotorrent/ui/dialogs/addtorrentdialog
+    src/picotorrent/ui/dialogs/listeninterfacedialog
+    src/picotorrent/ui/dialogs/preferencesadvancedpage
+    src/picotorrent/ui/dialogs/preferencesconnectionpage
+    src/picotorrent/ui/dialogs/preferencesdialog
+    src/picotorrent/ui/dialogs/preferencesdownloadspage
+    src/picotorrent/ui/dialogs/preferencesgeneralpage
+    src/picotorrent/ui/dialogs/preferencesproxypage
 
-    # Various dialogs
-    src/picotorrent/aboutdialog
-    src/picotorrent/addtorrentdialog
+    # Models
+    src/picotorrent/ui/models/filestoragemodel
+    src/picotorrent/ui/models/peerlistmodel
+    src/picotorrent/ui/models/torrentlistmodel
+    src/picotorrent/ui/models/trackerlistmodel
 
-    # Preferences
-    src/picotorrent/connectionpreferencespage
-    src/picotorrent/downloadspreferencespage
-    src/picotorrent/generalpreferencespage
-    src/picotorrent/preferencesdialog
-    src/picotorrent/proxypreferencespage
+    # Persistence
+    src/picotorrent/ui/persistence/persistenttorrentlistview
 
-    src/picotorrent/application
-    src/picotorrent/buildinfo
-    src/picotorrent/crashpad
-    src/picotorrent/elidedlabel
-    src/picotorrent/filestorageitemdelegate
-    src/picotorrent/filestorageitemmodel
-    src/picotorrent/main
-    src/picotorrent/mainwindow
-    src/picotorrent/resources.qrc
-    src/picotorrent/resources.rc
-    src/picotorrent/scriptedtorrentfilter
-    src/picotorrent/session
-    src/picotorrent/sessionstate
-    src/picotorrent/statusbar
-    src/picotorrent/systemtrayicon
-    src/picotorrent/textinputdialog
-    src/picotorrent/torrentcontextmenu
-    src/picotorrent/torrentitemdelegate
-    src/picotorrent/torrenthandle
-    src/picotorrent/torrentlistmodel
-    src/picotorrent/torrentlistwidget
-    src/picotorrent/torrentsortfilterproxymodel
-    src/picotorrent/translator
-    src/picotorrent/updatechecker
-
-    src/picotorrent/models/peerlistmodel
-    src/picotorrent/models/trackerslistmodel
-
-    src/picotorrent/torrentdetails/torrentdetailswidget
-    src/picotorrent/torrentdetails/torrentfileswidget
-    src/picotorrent/torrentdetails/torrentoverviewwidget
-    src/picotorrent/torrentdetails/torrentpeerswidget
-    src/picotorrent/torrentdetails/torrenttrackerswidget
+    # UI
+    src/picotorrent/ui/mainframe
+    src/picotorrent/ui/statusbar
+    src/picotorrent/ui/taskbaricon
+    src/picotorrent/ui/torrentcontextmenu
+    src/picotorrent/ui/torrentdetailsfilespanel
+    src/picotorrent/ui/torrentdetailsoverviewpanel
+    src/picotorrent/ui/torrentdetailspeerspanel
+    src/picotorrent/ui/torrentdetailstrackerspanel
+    src/picotorrent/ui/torrentdetailsview
+    src/picotorrent/ui/torrentfilelistview
+    src/picotorrent/ui/torrentlistview
+    src/picotorrent/ui/translator
 )
 
 target_compile_definitions(
@@ -197,53 +212,37 @@ target_compile_definitions(
     -D_UNICODE
     -D_WIN32
     -D_WIN32_WINNT=0x0600
-    -DBOOST_ALL_NO_LIB
-    -DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
     -DNOMINMAX
     -DPICOJSON_USE_INT64
-    -DTORRENT_NO_DEPRECATE
-    -DTORRENT_USE_OPENSSL
     -DUNICODE
     -DWIN32
     -DWIN32_LEAN_AND_MEAN
+
+    -DLIBPICO_API_EXPORT
     -DPICO_GIT_COMMITISH=${GIT_COMMITISH}
     -DPICO_VERSION_MAJOR=${VERSION_MAJOR}
     -DPICO_VERSION_MINOR=${VERSION_MINOR}
     -DPICO_VERSION_REVISION=${VERSION_REVISION}
-    -DZLIB_CONST
+    -DPICO_FMT_GIT_COMMITISH=${PICO_FMT_GIT_COMMITISH}
+    -DPICO_LIBTORRENT_GIT_COMMITISH=${PICO_LIBTORRENT_GIT_COMMITISH}
+    -DPICO_NLOHMANN_JSON_GIT_COMMITISH=${PICO_NLOHMANN_JSON_GIT_COMMITISH}
+    -DPICO_WX_GIT_COMMITISH=${PICO_WX_GIT_COMMITISH}
 )
 
 target_include_directories(
     PicoTorrent
     PRIVATE
 
-    # libmaxminddb
-    vendor/libmaxminddb/include
-    vendor/libmaxminddb/projects/VS12
-
-    # zlib
-    vendor/zlib
-    "$<TARGET_FILE_DIR:zlibstatic>/../"
-
-    "${Boost_INCLUDE_DIRS}"
-
-    "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/build/native/include"
-    "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/build/native/crashpad/include"
-    "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/build/native/mini_chromium/include"
-    "${CMAKE_SOURCE_DIR}/vendor/libtorrent/include"
-    "${CMAKE_SOURCE_DIR}/vendor/loguru"
-    "${Qt5WinExtras_INCLUDE_DIRS}"
-)
-
-target_link_directories(
-    PicoTorrent
-    PRIVATE
-    "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/lib/native/v140/${PICO_ARCH}"
-    "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/lib/native/v142/${PICO_ARCH}"
+    include
 )
 
 target_link_libraries(
     PicoTorrent
+
+    PRIVATE
+
+    # wxWidgets
+    core base propgrid
 
     # Windows
     Comctl32
@@ -254,95 +253,52 @@ target_link_libraries(
     wininet
     winhttp
 
-    # Boost
-    ${Boost_LIBRARIES}
-
     # Crashpad
     crashpad_client
     crashpad_util
     mini_chromium
 
-    # ChakraCore
-    ChakraCore
+    # fmt
+    fmt
 
     # loguru
     loguru
 
+    # nlohmann-json
+    nlohmann_json::nlohmann_json
+
     # Rasterbar-libtorrent
     "torrent-rasterbar"
 
-    # OpenSSL
-    OpenSSL::Crypto
-    OpenSSL::SSL
-
-    maxminddb
     sqlite
-    zlibstatic
-
-    # Qt
-    Qt5::Svg
-    Qt5::Widgets
-    Qt5::WinExtras
 )
 
+set_property(TARGET PicoTorrent PROPERTY ENABLE_EXPORTS 1)
 
-# Copy scripts
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/src/scripts"
-        "$<TARGET_FILE_DIR:PicoTorrent>/scripts"
+# Plugins
+add_library(
+    Plugin_Filters
+    SHARED
+    src/plugins/filters/filters
 )
 
-# Copy base Qt dependencies
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:Qt5::Core>
-        $<TARGET_FILE:Qt5::Gui>
-        $<TARGET_FILE:Qt5::Svg>
-        $<TARGET_FILE:Qt5::Widgets>
-        $<TARGET_FILE:Qt5::WinExtras>
-        $<TARGET_FILE_DIR:PicoTorrent>
+target_include_directories(Plugin_Filters PRIVATE include)
+target_link_libraries(Plugin_Filters PRIVATE PicoTorrent)
+
+add_library(
+    Plugin_Updater
+    SHARED
+    src/plugins/updater/updater
 )
 
-# Copy image format plugins
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:Qt5::QICOPlugin>
-        "$<TARGET_FILE_DIR:PicoTorrent>/imageformats/$<TARGET_FILE_NAME:Qt5::QICOPlugin>"
-)
-
-# Copy platform plugins
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:Qt5::QWindowsIntegrationPlugin>
-        "$<TARGET_FILE_DIR:PicoTorrent>/platforms/$<TARGET_FILE_NAME:Qt5::QWindowsIntegrationPlugin>"
-)
-
-# Copy style plugins
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:Qt5::QWindowsVistaStylePlugin>
-        "$<TARGET_FILE_DIR:PicoTorrent>/styles/$<TARGET_FILE_NAME:Qt5::QWindowsVistaStylePlugin>"
-)
-
-# Copy ChakraCore
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/tools/Microsoft.ChakraCore.vc140/lib/native/v140/${PICO_ARCH}/$<CONFIG>/ChakraCore.dll"
-        $<TARGET_FILE_DIR:PicoTorrent>
-)
+target_compile_definitions(Plugin_Updater PRIVATE -D_UNICODE -D_WIN32 -DWIN32_LEAN_AND_MEAN)
+target_include_directories(Plugin_Updater PRIVATE include)
+target_link_libraries(Plugin_Updater PRIVATE PicoTorrent Comctl32)
 
 # Copy Crashpad handler
 add_custom_command(
     TARGET PicoTorrent POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/tools/UnidentifiedDeveloper.Crashpad.vc142/lib/native/v142/${PICO_ARCH}/$<CONFIG>/crashpad_handler.exe"
+        $<TARGET_FILE:crashpad_handler>
         $<TARGET_FILE_DIR:PicoTorrent>
 )
-

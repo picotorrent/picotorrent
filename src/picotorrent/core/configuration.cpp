@@ -6,13 +6,12 @@
 
 #include "database.hpp"
 #include "environment.hpp"
-#include "../picojson.hpp"
 
 namespace fs = std::filesystem;
 
-using pt::Configuration;
+using pt::Core::Configuration;
 
-Configuration::Configuration(std::shared_ptr<pt::Database> db)
+Configuration::Configuration(std::shared_ptr<pt::Core::Database> db)
     : m_db(db)
 {
 }
@@ -21,174 +20,114 @@ Configuration::~Configuration()
 {
 }
 
-void Configuration::migrate(std::shared_ptr<pt::Environment> env, std::shared_ptr<pt::Configuration> cfg)
+bool Configuration::GetBool(std::string const& key)
 {
-    fs::path oldConfigFile = env->getApplicationDataPath() / "PicoTorrent.json";
+    return GetInt(key) > 0;
+}
 
-    if (!fs::exists(oldConfigFile))
+int Configuration::GetInt(std::string const& key)
+{
+    auto stmt = m_db->CreateStatement("select int_value from setting where key = ?");
+    stmt->Bind(1, key);
+    stmt->Execute();
+
+    return stmt->GetInt(0);
+}
+
+std::vector<Configuration::DhtBootstrapNode> Configuration::GetDhtBootstrapNodes()
+{
+    std::vector<DhtBootstrapNode> result;
+
+    auto stmt = m_db->CreateStatement("select id, hostname, port from dht_bootstrap_node");
+
+    while (stmt->Read())
     {
-        return;
+        DhtBootstrapNode node;
+        node.id = stmt->GetInt(0);
+        node.hostname = stmt->GetString(1);
+        node.port = stmt->GetInt(2);
+
+        result.push_back(node);
     }
 
-    std::string contents;
+    return result;
+}
 
+std::vector<Configuration::ListenInterface> Configuration::GetListenInterfaces()
+{
+    std::vector<ListenInterface> result;
+
+    auto stmt = m_db->CreateStatement("select id, address, port from listen_interface");
+
+    while (stmt->Read())
     {
-        // Separate scope to properly close the stream
-        std::ifstream cfgStream(oldConfigFile, std::ios::binary);
-        std::stringstream ss;
-        ss << cfgStream.rdbuf();
-        contents = ss.str();
+        ListenInterface li;
+        li.id = stmt->GetInt(0);
+        li.address = stmt->GetString(1);
+        li.port = stmt->GetInt(2);
+
+        result.push_back(li);
     }
 
-    picojson::value val;
-    std::string error = picojson::parse(val, contents);
+    return result;
+}
 
-    if (!error.empty() || !val.is<picojson::object>())
+void Configuration::DeleteListenInterface(int id)
+{
+    auto stmt = m_db->CreateStatement("delete from listen_interface where id = ?");
+    stmt->Bind(1, id);
+    stmt->Execute();
+}
+
+void Configuration::UpsertListenInterface(Configuration::ListenInterface const& iface)
+{
+    if (iface.id < 0)
     {
-        return;
+        auto stmt = m_db->CreateStatement("insert into listen_interface (address, port) values (?, ?);");
+        stmt->Bind(1, iface.address);
+        stmt->Bind(2, iface.port);
+        stmt->Execute();
     }
-
-    picojson::object obj = val.get<picojson::object>();
-
-    // Migrate old settings
-
-    if (obj.find("default_save_path") != obj.end())
-    { cfg->setString("default_save_path", obj["default_save_path"].get<std::string>()); }
-
-    if (obj.find("language_id") != obj.end())
-    { cfg->setInt("language_id", static_cast<int>(obj["language_id"].get<int64_t>())); }
-
-    if (obj.find("move_completed_downloads") != obj.end())
-    { cfg->setBool("move_completed_downloads", obj["move_completed_downloads"].get<bool>()); }
-
-    if (obj.find("move_completed_downloads_from_default_only") != obj.end())
-    { cfg->setBool("move_completed_downloads_from_default_only", obj["move_completed_downloads_from_default_only"].get<bool>()); }
-
-    if (obj.find("move_completed_downloads_path") != obj.end())
-    { cfg->setString("move_completed_downloads_path", obj["move_completed_downloads_path"].get<std::string>()); }
-
-    // Proxy tings
-    if (obj.find("proxy_host") != obj.end())
-    { cfg->setString("proxy_host", obj["proxy_host"].get<std::string>()); }
-
-    if (obj.find("proxy_hostnames") != obj.end())
-    { cfg->setBool("proxy_hostnames", obj["proxy_hostnames"].get<bool>()); }
-
-    if (obj.find("proxy_password") != obj.end())
-    { cfg->setString("proxy_password", obj["proxy_password"].get<std::string>()); }
-
-    if (obj.find("proxy_peers") != obj.end())
-    { cfg->setBool("proxy_peers", obj["proxy_peers"].get<bool>()); }
-
-    if (obj.find("proxy_port") != obj.end())
-    { cfg->setInt("proxy_port", static_cast<int>(obj["proxy_port"].get<int64_t>())); }
-
-    if (obj.find("proxy_trackers") != obj.end())
-    { cfg->setBool("proxy_trackers", obj["proxy_trackers"].get<bool>()); }
-
-    if (obj.find("proxy_type") != obj.end())
-    { cfg->setInt("proxy_type", static_cast<int>(obj["proxy_type"].get<int64_t>())); }
-
-    if (obj.find("proxy_username") != obj.end())
-    { cfg->setString("proxy_username", obj["proxy_username"].get<std::string>()); }
-
-    // Session
-    if (obj.find("session") != obj.end() && obj["session"].is<picojson::object>())
+    else
     {
-        picojson::object& sess = obj["session"].get<picojson::object>();
-
-        if (sess.find("active_downloads") != sess.end())
-        { cfg->setInt("active_downloads", static_cast<int>(sess["active_downloads"].get<int64_t>())); }
-
-        if (sess.find("active_limit") != sess.end())
-        { cfg->setInt("active_limit", static_cast<int>(sess["active_limit"].get<int64_t>())); }
-
-        if (sess.find("active_seeds") != sess.end())
-        { cfg->setInt("active_seeds", static_cast<int>(sess["active_seeds"].get<int64_t>())); }
-
-        if (sess.find("download_rate_limit") != sess.end())
-        { cfg->setInt("download_rate_limit", static_cast<int>(sess["download_rate_limit"].get<int64_t>())); }
-
-        if (sess.find("enable_dht") != sess.end())
-        { cfg->setBool("enable_dht", sess["enable_dht"].get<bool>()); }
-
-        if (sess.find("enable_download_rate_limit") != sess.end())
-        { cfg->setBool("enable_download_rate_limit", sess["enable_download_rate_limit"].get<bool>()); }
-
-        if (sess.find("enable_lsd") != sess.end())
-        { cfg->setBool("enable_lsd", sess["enable_lsd"].get<bool>()); }
-
-        if (sess.find("enable_pex") != sess.end())
-        { cfg->setBool("enable_pex", sess["enable_pex"].get<bool>()); }
-
-        if (sess.find("enable_upload_rate_limit") != sess.end())
-        { cfg->setBool("enable_upload_rate_limit", sess["enable_upload_rate_limit"].get<bool>()); }
-
-        if (sess.find("require_incoming_encryption") != sess.end())
-        { cfg->setBool("require_incoming_encryption", sess["require_incoming_encryption"].get<bool>()); }
-
-        if (sess.find("require_outgoing_encryption") != sess.end())
-        { cfg->setBool("require_outgoing_encryption", sess["require_outgoing_encryption"].get<bool>()); }
-
-        if (sess.find("upload_rate_limit") != sess.end())
-        { cfg->setInt("upload_rate_limit", static_cast<int>(sess["upload_rate_limit"].get<int64_t>())); }
-    }
-
-    // TODO: listen interfaces
-
-    std::error_code ec;
-    fs::rename(oldConfigFile, env->getApplicationDataPath() / "PicoTorrent.json.old", ec);
-
-    if (ec)
-    {
-        // TODO: log
+        auto stmt = m_db->CreateStatement("update listen_interface set address = ?, port = ? where id = ?");
+        stmt->Bind(1, iface.address);
+        stmt->Bind(2, iface.port);
+        stmt->Bind(3, iface.id);
+        stmt->Execute();
     }
 }
 
-bool Configuration::getBool(std::string const& key)
+std::string Configuration::GetString(std::string const& key)
 {
-    return getInt(key) > 0;
-}
+    auto stmt = m_db->CreateStatement("select string_value from setting where key = ?");
+    stmt->Bind(1, key);
+    stmt->Execute();
 
-int Configuration::getInt(std::string const& key)
-{
-    auto stmt = m_db->statement("select int_value from setting where key = ?");
-    stmt->bind(1, key);
-    stmt->execute();
-
-    return stmt->getInt(0);
-}
-
-std::string Configuration::getString(std::string const& key)
-{
-    auto stmt = m_db->statement("select string_value from setting where key = ?");
-    stmt->bind(1, key);
-    stmt->execute();
-
-    return stmt->getString(0);
+    return stmt->GetString(0);
 }
 
 
-void Configuration::setBool(std::string const& key, bool value)
+void Configuration::SetBool(std::string const& key, bool value)
 {
-    auto stmt = m_db->statement("update setting set int_value = ? where key = ?");
-    stmt->bind(1, value ? 1 : 0);
-    stmt->bind(2, key);
-    stmt->execute();
+    auto stmt = m_db->CreateStatement("update setting set int_value = ? where key = ?");
+    stmt->Bind(1, value ? 1 : 0);
+    stmt->Bind(2, key);
+    stmt->Execute();
 }
 
-void Configuration::setInt(std::string const& key, int value)
+void Configuration::SetInt(std::string const& key, int value)
 {
-    auto stmt = m_db->statement("update setting set int_value = ? where key = ?");
-    stmt->bind(1, value);
-    stmt->bind(2, key);
-    stmt->execute();
+    auto stmt = m_db->CreateStatement("update setting set int_value = ? where key = ?");
+    stmt->Bind(1, value);
+    stmt->Bind(2, key);
+    stmt->Execute();
 }
 
-void Configuration::setString(std::string const& key, std::string const& value)
+void Configuration::SetString(std::string const& key, std::string const& value)
 {
-    auto stmt = m_db->statement("update setting set string_value = ? where key = ?");
-    stmt->bind(1, value);
-    stmt->bind(2, key);
-    stmt->execute();
+    auto stmt = m_db->CreateStatement("update setting set string_value = ? where key = ?");
+    stmt->Bind(1, value);
+    stmt->Bind(2, key);
+    stmt->Execute();
 }

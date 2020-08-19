@@ -1,29 +1,44 @@
-#pragma once
-
-#include <QApplication>
+#include <wx/wxprec.h>
+#ifndef WX_PRECOMP
+#include <wx/wx.h>
+#endif
 
 #include <memory>
+#include <vector>
 
-namespace google_breakpad
-{
-    class ExceptionHandler;
-}
+class wxSingleInstanceChecker;
 
 namespace pt
 {
-    class Application : public QApplication
+namespace API
+{
+    class IPlugin;
+}
+
+    class PersistenceManager;
+
+    class Application : public wxApp
     {
     public:
-        Application(int& argc, char **argv);
+        Application();
         virtual ~Application();
 
-        void activateOtherInstance();
-        bool isSingleInstance();
+        virtual bool OnCmdLineParsed(wxCmdLineParser& parser) wxOVERRIDE;
+        virtual bool OnInit() wxOVERRIDE;
+        virtual void OnInitCmdLine(wxCmdLineParser&) wxOVERRIDE;
 
     private:
-        struct Mutex;
+        struct Options
+        {
+            std::vector<std::string> files;
+            std::vector<std::string> magnets;
+        };
 
-        std::unique_ptr<Mutex> m_singleInstanceMutex;
-        bool m_isSingleInstance;
+        void ActivateOtherInstance();
+
+        Options m_options;
+        std::vector<API::IPlugin*> m_plugins;
+        std::unique_ptr<PersistenceManager> m_persistence;
+        std::unique_ptr<wxSingleInstanceChecker> m_singleInstance;
     };
 }

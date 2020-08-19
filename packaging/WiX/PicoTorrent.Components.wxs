@@ -1,25 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<?if $(var.Configuration) = "Debug" ?>
-    <?define Qt5Core = "Qt5Cored.dll" ?>
-    <?define Qt5Gui = "Qt5Guid.dll" ?>
-    <?define Qt5Svg = "Qt5Svgd.dll" ?>
-    <?define Qt5Widgets = "Qt5Widgetsd.dll" ?>
-    <?define Qt5WinExtras = "Qt5WinExtrasd.dll" ?>
-    <?define Qt5_qico = "qicod.dll" ?>
-    <?define Qt5_qwindows = "qwindowsd.dll" ?>
-    <?define Qt5_qwindowsvistastyle = "qwindowsvistastyled.dll" ?>
-<?else ?>
-    <?define Qt5Core = "Qt5Core.dll" ?>
-    <?define Qt5Gui = "Qt5Gui.dll" ?>
-    <?define Qt5Svg = "Qt5Svg.dll" ?>
-    <?define Qt5Widgets = "Qt5Widgets.dll" ?>
-    <?define Qt5WinExtras = "Qt5WinExtras.dll" ?>
-    <?define Qt5_qico = "qico.dll" ?>
-    <?define Qt5_qwindows = "qwindows.dll" ?>
-    <?define Qt5_qwindowsvistastyle = "qwindowsvistastyle.dll" ?>
-<?endif ?>
-
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <ComponentGroup Id="CG_MainApplication" Directory="INSTALLDIR">
@@ -113,93 +93,24 @@
             </Component>
 
             <Component Id="C_crashpad_handler.exe" Guid="99f10c73-7f2e-466b-a46b-cf755f884823">
-                <File Id="C_crashpad_handler.dll"
+                <File Id="F_crashpad_handler.exe"
                     KeyPath="yes"
                     Name="crashpad_handler.exe"
                     Source="$(var.PublishDirectory)\crashpad_handler.exe" />
             </Component>
 
-            <Component Id="C_ChakraCore.dll" Guid="80cecb0f-e8f3-4724-a1b3-e207e3036951">
-                <File Id="F_ChakraCore.dll"
+            <Component Id="C_Plugin_Filters.dll" Guid="88463251-e75a-4cfe-93b5-87c7170b5ebe">
+                <File Id="F_Plugin_Filters.dll"
                     KeyPath="yes"
-                    Name="ChakraCore.dll"
-                    Source="$(var.PublishDirectory)\ChakraCore.dll" />
+                    Name="Plugin_Filters.dll"
+                    Source="$(var.PublishDirectory)\Plugin_Filters.dll" />
             </Component>
 
-            <Component Id="C_Qt5Core.dll" Guid="31923f96-639c-4f0b-a61f-29d5c9b73463">
-                <File Id="F_Qt5Core.dll"
+            <Component Id="C_Plugin_Updater.dll" Guid="32b14933-0426-4e75-a115-56f2a9d21286">
+                <File Id="F_Plugin_Updater.dll"
                     KeyPath="yes"
-                    Name="$(var.Qt5Core)"
-                    Source="$(var.PublishDirectory)\$(var.Qt5Core)" />
-            </Component>
-
-            <Component Id="C_Qt5Gui.dll" Guid="1a822836-d8fe-4354-823c-4f260c598681">
-                <File Id="F_Qt5Gui.dll"
-                    KeyPath="yes"
-                    Name="$(var.Qt5Gui)"
-                    Source="$(var.PublishDirectory)\$(var.Qt5Gui)" />
-            </Component>
-
-            <Component Id="C_Qt5Svg.dll" Guid="da98b24a-7c19-43a2-815b-bb75cd06019c">
-                <File Id="F_Qt5Svg.dll"
-                    KeyPath="yes"
-                    Name="$(var.Qt5Svg)"
-                    Source="$(var.PublishDirectory)\$(var.Qt5Svg)" />
-            </Component>
-
-            <Component Id="C_Qt5Widgets.dll" Guid="4d06f3ae-1cf6-4f18-9fe6-b20d0d177b05">
-                <File Id="F_Qt5Widgets"
-                    KeyPath="yes"
-                    Name="$(var.Qt5Widgets)"
-                    Source="$(var.PublishDirectory)\$(var.Qt5Widgets)" />
-            </Component>
-
-            <Component Id="C_Qt5WinExtras.dll" Guid="8be04dc4-26e4-487a-b8c4-06fc225d8f10">
-                <File Id="F_Qt5WinExtras"
-                    KeyPath="yes"
-                    Name="$(var.Qt5WinExtras)"
-                    Source="$(var.PublishDirectory)\$(var.Qt5WinExtras)" />
-            </Component>
-
-            <ComponentGroupRef Id="CG_ImageFormats" />
-            <ComponentGroupRef Id="CG_Platforms" />
-            <ComponentGroupRef Id="CG_Scripts" />
-            <ComponentGroupRef Id="CG_Styles" />
-        </ComponentGroup>
-
-        <ComponentGroup Id="CG_Scripts" Directory="SCRIPTS">
-            <Component Id="C_filters.js" Guid="99be0fc1-709d-40c4-b3a9-45cba4608994">
-                <File Id="F_filters.js"
-                      KeyPath="yes"
-                      Name="filters.js"
-                      Source="$(var.PublishDirectory)\scripts\filters.js" />
-            </Component>
-        </ComponentGroup>
-
-        <ComponentGroup Id="CG_ImageFormats" Directory="QTIMAGEFORMATS">
-            <Component Id="C_qico.dll" Guid="262ec4a9-1fff-49e8-aa33-a4710e1acd2a">
-                <File Id="F_qico.dll"
-                      KeyPath="yes"
-                      Name="$(var.Qt5_qico)"
-                      Source="$(var.PublishDirectory)\imageformats\$(var.Qt5_qico)" />
-            </Component>
-        </ComponentGroup>
-        
-        <ComponentGroup Id="CG_Platforms" Directory="QTPLATFORMS">
-            <Component Id="C_qwindows.dll" Guid="03c35546-9ee0-4c89-8add-4a8e3d9837f1">
-                <File Id="F_qwindows.dll"
-                      KeyPath="yes"
-                      Name="$(var.Qt5_qwindows)"
-                      Source="$(var.PublishDirectory)\platforms\$(var.Qt5_qwindows)" />
-            </Component>
-        </ComponentGroup>
-
-        <ComponentGroup Id="CG_Styles" Directory="QTSTYLES">
-            <Component Id="C_qwindowsvistastyle.dll" Guid="41cf0ea2-81c0-4486-b8c9-8f745d9f1d32">
-                <File Id="F_qwindowsvistastyle.dll"
-                      KeyPath="yes"
-                      Name="$(var.Qt5_qwindowsvistastyle)"
-                      Source="$(var.PublishDirectory)\styles\$(var.Qt5_qwindowsvistastyle)" />
+                    Name="Plugin_Updater.dll"
+                    Source="$(var.PublishDirectory)\Plugin_Updater.dll" />
             </Component>
         </ComponentGroup>
     </Fragment>

@@ -1,6 +1,6 @@
 #include "version.h"
 
-IDI_APPICON ICON DISCARDABLE "..\\..\\res\\app.ico"
+AppIcon ICON "..\\..\\res\\app.ico"
 
 1027 LANGFILE "..\\..\\lang\\1027.json"
 1031 LANGFILE "..\\..\\lang\\1031.json"
@@ -38,6 +38,9 @@ IDI_APPICON ICON DISCARDABLE "..\\..\\res\\app.ico"
 20190322145531_create_list_state_table          DBMIGRATION "..\\..\\res\\dbmigrations\\20190322145531_create_list_state_table.sql"
 20191222212037_create_torrent_magnet_uri_table  DBMIGRATION "..\\..\\res\\dbmigrations\\20191222212037_create_torrent_magnet_uri_table.sql"
 20200214214712_create_path_history_table        DBMIGRATION "..\\..\\res\\dbmigrations\\20200214214712_create_path_history_table.sql"
+20200403220617_create_persistence_table         DBMIGRATION "..\\..\\res\\dbmigrations\\20200403220617_create_persistence_table.sql"
+20200512234312_create_listen_interface_table    DBMIGRATION "..\\..\\res\\dbmigrations\\20200512234312_create_listen_interface_table.sql"
+20200513225831_create_dht_bootstrap_node_table  DBMIGRATION "..\\..\\res\\dbmigrations\\20200513225831_create_dht_bootstrap_node_table.sql"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION        VER_FILE_VERSION

@@ -7,14 +7,14 @@
 #include <filesystem>
 #include <vector>
 
-#include "loguru.hpp"
+#include <loguru.hpp>
+#include <sqlite3.h>
+
 #include "environment.hpp"
 #include "utils.hpp"
 
-#include "../../sqlite/sqlite3.h"
-
 namespace fs = std::filesystem;
-using pt::Database;
+using pt::Core::Database;
 
 struct Migration
 {
@@ -50,17 +50,17 @@ Database::Statement::~Statement()
     sqlite3_finalize(m_stmt);
 }
 
-void Database::Statement::bind(int idx, int value)
+void Database::Statement::Bind(int idx, int value)
 {
     sqlite3_bind_int(m_stmt, idx, value);
 }
 
-void Database::Statement::bind(int idx, std::string const& value)
+void Database::Statement::Bind(int idx, std::string const& value)
 {
     sqlite3_bind_text(m_stmt, idx, value.c_str(), -1, SQLITE_TRANSIENT);
 }
 
-void Database::Statement::bind(int idx, std::vector<char> const& value)
+void Database::Statement::Bind(int idx, std::vector<char> const& value)
 {
     int res = sqlite3_bind_blob(
         m_stmt,
@@ -75,7 +75,7 @@ void Database::Statement::bind(int idx, std::vector<char> const& value)
     }
 }
 
-void Database::Statement::execute()
+void Database::Statement::Execute()
 {
     int res = sqlite3_step(m_stmt);
 
@@ -88,7 +88,7 @@ void Database::Statement::execute()
     }
 }
 
-void Database::Statement::getBlob(int idx, std::vector<char>& result)
+void Database::Statement::GetBlob(int idx, std::vector<char>& result)
 {
     int len = sqlite3_column_bytes(m_stmt, idx);
     const char* buf = reinterpret_cast<const char*>(sqlite3_column_blob(m_stmt, idx));
@@ -97,17 +97,17 @@ void Database::Statement::getBlob(int idx, std::vector<char>& result)
     result.insert(result.begin(), buf, buf + len);
 }
 
-bool Database::Statement::getBool(int idx)
+bool Database::Statement::GetBool(int idx)
 {
     return (sqlite3_column_int(m_stmt, idx) > 0);
 }
 
-int Database::Statement::getInt(int idx)
+int Database::Statement::GetInt(int idx)
 {
     return sqlite3_column_int(m_stmt, idx);
 }
 
-std::string Database::Statement::getString(int idx)
+std::string Database::Statement::GetString(int idx)
 {
     const unsigned char* res = sqlite3_column_text(m_stmt, idx);
 
@@ -119,7 +119,7 @@ std::string Database::Statement::getString(int idx)
     return reinterpret_cast<const char*>(res);
 }
 
-bool Database::Statement::read()
+bool Database::Statement::Read()
 {
     if (sqlite3_step(m_stmt) == SQLITE_ROW)
     {
@@ -129,17 +129,17 @@ bool Database::Statement::read()
     return false;
 }
 
-Database::Database(std::shared_ptr<pt::Environment> env)
+Database::Database(std::shared_ptr<pt::Core::Environment> env)
     : m_env(env)
 {
-    fs::path dbFile = env->getDatabaseFilePath();
+    fs::path dbFile = env->GetDatabaseFilePath();
     std::string convertedPath = Utils::toStdString(dbFile.wstring());
 
     LOG_F(INFO, "Loading PicoTorrent database from %s", convertedPath.c_str());
 
     sqlite3_open(convertedPath.c_str(), &m_db);
 
-    execute("PRAGMA foreign_keys = ON;");
+    Execute("PRAGMA foreign_keys = ON;");
 
     sqlite3_create_function(
         m_db,
@@ -147,7 +147,7 @@ Database::Database(std::shared_ptr<pt::Environment> env)
         1,
         SQLITE_ANY,
         nullptr,
-        getKnownFolderPath,
+        GetKnownFolderPath,
         nullptr,
         nullptr);
 
@@ -157,7 +157,7 @@ Database::Database(std::shared_ptr<pt::Environment> env)
         0,
         SQLITE_ANY,
         nullptr,
-        getUserDefaultUILanguage,
+        GetUserDefaultUILanguage,
         nullptr,
         nullptr);
 }
@@ -167,13 +167,13 @@ Database::~Database()
     sqlite3_close(m_db);
 }
 
-void Database::execute(std::string const& sql)
+void Database::Execute(std::string const& sql)
 {
-    auto stmt = statement(sql);
-    stmt->execute();
+    auto stmt = CreateStatement(sql);
+    stmt->Execute();
 }
 
-bool Database::migrate()
+bool Database::Migrate()
 {
     // create migration_history table
     const char* migrationHistory = "create table if not exists migration_history ("
@@ -181,7 +181,7 @@ bool Database::migrate()
             "name text not null unique"
         ");";
 
-    execute(migrationHistory);
+    Execute(migrationHistory);
 
     std::vector<Migration> migrations;
 
@@ -193,41 +193,74 @@ bool Database::migrate()
 
     LOG_F(INFO, "Found %d migrations", migrations.size());
 
-    execute("BEGIN TRANSACTION;");
+    Execute("BEGIN TRANSACTION;");
 
     for (Migration const& m : migrations)
     {
-        if (migrationExists(m.name))
+        if (MigrationExists(m.name))
         {
             continue;
         }
 
-        execute(m.sql);
+        const char* sql = m.sql.c_str();
+        sqlite3_stmt* statement = nullptr;
 
-        auto stmt = statement("insert into migration_history (name) values (?);");
-        stmt->bind(1, m.name.c_str());
-        stmt->execute();
+        // Use raw sqlite code here to support multiple statements in one migration.
+        do {
+            if (sqlite3_prepare_v2(
+                m_db,
+                sql,
+                -1,
+                &statement,
+                &sql) != SQLITE_OK)
+            {
+                LOG_F(ERROR, "Failed to prepare migration %s: (%s)", m.name.c_str(), sqlite3_errmsg(m_db));
+                return false;
+            }
+
+            if (statement == nullptr)
+            {
+                break;
+            }
+
+            int stepResult = sqlite3_step(statement);
+
+            if (stepResult != SQLITE_OK && stepResult != SQLITE_DONE)
+            {
+                LOG_F(ERROR, "Failed to step/execute migration %s: (%s)", m.name.c_str(), sqlite3_errmsg(m_db));
+                return false;
+            }
+
+            sqlite3_finalize(statement);
+        } while (sql && sql[0] != '\0');
+
+        auto stmt = CreateStatement("insert into migration_history (name) values (?);");
+        stmt->Bind(1, m.name.c_str());
+        stmt->Execute();
+
+        LOG_F(INFO, "Migration %s applied", m.name.c_str());
     }
 
-    execute("COMMIT;");
+    Execute("COMMIT;");
 
     return true;
 }
 
-std::shared_ptr<Database::Statement> Database::statement(std::string const& sql)
+std::shared_ptr<Database::Statement> Database::CreateStatement(std::string const& sql)
 {
     sqlite3_stmt* stmt;
 
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_ERROR)
     {
         const char* err = sqlite3_errmsg(m_db);
+        LOG_F(ERROR, "Failed to execute SQL statement: %s", err);
         throw std::runtime_error(err);
     }
 
     return std::shared_ptr<Statement>(new Statement(stmt));
 }
 
-void Database::getKnownFolderPath(sqlite3_context* ctx, int argc, sqlite3_value** argv)
+void Database::GetKnownFolderPath(sqlite3_context* ctx, int argc, sqlite3_value** argv)
 {
     if (argc > 0)
     {
@@ -254,15 +287,15 @@ void Database::getKnownFolderPath(sqlite3_context* ctx, int argc, sqlite3_value*
     }
 }
 
-void Database::getUserDefaultUILanguage(sqlite3_context* ctx, int argc, sqlite3_value** argv)
+void Database::GetUserDefaultUILanguage(sqlite3_context* ctx, int argc, sqlite3_value** argv)
 {
-    sqlite3_result_int(ctx, static_cast<int>(GetUserDefaultUILanguage()));
+    sqlite3_result_int(ctx, static_cast<int>(::GetUserDefaultUILanguage()));
 }
 
-bool Database::migrationExists(std::string const& name)
+bool Database::MigrationExists(std::string const& name)
 {
-    auto stmt = statement("select count(*) from migration_history where name = ?");
-    stmt->bind(1, name.c_str());
-    stmt->execute();
-    return stmt->getInt(0) > 0;
+    auto stmt = CreateStatement("select count(*) from migration_history where name = ?");
+    stmt->Bind(1, name.c_str());
+    stmt->Execute();
+    return stmt->GetInt(0) > 0;
 }
