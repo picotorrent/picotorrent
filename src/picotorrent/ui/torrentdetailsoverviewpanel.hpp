@@ -13,7 +13,7 @@ namespace BitTorrent
 }
 namespace UI
 {
-    class TorrentDetailsOverviewPanel : public wxPanel
+    class TorrentDetailsOverviewPanel : public wxScrolledWindow
     {
     public:
         TorrentDetailsOverviewPanel(wxWindow* parent, wxWindowID id);
@@ -26,6 +26,14 @@ namespace UI
         wxStaticText* m_infoHash;
         wxStaticText* m_savePath;
         wxStaticText* m_pieces;
+        wxStaticText* m_comment;
+        wxStaticText* m_size;
+        wxStaticText* m_priv;
+        wxStaticText* m_ratio;
+        wxStaticText* m_lastDownload;
+        wxStaticText* m_lastUpload;
+        wxStaticText* m_totalDownload;
+        wxStaticText* m_totalUpload;
     };
 }
 }

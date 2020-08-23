@@ -269,6 +269,8 @@ TorrentStatus TorrentHandle::Status()
 
     TorrentStatus ts;
     ts.addedOn              = wxDateTime(m_ts->added_time);
+    ts.allTimeDownload      = m_ts->all_time_download;
+    ts.allTimeUpload        = m_ts->all_time_upload;
     ts.availability         = m_ts->distributed_copies;
     ts.completedOn          = m_ts->completed_time > 0 ? wxDateTime(m_ts->completed_time) : wxDateTime();
     ts.downloadPayloadRate  = m_ts->download_payload_rate;
@@ -277,6 +279,8 @@ TorrentStatus TorrentHandle::Status()
     ts.eta                  = eta;
     ts.forced               = (!(m_ts->flags & lt::torrent_flags::paused) && !(m_ts->flags & lt::torrent_flags::auto_managed));
     ts.infoHash             = hash.str();
+    ts.lastDownload         = m_ts->last_download.time_since_epoch().count() > 0 ? std::chrono::seconds(lt::total_seconds(lt::clock_type::now() - m_ts->last_download)) : std::chrono::seconds(-1);
+    ts.lastUpload           = m_ts->last_upload.time_since_epoch().count() > 0 ? std::chrono::seconds(lt::total_seconds(lt::clock_type::now() - m_ts->last_upload)) : std::chrono::seconds(-1);
     ts.name                 = m_ts->name;
     ts.paused               = (m_th->flags() & lt::torrent_flags::paused) == lt::torrent_flags::paused;
     ts.peersCurrent         = m_ts->num_peers - m_ts->num_seeds;

@@ -36,6 +36,8 @@ namespace BitTorrent
         };
 
         wxDateTime                                    addedOn;
+        std::int64_t                                  allTimeDownload;
+        std::int64_t                                  allTimeUpload;
         float                                         availability;
         wxDateTime                                    completedOn;
         int                                           downloadPayloadRate;
@@ -44,6 +46,8 @@ namespace BitTorrent
         std::string                                   errorDetails;
         std::chrono::seconds                          eta;
         std::string                                   infoHash;
+        std::chrono::seconds                          lastDownload;
+        std::chrono::seconds                          lastUpload;
         std::string                                   name;
         bool                                          paused;
         int                                           peersCurrent;
