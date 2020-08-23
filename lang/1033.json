@@ -243,6 +243,15 @@
         "label": "Label",
         "component": "Component",
         "version": "Version",
-        "commitish": "Commitish"
+        "commitish": "Commitish",
+        "private": "Private",
+        "last_download": "Last download",
+        "last_upload": "Last upload",
+        "last_activity_just_now": "just now",
+        "last_activity_unknown": "none",
+        "total_download": "Total download",
+        "total_upload": "Total upload",
+        "yes": "Yes",
+        "no": "No"
     }
 }
