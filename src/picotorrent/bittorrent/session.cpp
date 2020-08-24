@@ -116,6 +116,10 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
     settings.set_int(lt::settings_pack::active_seeds, cfg->GetInt("active_seeds"));
     settings.set_int(lt::settings_pack::active_tracker_limit, cfg->GetInt("active_tracker_limit"));
 
+    // Tracker things
+    settings.set_bool(lt::settings_pack::announce_to_all_tiers, cfg->GetBool("announce_to_all_tiers"));
+    settings.set_bool(lt::settings_pack::announce_to_all_trackers, cfg->GetBool("announce_to_all_trackers"));
+
     // Encryption
     lt::settings_pack::enc_policy in_policy = cfg->GetBool("require_incoming_encryption")
         ? lt::settings_pack::enc_policy::pe_forced
