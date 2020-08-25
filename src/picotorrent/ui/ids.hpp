@@ -28,6 +28,8 @@ namespace UI
         ptID_KEY_SELECT_ALL,
         ptID_KEY_DELETE,
         ptID_KEY_DELETE_FILES,
+        ptID_KEY_ADD_TORRENT,
+        ptID_KEY_ADD_MAGNET_LINK,
 
         ptID_EVT_FILTERS_NONE,
         ptID_EVT_FILTERS_USER,
