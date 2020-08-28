@@ -31,6 +31,7 @@ namespace BitTorrent
         std::vector<libtorrent::download_priority_t> GetFilePriorities() const;
         void GetPeerInfo(std::vector<libtorrent::peer_info>& peers) const;
         libtorrent::info_hash_t InfoHash();
+        bool IsSequentialDownload();
         bool IsValid();
         void ReplaceTrackers(std::vector<libtorrent::announce_entry> const& trackers);
         void ScrapeTracker(int trackerIndex);
@@ -52,6 +53,7 @@ namespace BitTorrent
         void ResumeForce();
         void SetFilePriorities(std::vector<libtorrent::download_priority_t> priorities);
         void SetFilePriority(libtorrent::file_index_t index, libtorrent::download_priority_t priority);
+        void SetSequentialDownload(bool seq);
 
     private:
         TorrentHandle(Session* session, libtorrent::torrent_handle const& th);

@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+class wxCheckBox;
 class wxChoice;
 class wxDataViewCtrl;
 class wxDataViewEvent;
@@ -45,6 +46,8 @@ namespace Dialogs
             ptID_SAVE_PATH_INPUT,
             ptID_SAVE_PATH_BROWSE,
             ptID_FILE_LIST,
+            ptID_SEQUENTIAL_DOWNLOAD,
+            ptID_START_TORRENT,
 
             ptID_CONTEXT_MENU_DO_NOT_DOWNLOAD,
             ptID_CONTEXT_MENU_LOW,
@@ -69,6 +72,8 @@ namespace Dialogs
         wxComboBox* m_torrentSavePath;
         wxButton* m_torrentSavePathBrowse;
         wxDataViewCtrl* m_filesView;
+        wxCheckBox* m_sequentialDownload;
+        wxCheckBox* m_startTorrent;
 
         Models::FileStorageModel* m_filesModel;
 
