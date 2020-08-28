@@ -133,8 +133,8 @@ void TorrentDetailsOverviewPanel::Refresh(BitTorrent::TorrentHandle* torrent)
 {
     auto status = torrent->Status();
 
-    m_name->SetLabel(status.name);
-    m_savePath->SetLabel(status.savePath);
+    m_name->SetLabel(Utils::toStdWString(status.name));
+    m_savePath->SetLabel(Utils::toStdWString(status.savePath));
     m_infoHash->SetLabel(status.infoHash);
     m_pieces->SetLabel(
         fmt::format(

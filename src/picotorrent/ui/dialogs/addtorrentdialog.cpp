@@ -47,6 +47,8 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
     m_torrentSavePath = new wxComboBox(storageSizer->GetStaticBox(), ptID_SAVE_PATH_INPUT);
     m_torrentSavePathBrowse = new wxButton(storageSizer->GetStaticBox(), ptID_SAVE_PATH_BROWSE, i18n("browse"));
     m_filesView = new wxDataViewCtrl(storageSizer->GetStaticBox(), ptID_FILE_LIST, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE);
+    m_sequentialDownload = new wxCheckBox(storageSizer->GetStaticBox(), ptID_SEQUENTIAL_DOWNLOAD, i18n("sequential_download"));
+    m_startTorrent = new wxCheckBox(storageSizer->GetStaticBox(), ptID_START_TORRENT, i18n("start_torrent"));
 
     auto storageGrid = new wxFlexGridSizer(2, FromDIP(7), FromDIP(10));
     storageGrid->AddGrowableCol(1, 1);
@@ -57,6 +59,15 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
 
     storageGrid->Add(new wxStaticText(storageSizer->GetStaticBox(), wxID_ANY, i18n("save_path")), 0, wxALIGN_CENTER_VERTICAL);
     storageGrid->Add(savePathSizer, 1, wxEXPAND);
+
+    // seq. download, paused, etc
+
+    auto flagsGrid = new wxFlexGridSizer(2, FromDIP(7), FromDIP(10));
+    flagsGrid->Add(m_sequentialDownload, 1, wxALL);
+    flagsGrid->Add(m_startTorrent, 1, wxALL);
+
+    storageGrid->AddSpacer(1);
+    storageGrid->Add(flagsGrid, 1, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, FromDIP(3));
 
     storageSizer->Add(storageGrid, 0, wxEXPAND);
     storageSizer->Add(m_filesView, 1, wxEXPAND | wxALL, FromDIP(3));
@@ -113,7 +124,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
     while (stmt->Read())
     {
         m_torrentSavePath->Insert(
-            stmt->GetString(0),
+            Utils::toStdWString(stmt->GetString(0)),
             m_torrentSavePath->GetCount());
     }
 
@@ -154,9 +165,39 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
         {
             int idx = m_torrents->GetSelection();
             lt::add_torrent_params& params = m_params.at(idx);
-            params.save_path = m_torrentSavePath->GetValue();
+            params.save_path = Utils::toStdString(m_torrentSavePath->GetValue().wc_str());
         },
         ptID_SAVE_PATH_INPUT);
+
+    this->Bind(
+        wxEVT_CHECKBOX,
+        [this](wxCommandEvent&)
+        {
+            int idx = m_torrents->GetSelection();
+            lt::add_torrent_params& params = m_params.at(idx);
+            if (m_sequentialDownload->IsChecked()) { params.flags |= lt::torrent_flags::sequential_download; }
+            else { params.flags &= ~lt::torrent_flags::sequential_download; }
+        },
+        ptID_SEQUENTIAL_DOWNLOAD);
+
+    this->Bind(
+        wxEVT_CHECKBOX,
+        [this](wxCommandEvent&)
+        {
+            int idx = m_torrents->GetSelection();
+            lt::add_torrent_params& params = m_params.at(idx);
+            if (m_startTorrent->IsChecked())
+            {
+                params.flags |= lt::torrent_flags::auto_managed;
+                params.flags &= ~lt::torrent_flags::paused;
+            }
+            else
+            {
+                params.flags &= ~lt::torrent_flags::auto_managed;
+                params.flags |= lt::torrent_flags::paused;
+            }
+        },
+        ptID_START_TORRENT);
 
     this->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &AddTorrentDialog::ShowFileContextMenu, this, ptID_FILE_LIST);
 
@@ -285,8 +326,13 @@ void AddTorrentDialog::Load(size_t index)
     // Save path
     m_torrentSavePath->SetValue(wxString::FromUTF8(params.save_path));
 
-    /*m_sequentialMode->SetValue(
-        (params.flags & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download);*/
+    m_sequentialDownload->SetValue(
+        (params.flags & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download);
+
+    bool isPaused = (params.flags & lt::torrent_flags::paused) == lt::torrent_flags::paused
+        && (params.flags & lt::torrent_flags::auto_managed) != lt::torrent_flags::auto_managed;
+
+    m_startTorrent->SetValue(!isPaused);
 
     if (params.ti)
     {

@@ -64,13 +64,13 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::vector<BitTorrent:
 
     if (selectedTorrents.size() == 1)
     {
-        /*const lt::torrent_handle& th = m_state->selected_torrents.at(0);
-        bool isSequential = (th.flags() & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download;
+        AppendSeparator();
 
-        wxMenuItem* item = Append(ptID_SEQUENTIAL_DOWNLOAD, i18n(tr, "sequential_download"));
+        BitTorrent::TorrentHandle* t = selectedTorrents.at(0);
+
+        wxMenuItem* item = Append(ptID_SEQUENTIAL_DOWNLOAD, i18n("sequential_download"));
         item->SetCheckable(true);
-        item->Check(isSequential);
-        */
+        item->Check(t->IsSequentialDownload());
     }
 
     AppendSeparator();
@@ -203,5 +203,8 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::vector<BitTorrent:
         [&](wxCommandEvent&) { for (auto torrent : selectedTorrents) { torrent->ForceReannounce(); } },
         TorrentContextMenu::ptID_FORCE_REANNOUNCE);
 
-        // TODO ptID_SEQUENTIAL_DOWNLOAD
+    Bind(
+        wxEVT_MENU,
+        [&](wxCommandEvent& evt) { for (auto torrent : selectedTorrents) { torrent->SetSequentialDownload(evt.IsChecked()); } },
+        TorrentContextMenu::ptID_SEQUENTIAL_DOWNLOAD);
 }

@@ -137,6 +137,11 @@ lt::info_hash_t TorrentHandle::InfoHash()
     return m_th->info_hashes();
 }
 
+bool TorrentHandle::IsSequentialDownload()
+{
+    return (m_th->flags() & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download;
+}
+
 bool TorrentHandle::IsValid()
 {
     return m_th->is_valid();
@@ -215,6 +220,18 @@ void TorrentHandle::SetFilePriorities(std::vector<lt::download_priority_t> prior
 void TorrentHandle::SetFilePriority(lt::file_index_t index, lt::download_priority_t priority)
 {
     m_th->file_priority(index, priority);
+}
+
+void TorrentHandle::SetSequentialDownload(bool seq)
+{
+    if (seq)
+    {
+        m_th->set_flags(lt::torrent_flags::sequential_download);
+    }
+    else
+    {
+        m_th->unset_flags(lt::torrent_flags::sequential_download);
+    }
 }
 
 TorrentStatus TorrentHandle::Status()
