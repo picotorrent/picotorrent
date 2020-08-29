@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/torrent_info.hpp>
 #include <loguru.hpp>
 #include <wx/persist.h>
@@ -423,6 +424,23 @@ void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<
     if (!files.empty())
     {
         ParseTorrentFiles(params, files);
+    }
+
+    if (!magnets.empty())
+    {
+        for (std::string const& magnet : magnets)
+        {
+            lt::error_code ec;
+            lt::add_torrent_params tp = lt::parse_magnet_uri(magnet, ec);
+
+            if (ec)
+            {
+                LOG_F(WARNING, "Failed to parse magnet uri: %s, error: %s", magnet.c_str(), ec.message().c_str());
+                continue;
+            }
+
+            params.push_back(tp);
+        }
     }
 
     AddTorrents(params);
