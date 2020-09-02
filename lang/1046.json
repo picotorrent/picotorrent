@@ -247,6 +247,19 @@
         "pause_on_low_disk_space": "Pausar quando o espaço em disco estiver baixo",
         "pause_on_low_disk_space_alert": "Torrent pausado (pouco espaço em disco)",
         "enable_geoip": "Habilitar pesquisas GeoIP",
-        "enable_automatic_crash_reporting": "Ativar relatórios automáticos de falhas"
+        "enable_automatic_crash_reporting": "Ativar relatórios automáticos de falhas",
+        "label": "Marcador",
+        "component": "Componente",
+        "version": "Versão",
+        "commitish": "Comprometer",
+        "private": "Privado",
+        "last_download": "Último download",
+        "last_upload": "Último upload",
+        "last_activity_just_now": "agora",
+        "last_activity_unknown": "nenhum",
+        "total_download": "Total baixado",
+        "total_upload": "Total enviado",
+        "yes": "Sim",
+        "no": "Não"
     }
 }
