@@ -191,7 +191,11 @@ void TrackerListModel::Update(BitTorrent::TorrentHandle* torrent)
         if (tierIter == m_items.end())
         {
             auto newTier = std::make_shared<ListItem>();
-            newTier->key = "Tier #" + std::to_string(iter->tier);
+            newTier->key = Utils::toStdString(
+                fmt::format(
+                    i18n("tier_n"),
+                    iter->tier));
+
             newTier->tier = iter->tier;
 
             m_items.push_back(newTier);
@@ -324,7 +328,7 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
         }
         case ListItemStatus::working:
         {
-            variant = i18n("working");
+            variant = i18n("ok");
             break;
         }
         }

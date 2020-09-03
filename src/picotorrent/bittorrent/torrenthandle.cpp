@@ -298,7 +298,7 @@ TorrentStatus TorrentHandle::Status()
     ts.infoHash             = hash.str();
     ts.lastDownload         = m_ts->last_download.time_since_epoch().count() > 0 ? std::chrono::seconds(lt::total_seconds(lt::clock_type::now() - m_ts->last_download)) : std::chrono::seconds(-1);
     ts.lastUpload           = m_ts->last_upload.time_since_epoch().count() > 0 ? std::chrono::seconds(lt::total_seconds(lt::clock_type::now() - m_ts->last_upload)) : std::chrono::seconds(-1);
-    ts.name                 = m_ts->name;
+    ts.name                 = m_ts->name.empty() ? ts.infoHash : m_ts->name;
     ts.paused               = (m_th->flags() & lt::torrent_flags::paused) == lt::torrent_flags::paused;
     ts.peersCurrent         = m_ts->num_peers - m_ts->num_seeds;
     ts.peersTotal           = m_ts->list_peers - m_ts->list_seeds;

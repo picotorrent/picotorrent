@@ -38,12 +38,12 @@ namespace Core
             HTTP_Password
         };
 
-        enum WindowState
+        enum class WindowState
         {
-            Normal,
-            Minimized,
-            Hidden,
-            Maximized
+            Normal = 0,
+            Minimized = 1,
+            Hidden = 2,
+            Maximized = 3
         };
 
         Configuration(std::shared_ptr<Database> db);
