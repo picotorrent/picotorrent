@@ -150,10 +150,10 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
         m_autoStart->SetValue(true);
     }
 
-    m_startPosition->Insert(i18n("normal"), Configuration::WindowState::Normal, new ClientData<Configuration::WindowState>(Configuration::WindowState::Normal));
-    m_startPosition->Insert(i18n("minimized"), Configuration::WindowState::Minimized, new ClientData<Configuration::WindowState>(Configuration::WindowState::Minimized));
-    m_startPosition->Insert(i18n("hidden"), Configuration::WindowState::Hidden, new ClientData<Configuration::WindowState>(Configuration::WindowState::Hidden));
-    m_startPosition->Insert(i18n("maximized"), Configuration::WindowState::Maximized, new ClientData<Configuration::WindowState>(Configuration::WindowState::Maximized));
+    m_startPosition->Append(i18n("normal"), new ClientData<Configuration::WindowState>(Configuration::WindowState::Normal));
+    m_startPosition->Append(i18n("minimized"), new ClientData<Configuration::WindowState>(Configuration::WindowState::Minimized));
+    m_startPosition->Append(i18n("hidden"), new ClientData<Configuration::WindowState>(Configuration::WindowState::Hidden));
+    m_startPosition->Append(i18n("maximized"), new ClientData<Configuration::WindowState>(Configuration::WindowState::Maximized));
     m_startPosition->SetSelection(m_cfg->GetInt("start_position"));
 
     // Notification area
@@ -183,7 +183,9 @@ bool PreferencesGeneralPage::IsValid()
 void PreferencesGeneralPage::Save()
 {
     int langIndex = m_language->GetSelection();
-    ClientData<int>* langData = reinterpret_cast<ClientData<int>*>(m_language->GetClientObject(langIndex));
+    ClientData<int>* langData = langIndex >= 0
+        ? reinterpret_cast<ClientData<int>*>(m_language->GetClientObject(langIndex))
+        : nullptr;
 
     int startPosIndex = m_startPosition->GetSelection();
     ClientData<Configuration::WindowState>* startPosData = reinterpret_cast<ClientData<Configuration::WindowState>*>(m_startPosition->GetClientObject(startPosIndex));
@@ -197,7 +199,7 @@ void PreferencesGeneralPage::Save()
 
     if (startPosData != nullptr)
     {
-        m_cfg->SetInt("start_position", startPosData->GetValue());
+        m_cfg->SetInt("start_position", static_cast<int>(startPosData->GetValue()));
     }
 
     {

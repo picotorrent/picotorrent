@@ -204,7 +204,7 @@
         "active_seeds": "Active seeds",
         "added_on": "Added on",
         "completed_on": "Completed on",
-        "error_s": "Error: %1",
+        "error_s": "Error: {0}",
         "add_trackers": "Add trackers",
         "tracker_urls": "Tracker URLs",
         "force_reannounce": "Force reannounce",
@@ -252,6 +252,11 @@
         "total_download": "Total download",
         "total_upload": "Total upload",
         "yes": "Yes",
-        "no": "No"
+        "no": "No",
+        "edit": "Edit",
+        "remove_tier": "Remove tier",
+        "tier_n": "Tier #{0}",
+        "ok": "Ok",
+        "updating": "Updating"
     }
 }

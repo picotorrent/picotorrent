@@ -6,6 +6,7 @@
 #include <wx/ipc.h>
 #include <wx/persist.h>
 #include <wx/snglinst.h>
+#include <wx/taskbarbutton.h>
 
 #include "api/libpico_impl.hpp"
 #include "crashpadinitializer.hpp"
@@ -115,8 +116,41 @@ bool Application::OnInit()
         m_plugins.end(),
         [mainFrame](auto plugin) { plugin->EmitEvent(libpico_event_mainwnd_created, mainFrame); });
 
-    mainFrame->Show();
-    mainFrame->HandleParams(m_options.files, m_options.magnets);
+    auto windowState = static_cast<pt::Core::Configuration::WindowState>(cfg->GetInt("start_position"));
+
+    switch (windowState)
+    {
+    case pt::Core::Configuration::WindowState::Hidden:
+        // Only valid if we have a notify icon
+        if (cfg->GetBool("show_in_notification_area"))
+        {
+            mainFrame->MSWGetTaskBarButton()->Hide();
+        }
+        else
+        {
+            mainFrame->Show(true);
+        }
+
+        break;
+
+    case pt::Core::Configuration::WindowState::Maximized:
+        mainFrame->Show(true);
+        mainFrame->Maximize();
+        break;
+
+    case pt::Core::Configuration::WindowState::Minimized:
+        mainFrame->Iconize();
+        mainFrame->Show(true);
+        break;
+
+    case pt::Core::Configuration::WindowState::Normal:
+        mainFrame->Show(true);
+        break;
+    }
+
+    mainFrame->HandleParams(
+        m_options.files,
+        m_options.magnets);
 
     return true;
 }
