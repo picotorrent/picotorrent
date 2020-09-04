@@ -253,7 +253,7 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
     {
     case Columns::Name:
     {
-        variant = status.name;
+        variant = Utils::toStdWString(status.name);
         break;
     }
     case Columns::QueuePosition:

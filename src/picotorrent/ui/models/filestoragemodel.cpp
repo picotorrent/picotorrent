@@ -279,7 +279,7 @@ void FileStorageModel::GetValue(wxVariant &variant, const wxDataViewItem &item, 
         if (m_priorityChangedCallback)
         {
             variant << wxDataViewCheckIconText(
-                node->name,
+                Utils::toStdWString(node->name),
                 node->children.empty()
                 ? GetIconForFile(node->name)
                 : FolderIcon,
@@ -288,7 +288,7 @@ void FileStorageModel::GetValue(wxVariant &variant, const wxDataViewItem &item, 
         else
         {
             variant << wxDataViewIconText(
-                node->name,
+                Utils::toStdWString(node->name),
                 node->children.empty()
                 ? GetIconForFile(node->name)
                 : FolderIcon);
