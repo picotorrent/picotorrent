@@ -28,11 +28,6 @@ TorrentDetailsView::~TorrentDetailsView()
 {
 }
 
-wxSize TorrentDetailsView::GetMinSize() const
-{
-    return FromDIP(wxSize(400, 100));
-}
-
 void TorrentDetailsView::Refresh(std::map<lt::info_hash_t, BitTorrent::TorrentHandle*> const& torrents)
 {
     if (torrents.size() != 1)
