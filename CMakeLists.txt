@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project("PicoTorrent")
 
+include(cmake/Git.cmake)
+include(cmake/GitVersion.cmake)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -39,70 +42,20 @@ add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/nlohmann-json)
 add_subdirectory(vendor/wx)
 
-# Generate version information file
-file (STRINGS "${CMAKE_SOURCE_DIR}/VERSION.txt" VERSION)
+gitversion_install()
+gitversion_showvariable(BranchName      GITVERSION_VAR_BRANCHNAME)
+gitversion_showvariable(MajorMinorPatch GITVERSION_VAR_VERSION)
+gitversion_showvariable(Major           GITVERSION_VAR_VERSION_MAJOR)
+gitversion_showvariable(Minor           GITVERSION_VAR_VERSION_MINOR)
+gitversion_showvariable(Patch           GITVERSION_VAR_VERSION_PATCH)
+gitversion_showvariable(SemVer          GITVERSION_VAR_SEMVER)
+gitversion_showvariable(ShortSha        GITVERSION_VAR_SHORTSHA)
 
-# Build version parts
-set(VERSION_TMP "${VERSION}")
-string(REPLACE "." ";" VERSION_LIST ${VERSION_TMP})
-list(GET VERSION_LIST 0 VERSION_MAJOR)
-list(GET VERSION_LIST 1 VERSION_MINOR)
-list(GET VERSION_LIST 2 VERSION_REVISION)
-
-# Get the current working branch
-execute_process(
-    COMMAND git rev-parse --abbrev-ref HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_BRANCH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-# Get the latest abbreviated commit hash of the working branch
-execute_process(
-    COMMAND git log -1 --format=%h
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_COMMITISH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-# Get the latest abbreviated commit hash from fmt
-execute_process(
-    COMMAND git log -1 --format=%h
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/fmt
-    OUTPUT_VARIABLE PICO_FMT_GIT_COMMITISH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-# Get the latest abbreviated commit hash from libtorrent
-execute_process(
-    COMMAND git log -1 --format=%h
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/libtorrent
-    OUTPUT_VARIABLE PICO_LIBTORRENT_GIT_COMMITISH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-# Get the latest abbreviated commit hash from nlohmann-json
-execute_process(
-    COMMAND git log -1 --format=%h
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/nlohmann-json
-    OUTPUT_VARIABLE PICO_NLOHMANN_JSON_GIT_COMMITISH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-# Get the latest abbreviated commit hash from wxWidgets
-execute_process(
-    COMMAND git log -1 --format=%h
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vendor/wx
-    OUTPUT_VARIABLE PICO_WX_GIT_COMMITISH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-# Get current architecture
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(PICO_ARCH "x64")
-else()
-    set(PICO_ARCH "x86")
-endif()
+# Get git commitish from dependencies
+git_abbreviated_hash(${CMAKE_SOURCE_DIR}/vendor/fmt           PICO_FMT_GIT_COMMITISH)
+git_abbreviated_hash(${CMAKE_SOURCE_DIR}/vendor/libtorrent    PICO_LIBTORRENT_GIT_COMMITISH)
+git_abbreviated_hash(${CMAKE_SOURCE_DIR}/vendor/nlohmann-json PICO_NLOHMANN_JSON_GIT_COMMITISH)
+git_abbreviated_hash(${CMAKE_SOURCE_DIR}/vendor/wx            PICO_WX_GIT_COMMITISH)
 
 # Generate buildinfo file
 configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp" @ONLY)
@@ -112,7 +65,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
 
 # Release flags
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GUARD:CF /Zi")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /GUARD:CF /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
 add_library(
@@ -226,10 +179,12 @@ target_compile_definitions(
     -DWIN32_LEAN_AND_MEAN
 
     -DLIBPICO_API_EXPORT
-    -DPICO_GIT_COMMITISH=${GIT_COMMITISH}
-    -DPICO_VERSION_MAJOR=${VERSION_MAJOR}
-    -DPICO_VERSION_MINOR=${VERSION_MINOR}
-    -DPICO_VERSION_REVISION=${VERSION_REVISION}
+
+    -DPICO_GIT_COMMITISH=${GITVERSION_VAR_SHORTSHA}
+    -DPICO_VERSION_MAJOR=${GITVERSION_VAR_VERSION_MAJOR}
+    -DPICO_VERSION_MINOR=${GITVERSION_VAR_VERSION_MINOR}
+    -DPICO_VERSION_PATCH=${GITVERSION_VAR_VERSION_PATCH}
+
     -DPICO_FMT_GIT_COMMITISH=${PICO_FMT_GIT_COMMITISH}
     -DPICO_LIBTORRENT_GIT_COMMITISH=${PICO_LIBTORRENT_GIT_COMMITISH}
     -DPICO_NLOHMANN_JSON_GIT_COMMITISH=${PICO_NLOHMANN_JSON_GIT_COMMITISH}

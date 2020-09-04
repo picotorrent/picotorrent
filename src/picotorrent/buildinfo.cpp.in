@@ -4,15 +4,20 @@ using pt::BuildInfo;
 
 const char* BuildInfo::branch()
 {
-    return "@GIT_BRANCH@";
+    return "@GITVERSION_VAR_BRANCHNAME@";
 }
 
 const char* BuildInfo::commitish()
 {
-    return "@GIT_COMMITISH@";
+    return "@GITVERSION_VAR_SHORTSHA@";
+}
+
+const char* BuildInfo::semver()
+{
+    return "@GITVERSION_VAR_SEMVER@";
 }
 
 const char* BuildInfo::version()
 {
-    return "@VERSION@";
+    return "@GITVERSION_VAR_VERSION@";
 }

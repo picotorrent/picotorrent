@@ -17,12 +17,12 @@ var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
 var SigningPublisher   = EnvironmentVariable("PICO_SIGNING_PUBLISHER") ?? "CN=PicoTorrent TESTING";
 
-var Version            = System.IO.File.ReadAllText("VERSION.txt").Trim();
-var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version, platform);
-var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version, platform);
-var AppXPackage        = string.Format("PicoTorrent-{0}-{1}.appx", Version, platform);
-var PortablePackage    = string.Format("PicoTorrent-{0}-{1}.zip", Version, platform);
-var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Version, platform);
+var Version            = GitVersion(new GitVersionSettings { ToolPath = "./tools/gitversion.exe"});
+var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version.SemVer, platform);
+var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version.SemVer, platform);
+var AppXPackage        = string.Format("PicoTorrent-{0}-{1}.appx", Version.SemVer, platform);
+var PortablePackage    = string.Format("PicoTorrent-{0}-{1}.zip", Version.SemVer, platform);
+var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Version.SemVer, platform);
 
 var LibrarySuffix      = configuration == "Release" ? "" : "d";
 
@@ -141,7 +141,7 @@ Task("Build-AppX-Package")
     TransformTextFile("./packaging/AppX/PicoTorrentManifest.xml.template", "%{", "}")
         .WithToken("Platform", platform)
         .WithToken("Publisher", SigningPublisher)
-        .WithToken("Version", Version + ".0")
+        .WithToken("Version", Version.MajorMinorPatch + ".0")
         .Save("./packaging/AppX/PicoTorrentManifest.xml");
 
     var argsBuilder = new ProcessArgumentBuilder();
@@ -197,7 +197,7 @@ Task("Build-Installer")
             { "PublishDirectory", PublishDirectory },
             { "Platform", platform },
             { "ResourceDirectory", ResourceDirectory },
-            { "Version", Version }
+            { "Version", Version.MajorMinorPatch }
         },
         Extensions = new [] { "WixUtilExtension" },
         OutputDirectory = BuildDirectory
@@ -229,7 +229,7 @@ Task("Build-Installer-Bundle")
         {
             { "PicoTorrentInstaller", PackagesDirectory + File(Installer) },
             { "Platform", platform },
-            { "Version", Version }
+            { "Version", Version.MajorMinorPatch }
         },
         OutputDirectory = BuildDirectory
     });
@@ -267,7 +267,7 @@ Task("Build-Chocolatey-Package")
 {
     TransformTextFile("./packaging/Chocolatey/tools/chocolateyinstall.ps1.template", "%{", "}")
         .WithToken("Installer", InstallerBundle)
-        .WithToken("Version", Version)
+        .WithToken("Version", Version.MajorMinorPatch)
         .Save("./packaging/Chocolatey/tools/chocolateyinstall.ps1");
 
     var currentDirectory = MakeAbsolute(Directory("."));
@@ -278,7 +278,7 @@ Task("Build-Chocolatey-Package")
 
     ChocolateyPack(nuspec, new ChocolateyPackSettings
     {
-        Version = Version
+        Version = Version.MajorMinorPatch
     });
 
     System.IO.Directory.SetCurrentDirectory(currentDirectory.ToString());

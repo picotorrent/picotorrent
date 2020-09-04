@@ -63,7 +63,7 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
     lv->SetItem(lv->GetItemCount() - 1, 2, "-");
 
     lv->InsertItem(lv->GetItemCount(), "PicoTorrent");
-    lv->SetItem(lv->GetItemCount() - 1, 1, BuildInfo::version());
+    lv->SetItem(lv->GetItemCount() - 1, 1, BuildInfo::semver());
     lv->SetItem(lv->GetItemCount() - 1, 2, BuildInfo::commitish());
 
     lv->InsertItem(lv->GetItemCount(), "Rasterbar-libtorrent");

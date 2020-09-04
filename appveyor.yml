@@ -20,8 +20,8 @@ build_script:
 
 # Publish artifacts
 artifacts:
- - path: build-*/Release/packages/PicoTorrent-*-*.appx
- - path: build-*/Release/packages/PicoTorrent-*-*.exe
- - path: build-*/Release/packages/PicoTorrent-*-*.zip
+ - path: build-*/Release/packages/PicoTorrent-*.appx
+ - path: build-*/Release/packages/PicoTorrent-*.exe
+ - path: build-*/Release/packages/PicoTorrent-*.zip
 
 test: off
