@@ -29,8 +29,6 @@ namespace UI
         TorrentDetailsView(wxWindow* parent, wxWindowID id);
         virtual ~TorrentDetailsView();
 
-        virtual wxSize GetMinSize() const wxOVERRIDE;
-
         void Refresh(std::map<libtorrent::info_hash_t, BitTorrent::TorrentHandle*> const& torrents);
         void Reset();
 
