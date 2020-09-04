@@ -378,11 +378,11 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         // let the session find metadata for us
 
         if (
-            ((p.info_hash.has_v1() && !p.info_hash.v1.is_all_zeros())
-                || (p.info_hash.has_v2() && !p.info_hash.v2.is_all_zeros()))
+            ((p.info_hashes.has_v1() && !p.info_hashes.v1.is_all_zeros())
+                || (p.info_hashes.has_v2() && !p.info_hashes.v2.is_all_zeros()))
             && !p.ti)
         {
-            hashes.push_back(p.info_hash);
+            hashes.push_back(p.info_hashes);
         }
     }
 

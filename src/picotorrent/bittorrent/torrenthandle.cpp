@@ -238,13 +238,13 @@ TorrentStatus TorrentHandle::Status()
 {
     std::stringstream hash;
 
-    if (m_ts->info_hash.has_v2())
+    if (m_ts->info_hashes.has_v2())
     {
-        hash << m_ts->info_hash.v2;
+        hash << m_ts->info_hashes.v2;
     }
     else
     {
-        hash << m_ts->info_hash.v1;
+        hash << m_ts->info_hashes.v1;
     }
 
     if (!m_th->is_valid())
