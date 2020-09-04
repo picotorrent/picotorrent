@@ -1,3 +1,5 @@
+#tool "nuget:?package=GitVersion.CommandLine&version=5.3.7"
+
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
 //////////////////////////////////////////////////////////////////////
@@ -17,7 +19,7 @@ var SigningCertificate = EnvironmentVariable("PICO_SIGNING_CERTIFICATE");
 var SigningPassword    = EnvironmentVariable("PICO_SIGNING_PASSWORD");
 var SigningPublisher   = EnvironmentVariable("PICO_SIGNING_PUBLISHER") ?? "CN=PicoTorrent TESTING";
 
-var Version            = GitVersion(new GitVersionSettings { ToolPath = "./tools/gitversion.exe"});
+var Version            = GitVersion();
 var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version.SemVer, platform);
 var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version.SemVer, platform);
 var AppXPackage        = string.Format("PicoTorrent-{0}-{1}.appx", Version.SemVer, platform);
