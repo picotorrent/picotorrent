@@ -239,7 +239,7 @@ void Session::AddMetadataSearch(std::vector<libtorrent::info_hash_t> const& hash
         params.flags &= ~lt::torrent_flags::update_subscribe;
         params.flags |= lt::torrent_flags::upload_mode;
 
-        params.info_hash = hash;
+        params.info_hashes = hash;
         params.save_path = tmp.string();
 
         // Track this info hash internally to make sure
@@ -255,9 +255,9 @@ void Session::AddTorrent(lt::add_torrent_params const& params)
     // If we are searching for metadata for this torrent, stop
     // that search and add this one instead.
 
-    if (m_metadataSearches.find(params.info_hash) != m_metadataSearches.end())
+    if (m_metadataSearches.find(params.info_hashes) != m_metadataSearches.end())
     {
-        lt::torrent_handle& hndl = m_metadataSearches.at(params.info_hash);
+        lt::torrent_handle& hndl = m_metadataSearches.at(params.info_hashes);
 
         // By default, an invalid torrent handle is added to the metadata
         // search map. Only remove the handle from the session if it has
@@ -480,7 +480,7 @@ void Session::OnAlert()
             {
                 // Skip torrents which are not found in m_torrents - this can happen
                 // when we recieve alerts for a torrent currently in metadata search
-                if (m_torrents.find(status.info_hash) == m_torrents.end())
+                if (m_torrents.find(status.info_hashes) == m_torrents.end())
                 {
                     continue;
                 }
@@ -495,7 +495,7 @@ void Session::OnAlert()
                     stats.totalWantedDone += status.total_wanted_done;
                 }
 
-                auto handle = m_torrents.at(status.info_hash);
+                auto handle = m_torrents.at(status.info_hashes);
                 handle->UpdateStatus(status);
 
                 handles.push_back(handle);
@@ -548,7 +548,7 @@ void Session::OnAlert()
             }
 
             wxCommandEvent evt(ptEVT_TORRENT_FINISHED);
-            evt.SetClientData(m_torrents.at(ts.info_hash));
+            evt.SetClientData(m_torrents.at(ts.info_hashes));
             wxPostEvent(m_parent, evt);
 
             bool shouldMove = m_cfg->GetBool("move_completed_downloads");
@@ -572,19 +572,19 @@ void Session::OnAlert()
         {
             lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
 
-            if (m_metadataSearches.count(tra->info_hash) > 0)
+            if (m_metadataSearches.count(tra->info_hashes) > 0)
             {
-                m_metadataSearches.erase(tra->info_hash);
+                m_metadataSearches.erase(tra->info_hashes);
                 break;
             }
 
-            auto handle = m_torrents.at(tra->info_hash);
+            auto handle = m_torrents.at(tra->info_hashes);
 
             InfoHashEvent evt(ptEVT_TORRENT_REMOVED);
-            evt.SetData(tra->info_hash);
+            evt.SetData(tra->info_hashes);
             wxPostEvent(m_parent, evt);
 
-            m_torrents.erase(tra->info_hash);
+            m_torrents.erase(tra->info_hashes);
 
             std::vector<std::string> statements =
             {
@@ -595,13 +595,13 @@ void Session::OnAlert()
 
             std::stringstream hash;
 
-            if (tra->info_hash.has_v2())
+            if (tra->info_hashes.has_v2())
             {
-                hash << tra->info_hash.v2;
+                hash << tra->info_hashes.v2;
             }
             else
             {
-                hash << tra->info_hash.v1;
+                hash << tra->info_hashes.v1;
             }
 
             for (std::string const& sql : statements)
@@ -717,8 +717,8 @@ void Session::LoadTorrentsOld()
             continue;
         }
 
-        item.magnet_save_path = node.dict_find_string_value("pT-magnet-savePath").to_string();
-        item.magnet_url = node.dict_find_string_value("pT-magnet-url").to_string();
+        item.magnet_save_path = node.dict_find_string_value("pT-magnet-savePath");
+        item.magnet_url = node.dict_find_string_value("pT-magnet-url");
 
         int64_t queuePosition = node.dict_find_int_value("pT-queuePosition", maxPosition);
         if (queuePosition < 0) { queuePosition = maxPosition; }
@@ -835,7 +835,7 @@ void Session::SaveTorrents()
     auto temp = m_session->get_torrent_status(
         [this](const lt::torrent_status& st)
         {
-            return m_metadataSearches.count(st.info_hash) == 0;
+            return m_metadataSearches.count(st.info_hashes) == 0;
         });
 
     for (lt::torrent_status& st : temp)
@@ -867,13 +867,13 @@ void Session::SaveTorrents()
     {
         std::stringstream ss;
 
-        if (st.info_hash.has_v2())
+        if (st.info_hashes.has_v2())
         {
-            ss << st.info_hash.v2;
+            ss << st.info_hashes.v2;
         }
         else
         {
-            ss << st.info_hash.v1;
+            ss << st.info_hashes.v1;
         }
 
         // Store state

@@ -16,6 +16,13 @@ endif()
 # --------- libtorrent options
 option(BUILD_SHARED_LIBS    "" off)
 option(deprecated-functions "" off)
+
+# uncomment here when webtorrent support is usable
+# option(webtorrent           "" ON)
+
+# deep inside libtorrent we need to turn off a nlohmann-json dependency
+option(NO_EXAMPLES          "" ON)
+
 # ----------------------------
 
 # --------- nlohmann-json options
