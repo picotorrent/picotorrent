@@ -23,8 +23,6 @@ namespace Models
         TorrentListView(wxWindow* parent, wxWindowID id, Models::TorrentListModel* model);
         virtual ~TorrentListView();
 
-        virtual wxSize GetMinSize() const wxOVERRIDE;
-
     private:
         void ShowHeaderContextMenu(wxCommandEvent&);
 

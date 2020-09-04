@@ -196,11 +196,6 @@ TorrentListView::~TorrentListView()
 {
 }
 
-wxSize TorrentListView::GetMinSize() const
-{
-    return FromDIP(wxSize(400, 100));
-}
-
 void TorrentListView::ShowHeaderContextMenu(wxCommandEvent& evt)
 {
     wxMenu menu;
