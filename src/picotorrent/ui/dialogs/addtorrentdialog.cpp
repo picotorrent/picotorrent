@@ -94,6 +94,9 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
         wxDATAVIEW_CELL_INERT,
         FromDIP(80));
 
+    // Ugly hack to prevent the last "real" column from stretching.
+    m_filesView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0));
+
     nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
     prioCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
 
