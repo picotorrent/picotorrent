@@ -184,6 +184,16 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
             this->CheckDiskSpace(torrents);
         });
 
+    this->Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, [this](wxCommandEvent&)
+        {
+            for (auto const& sel : m_selection)
+            {
+                auto status = sel.second->Status();
+                fs::path p = fs::path(status.savePath) / status.name;
+                if (fs::exists(p)) { Utils::openAndSelect(p); }
+            }
+        }, ptID_MAIN_TORRENT_LIST);
+
     this->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &MainFrame::ShowTorrentContextMenu, this, ptID_MAIN_TORRENT_LIST);
 
     this->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, [this](wxCommandEvent& evt)
