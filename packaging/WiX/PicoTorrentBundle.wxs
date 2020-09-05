@@ -5,23 +5,23 @@
     <?define UpgradeCode = "58903cac-fb00-4335-8149-0e1177cc8cba" ?>
 
     <?define FindVCRedistKey = "Software\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" ?>
-    <?define VCRedistDescription = "Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.23.27820" ?>
-    <?define VCRedistHash = "3b32bc4b8dec32fd52a8f4bda5648c3a8d999d7c" ?>
+    <?define VCRedistDescription = "Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.27.29016" ?>
+    <?define VCRedistHash = "75f1aee6dccf3d6e6ac49926563737005b93ba13" ?>
     <?define VCRedistName = "VC_redist.x64.exe" ?>
-    <?define VCRedistSize = "15073600" ?>
-    <?define VCRedistUrl = "https://download.visualstudio.microsoft.com/download/pr/9565895b-35a6-434b-a881-11a6f4beec76/EE84FED2552E018E854D4CD2496DF4DD516F30733A27901167B8A9882119E57C/VC_redist.x64.exe" ?>
-    <?define VCRedistVersion = "14.23.27820.0" ?>
+    <?define VCRedistSize = "15001520" ?>
+    <?define VCRedistUrl = "https://download.visualstudio.microsoft.com/download/pr/fd5d2eea-32b8-4814-b55e-28c83dd72d9c/952A0C6CB4A3DD14C3666EF05BB1982C5FF7F87B7103C2BA896354F00651E358/VC_redist.x64.exe" ?>
+    <?define VCRedistVersion = "14.27.29016.0" ?>
 <?else ?>
     <?define InstallFolder = "[ProgramFilesFolder]PicoTorrent" ?>
     <?define UpgradeCode = "08b52a3a-63eb-47c0-8a75-1df052a99042" ?>
 
     <?define FindVCRedistKey = "Software\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" ?>
-    <?define VCRedistDescription = "Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.23.27820" ?>
-    <?define VCRedistHash = "aa56b7fe64e957fba2a6bdc65abbaa47438ec620" ?>
+    <?define VCRedistDescription = "Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.27.29016" ?>
+    <?define VCRedistHash = "b38b7fc28c5e2ef157f93297036202911d2fc2bf" ?>
     <?define VCRedistName = "VC_redist.x86.exe" ?>
-    <?define VCRedistSize = "14373272" ?>
-    <?define VCRedistUrl = "https://download.visualstudio.microsoft.com/download/pr/9565895b-35a6-434b-a881-11a6f4beec76/4A8157B2FF422C259DDAA2D0E568C0C0AFAB940E1F6E0E482EF83E90DDBAD2D6/VC_redist.x86.exe" ?>
-    <?define VCRedistVersion = "14.23.27820.0" ?>
+    <?define VCRedistSize = "14427696" ?>
+    <?define VCRedistUrl = "https://download.visualstudio.microsoft.com/download/pr/9fe82b83-f3a1-43f5-8f25-ebe24529854c/B4D433E2F66B30B478C0D080CCD5217CA2A963C16E90CAF10B1E0592B7D8D519/VC_redist.x86.exe" ?>
+    <?define VCRedistVersion = "14.27.29016.0" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
@@ -31,7 +31,7 @@
     <Bundle Name="PicoTorrent"
             Manufacturer="PicoTorrent contributors."
             IconSourceFile="res/app.ico"
-            AboutUrl="http://www.picotorrent.org"
+            AboutUrl="https://picotorrent.org"
             UpgradeCode="$(var.UpgradeCode)"
             Version="$(var.Version)">
 
@@ -53,7 +53,7 @@
         <Chain>
             <ExePackage Name="$(var.VCRedistName)"
                         Compressed="no"
-                        DetectCondition="VCREDISTVERSION &gt;= v14.23.27820"
+                        DetectCondition="VCREDISTVERSION &gt;= v14.27.29016"
                         DownloadUrl="$(var.VCRedistUrl)"
                         InstallCommand="/quiet /norestart"
                         PerMachine="yes"
