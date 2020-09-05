@@ -1,5 +1,12 @@
 #include "utils.hpp"
 
+#include <wx/wxprec.h>
+#ifndef WX_PRECOMP
+#include <wx/wx.h>
+#endif
+
+#include <sstream>
+
 #include <Windows.h>
 #include <ShlObj.h>
 #include <shlwapi.h>
@@ -10,9 +17,9 @@ using pt::Utils;
 
 void Utils::openAndSelect(fs::path path)
 {
-    LPITEMIDLIST il = ILCreateFromPath(path.c_str());
-    SHOpenFolderAndSelectItems(il, 0, 0, 0);
-    ILFree(il);
+    std::wstringstream ss;
+    ss << L"explorer.exe /select,\"" << path.native() << L"\"";
+    wxExecute(ss.str());
 }
 
 std::wstring Utils::toHumanFileSize(int64_t bytes)
