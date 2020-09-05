@@ -69,6 +69,9 @@ TorrentDetailsTrackersPanel::TorrentDetailsTrackersPanel(wxWindow* parent, wxWin
         FromDIP(120),
         wxALIGN_RIGHT)->SetMinWidth(FromDIP(100));
 
+    // Ugly hack to prevent the last "real" column from stretching.
+    m_trackersView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0));
+
     m_trackersView->AssociateModel(m_trackersModel);
     m_trackersModel->DecRef();
 
