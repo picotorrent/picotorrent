@@ -88,7 +88,6 @@ namespace BitTorrent
 
     private:
         void LoadTorrents();
-        void LoadTorrentsOld();
         void OnAlert();
         void PauseAfterRecheck(TorrentHandle*);
         void SaveState();
