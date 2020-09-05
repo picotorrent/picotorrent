@@ -7,6 +7,7 @@ namespace pt
     public:
         static const char* branch();
         static const char* commitish();
+        static const char* semver();
         static const char* version();
     };
 }

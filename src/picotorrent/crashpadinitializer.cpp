@@ -77,9 +77,9 @@ void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
         env->GetCrashpadReportUrl(),
         // annotations
         {
-            { "branch", pt::BuildInfo::branch() },
+            { "branch",    pt::BuildInfo::branch() },
             { "commitish", pt::BuildInfo::commitish() },
-            { "version", pt::BuildInfo::version() }
+            { "version",   pt::BuildInfo::semver() }
         },
         {
 #if _DEBUG
