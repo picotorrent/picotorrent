@@ -612,6 +612,7 @@ void MainFrame::OnTaskBarLeftDown(wxTaskBarIconEvent&)
     this->Restore();
     this->Raise();
     this->Show();
+    this->SendSizeEvent();
 }
 
 void MainFrame::OnViewPreferences(wxCommandEvent&)
