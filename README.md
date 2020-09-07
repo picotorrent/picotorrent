@@ -13,13 +13,14 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 
 ## Quick facts
 
+- Full support for BitTorrent 2.0 ([BEP-52](http://bittorrent.org/beps/bep_0052.html)), v1, v2 and v1+v2 hybrid torrents.
 - Supports DHT, PeX, LSD, UPnP.
 - (Azureus-style) peer ID: `-PI-`. Example: `-PI0151-` (major: 0, minor: 15, patch: 1).
 - User agent: `PicoTorrent/x.y.z`.
 - Native look-and-feel across Windows versions.
 - Easy to use with high performance.
 
-*The portable version of PicoTorrent requires manual installation of [the Visual C++ 2017 redistributable](https://go.microsoft.com/fwlink/?LinkId=746572)*
+*The portable version of PicoTorrent requires manual installation of [the Microsoft Visual C++ Redistributable for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)*
 
 
 ## Building PicoTorrent
