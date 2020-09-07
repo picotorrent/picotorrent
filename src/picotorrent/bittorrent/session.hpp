@@ -87,11 +87,14 @@ namespace BitTorrent
         void RemoveTorrent(TorrentHandle* handle, libtorrent::remove_flags_t flags = {});
 
     private:
+        bool IsSearching(libtorrent::info_hash_t hash);
         void LoadTorrents();
         void OnAlert();
         void PauseAfterRecheck(TorrentHandle*);
+        void RemoveMetadataHandle(libtorrent::info_hash_t hash);
         void SaveState();
         void SaveTorrents();
+        void UpdateMetadataHandle(libtorrent::info_hash_t hash, libtorrent::torrent_handle handle);
 
         wxEvtHandler* m_parent;
         wxTimer* m_timer;
