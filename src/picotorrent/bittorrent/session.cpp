@@ -234,6 +234,7 @@ void Session::AddMetadataSearch(std::vector<libtorrent::info_hash_t> const& hash
     {
         lt::add_torrent_params params;
         params.flags &= ~lt::torrent_flags::auto_managed;
+        params.flags &= ~lt::torrent_flags::need_save_resume;
         params.flags &= ~lt::torrent_flags::paused;
         params.flags &= ~lt::torrent_flags::update_subscribe;
         params.flags |= lt::torrent_flags::upload_mode;
@@ -301,11 +302,11 @@ void Session::OnAlert()
                 continue;
             }
 
-            if (m_metadataSearches.count(ata->handle.info_hashes()))
+            if (IsSearching(ata->handle.info_hashes()))
             {
                 // Part of a metadata search - update the metadata search map
                 // with the new handle, then ignore it.
-                m_metadataSearches[ata->handle.info_hashes()] = ata->handle;
+                UpdateMetadataHandle(ata->handle.info_hashes(), ata->handle);
                 continue;
             }
 
@@ -374,7 +375,7 @@ void Session::OnAlert()
             lt::metadata_received_alert* mra = lt::alert_cast<lt::metadata_received_alert>(alert);
             lt::info_hash_t infoHash = mra->handle.info_hashes();
 
-            if (m_metadataSearches.count(infoHash) > 0)
+            if (IsSearching(infoHash))
             {
                 // Create a non-const copy of the torrent_info
 
@@ -571,9 +572,9 @@ void Session::OnAlert()
         {
             lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
 
-            if (m_metadataSearches.count(tra->info_hashes) > 0)
+            if (IsSearching(tra->info_hashes))
             {
-                m_metadataSearches.erase(tra->info_hashes);
+                RemoveMetadataHandle(tra->info_hashes);
                 break;
             }
 
@@ -617,6 +618,21 @@ void Session::OnAlert()
         }
         }
     }
+}
+
+bool Session::IsSearching(lt::info_hash_t hash)
+{
+    // Check if this torrent is part of a metadata search.
+    // Compare either v1 or v2 hash since hybrid torrents
+    // can be added with a v1 info hash and then get a v1+v2 hash
+    // and vice versa
+
+    lt::info_hash_t v1(hash.v1);
+    lt::info_hash_t v2(hash.v2);
+
+    return m_metadataSearches.count(hash) > 0
+        || (!v1.v1.is_all_zeros() && m_metadataSearches.count(v1) > 0)
+        || (!v2.v2.is_all_zeros() && m_metadataSearches.count(v2) > 0);
 }
 
 void Session::LoadTorrents()
@@ -710,7 +726,7 @@ void Session::SaveTorrents()
     auto temp = m_session->get_torrent_status(
         [this](const lt::torrent_status& st)
         {
-            return m_metadataSearches.count(st.info_hashes) == 0;
+            return !IsSearching(st.info_hashes);
         });
 
     for (lt::torrent_status& st : temp)
@@ -820,6 +836,39 @@ void Session::SaveTorrents()
             stmt->Bind(1, ih);
             stmt->Bind(2, buffer);
             stmt->Execute();
+        }
+    }
+}
+
+void Session::RemoveMetadataHandle(lt::info_hash_t hash)
+{
+    lt::info_hash_t v1(hash.v1);
+    lt::info_hash_t v2(hash.v2);
+
+    for (auto it : m_metadataSearches)
+    {
+        if (it.first == hash
+            || it.first == v1
+            || it.first == v2)
+        {
+            m_metadataSearches.erase(it.first);
+            break;
+        }
+    }
+}
+
+void Session::UpdateMetadataHandle(lt::info_hash_t hash, lt::torrent_handle handle)
+{
+    lt::info_hash_t v1(hash.v1);
+    lt::info_hash_t v2(hash.v2);
+
+    for (auto it : m_metadataSearches)
+    {
+        if (it.first == hash
+            || it.first == v1
+            || it.first == v2)
+        {
+            it.second = handle;
         }
     }
 }

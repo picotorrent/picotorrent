@@ -80,9 +80,22 @@ std::vector<libtorrent::add_torrent_params> AddMagnetLinkDialog::GetParams()
         std::string token = tokenizer.GetNextToken();
         if (!IsMagnetLinkOrInfoHash(token)) { continue; }
 
-        if (token.substr(0, 20) != "magnet:?xt=urn:btih:")
+        switch (token.size())
         {
-            token = "magnet:?xt=urn:btih:" + token;
+        case 40:
+            if (token.substr(0, 20) != "magnet:?xt=urn:btih:")
+            {
+                LOG_F(INFO, "Prepending magnet URI to v1 info hash: %s", token.c_str());
+                token = "magnet:?xt=urn:btih:" + token;
+            }
+            break;
+        case 68:
+            if (token.substr(0, 20) != "magnet:?xt=urn:btmh:")
+            {
+                LOG_F(INFO, "Prepending magnet URI to v2 info hash: %s", token.c_str());
+                token = "magnet:?xt=urn:btmh:" + token;
+            }
+            break;
         }
 
         lt::error_code ec;
@@ -102,14 +115,17 @@ std::vector<libtorrent::add_torrent_params> AddMagnetLinkDialog::GetParams()
 
 bool AddMagnetLinkDialog::IsMagnetLinkOrInfoHash(wxString const& str)
 {
-    std::regex infoHash("[a-fA-F\\d]{40}", std::regex_constants::icase);
+    std::regex infoHashV1("[a-fA-F\\d]{40}", std::regex_constants::icase);
+    std::regex infoHashV2("[a-fA-F\\d]{68}", std::regex_constants::icase);
 
-    if (std::regex_match(str.ToStdString(), infoHash))
+    if (std::regex_match(str.ToStdString(), infoHashV1)
+        || std::regex_match(str.ToStdString(), infoHashV2))
     {
         return true;
     }
 
-    if (str.StartsWith("magnet:?xt=urn:btih:"))
+    if (str.StartsWith("magnet:?xt=urn:btih:")
+        || str.StartsWith("magnet:?xt=urn:btmh:"))
     {
         return true;
     }
