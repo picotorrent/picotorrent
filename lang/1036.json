@@ -249,7 +249,7 @@
         "last_upload": "Derniere diffusion",
         "last_activity_just_now": "maintenant",
         "last_activity_unknown": "aucune",
-        "total_download": "Téléchargement total",
+        "total_download": "Réception total",
         "total_upload": "Émission totale",
         "yes": "Oui",
         "no": "Non",
@@ -276,6 +276,7 @@
         "status_ready": "Prêt",
         "status_adding_files": "Ajout des fichiers au stockage",
         "status_hashing_piece": "Hashing de la pièce {0} sur {1}",
-        "status_saving_torrent": "Sauvegarde du torrent"
+        "status_saving_torrent": "Sauvegarde du torrent",
+        "leeches" : "Sangsues"
     }
 }
