@@ -25,6 +25,7 @@
 #include "dialogs/aboutdialog.hpp"
 #include "dialogs/addmagnetlinkdialog.hpp"
 #include "dialogs/addtorrentdialog.hpp"
+#include "dialogs/createtorrentdialog.hpp"
 #include "dialogs/preferencesdialog.hpp"
 #include "ids.hpp"
 #include "models/torrentlistmodel.hpp"
@@ -223,6 +224,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     this->Bind(wxEVT_ICONIZE, &MainFrame::OnIconize, this, wxID_ANY);
     this->Bind(wxEVT_MENU, &MainFrame::OnFileAddTorrent, this, ptID_EVT_ADD_TORRENT);
     this->Bind(wxEVT_MENU, &MainFrame::OnFileAddMagnetLink, this, ptID_EVT_ADD_MAGNET_LINK);
+    this->Bind(wxEVT_MENU, &MainFrame::OnFileCreateTorrent, this, ptID_EVT_CREATE_TORRENT);
     this->Bind(wxEVT_MENU, [this](wxCommandEvent&) { this->Close(true); }, ptID_EVT_EXIT);
     this->Bind(wxEVT_MENU, &MainFrame::OnViewPreferences, this, ptID_EVT_VIEW_PREFERENCES);
     this->Bind(wxEVT_MENU, &MainFrame::OnHelpAbout, this, ptID_EVT_ABOUT);
@@ -508,6 +510,8 @@ wxMenuBar* MainFrame::CreateMainMenu()
     fileMenu->Append(ptID_EVT_ADD_TORRENT, i18n("amp_add_torrent"));
     fileMenu->Append(ptID_EVT_ADD_MAGNET_LINK, i18n("amp_add_magnet_link_s"));
     fileMenu->AppendSeparator();
+    fileMenu->Append(ptID_EVT_CREATE_TORRENT, i18n("amp_create_torrent"));
+    fileMenu->AppendSeparator();
     fileMenu->Append(ptID_EVT_EXIT, i18n("amp_exit"));
 
     m_viewMenu = new wxMenu();
@@ -588,6 +592,18 @@ void MainFrame::OnFileAddTorrent(wxCommandEvent&)
     std::vector<lt::add_torrent_params> params;
     this->ParseTorrentFiles(params, converted);
     this->AddTorrents(params);
+}
+
+void MainFrame::OnFileCreateTorrent(wxCommandEvent&)
+{
+    auto dlg = new Dialogs::CreateTorrentDialog(this, wxID_ANY);
+    dlg->Show();
+    dlg->Bind(wxEVT_CLOSE_WINDOW,
+        [dlg](wxCloseEvent&)
+        {
+            OutputDebugString(L"destroying dlg");
+            dlg->Destroy();
+        });
 }
 
 void MainFrame::OnHelpAbout(wxCommandEvent&)

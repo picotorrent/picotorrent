@@ -64,6 +64,7 @@ namespace Models
         void OnClose(wxCloseEvent&);
         void OnFileAddMagnetLink(wxCommandEvent&);
         void OnFileAddTorrent(wxCommandEvent&);
+        void OnFileCreateTorrent(wxCommandEvent&);
         void OnHelpAbout(wxCommandEvent&);
         void OnIconize(wxIconizeEvent&);
         void OnTaskBarLeftDown(wxTaskBarIconEvent&);
