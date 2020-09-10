@@ -357,14 +357,14 @@ void AddTorrentDialog::SetFilePriorities(wxDataViewItemArray& items, lt::downloa
     auto& param = m_params.at(m_torrents->GetSelection());
     auto fileIndices = m_filesModel->GetFileIndices(items);
 
-    for (int idx : fileIndices)
+    for (lt::file_index_t idx : fileIndices)
     {
-        if (param.file_priorities.size() <= idx)
+        if (param.file_priorities.size() <= static_cast<int>(idx))
         {
-            param.file_priorities.resize(size_t(idx) + 1, lt::default_priority);
+            param.file_priorities.resize(static_cast<int>(idx) + 1, lt::default_priority);
         }
 
-        param.file_priorities.at(idx) = prio;
+        param.file_priorities.at(static_cast<int>(idx)) = prio;
     }
 }
 
@@ -381,16 +381,17 @@ void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent& evt)
     auto& param = m_params.at(m_torrents->GetSelection());
     auto fileIndices = m_filesModel->GetFileIndices(items);
     auto firstPrio = param.file_priorities.size() > 0
-        ? param.file_priorities[fileIndices[0]]
+        ? param.file_priorities[static_cast<int>(fileIndices[0])]
         : lt::default_priority;
 
     auto allSamePrio = std::all_of(
         fileIndices.begin(),
         fileIndices.end(),
-        [&](int i)
+        [&](lt::file_index_t i)
         {
-            auto p = param.file_priorities.size() >= i + 1
-                ? param.file_priorities[i]
+            int i32 = static_cast<int>(i);
+            auto p = param.file_priorities.size() >= i32 + 1
+                ? param.file_priorities[i32]
                 : lt::default_priority;
             return firstPrio == p;
         });

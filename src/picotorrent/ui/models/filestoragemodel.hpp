@@ -42,7 +42,7 @@ namespace Models
         unsigned int GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const wxOVERRIDE;
 
         void ClearNodes();
-        std::vector<int> GetFileIndices(wxDataViewItemArray&);
+        std::vector<libtorrent::file_index_t> GetFileIndices(wxDataViewItemArray&);
         wxDataViewItem GetRootItem();
         void RebuildTree(std::shared_ptr<const libtorrent::torrent_info> ti);
         void UpdatePriorities(const std::vector<libtorrent::download_priority_t>& priorities);
@@ -53,7 +53,7 @@ namespace Models
         {
             std::string name;
             int64_t size;
-            int index;
+            libtorrent::file_index_t index;
             libtorrent::download_priority_t priority;
             float progress;
 
@@ -61,12 +61,11 @@ namespace Models
             std::map<std::string, std::shared_ptr<Node>> children;
         };
 
-        void FillIndices(Node* node, std::vector<int>& indices);
+        void FillIndices(Node* node, std::vector<libtorrent::file_index_t>& indices);
         wxIcon GetIconForFile(std::string const& fileName) const;
 
-        wxIcon m_folderIcon;
         std::shared_ptr<Node> m_root;
-        std::map<int, std::shared_ptr<Node>> m_map;
+        std::map<libtorrent::file_index_t, std::shared_ptr<Node>> m_map;
         std::map<std::string, wxIcon> m_icons;
 
         std::function<void(wxDataViewItemArray&, libtorrent::download_priority_t)> m_priorityChangedCallback;
