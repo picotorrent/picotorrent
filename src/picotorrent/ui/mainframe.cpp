@@ -596,12 +596,11 @@ void MainFrame::OnFileAddTorrent(wxCommandEvent&)
 
 void MainFrame::OnFileCreateTorrent(wxCommandEvent&)
 {
-    auto dlg = new Dialogs::CreateTorrentDialog(this, wxID_ANY);
+    auto dlg = new Dialogs::CreateTorrentDialog(this, wxID_ANY, m_session);
     dlg->Show();
     dlg->Bind(wxEVT_CLOSE_WINDOW,
         [dlg](wxCloseEvent&)
         {
-            OutputDebugString(L"destroying dlg");
             dlg->Destroy();
         });
 }

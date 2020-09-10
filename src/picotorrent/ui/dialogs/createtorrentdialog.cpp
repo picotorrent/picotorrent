@@ -1,12 +1,13 @@
 #include "createtorrentdialog.hpp"
 
-#include <filesystem>
-
 #include <fmt/format.h>
+#include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/create_torrent.hpp>
+#include <libtorrent/torrent_info.hpp>
 #include <wx/hyperlink.h>
 #include <wx/tokenzr.h>
 
+#include "../../bittorrent/session.hpp"
 #include "../../buildinfo.hpp"
 #include "../../core/utils.hpp"
 #include "../translator.hpp"
@@ -15,18 +16,49 @@ wxDEFINE_EVENT(ptEVT_CREATE_TORRENT_THREAD_START, wxThreadEvent);
 wxDEFINE_EVENT(ptEVT_CREATE_TORRENT_THREAD_STOP, wxThreadEvent);
 wxDEFINE_EVENT(ptEVT_CREATE_TORRENT_THREAD_PROGRESS, wxThreadEvent);
 
-namespace fs = std::filesystem;
 namespace lt = libtorrent;
+using pt::BitTorrent::Session;
 using pt::UI::Dialogs::CreateTorrentDialog;
+
+std::string branch_path(std::string const& f)
+{
+    if (f.empty()) return f;
+
+#ifdef TORRENT_WINDOWS
+    if (f == "\\\\") return "";
+#endif
+    if (f == "/") return "";
+
+    auto len = f.size();
+    // if the last character is / or \ ignore it
+    if (f[len - 1] == '/' || f[len - 1] == '\\') --len;
+    while (len > 0) {
+        --len;
+        if (f[len] == '/' || f[len] == '\\')
+            break;
+    }
+
+    if (f[len] == '/' || f[len] == '\\') ++len;
+    return std::string(f.c_str(), len);
+}
+
+enum class Mode
+{
+    v1,
+    Hybrid,
+    v2
+};
 
 struct CreateTorrentDialog::CreateTorrentParams
 {
     std::string comment;
     std::string creator;
-    fs::path path;
+    std::string path;
     std::vector<std::string> trackers;
     std::vector<std::string> url_seeds;
     bool priv;
+    bool add;
+    Mode mode;
 };
 
 struct ProgressPayload
@@ -38,10 +70,12 @@ struct ProgressPayload
 struct StopPayload
 {
     lt::entry e;
+    std::string bp;
 };
 
-CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id)
-    : wxDialog(parent, id, i18n("create_torrent"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, Session* session)
+    : wxDialog(parent, id, i18n("create_torrent"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+    m_session(session)
 {
     auto pathSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("files"));
     m_numFiles = new wxStaticText(pathSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
@@ -65,6 +99,8 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id)
     m_mode->Select(1);
 
     m_private = new wxCheckBox(optionsSizer->GetStaticBox(), wxID_ANY, i18n("private"));
+    m_addToSession = new wxCheckBox(optionsSizer->GetStaticBox(), wxID_ANY, i18n("add_to_session"));
+    m_addToSession->SetValue(true);
     m_comment = new wxTextCtrl(optionsSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
     m_creator = new wxTextCtrl(optionsSizer->GetStaticBox(), wxID_ANY, fmt::format("PicoTorrent {0}", pt::BuildInfo::version()));
 
@@ -77,7 +113,11 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id)
     optionsGrid->Add(new wxStaticText(optionsSizer->GetStaticBox(), wxID_ANY, i18n("creator")), 0, wxALL, FromDIP(3));
     optionsGrid->Add(m_creator, 1, wxEXPAND | wxALL, FromDIP(3));
     optionsGrid->AddStretchSpacer(0);
-    optionsGrid->Add(m_private, 1, wxALL, FromDIP(3));
+
+    auto optsRowSizer = new wxBoxSizer(wxHORIZONTAL);
+    optsRowSizer->Add(m_private, 1);
+    optsRowSizer->Add(m_addToSession, 1);
+    optionsGrid->Add(optsRowSizer, 1, wxALL, FromDIP(3));
 
     optionsSizer->Add(optionsGrid, 1, wxEXPAND);
 
@@ -159,8 +199,23 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id)
             }
 
             auto sp = evt.GetPayload<StopPayload>();
-            std::ofstream out(save.GetPath().ToStdString(), std::ios_base::binary);
-            lt::bencode(std::ostream_iterator<char>(out), sp.e);
+            {
+                std::ofstream out(save.GetPath().ToStdString(), std::ios_base::binary);
+                lt::bencode(std::ostream_iterator<char>(out), sp.e);
+            }
+
+            if (!m_addToSession->IsChecked())
+            {
+                return;
+            }
+
+            lt::add_torrent_params p;
+            p.save_path = sp.bp;
+            p.ti = std::make_shared<lt::torrent_info>(save.GetPath().ToStdString());
+
+            m_session->AddTorrent(p);
+
+            EndDialog(wxOK);
         });
 
     this->Bind(ptEVT_CREATE_TORRENT_THREAD_PROGRESS,
@@ -193,10 +248,14 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
 {
     wxQueueEvent(this, new wxThreadEvent(ptEVT_CREATE_TORRENT_THREAD_START));
 
-    lt::file_storage fs;
-    lt::add_files(fs, p->path.string());
+    lt::create_flags_t flags = {};
+    if (p->mode == Mode::v1) { flags = lt::create_torrent::v1_only; }
+    if (p->mode == Mode::v2) { flags = lt::create_torrent::v2_only; }
 
-    lt::create_torrent ct(fs, 0);
+    lt::file_storage fs;
+    lt::add_files(fs, p->path, flags);
+
+    lt::create_torrent ct(fs, 0, flags);
     ct.set_comment(p->comment.c_str());
     ct.set_creator(p->creator.c_str());
     ct.set_priv(p->priv);
@@ -212,10 +271,12 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
         ct.add_url_seed(p->url_seeds.at(i));
     }
 
+    std::string branch = branch_path(p->path);
+
     lt::error_code ec;
     lt::set_piece_hashes(
         ct,
-        p->path.parent_path().string(),
+        branch,
         [this, &ct](lt::piece_index_t idx)
         {
             ProgressPayload pp;
@@ -246,6 +307,7 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
     }
 
     StopPayload sp;
+    sp.bp = branch;
     sp.e = e;
 
     auto sevt = new wxThreadEvent(ptEVT_CREATE_TORRENT_THREAD_STOP);
@@ -280,8 +342,10 @@ void CreateTorrentDialog::OnCreateTorrent(wxCommandEvent&)
     auto params = std::make_unique<CreateTorrentParams>();
     params->comment = m_comment->GetValue();
     params->creator = m_creator->GetValue();
-    params->path = m_path->GetValue().ToStdWstring();
+    params->path = m_path->GetValue().ToStdString();
     params->priv = m_private->IsChecked();
+    params->add = m_addToSession->IsChecked();
+    params->mode = static_cast<Mode>(m_mode->GetSelection());
 
     {
         wxStringTokenizer tokenizer(m_trackers->GetValue());

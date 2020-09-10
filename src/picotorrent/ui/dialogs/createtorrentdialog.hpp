@@ -12,6 +12,10 @@ class wxComboBox;
 
 namespace pt
 {
+namespace BitTorrent
+{
+    class Session;
+}
 namespace UI
 {
 namespace Dialogs
@@ -19,7 +23,7 @@ namespace Dialogs
     class CreateTorrentDialog : public wxDialog
     {
     public:
-        explicit CreateTorrentDialog(wxWindow* parent, wxWindowID id);
+        explicit CreateTorrentDialog(wxWindow* parent, wxWindowID id, BitTorrent::Session* session);
         virtual ~CreateTorrentDialog();
 
     private:
@@ -43,6 +47,7 @@ namespace Dialogs
         wxButton* m_selectDir;
         wxChoice* m_mode;
         wxCheckBox* m_private;
+        wxCheckBox* m_addToSession;
         wxTextCtrl* m_comment;
         wxTextCtrl* m_creator;
         wxTextCtrl* m_trackers;
@@ -51,6 +56,7 @@ namespace Dialogs
         wxGauge* m_progress;
         wxButton* m_create;
 
+        BitTorrent::Session* m_session;
         std::thread m_worker;
     };
 }

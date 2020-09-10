@@ -276,6 +276,7 @@
         "status_ready": "Ready",
         "status_adding_files": "Adding files to storage",
         "status_hashing_piece": "Hashing piece {0} of {1}",
-        "status_saving_torrent": "Saving torrent"
+        "status_saving_torrent": "Saving torrent",
+        "add_to_session": "Add to session"
     }
 }
