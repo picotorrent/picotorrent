@@ -277,6 +277,7 @@
         "status_adding_files": "Ajout des fichiers au stockage",
         "status_hashing_piece": "Hashing de la pièce {0} sur {1}",
         "status_saving_torrent": "Sauvegarde du torrent",
+        "add_to_session": "Ajouter à la session",
         "leeches" : "Sangsues"
     }
 }
