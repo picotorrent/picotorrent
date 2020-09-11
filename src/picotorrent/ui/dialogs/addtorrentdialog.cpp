@@ -344,7 +344,10 @@ void AddTorrentDialog::Load(size_t index)
         // Files
         m_filesModel->RebuildTree(params.ti);
         m_filesModel->UpdatePriorities(params.file_priorities);
-        m_filesView->Expand(m_filesModel->GetRootItem());
+
+        wxDataViewItemArray children;
+        m_filesModel->GetChildren(m_filesModel->GetRootItem(), children);
+        for (auto const& child : children) { m_filesView->Expand(child); }
     }
     else
     {

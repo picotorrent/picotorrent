@@ -19,7 +19,8 @@ static wxIcon FolderIcon;
 static wxIcon UnknownIcon;
 
 FileStorageModel::FileStorageModel(std::function<void(wxDataViewItemArray&, lt::download_priority_t)> const& priorityChanged)
-    : m_priorityChangedCallback(priorityChanged)
+    : m_priorityChangedCallback(priorityChanged),
+    m_root(std::make_shared<Node>())
 {
     if (!FolderIcon.IsOk())
     {
@@ -47,7 +48,7 @@ FileStorageModel::FileStorageModel(std::function<void(wxDataViewItemArray&, lt::
 
 void FileStorageModel::ClearNodes()
 {
-    m_root = nullptr;
+    m_root->children.clear();
     m_map.clear();
     m_icons.clear();
 }
@@ -59,7 +60,7 @@ std::vector<lt::file_index_t> FileStorageModel::GetFileIndices(wxDataViewItemArr
     for (auto const& item : items)
     {
         FillIndices(
-            reinterpret_cast<Node*>(item.GetID()),
+            static_cast<Node*>(item.GetID()),
             result);
     }
 
@@ -86,9 +87,7 @@ void FileStorageModel::FillIndices(Node* node, std::vector<lt::file_index_t>& in
 
 wxDataViewItem FileStorageModel::GetRootItem()
 {
-    return m_root
-        ? wxDataViewItem(reinterpret_cast<void*>(m_root.get()))
-        : wxDataViewItem();
+    return wxDataViewItem(static_cast<void*>(m_root.get()));
 }
 
 void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
@@ -97,20 +96,15 @@ void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
 
     if (ti->num_files() == 0)
     {
-        m_root = nullptr;
+        m_root->children.clear();
         return;
     }
 
-    m_root = std::make_shared<Node>();
-    m_root->name = ti->name();
-    m_root->priority = lt::default_priority;
-
-    std::shared_ptr<Node> currentNode = nullptr;
     lt::file_storage const& files = ti->files();
 
     for (lt::file_index_t idx : files.file_range())
     {
-        currentNode = m_root;
+        std::shared_ptr<Node> currentNode = m_root;
 
         std::vector<std::string> parts;
         boost::split(
@@ -118,8 +112,10 @@ void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
             files.file_path(idx),
             [](char c) { return c == '\\'; });
 
-        parts.erase(parts.begin());
-        parts.pop_back();
+        if (parts.size() > 0)
+        {
+            parts.pop_back();
+        }
 
         for (auto const& part : parts)
         {
@@ -197,7 +193,7 @@ void FileStorageModel::UpdatePriorities(const std::vector<libtorrent::download_p
         node->priority = prio;
 
         this->ValueChanged(
-            wxDataViewItem(reinterpret_cast<void*>(node.get())),
+            wxDataViewItem(static_cast<void*>(node.get())),
             Columns::Priority);
     }
 }
@@ -217,7 +213,7 @@ void FileStorageModel::UpdateProgress(std::vector<int64_t> const& progress)
         node->progress = calculatedProgress;
 
         this->ValueChanged(
-            wxDataViewItem(reinterpret_cast<void*>(node.get())),
+            wxDataViewItem(static_cast<void*>(node.get())),
             Columns::Progress);
     }
 }
@@ -251,7 +247,7 @@ void FileStorageModel::GetValue(wxVariant &variant, const wxDataViewItem &item, 
 {
     wxASSERT(item.IsOk());
 
-    Node* node = reinterpret_cast<Node*>(item.GetID());
+    Node* node = static_cast<Node*>(item.GetID());
 
     switch (col)
     {
@@ -313,7 +309,7 @@ bool FileStorageModel::SetValue(const wxVariant &variant, const wxDataViewItem &
 {
     wxASSERT(item.IsOk());
 
-    Node* node = reinterpret_cast<Node*>(item.GetID());
+    Node* node = static_cast<Node*>(item.GetID());
 
     switch (col)
     {
@@ -324,7 +320,7 @@ bool FileStorageModel::SetValue(const wxVariant &variant, const wxDataViewItem &
             if (node->priority != prio)
             {
                 node->priority = prio;
-                arr.push_back(wxDataViewItem(reinterpret_cast<void*>(node)));
+                arr.push_back(wxDataViewItem(static_cast<void*>(node)));
             }
 
             for (auto const [key,n] : node->children) { recursiveSkip(arr, n.get(), prio); }
@@ -333,11 +329,11 @@ bool FileStorageModel::SetValue(const wxVariant &variant, const wxDataViewItem &
         wxDataViewCheckIconText checkIconText;
         checkIconText << variant;
 
-        wxDataViewItemArray changed;
         lt::download_priority_t prio = checkIconText.GetCheckedState() == wxCHK_CHECKED
             ? lt::default_priority
             : lt::dont_download;
 
+        wxDataViewItemArray changed;
         recursiveSkip(changed, node, prio);
 
         this->ItemsChanged(changed);
@@ -353,50 +349,34 @@ bool FileStorageModel::SetValue(const wxVariant &variant, const wxDataViewItem &
 
 wxDataViewItem FileStorageModel::GetParent(const wxDataViewItem &item) const
 {
-    if (!item.IsOk())
-    {
-        return wxDataViewItem(0);
-    }
+    wxASSERT(item.IsOk());
 
-    Node* node = reinterpret_cast<Node*>(item.GetID());
+    Node* node = static_cast<Node*>(item.GetID());
 
-    if (node == m_root.get())
-    {
-        return wxDataViewItem(0);
-    }
-
-    return wxDataViewItem(reinterpret_cast<void*>(node->parent.get()));
+    return node->parent.get() == m_root.get()
+        ? wxDataViewItem(0)
+        : wxDataViewItem(static_cast<void*>(node->parent.get()));
 }
 
 bool FileStorageModel::IsContainer(const wxDataViewItem &item) const
 {
-    if (!item.IsOk())
-    {
-        return true;
-    }
-
-    Node* node = reinterpret_cast<Node*>(item.GetID());
+    // Override this to indicate of item is a container, i.e. if it can have child items.
+    if (!item.IsOk()) { return true; }
+    Node* node = static_cast<Node*>(item.GetID());
     return !(node->children.empty());
 }
 
-unsigned int FileStorageModel::GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const
+unsigned int FileStorageModel::GetChildren(const wxDataViewItem &item, wxDataViewItemArray &array) const
 {
-    if (!m_root)
-    {
-        return 0;
-    }
-
-    Node* node = reinterpret_cast<Node*>(parent.GetID());
-
-    if (!node)
-    {
-        array.Add(wxDataViewItem(reinterpret_cast<void*>(m_root.get())));
-        return 1;
-    }
+    Node* node = item.IsOk()
+        ? static_cast<Node*>(item.GetID()) != nullptr
+        ? static_cast<Node*>(item.GetID())
+        : m_root.get()
+        : m_root.get();
 
     for (auto p : node->children)
     {
-        array.Add(wxDataViewItem(reinterpret_cast<void*>(p.second.get())));
+        array.Add(wxDataViewItem(static_cast<void*>(p.second.get())));
     }
 
     return node->children.size();

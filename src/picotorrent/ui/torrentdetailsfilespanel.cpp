@@ -55,7 +55,10 @@ void TorrentDetailsFilesPanel::Refresh(BitTorrent::TorrentHandle* torrent)
             m_torrentPrevFileCount = tf->num_files();
 
             m_filesModel->RebuildTree(tf);
-            m_fileList->Expand(m_filesModel->GetRootItem());
+
+            wxDataViewItemArray children;
+            m_filesModel->GetChildren(m_filesModel->GetRootItem(), children);
+            for (auto const& child : children) { m_fileList->Expand(child); }
         }
 
         std::vector<int64_t> progress;
