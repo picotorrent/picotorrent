@@ -3,6 +3,7 @@
 #include "../../core/utils.hpp"
 #include "../translator.hpp"
 
+#include <boost/algorithm/string.hpp>
 #include <filesystem>
 #include <shellapi.h>
 
@@ -15,9 +16,11 @@ namespace lt = libtorrent;
 using pt::UI::Models::FileStorageModel;
 
 static wxIcon FolderIcon;
+static wxIcon UnknownIcon;
 
 FileStorageModel::FileStorageModel(std::function<void(wxDataViewItemArray&, lt::download_priority_t)> const& priorityChanged)
-    : m_priorityChangedCallback(priorityChanged)
+    : m_priorityChangedCallback(priorityChanged),
+    m_root(std::make_shared<Node>())
 {
     if (!FolderIcon.IsOk())
     {
@@ -31,30 +34,40 @@ FileStorageModel::FileStorageModel(std::function<void(wxDataViewItemArray&, lt::
 
         FolderIcon.CreateFromHICON(shfi.hIcon);
     }
+
+    if (!UnknownIcon.IsOk())
+    {
+        SHSTOCKICONINFO sii;
+        sii.cbSize = sizeof(sii);
+        if (SUCCEEDED(SHGetStockIconInfo(SIID_DOCNOASSOC, SHGSI_ICON | SHGSI_SMALLICON, &sii)))
+        {
+            UnknownIcon.CreateFromHICON(sii.hIcon);
+        }
+    }
 }
 
 void FileStorageModel::ClearNodes()
 {
-    m_root = nullptr;
+    m_root->children.clear();
     m_map.clear();
     m_icons.clear();
 }
 
-std::vector<int> FileStorageModel::GetFileIndices(wxDataViewItemArray& items)
+std::vector<lt::file_index_t> FileStorageModel::GetFileIndices(wxDataViewItemArray& items)
 {
-    std::vector<int> result;
+    std::vector<lt::file_index_t> result;
 
     for (auto const& item : items)
     {
         FillIndices(
-            reinterpret_cast<Node*>(item.GetID()),
+            static_cast<Node*>(item.GetID()),
             result);
     }
 
     return result;
 }
 
-void FileStorageModel::FillIndices(Node* node, std::vector<int>& indices)
+void FileStorageModel::FillIndices(Node* node, std::vector<lt::file_index_t>& indices)
 {
     if (node->children.empty())
     {
@@ -74,9 +87,7 @@ void FileStorageModel::FillIndices(Node* node, std::vector<int>& indices)
 
 wxDataViewItem FileStorageModel::GetRootItem()
 {
-    return m_root
-        ? wxDataViewItem(reinterpret_cast<void*>(m_root.get()))
-        : wxDataViewItem();
+    return wxDataViewItem(static_cast<void*>(m_root.get()));
 }
 
 void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
@@ -85,112 +96,78 @@ void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
 
     if (ti->num_files() == 0)
     {
-        m_root = nullptr;
+        m_root->children.clear();
         return;
     }
 
-    m_root = std::make_shared<Node>();
-    m_root->name = ti->name();
-    m_root->priority = lt::default_priority;
-
     lt::file_storage const& files = ti->files();
 
-    if (files.num_files() > 1)
+    for (lt::file_index_t idx : files.file_range())
     {
-        for (int i = 0; i < files.num_files(); i++)
+        std::shared_ptr<Node> currentNode = m_root;
+
+        std::vector<std::string> parts;
+        boost::split(
+            parts,
+            files.file_path(idx),
+            [](char c) { return c == '\\'; });
+
+        if (parts.size() > 0)
         {
-            lt::file_index_t idx{ i };
-            std::string path = files.file_path(idx);
-            int64_t size = files.file_size(idx);
-
-            wxStringTokenizer tokenizer(path, "\\");
-
-            std::shared_ptr<Node> current = m_root;
-
-            while (tokenizer.HasMoreTokens())
-            {
-                std::string part = tokenizer.GetNextToken();
-                if (part == m_root->name) { continue; }
-
-                auto iter = current->children.find(part);
-
-                if (iter == current->children.end()
-                    || tokenizer.CountTokens() == 0)
-                {
-                    std::shared_ptr<Node> node = std::make_shared<Node>();
-                    node->name = part;
-                    node->parent = current;
-                    node->priority = lt::default_priority;
-
-                    current->children.insert({ node->name, node });
-
-                    std::size_t pos = node->name.find_last_of(".");
-
-                    if (pos != std::string::npos)
-                    {
-                        std::string extension = node->name.substr(pos);
-
-                        if (m_icons.find(extension) == m_icons.end())
-                        {
-                            SHFILEINFO shfi = { 0 };
-                            SHGetFileInfo(
-                                Utils::toStdWString(extension).c_str(),
-                                FILE_ATTRIBUTE_NORMAL,
-                                &shfi,
-                                sizeof(SHFILEINFO),
-                                SHGFI_USEFILEATTRIBUTES | SHGFI_ICON | SHGFI_SMALLICON);
-
-                            wxIcon icon;
-                            icon.CreateFromHICON(shfi.hIcon);
-
-                            m_icons.insert({ extension, icon });
-                        }
-                    }
-
-                    if (tokenizer.CountTokens() == 0)
-                    {
-                        node->index = i;
-                        node->size = files.file_size(idx);
-
-                        m_map.insert({ i, node });
-                    }
-                    else
-                    {
-                        OutputDebugStringA(path.c_str());
-                        OutputDebugStringA("\n");
-                    }
-                }
-
-                current = current->children.at(part);
-            }
+            parts.pop_back();
         }
-    }
-    else if (files.num_files() > 0)
-    {
-        m_root->index = 0;
-        m_root->size = files.file_size(lt::file_index_t(0));
 
-        std::size_t pos = m_root->name.find_last_of(".");
+        for (auto const& part : parts)
+        {
+            auto np = currentNode->children.find(part) != currentNode->children.end()
+                ? currentNode->children.at(part)
+                : nullptr;
+
+            if (!np)
+            {
+                np = std::make_shared<Node>();
+                np->name = part;
+                np->parent = currentNode;
+                np->priority = lt::default_priority;
+
+                currentNode->children.insert({ np->name, np });
+            }
+
+            currentNode = np;
+        }
+
+        auto n = std::make_shared<Node>();
+        n->index = idx;
+        n->name = files.file_name(idx).to_string();
+        n->parent = currentNode;
+        n->priority = lt::default_priority;
+        n->size = files.file_size(idx);
+
+        currentNode->children.insert({ n->name, n });
+        m_map.insert({ idx, n });
+
+        std::size_t pos = n->name.find_last_of(".");
 
         if (pos != std::string::npos)
         {
-            std::string extension = m_root->name.substr(pos);
+            std::string extension = n->name.substr(pos);
 
-            SHFILEINFO shfi = { 0 };
-            SHGetFileInfo(
-                wxString(extension).ToStdWstring().c_str(),
-                FILE_ATTRIBUTE_NORMAL,
-                &shfi,
-                sizeof(SHFILEINFO),
-                SHGFI_USEFILEATTRIBUTES | SHGFI_ICON | SHGFI_SMALLICON);
+            if (m_icons.find(extension) == m_icons.end())
+            {
+                SHFILEINFO shfi = { 0 };
+                SHGetFileInfo(
+                    Utils::toStdWString(extension).c_str(),
+                    FILE_ATTRIBUTE_NORMAL,
+                    &shfi,
+                    sizeof(SHFILEINFO),
+                    SHGFI_USEFILEATTRIBUTES | SHGFI_ICON | SHGFI_SMALLICON);
 
-            wxIcon icon;
-            icon.CreateFromHICON(shfi.hIcon);
+                wxIcon icon;
+                icon.CreateFromHICON(shfi.hIcon);
 
-            m_icons.insert({ extension, icon });
+                m_icons.insert({ extension, icon });
+            }
         }
-
-        m_map.insert({ 0, m_root });
     }
 
     this->Cleared();
@@ -203,9 +180,9 @@ void FileStorageModel::UpdatePriorities(const std::vector<libtorrent::download_p
         lt::download_priority_t prio = lt::default_priority;
         std::shared_ptr<Node> const& node = item.second;
 
-        if (priorities.size() >= item.first + 1)
+        if (priorities.size() >= static_cast<int>(item.first) + 1)
         {
-            prio = priorities.at(item.first);
+            prio = priorities.at(static_cast<int>(item.first));
         }
 
         if (node->priority == prio)
@@ -216,7 +193,7 @@ void FileStorageModel::UpdatePriorities(const std::vector<libtorrent::download_p
         node->priority = prio;
 
         this->ValueChanged(
-            wxDataViewItem(reinterpret_cast<void*>(node.get())),
+            wxDataViewItem(static_cast<void*>(node.get())),
             Columns::Priority);
     }
 }
@@ -225,7 +202,7 @@ void FileStorageModel::UpdateProgress(std::vector<int64_t> const& progress)
 {
     for (size_t i = 0; i < progress.size(); i++)
     {
-        std::shared_ptr<Node> const& node = m_map.at(static_cast<int>(i));
+        std::shared_ptr<Node> const& node = m_map.at(lt::file_index_t{ static_cast<int>(i) });
         float calculatedProgress = .0f;
 
         if (progress.at(i) > 0)
@@ -236,7 +213,7 @@ void FileStorageModel::UpdateProgress(std::vector<int64_t> const& progress)
         node->progress = calculatedProgress;
 
         this->ValueChanged(
-            wxDataViewItem(reinterpret_cast<void*>(node.get())),
+            wxDataViewItem(static_cast<void*>(node.get())),
             Columns::Progress);
     }
 }
@@ -244,7 +221,7 @@ void FileStorageModel::UpdateProgress(std::vector<int64_t> const& progress)
 wxIcon FileStorageModel::GetIconForFile(std::string const& fileName) const
 {
     std::size_t pos = fileName.find_last_of(".");
-    if (pos == std::string::npos) { return wxNullIcon; }
+    if (pos == std::string::npos) { return UnknownIcon; }
 
     std::string extension = fileName.substr(pos);
 
@@ -253,7 +230,7 @@ wxIcon FileStorageModel::GetIconForFile(std::string const& fileName) const
         return m_icons.at(extension);
     }
 
-    return wxNullIcon;
+    return UnknownIcon;
 }
 
 unsigned int FileStorageModel::GetColumnCount() const
@@ -270,7 +247,7 @@ void FileStorageModel::GetValue(wxVariant &variant, const wxDataViewItem &item, 
 {
     wxASSERT(item.IsOk());
 
-    Node* node = reinterpret_cast<Node*>(item.GetID());
+    Node* node = static_cast<Node*>(item.GetID());
 
     switch (col)
     {
@@ -332,7 +309,7 @@ bool FileStorageModel::SetValue(const wxVariant &variant, const wxDataViewItem &
 {
     wxASSERT(item.IsOk());
 
-    Node* node = reinterpret_cast<Node*>(item.GetID());
+    Node* node = static_cast<Node*>(item.GetID());
 
     switch (col)
     {
@@ -343,7 +320,7 @@ bool FileStorageModel::SetValue(const wxVariant &variant, const wxDataViewItem &
             if (node->priority != prio)
             {
                 node->priority = prio;
-                arr.push_back(wxDataViewItem(reinterpret_cast<void*>(node)));
+                arr.push_back(wxDataViewItem(static_cast<void*>(node)));
             }
 
             for (auto const [key,n] : node->children) { recursiveSkip(arr, n.get(), prio); }
@@ -352,11 +329,11 @@ bool FileStorageModel::SetValue(const wxVariant &variant, const wxDataViewItem &
         wxDataViewCheckIconText checkIconText;
         checkIconText << variant;
 
-        wxDataViewItemArray changed;
         lt::download_priority_t prio = checkIconText.GetCheckedState() == wxCHK_CHECKED
             ? lt::default_priority
             : lt::dont_download;
 
+        wxDataViewItemArray changed;
         recursiveSkip(changed, node, prio);
 
         this->ItemsChanged(changed);
@@ -372,50 +349,34 @@ bool FileStorageModel::SetValue(const wxVariant &variant, const wxDataViewItem &
 
 wxDataViewItem FileStorageModel::GetParent(const wxDataViewItem &item) const
 {
-    if (!item.IsOk())
-    {
-        return wxDataViewItem(0);
-    }
+    wxASSERT(item.IsOk());
 
-    Node* node = reinterpret_cast<Node*>(item.GetID());
+    Node* node = static_cast<Node*>(item.GetID());
 
-    if (node == m_root.get())
-    {
-        return wxDataViewItem(0);
-    }
-
-    return wxDataViewItem(reinterpret_cast<void*>(node->parent.get()));
+    return node->parent.get() == m_root.get()
+        ? wxDataViewItem(0)
+        : wxDataViewItem(static_cast<void*>(node->parent.get()));
 }
 
 bool FileStorageModel::IsContainer(const wxDataViewItem &item) const
 {
-    if (!item.IsOk())
-    {
-        return true;
-    }
-
-    Node* node = reinterpret_cast<Node*>(item.GetID());
+    // Override this to indicate of item is a container, i.e. if it can have child items.
+    if (!item.IsOk()) { return true; }
+    Node* node = static_cast<Node*>(item.GetID());
     return !(node->children.empty());
 }
 
-unsigned int FileStorageModel::GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const
+unsigned int FileStorageModel::GetChildren(const wxDataViewItem &item, wxDataViewItemArray &array) const
 {
-    if (!m_root)
-    {
-        return 0;
-    }
-
-    Node* node = reinterpret_cast<Node*>(parent.GetID());
-
-    if (!node)
-    {
-        array.Add(wxDataViewItem(reinterpret_cast<void*>(m_root.get())));
-        return 1;
-    }
+    Node* node = item.IsOk()
+        ? static_cast<Node*>(item.GetID()) != nullptr
+        ? static_cast<Node*>(item.GetID())
+        : m_root.get()
+        : m_root.get();
 
     for (auto p : node->children)
     {
-        array.Add(wxDataViewItem(reinterpret_cast<void*>(p.second.get())));
+        array.Add(wxDataViewItem(static_cast<void*>(p.second.get())));
     }
 
     return node->children.size();

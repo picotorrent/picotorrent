@@ -55,7 +55,10 @@ void TorrentDetailsFilesPanel::Refresh(BitTorrent::TorrentHandle* torrent)
             m_torrentPrevFileCount = tf->num_files();
 
             m_filesModel->RebuildTree(tf);
-            m_fileList->Expand(m_filesModel->GetRootItem());
+
+            wxDataViewItemArray children;
+            m_filesModel->GetChildren(m_filesModel->GetRootItem(), children);
+            for (auto const& child : children) { m_fileList->Expand(child); }
         }
 
         std::vector<int64_t> progress;
@@ -88,16 +91,17 @@ void TorrentDetailsFilesPanel::ShowFileContextMenu(wxCommandEvent& evt)
     auto priorities = m_torrent->GetFilePriorities();
     auto fileIndices = m_filesModel->GetFileIndices(items);
     auto firstPrio = priorities.size() > 0
-        ? priorities[fileIndices[0]]
+        ? priorities[static_cast<int>(fileIndices[0])]
         : lt::default_priority;
 
     auto allSamePrio = std::all_of(
         fileIndices.begin(),
         fileIndices.end(),
-        [&](int i)
+        [&](lt::file_index_t i)
         {
-            auto p = priorities.size() >= i + size_t(1)
-                ? priorities[i]
+            int i32 = static_cast<int>(i);
+            auto p = priorities.size() >= i32 + size_t(1)
+                ? priorities[i32]
                 : lt::default_priority;
             return firstPrio == p;
         });
@@ -121,14 +125,15 @@ void TorrentDetailsFilesPanel::ShowFileContextMenu(wxCommandEvent& evt)
         {
             auto set = [&fileIndices, &priorities](lt::download_priority_t p)
             {
-                for (int idx : fileIndices)
+                for (lt::file_index_t idx : fileIndices)
                 {
-                    if (priorities.size() <= idx)
+                    int i32 = static_cast<int>(idx);
+                    if (priorities.size() <= i32)
                     {
-                        priorities.resize(size_t(idx) + 1, lt::default_priority);
+                        priorities.resize(size_t(i32) + 1, lt::default_priority);
                     }
 
-                    priorities.at(idx) = p;
+                    priorities.at(i32) = p;
                 }
             };
 
