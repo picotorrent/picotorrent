@@ -1,9 +1,12 @@
 #include "createtorrentdialog.hpp"
 
+#include <filesystem>
+
 #include <fmt/format.h>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/create_torrent.hpp>
 #include <libtorrent/torrent_info.hpp>
+#include <loguru.hpp>
 #include <wx/hyperlink.h>
 #include <wx/tokenzr.h>
 
@@ -14,8 +17,10 @@
 
 wxDEFINE_EVENT(ptEVT_CREATE_TORRENT_THREAD_START, wxThreadEvent);
 wxDEFINE_EVENT(ptEVT_CREATE_TORRENT_THREAD_STOP, wxThreadEvent);
+wxDEFINE_EVENT(ptEVT_CREATE_TORRENT_THREAD_ERROR, wxThreadEvent);
 wxDEFINE_EVENT(ptEVT_CREATE_TORRENT_THREAD_PROGRESS, wxThreadEvent);
 
+namespace fs = std::filesystem;
 namespace lt = libtorrent;
 using pt::BitTorrent::Session;
 using pt::UI::Dialogs::CreateTorrentDialog;
@@ -79,7 +84,8 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, Sessio
 {
     auto pathSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("files"));
     m_numFiles = new wxStaticText(pathSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
-    m_path = new wxTextCtrl(pathSizer->GetStaticBox(), wxID_ANY);
+    m_path = new wxTextCtrl(pathSizer->GetStaticBox(), ptID_TXT_PATH);
+    m_path->SetFocus();
     m_selectFile = new wxButton(pathSizer->GetStaticBox(), ptID_BTN_BROWSE_FILE, i18n("select_file"));
     m_selectDir = new wxButton(pathSizer->GetStaticBox(), ptID_BTN_BROWSE_DIR, i18n("select_directory"));
 
@@ -133,7 +139,7 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, Sessio
 
     // Progress, in the bottom
     auto progressSizer = new wxBoxSizer(wxVERTICAL);
-    m_status = new wxTextCtrl(this, wxID_ANY, fmt::format(i18n("status_s"), i18n("status_ready")), wxDefaultPosition, wxDefaultSize, wxTE_READONLY | wxBORDER_NONE);
+    m_status = new wxTextCtrl(this, wxID_ANY, fmt::format(i18n("status_s"), i18n("status_select_file_or_directory")), wxDefaultPosition, wxDefaultSize, wxTE_READONLY | wxBORDER_NONE);
     m_progress = new wxGauge(this, wxID_ANY, 0);
     m_progress->SetRange(100);
     progressSizer->Add(m_status, 0, wxEXPAND);
@@ -142,6 +148,7 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, Sessio
 
     auto buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
     m_create = new wxButton(this, ptID_BTN_CREATE_TORRENT, i18n("create_torrent"));
+    m_create->Disable();
     m_create->SetDefault();
 
     buttonsSizer->Add(new wxHyperlinkCtrl(this, wxID_ANY, i18n("how_to_create_torrents"), "https://docs.picotorrent.org/en/master/creating-torrents.html"), 0, wxALIGN_CENTER_VERTICAL);
@@ -168,20 +175,27 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, Sessio
     this->Bind(ptEVT_CREATE_TORRENT_THREAD_START,
         [this](wxThreadEvent&)
         {
-            m_path->Disable();
-            m_selectDir->Disable();
-            m_selectFile->Disable();
-            m_create->Disable();
             m_status->SetLabel(fmt::format(i18n("status_s"), i18n("status_adding_files")));
+            this->SetEnabledState(false);
+        });
+
+    this->Bind(ptEVT_CREATE_TORRENT_THREAD_ERROR,
+        [this](wxThreadEvent& evt)
+        {
+            this->SetCursor(wxCURSOR_DEFAULT);
+            this->SetEnabledState(true);
+
+            std::string err = evt.GetPayload<std::string>();
+            wxMessageBox(err, "PicoTorrent", wxICON_ERROR, this);
+
+            m_status->SetLabel(fmt::format(i18n("status_s"), Utils::toStdWString(err)));
         });
 
     this->Bind(ptEVT_CREATE_TORRENT_THREAD_STOP,
         [this](wxThreadEvent& evt)
         {
-            m_path->Enable();
-            m_selectDir->Enable();
-            m_selectFile->Enable();
-            m_create->Enable();
+            this->SetCursor(wxCURSOR_DEFAULT);
+            this->SetEnabledState(true);
 
             m_status->SetLabel(fmt::format(i18n("status_s"), i18n("status_saving_torrent")));
 
@@ -195,6 +209,7 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, Sessio
 
             if (save.ShowModal() != wxID_OK)
             {
+                m_status->SetLabel(fmt::format(i18n("status_s"), i18n("status_ready")));
                 return;
             }
 
@@ -204,16 +219,13 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, Sessio
                 lt::bencode(std::ostream_iterator<char>(out), sp.e);
             }
 
-            if (!m_addToSession->IsChecked())
+            if (m_addToSession->IsChecked())
             {
-                return;
+                lt::add_torrent_params p;
+                p.save_path = sp.bp;
+                p.ti = std::make_shared<lt::torrent_info>(save.GetPath().ToStdString());
+                m_session->AddTorrent(p);
             }
-
-            lt::add_torrent_params p;
-            p.save_path = sp.bp;
-            p.ti = std::make_shared<lt::torrent_info>(save.GetPath().ToStdString());
-
-            m_session->AddTorrent(p);
 
             EndDialog(wxOK);
         });
@@ -237,6 +249,8 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, Sessio
 
             m_progress->SetValue(static_cast<int>(progress * 100));
         });
+
+    this->Bind(wxEVT_TEXT, [this](wxCommandEvent&) { UpdateState(); }, ptID_TXT_PATH);
 }
 
 CreateTorrentDialog::~CreateTorrentDialog()
@@ -262,7 +276,9 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
 
     for (size_t i = 0; i < p->trackers.size(); i++)
     {
-        // Don't add more than int32 max trackers. ok?
+        // Add one tracker per tier - this can of course be changed to something more advanced
+        // in the future but for now I think this is the most sensible. Also, dont add more
+        // than int32.MAX trackers, OK? :)
         ct.add_tracker(p->trackers.at(i), static_cast<int>(i));
     }
 
@@ -292,6 +308,10 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
 
     if (ec)
     {
+        LOG_F(ERROR, "Error when setting piece hashes: %s", ec.message().c_str());
+        auto err = new wxThreadEvent(ptEVT_CREATE_TORRENT_THREAD_ERROR);
+        err->SetPayload<std::string>(ec.message());
+        wxQueueEvent(this, err);
         return;
     }
 
@@ -301,8 +321,12 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
     {
         e = ct.generate();
     }
-    catch (const std::exception&)
+    catch (const std::exception& ex)
     {
+        LOG_F(ERROR, "Error when generating torrent: %s", ex.what());
+        auto err = new wxThreadEvent(ptEVT_CREATE_TORRENT_THREAD_ERROR);
+        err->SetPayload<std::string>(ex.what());
+        wxQueueEvent(this, err);
         return;
     }
 
@@ -339,6 +363,15 @@ void CreateTorrentDialog::OnBrowsePath(wxCommandEvent& evt)
 
 void CreateTorrentDialog::OnCreateTorrent(wxCommandEvent&)
 {
+    fs::path p = m_path->GetValue().ToStdWstring();
+
+    if (!fs::exists(p))
+    {
+        wxMessageBox(i18n("no_such_file_or_directory"), "PicoTorrent", wxICON_WARNING, this);
+        m_path->SetFocus();
+        return;
+    }
+
     auto params = std::make_unique<CreateTorrentParams>();
     params->comment = m_comment->GetValue();
     params->creator = m_creator->GetValue();
@@ -363,4 +396,36 @@ void CreateTorrentDialog::OnCreateTorrent(wxCommandEvent&)
 
     if (m_worker.joinable()) { m_worker.join(); }
     m_worker = std::thread(&CreateTorrentDialog::GenerateTorrent, this, std::move(params));
+    this->SetCursor(wxCURSOR_WAIT);
+}
+
+void CreateTorrentDialog::SetEnabledState(bool state)
+{
+    m_path->Enable(state);
+    m_selectDir->Enable(state);
+    m_selectFile->Enable(state);
+    m_mode->Enable(state);
+    m_private->Enable(state);
+    m_addToSession->Enable(state);
+    m_creator->Enable(state);
+    m_comment->Enable(state);
+    m_trackers->Enable(state);
+    m_urlSeeds->Enable(state);
+    m_create->Enable(state);
+}
+
+void CreateTorrentDialog::UpdateState()
+{
+    if (m_path->GetValue().IsEmpty())
+    {
+        m_status->SetLabel(
+            fmt::format(i18n("status_s"), i18n("status_select_file_or_directory")));
+        m_create->Disable();
+    }
+    else
+    {
+        m_status->SetLabel(
+            fmt::format(i18n("status_s"), i18n("status_ready")));
+        m_create->Enable();
+    }
 }

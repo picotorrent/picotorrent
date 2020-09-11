@@ -32,7 +32,8 @@ namespace Dialogs
             ptID_BTN_BROWSE_FILE = wxID_HIGHEST + 1,
             ptID_BTN_BROWSE_DIR,
             ptID_BTN_CREATE_TORRENT,
-            ptID_CHK_COMPAT_MODE
+            ptID_CHK_COMPAT_MODE,
+            ptID_TXT_PATH
         };
 
         struct CreateTorrentParams;
@@ -40,6 +41,8 @@ namespace Dialogs
         void GenerateTorrent(std::unique_ptr<CreateTorrentParams>);
         void OnBrowsePath(wxCommandEvent&);
         void OnCreateTorrent(wxCommandEvent&);
+        void SetEnabledState(bool state);
+        void UpdateState();
 
         wxTextCtrl* m_path;
         wxStaticText* m_numFiles;
