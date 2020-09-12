@@ -274,10 +274,12 @@
         "how_to_create_torrents": "Comment créer un torrent",
         "status_s": "Statut: {0}",
         "status_ready": "Prêt",
+        "status_select_file_or_directory": "Selectionner un fichier ou dossier",
         "status_adding_files": "Ajout des fichiers au stockage",
         "status_hashing_piece": "Hashing de la pièce {0} sur {1}",
         "status_saving_torrent": "Sauvegarde du torrent",
         "add_to_session": "Ajouter à la session",
+        "no_such_file_or_directory": "Le fichier/dossier n'existe pas",
         "leeches" : "Sangsues"
     }
 }
