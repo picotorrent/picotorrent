@@ -6,9 +6,9 @@
 #endif
 
 #include <memory>
-#include <wx/propdlg.h>
 
 class wxBookCtrlEvent;
+class wxSimplebook;
 
 namespace pt
 {
@@ -26,7 +26,7 @@ namespace Dialogs
     class PreferencesGeneralPage;
     class PreferencesProxyPage;
 
-    class PreferencesDialog : public wxPropertySheetDialog
+    class PreferencesDialog : public wxDialog
     {
     public:
         PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg);
@@ -34,6 +34,10 @@ namespace Dialogs
 
     private:
         void OnOk(wxCommandEvent&);
+
+        wxListBox* m_list;
+        wxBoxSizer* m_mainSizer;
+        wxSimplebook* m_book;
 
         PreferencesGeneralPage* m_general;
         PreferencesDownloadsPage* m_downloads;

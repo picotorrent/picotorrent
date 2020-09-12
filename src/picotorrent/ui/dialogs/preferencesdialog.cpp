@@ -5,6 +5,7 @@
 #include <wx/listctrl.h>
 #include <wx/persist.h>
 #include <wx/persist/toplevel.h>
+#include <wx/simplebook.h>
 
 #include "../../core/configuration.hpp"
 #include "preferencesadvancedpage.hpp"
@@ -17,37 +18,57 @@
 using pt::UI::Dialogs::PreferencesDialog;
 
 PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg)
+    : wxDialog(parent, wxID_ANY, i18n("preferences"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+    m_book(new wxSimplebook(this, wxID_ANY)),
+    m_general(new PreferencesGeneralPage(m_book, cfg)),
+    m_downloads(new PreferencesDownloadsPage(m_book, cfg)),
+    m_connection(new PreferencesConnectionPage(m_book, cfg)),
+    m_proxy(new PreferencesProxyPage(m_book, cfg)),
+    m_advanced(new PreferencesAdvancedPage(m_book, cfg))
 {
-    SetName("PreferencesDialog");
-    SetSheetStyle(wxPROPSHEET_LISTBOOK);
+    m_list = new wxListBox(this, wxID_ANY);
+    m_list->Append(i18n("general"));
+    m_list->Append(i18n("downloads"));
+    m_list->Append(i18n("connection"));
+    m_list->Append(i18n("proxy"));
+    m_list->Append(i18n("advanced"));
+    m_list->Select(0);
 
-    Create(
-        parent,
-        wxID_ANY,
-        i18n("preferences"),
-        wxDefaultPosition,
-        wxDefaultSize,
-        wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+    m_book->AddPage(m_general, wxEmptyString, true);
+    m_book->AddPage(m_downloads, wxEmptyString, false);
+    m_book->AddPage(m_connection, wxEmptyString, false);
+    m_book->AddPage(m_proxy, wxEmptyString, false);
+    m_book->AddPage(m_advanced, wxEmptyString, false);
 
-    wxBookCtrlBase* book = GetBookCtrl();
-    m_general = new PreferencesGeneralPage(book, cfg);
-    m_downloads = new PreferencesDownloadsPage(book, cfg);
-    m_connection = new PreferencesConnectionPage(book, cfg);
-    m_proxy = new PreferencesProxyPage(book, cfg);
-    m_advanced = new PreferencesAdvancedPage(book, cfg);
+    m_mainSizer = new wxBoxSizer(wxHORIZONTAL);
+    m_mainSizer->Add(m_list, 0, wxEXPAND | wxRIGHT, FromDIP(7));
+    m_mainSizer->Add(m_book, 1, wxEXPAND);
 
-    book->AddPage(m_general, i18n("general"), true);
-    book->AddPage(m_downloads, i18n("downloads"));
-    book->AddPage(m_connection, i18n("connection"));
-    book->AddPage(m_proxy, i18n("proxy"));
-    book->AddPage(m_advanced, i18n("advanced"));
+    auto buttonSizer = new wxBoxSizer(wxHORIZONTAL);
+    buttonSizer->Add(new wxButton(this, wxID_ANY, "Restore defaults"), 0, wxRIGHT, FromDIP(7));
+    buttonSizer->Add(new wxButton(this, wxID_OK, "Ok"), 0, wxRIGHT, FromDIP(7));
+    buttonSizer->Add(new wxButton(this, wxID_CANCEL, "Cancel"));
 
-    CreateButtons();
-    LayoutDialog();
+    auto sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(m_mainSizer, 1, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, FromDIP(11));
+    sizer->AddSpacer(FromDIP(7));
+    sizer->Add(buttonSizer, 0, wxALIGN_RIGHT | wxLEFT | wxBOTTOM | wxRIGHT, FromDIP(11));
 
-    wxPersistenceManager::Get().RegisterAndRestore(this);
+    this->SetSizerAndFit(sizer);
+
+    if (!wxPersistenceManager::Get().RegisterAndRestore(this))
+    {
+        this->SetSize(FromDIP(wxSize(450, 400)));
+    }
 
     this->Bind(wxEVT_BUTTON, &PreferencesDialog::OnOk, this, wxID_OK);
+    this->Bind(
+        wxEVT_LISTBOX,
+        [this](wxCommandEvent&)
+        {
+            m_book->ChangeSelection(
+                m_list->GetSelection());
+        });
 }
 
 PreferencesDialog::~PreferencesDialog()
