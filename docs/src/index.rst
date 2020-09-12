@@ -12,9 +12,8 @@ Rasterbar-libtorrent and wxWidgets.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    configuration
+   creating-torrents
    keyboard-shortcuts
-   plugins
-   privacy
