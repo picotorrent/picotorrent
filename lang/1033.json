@@ -279,6 +279,9 @@
         "status_hashing_piece": "Hashing piece {0} of {1}",
         "status_saving_torrent": "Saving torrent",
         "add_to_session": "Add to session",
-        "no_such_file_or_directory": "No such file or directory"
+        "no_such_file_or_directory": "No such file or directory",
+        "cancel": "Cancel",
+        "restore_defaults": "Restore defaults",
+        "documentation": "Documentation"
     }
 }
