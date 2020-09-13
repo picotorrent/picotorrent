@@ -3,6 +3,7 @@
 #include <wx/bookctrl.h>
 #include <wx/listbook.h>
 #include <wx/listctrl.h>
+#include <wx/hyperlink.h>
 #include <wx/persist.h>
 #include <wx/persist/toplevel.h>
 #include <wx/simplebook.h>
@@ -45,14 +46,16 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Con
     m_mainSizer->Add(m_book, 1, wxEXPAND);
 
     auto buttonSizer = new wxBoxSizer(wxHORIZONTAL);
-    buttonSizer->Add(new wxButton(this, wxID_ANY, "Restore defaults"), 0, wxRIGHT, FromDIP(7));
-    buttonSizer->Add(new wxButton(this, wxID_OK, "Ok"), 0, wxRIGHT, FromDIP(7));
-    buttonSizer->Add(new wxButton(this, wxID_CANCEL, "Cancel"));
+    buttonSizer->Add(new wxHyperlinkCtrl(this, wxID_ANY, i18n("documentation"), "https://docs.picotorrent.org/en/master/configuration.html"), 0, wxALIGN_CENTER_VERTICAL);
+    buttonSizer->AddStretchSpacer(1);
+    buttonSizer->Add(new wxButton(this, wxID_ANY, i18n("restore_defaults")), 0, wxRIGHT, FromDIP(7));
+    buttonSizer->Add(new wxButton(this, wxID_OK, i18n("ok")), 0, wxRIGHT, FromDIP(7));
+    buttonSizer->Add(new wxButton(this, wxID_CANCEL, i18n("cancel")));
 
     auto sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(m_mainSizer, 1, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, FromDIP(11));
     sizer->AddSpacer(FromDIP(7));
-    sizer->Add(buttonSizer, 0, wxALIGN_RIGHT | wxLEFT | wxBOTTOM | wxRIGHT, FromDIP(11));
+    sizer->Add(buttonSizer, 0, wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT, FromDIP(11));
 
     this->SetSizerAndFit(sizer);
 
