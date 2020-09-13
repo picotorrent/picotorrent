@@ -33,6 +33,11 @@ namespace Dialogs
         virtual ~PreferencesDialog();
 
     private:
+        enum
+        {
+            ptID_BTN_RESTORE_DEFAULTS = wxID_HIGHEST + 1
+        };
+
         void OnOk(wxCommandEvent&);
 
         wxListBox* m_list;

@@ -282,6 +282,7 @@
         "no_such_file_or_directory": "No such file or directory",
         "cancel": "Cancel",
         "restore_defaults": "Restore defaults",
-        "documentation": "Documentation"
+        "documentation": "Documentation",
+        "restore_defaults_description": "This will restore most settings to their default value. Are you sure?"
     }
 }

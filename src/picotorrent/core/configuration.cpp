@@ -43,6 +43,11 @@ void Configuration::SetValue(std::string const& key, std::string const& val)
     stmt->Execute();
 }
 
+void Configuration::RestoreDefaults()
+{
+    m_db->Execute("UPDATE setting SET value = (SELECT default_value FROM setting s2 WHERE s2.key = setting.key);");
+}
+
 std::vector<Configuration::DhtBootstrapNode> Configuration::GetDhtBootstrapNodes()
 {
     std::vector<DhtBootstrapNode> result;

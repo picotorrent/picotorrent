@@ -76,6 +76,8 @@ namespace Core
         void DeleteListenInterface(int id);
         void UpsertListenInterface(ListenInterface const& iface);
 
+        void RestoreDefaults();
+
     private:
         bool GetValue(std::string const& key, std::string& val);
         void SetValue(std::string const& key, std::string const& val);

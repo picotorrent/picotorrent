@@ -48,7 +48,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Con
     auto buttonSizer = new wxBoxSizer(wxHORIZONTAL);
     buttonSizer->Add(new wxHyperlinkCtrl(this, wxID_ANY, i18n("documentation"), "https://docs.picotorrent.org/en/master/configuration.html"), 0, wxALIGN_CENTER_VERTICAL);
     buttonSizer->AddStretchSpacer(1);
-    buttonSizer->Add(new wxButton(this, wxID_ANY, i18n("restore_defaults")), 0, wxRIGHT, FromDIP(7));
+    buttonSizer->Add(new wxButton(this, ptID_BTN_RESTORE_DEFAULTS, i18n("restore_defaults")), 0, wxRIGHT, FromDIP(7));
     buttonSizer->Add(new wxButton(this, wxID_OK, i18n("ok")), 0, wxRIGHT, FromDIP(7));
     buttonSizer->Add(new wxButton(this, wxID_CANCEL, i18n("cancel")));
 
@@ -72,6 +72,21 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Con
             m_book->ChangeSelection(
                 m_list->GetSelection());
         });
+
+    this->Bind(
+        wxEVT_BUTTON,
+        [this, cfg](wxCommandEvent&)
+        {
+            if (wxMessageBox(
+                    i18n("restore_defaults_description"),
+                    "PicoTorrent",
+                    wxICON_WARNING | wxYES_NO | wxNO_DEFAULT) == wxYES)
+            {
+                cfg->RestoreDefaults();
+                this->EndDialog(wxID_OK);
+            }
+        },
+        ptID_BTN_RESTORE_DEFAULTS);
 }
 
 PreferencesDialog::~PreferencesDialog()
