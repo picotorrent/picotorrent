@@ -20,18 +20,27 @@ Configuration::~Configuration()
 {
 }
 
-bool Configuration::GetBool(std::string const& key)
+bool Configuration::GetValue(std::string const& key, std::string& val)
 {
-    return GetInt(key) > 0;
+    auto stmt = m_db->CreateStatement("SELECT IFNULL(value, default_value) FROM setting WHERE key = ?");
+    stmt->Bind(1, key);
+    
+    if (!stmt->Execute())
+    {
+        return false;
+    }
+
+    val = stmt->GetString(0);
+
+    return true;
 }
 
-int Configuration::GetInt(std::string const& key)
+void Configuration::SetValue(std::string const& key, std::string const& val)
 {
-    auto stmt = m_db->CreateStatement("select int_value from setting where key = ?");
-    stmt->Bind(1, key);
+    auto stmt = m_db->CreateStatement("UPDATE setting SET value = ? WHERE key = ?");
+    stmt->Bind(1, val);
+    stmt->Bind(2, key);
     stmt->Execute();
-
-    return stmt->GetInt(0);
 }
 
 std::vector<Configuration::DhtBootstrapNode> Configuration::GetDhtBootstrapNodes()
@@ -96,38 +105,4 @@ void Configuration::UpsertListenInterface(Configuration::ListenInterface const& 
         stmt->Bind(3, iface.id);
         stmt->Execute();
     }
-}
-
-std::string Configuration::GetString(std::string const& key)
-{
-    auto stmt = m_db->CreateStatement("select string_value from setting where key = ?");
-    stmt->Bind(1, key);
-    stmt->Execute();
-
-    return stmt->GetString(0);
-}
-
-
-void Configuration::SetBool(std::string const& key, bool value)
-{
-    auto stmt = m_db->CreateStatement("update setting set int_value = ? where key = ?");
-    stmt->Bind(1, value ? 1 : 0);
-    stmt->Bind(2, key);
-    stmt->Execute();
-}
-
-void Configuration::SetInt(std::string const& key, int value)
-{
-    auto stmt = m_db->CreateStatement("update setting set int_value = ? where key = ?");
-    stmt->Bind(1, value);
-    stmt->Bind(2, key);
-    stmt->Execute();
-}
-
-void Configuration::SetString(std::string const& key, std::string const& value)
-{
-    auto stmt = m_db->CreateStatement("update setting set string_value = ? where key = ?");
-    stmt->Bind(1, value);
-    stmt->Bind(2, key);
-    stmt->Execute();
 }

@@ -85,12 +85,12 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
 
     // Set checked on menu items
     m_menuItemDetailsPanel->SetCheckable(true);
-    m_menuItemDetailsPanel->Check(m_cfg->GetBool("ui.show_details_panel"));
+    m_menuItemDetailsPanel->Check(m_cfg->Get<bool>("ui.show_details_panel").value());
     m_menuItemStatusBar->SetCheckable(true);
-    m_menuItemStatusBar->Check(m_cfg->GetBool("ui.show_status_bar"));
+    m_menuItemStatusBar->Check(m_cfg->Get<bool>("ui.show_status_bar").value());
 
-    if (!m_cfg->GetBool("ui.show_details_panel")) { m_splitter->Unsplit(); }
-    if (!m_cfg->GetBool("ui.show_status_bar")) { m_statusBar->Hide(); }
+    if (!m_cfg->Get<bool>("ui.show_details_panel").value()) { m_splitter->Unsplit(); }
+    if (!m_cfg->Get<bool>("ui.show_status_bar").value()) { m_statusBar->Hide(); }
 
     if (!wxPersistenceManager::Get().RegisterAndRestore(this))
     {
@@ -100,7 +100,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     // Session events
     this->Bind(ptEVT_SESSION_STATISTICS, [this](pt::BitTorrent::SessionStatisticsEvent& evt)
         {
-            bool dhtEnabled = m_cfg->GetBool("enable_dht");
+            bool dhtEnabled = m_cfg->Get<bool>("libtorrent.enable_dht").value();
             m_statusBar->UpdateDhtNodesCount(dhtEnabled ? evt.GetData().dhtNodes : -1);
         });
 
@@ -294,7 +294,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         wxEVT_MENU,
         [this](wxCommandEvent&)
         {
-            m_cfg->SetBool("ui.show_details_panel", m_menuItemDetailsPanel->IsChecked());
+            m_cfg->Set("ui.show_details_panel", m_menuItemDetailsPanel->IsChecked());
 
             if (m_menuItemDetailsPanel->IsChecked())
             {
@@ -312,7 +312,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         wxEVT_MENU,
         [this](wxCommandEvent&)
         {
-            m_cfg->SetBool("ui.show_status_bar", m_menuItemStatusBar->IsChecked());
+            m_cfg->Set("ui.show_status_bar", m_menuItemStatusBar->IsChecked());
 
             if (m_menuItemStatusBar->IsChecked()) { m_statusBar->Show(); }
             else { m_statusBar->Hide(); }
@@ -320,11 +320,11 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         }, ptID_EVT_SHOW_STATUS_BAR);
 
     // Update status bar
-    m_statusBar->UpdateDhtNodesCount(m_cfg->GetBool("enable_dht") ? 0 : -1);
+    m_statusBar->UpdateDhtNodesCount(m_cfg->Get<bool>("libtorrent.enable_dht").value() ? 0 : -1);
     m_statusBar->UpdateTorrentCount(m_torrentsCount);
 
     // Show taskbar icon
-    if (m_cfg->GetBool("show_in_notification_area"))
+    if (m_cfg->Get<bool>("show_in_notification_area").value())
     {
         m_taskBarIcon->Show();
     }
@@ -384,7 +384,7 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
     for (lt::add_torrent_params& p : params)
     {
         p.flags |= lt::torrent_flags::duplicate_is_error;
-        p.save_path = m_cfg->GetString("default_save_path");
+        p.save_path = m_cfg->Get<std::string>("default_save_path").value();
 
         // If we have a param with an info hash and no torrent info,
         // let the session find metadata for us
@@ -398,7 +398,7 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         }
     }
 
-    if (m_cfg->GetBool("skip_add_torrent_dialog"))
+    if (m_cfg->Get<bool>("skip_add_torrent_dialog").value())
     {
         for (lt::add_torrent_params& p : params)
         {
@@ -460,8 +460,8 @@ void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<
 
 void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const& torrents)
 {
-    bool shouldCheck = m_cfg->GetBool("pause_on_low_disk_space");
-    int limit = m_cfg->GetInt("pause_on_low_disk_space_limit");
+    bool shouldCheck = m_cfg->Get<bool>("pause_on_low_disk_space").value();
+    int limit = m_cfg->Get<int>("pause_on_low_disk_space_limit").value();
 
     if (!shouldCheck)
     {
@@ -534,8 +534,8 @@ wxMenuBar* MainFrame::CreateMainMenu()
 void MainFrame::OnClose(wxCloseEvent& evt)
 {
     if (evt.CanVeto()
-        && m_cfg->GetBool("show_in_notification_area")
-        && m_cfg->GetBool("close_to_notification_area"))
+        && m_cfg->Get<bool>("show_in_notification_area").value()
+        && m_cfg->Get<bool>("close_to_notification_area").value())
     {
         Hide();
         MSWGetTaskBarButton()->Hide();
@@ -614,8 +614,8 @@ void MainFrame::OnHelpAbout(wxCommandEvent&)
 void MainFrame::OnIconize(wxIconizeEvent& ev)
 {
     if (ev.IsIconized()
-        && m_cfg->GetBool("show_in_notification_area")
-        && m_cfg->GetBool("minimize_to_notification_area"))
+        && m_cfg->Get<bool>("show_in_notification_area").value()
+        && m_cfg->Get<bool>("minimize_to_notification_area").value())
     {
         MSWGetTaskBarButton()->Hide();
     }
@@ -639,11 +639,11 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
         // Reload settings
         m_session->ReloadSettings();
 
-        if (m_cfg->GetBool("show_in_notification_area") && !m_taskBarIcon->IsIconInstalled())
+        if (m_cfg->Get<bool>("show_in_notification_area").value() && !m_taskBarIcon->IsIconInstalled())
         {
             m_taskBarIcon->Show();
         }
-        else if (!m_cfg->GetBool("show_in_notification_area") && m_taskBarIcon->IsIconInstalled())
+        else if (!m_cfg->Get<bool>("show_in_notification_area").value() && m_taskBarIcon->IsIconInstalled())
         {
             m_taskBarIcon->Hide();
         }

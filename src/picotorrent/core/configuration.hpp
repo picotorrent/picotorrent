@@ -1,8 +1,11 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
+
+#include <nlohmann/json.hpp>
 
 namespace pt
 {
@@ -49,13 +52,23 @@ namespace Core
         Configuration(std::shared_ptr<Database> db);
         ~Configuration();
 
-        bool GetBool(std::string const& key);
-        int GetInt(std::string const& key);
-        std::string GetString(std::string const& key);
+        template<typename T>
+        std::optional<T> Get(std::string const& key)
+        {
+            std::string val;
+            if (!GetValue(key, val)
+                || val.empty())
+            {
+                return std::nullopt;
+            }
+            return nlohmann::json::parse(val).get<T>();
+        }
 
-        void SetBool(std::string const& key, bool value);
-        void SetInt(std::string const& key, int value);
-        void SetString(std::string const& key, std::string const& value);
+        template<typename T>
+        void Set(std::string const& key, T const& value)
+        {
+            SetValue(key, nlohmann::json(value).dump());
+        }
 
         std::vector<DhtBootstrapNode> GetDhtBootstrapNodes();
 
@@ -64,6 +77,9 @@ namespace Core
         void UpsertListenInterface(ListenInterface const& iface);
 
     private:
+        bool GetValue(std::string const& key, std::string& val);
+        void SetValue(std::string const& key, std::string const& val);
+
         std::shared_ptr<Database> m_db;
     };
 }

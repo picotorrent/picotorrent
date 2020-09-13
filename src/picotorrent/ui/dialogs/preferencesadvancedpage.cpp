@@ -18,22 +18,22 @@ struct Property
     std::function<void(Configuration*, wxPGProperty*)> set;
 };
 
-#define MAKE_PROP(type, label, description) \
+#define MAKE_PROP(t1, t2, label, description) \
     { \
         label, \
         { \
-            []() { return new wx ##type ##Property(label); },\
+            []() { return new wx ##t1 ##Property(label); },\
             description, \
-            [](Configuration* cfg, wxPGProperty* prop) { prop->SetValue(cfg->Get##type(prop->GetLabel().ToStdString())); }, \
-            [](Configuration* cfg, wxPGProperty* prop) { cfg->Set##type(prop->GetLabel().ToStdString(), prop->GetValue()); } \
+            [](Configuration* cfg, wxPGProperty* prop) { prop->SetValue(cfg->Get<##t2>(prop->GetLabel().ToStdString()).value()); }, \
+            [](Configuration* cfg, wxPGProperty* prop) { cfg->Set(prop->GetLabel().ToStdString(), (t2)prop->GetValue()); } \
         } \
     }
 
 static std::map<std::string, Property> properties =
 {
-    MAKE_PROP(Bool, "announce_to_all_tiers", "Controls how multi tracker torrents are treated. When this is set to true, one tracker from each tier is announced to. This is the uTorrent behavior. To be compliant with the Multi-tracker specification, set it to false."),
-    MAKE_PROP(Bool, "announce_to_all_trackers", "Controls how multi tracker torrents are treated. If this is set to true, all trackers in the same tier are announced to in parallel. If all trackers in tier 0 fails, all trackers in tier 1 are announced as well. If it's set to false, the behavior is as defined by the multi tracker specification."),
-    MAKE_PROP(Bool, "anonymous_mode", "When set to true, the client tries to hide its identity to a certain degree. The user-agent will be reset to an empty string (except for private torrents). Trackers will only be used if they are using a proxy server. The listen sockets are closed, and incoming connections will only be accepted through a SOCKS5 or I2P proxy (if a peer proxy is set up and is run on the same machine as the tracker proxy). Since no incoming connections are accepted, NAT-PMP, UPnP, DHT and local peer discovery are all turned off when this setting is enabled. If you're using I2P, it might make sense to enable anonymous mode as well."),
+    MAKE_PROP(Bool, bool, "libtorrent.announce_to_all_tiers", "Controls how multi tracker torrents are treated. When this is set to true, one tracker from each tier is announced to. This is the uTorrent behavior. To be compliant with the Multi-tracker specification, set it to false."),
+    MAKE_PROP(Bool, bool, "libtorrent.announce_to_all_trackers", "Controls how multi tracker torrents are treated. If this is set to true, all trackers in the same tier are announced to in parallel. If all trackers in tier 0 fails, all trackers in tier 1 are announced as well. If it's set to false, the behavior is as defined by the multi tracker specification."),
+    MAKE_PROP(Bool, bool, "libtorrent.anonymous_mode", "When set to true, the client tries to hide its identity to a certain degree. The user-agent will be reset to an empty string (except for private torrents). Trackers will only be used if they are using a proxy server. The listen sockets are closed, and incoming connections will only be accepted through a SOCKS5 or I2P proxy (if a peer proxy is set up and is run on the same machine as the tracker proxy). Since no incoming connections are accepted, NAT-PMP, UPnP, DHT and local peer discovery are all turned off when this setting is enabled. If you're using I2P, it might make sense to enable anonymous mode as well."),
 };
 
 PreferencesAdvancedPage::PreferencesAdvancedPage(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg)

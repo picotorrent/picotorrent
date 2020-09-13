@@ -50,10 +50,10 @@ PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shar
     wxFlexGridSizer* encryptionGrid = new wxFlexGridSizer(1, 10, 10);
 
     m_incomingEncryption = new wxCheckBox(encryptionSizer->GetStaticBox(), wxID_ANY, i18n("require_encryption_incoming"));
-    m_incomingEncryption->SetValue(m_cfg->GetBool("require_incoming_encryption"));
+    m_incomingEncryption->SetValue(m_cfg->Get<bool>("libtorrent.require_incoming_encryption").value());
 
     m_outgoingEncryption = new wxCheckBox(encryptionSizer->GetStaticBox(), wxID_ANY, i18n("require_encryption_outgoing"));
-    m_outgoingEncryption->SetValue(m_cfg->GetBool("require_outgoing_encryption"));
+    m_outgoingEncryption->SetValue(m_cfg->Get<bool>("libtorrent.require_outgoing_encryption").value());
 
     encryptionGrid->AddGrowableCol(0, 1);
     encryptionGrid->Add(m_incomingEncryption, 1, wxEXPAND);
@@ -64,13 +64,13 @@ PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shar
     wxFlexGridSizer* privacyGrid = new wxFlexGridSizer(3, 10, 10);
 
     m_enableDht = new wxCheckBox(privacySizer->GetStaticBox(), wxID_ANY, i18n("enable_dht"));
-    m_enableDht->SetValue(m_cfg->GetBool("enable_dht"));
+    m_enableDht->SetValue(m_cfg->Get<bool>("libtorrent.enable_dht").value());
 
     m_enableLsd = new wxCheckBox(privacySizer->GetStaticBox(), wxID_ANY, i18n("enable_lsd"));
-    m_enableLsd->SetValue(m_cfg->GetBool("enable_lsd"));
+    m_enableLsd->SetValue(m_cfg->Get<bool>("libtorrent.enable_lsd").value());
 
     m_enablePex = new wxCheckBox(privacySizer->GetStaticBox(), wxID_ANY, i18n("enable_pex"));
-    m_enablePex->SetValue(m_cfg->GetBool("enable_pex"));
+    m_enablePex->SetValue(m_cfg->Get<bool>("libtorrent.enable_pex").value());
 
     privacyGrid->AddGrowableCol(0, 1);
     privacyGrid->AddGrowableCol(1, 1);
@@ -171,17 +171,17 @@ void PreferencesConnectionPage::Save()
         m_cfg->UpsertListenInterface(li);
     }
 
-    m_cfg->SetBool("require_incoming_encryption", m_incomingEncryption->GetValue());
-    m_cfg->SetBool("require_outgoing_encryption", m_outgoingEncryption->GetValue());
+    m_cfg->Set("libtorrent.require_incoming_encryption", m_incomingEncryption->GetValue());
+    m_cfg->Set("libtorrent.require_outgoing_encryption", m_outgoingEncryption->GetValue());
 
-    m_cfg->SetBool("enable_dht", m_enableDht->GetValue());
-    m_cfg->SetBool("enable_lsd", m_enableLsd->GetValue());
-    m_cfg->SetBool("enable_pex", m_enablePex->GetValue());
+    m_cfg->Set("libtorrent.enable_dht", m_enableDht->GetValue());
+    m_cfg->Set("libtorrent.enable_lsd", m_enableLsd->GetValue());
+    m_cfg->Set("libtorrent.enable_pex", m_enablePex->GetValue());
 }
 
 bool PreferencesConnectionPage::IsValid()
 {
-    if (m_enablePex->GetValue() != m_cfg->GetBool("enable_pex"))
+    if (m_enablePex->GetValue() != m_cfg->Get<bool>("libtorrent.enable_pex").value())
     {
         wxMessageBox(
             i18n("changing_pex_settings_requires_restart"),

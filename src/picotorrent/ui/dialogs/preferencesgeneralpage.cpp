@@ -136,13 +136,13 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
     {
         int pos = m_language->Append(lang.name, new ClientData<int>(lang.code));
 
-        if (lang.code == m_cfg->GetInt("language_id"))
+        if (lang.code == m_cfg->Get<int>("language_id").value())
         {
             m_language->SetSelection(pos);
         }
     }
 
-    m_skipAddTorrentDialog->SetValue(m_cfg->GetBool("skip_add_torrent_dialog"));
+    m_skipAddTorrentDialog->SetValue(m_cfg->Get<bool>("skip_add_torrent_dialog").value());
 
     AutoRunKey key;
     if (key.Exists())
@@ -154,12 +154,12 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
     m_startPosition->Append(i18n("minimized"), new ClientData<Configuration::WindowState>(Configuration::WindowState::Minimized));
     m_startPosition->Append(i18n("hidden"), new ClientData<Configuration::WindowState>(Configuration::WindowState::Hidden));
     m_startPosition->Append(i18n("maximized"), new ClientData<Configuration::WindowState>(Configuration::WindowState::Maximized));
-    m_startPosition->SetSelection(m_cfg->GetInt("start_position"));
+    m_startPosition->SetSelection(m_cfg->Get<int>("start_position").value());
 
     // Notification area
-    m_showNotificationIcon->SetValue(m_cfg->GetBool("show_in_notification_area"));
-    m_minimizeNotification->SetValue(m_cfg->GetBool("minimize_to_notification_area"));
-    m_closeNotification->SetValue(m_cfg->GetBool("close_to_notification_area"));
+    m_showNotificationIcon->SetValue(m_cfg->Get<bool>("show_in_notification_area").value());
+    m_minimizeNotification->SetValue(m_cfg->Get<bool>("minimize_to_notification_area").value());
+    m_closeNotification->SetValue(m_cfg->Get<bool>("close_to_notification_area").value());
 
     m_showNotificationIcon->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&)
         {
@@ -194,12 +194,12 @@ void PreferencesGeneralPage::Save()
     {
         // Sometimes we see crashes where langData is null. Can't reproduce,
         // but the simple fix is to null check.
-        m_cfg->SetInt("language_id", static_cast<int>(langData->GetValue()));
+        m_cfg->Set("language_id", static_cast<int>(langData->GetValue()));
     }
 
     if (startPosData != nullptr)
     {
-        m_cfg->SetInt("start_position", static_cast<int>(startPosData->GetValue()));
+        m_cfg->Set("start_position", static_cast<int>(startPosData->GetValue()));
     }
 
     {
@@ -216,8 +216,8 @@ void PreferencesGeneralPage::Save()
         }
     }
 
-    m_cfg->SetBool("skip_add_torrent_dialog", m_skipAddTorrentDialog->GetValue());
-    m_cfg->SetBool("show_in_notification_area", m_showNotificationIcon->GetValue());
-    m_cfg->SetBool("minimize_to_notification_area", m_minimizeNotification->GetValue());
-    m_cfg->SetBool("close_to_notification_area", m_closeNotification->GetValue());
+    m_cfg->Set("skip_add_torrent_dialog", m_skipAddTorrentDialog->GetValue());
+    m_cfg->Set("show_in_notification_area", m_showNotificationIcon->GetValue());
+    m_cfg->Set("minimize_to_notification_area", m_minimizeNotification->GetValue());
+    m_cfg->Set("close_to_notification_area", m_closeNotification->GetValue());
 }

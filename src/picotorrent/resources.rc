@@ -42,6 +42,7 @@ AppIcon ICON "..\\..\\res\\app.ico"
 20200512234312_create_listen_interface_table    DBMIGRATION "..\\..\\res\\dbmigrations\\20200512234312_create_listen_interface_table.sql"
 20200513225831_create_dht_bootstrap_node_table  DBMIGRATION "..\\..\\res\\dbmigrations\\20200513225831_create_dht_bootstrap_node_table.sql"
 20200823145617_insert_tracker_settings          DBMIGRATION "..\\..\\res\\dbmigrations\\20200823145617_insert_tracker_settings.sql"
+20200912230012_enhance_setting_table            DBMIGRATION "..\\..\\res\\dbmigrations\\20200912230012_enhance_setting_table.sql"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION        VER_FILE_VERSION

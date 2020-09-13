@@ -89,6 +89,7 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
 
     std::stringstream dhtNodes;
     std::stringstream ifaces;
+    std::stringstream outfaces;
 
     for (auto const& node : cfg->GetDhtBootstrapNodes())
     {
@@ -98,34 +99,36 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
     for (auto const& li : cfg->GetListenInterfaces())
     {
         ifaces << "," << li.address << ":" << li.port;
+        outfaces << "," << li.address;
     }
 
     settings.set_str(lt::settings_pack::dht_bootstrap_nodes, dhtNodes.str().substr(1));
     settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
+    settings.set_str(lt::settings_pack::outgoing_interfaces, outfaces.str().substr(1));
 
     // Features
-    settings.set_bool(lt::settings_pack::enable_dht, cfg->GetBool("enable_dht"));
-    settings.set_bool(lt::settings_pack::enable_lsd, cfg->GetBool("enable_lsd"));
+    settings.set_bool(lt::settings_pack::enable_dht, cfg->Get<bool>("libtorrent.enable_dht").value());
+    settings.set_bool(lt::settings_pack::enable_lsd, cfg->Get<bool>("libtorrent.enable_lsd").value());
 
     // Limits
-    settings.set_int(lt::settings_pack::active_checking, cfg->GetInt("active_checking"));
-    settings.set_int(lt::settings_pack::active_dht_limit, cfg->GetInt("active_dht_limit"));
-    settings.set_int(lt::settings_pack::active_downloads, cfg->GetInt("active_downloads"));
-    settings.set_int(lt::settings_pack::active_limit, cfg->GetInt("active_limit"));
-    settings.set_int(lt::settings_pack::active_lsd_limit, cfg->GetInt("active_lsd_limit"));
-    settings.set_int(lt::settings_pack::active_seeds, cfg->GetInt("active_seeds"));
-    settings.set_int(lt::settings_pack::active_tracker_limit, cfg->GetInt("active_tracker_limit"));
+    settings.set_int(lt::settings_pack::active_checking, cfg->Get<int>("libtorrent.active_checking").value());
+    settings.set_int(lt::settings_pack::active_dht_limit, cfg->Get<int>("libtorrent.active_dht_limit").value());
+    settings.set_int(lt::settings_pack::active_downloads, cfg->Get<int>("libtorrent.active_downloads").value());
+    settings.set_int(lt::settings_pack::active_limit, cfg->Get<int>("libtorrent.active_limit").value());
+    settings.set_int(lt::settings_pack::active_lsd_limit, cfg->Get<int>("libtorrent.active_lsd_limit").value());
+    settings.set_int(lt::settings_pack::active_seeds, cfg->Get<int>("libtorrent.active_seeds").value());
+    settings.set_int(lt::settings_pack::active_tracker_limit, cfg->Get<int>("libtorrent.active_tracker_limit").value());
 
     // Tracker things
-    settings.set_bool(lt::settings_pack::announce_to_all_tiers, cfg->GetBool("announce_to_all_tiers"));
-    settings.set_bool(lt::settings_pack::announce_to_all_trackers, cfg->GetBool("announce_to_all_trackers"));
+    settings.set_bool(lt::settings_pack::announce_to_all_tiers, cfg->Get<bool>("libtorrent.announce_to_all_tiers").value());
+    settings.set_bool(lt::settings_pack::announce_to_all_trackers, cfg->Get<bool>("libtorrent.announce_to_all_trackers").value());
 
     // Encryption
-    lt::settings_pack::enc_policy in_policy = cfg->GetBool("require_incoming_encryption")
+    lt::settings_pack::enc_policy in_policy = cfg->Get<bool>("libtorrent.require_incoming_encryption").value()
         ? lt::settings_pack::enc_policy::pe_forced
         : lt::settings_pack::enc_policy::pe_enabled;
 
-    lt::settings_pack::enc_policy out_policy = cfg->GetBool("require_outgoing_encryption")
+    lt::settings_pack::enc_policy out_policy = cfg->Get<bool>("libtorrent.require_outgoing_encryption").value()
         ? lt::settings_pack::enc_policy::pe_forced
         : lt::settings_pack::enc_policy::pe_enabled;
 
@@ -133,17 +136,17 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
     settings.set_int(lt::settings_pack::int_types::out_enc_policy, out_policy);
 
     // Various
-    settings.set_bool(lt::settings_pack::anonymous_mode, cfg->GetBool("anonymous_mode"));
-    settings.set_int(lt::settings_pack::stop_tracker_timeout, cfg->GetInt("stop_tracker_timeout"));
+    settings.set_bool(lt::settings_pack::anonymous_mode, cfg->Get<bool>("libtorrent.anonymous_mode").value());
+    settings.set_int(lt::settings_pack::stop_tracker_timeout, cfg->Get<int>("libtorrent.stop_tracker_timeout").value());
 
     settings.set_int(lt::settings_pack::download_rate_limit,
-        cfg->GetBool("enable_download_rate_limit")
-        ? cfg->GetInt("download_rate_limit") * 1024
+        cfg->Get<bool>("libtorrent.enable_download_rate_limit").value()
+        ? cfg->Get<int>("libtorrent.download_rate_limit").value() * 1024
         : 0);
 
     settings.set_int(lt::settings_pack::upload_rate_limit,
-        cfg->GetBool("enable_upload_rate_limit")
-        ? cfg->GetInt("upload_rate_limit") * 1024
+        cfg->Get<bool>("libtorrent.enable_upload_rate_limit").value()
+        ? cfg->Get<int>("libtorrent.upload_rate_limit").value() * 1024
         : 0);
 
     // Calculate user agent
@@ -159,18 +162,18 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
     settings.set_str(lt::settings_pack::peer_fingerprint, peer_id.str());
 
     // Proxy settings
-    auto proxyType = static_cast<pt::Core::Configuration::ConnectionProxyType>(cfg->GetInt("proxy_type"));
+    auto proxyType = static_cast<pt::Core::Configuration::ConnectionProxyType>(cfg->Get<int>("libtorrent.proxy_type").value());
 
     if (proxyType != pt::Core::Configuration::ConnectionProxyType::None)
     {
         settings.set_int(lt::settings_pack::proxy_type, static_cast<lt::settings_pack::proxy_type_t>(proxyType));
-        settings.set_str(lt::settings_pack::proxy_hostname, cfg->GetString("proxy_host"));
-        settings.set_int(lt::settings_pack::proxy_port, cfg->GetInt("proxy_port"));
-        settings.set_str(lt::settings_pack::proxy_username, cfg->GetString("proxy_username"));
-        settings.set_str(lt::settings_pack::proxy_password, cfg->GetString("proxy_password"));
-        settings.set_bool(lt::settings_pack::proxy_hostnames, cfg->GetBool("proxy_hostnames"));
-        settings.set_bool(lt::settings_pack::proxy_peer_connections, cfg->GetBool("proxy_peers"));
-        settings.set_bool(lt::settings_pack::proxy_tracker_connections, cfg->GetBool("proxy_trackers"));
+        settings.set_str(lt::settings_pack::proxy_hostname, cfg->Get<std::string>("libtorrent.proxy_host").value());
+        settings.set_int(lt::settings_pack::proxy_port, cfg->Get<int>("libtorrent.proxy_port").value());
+        settings.set_str(lt::settings_pack::proxy_username, cfg->Get<std::string>("libtorrent.proxy_username").value());
+        settings.set_str(lt::settings_pack::proxy_password, cfg->Get<std::string>("libtorrent.proxy_password").value());
+        settings.set_bool(lt::settings_pack::proxy_hostnames, cfg->Get<bool>("libtorrent.proxy_hostnames").value());
+        settings.set_bool(lt::settings_pack::proxy_peer_connections, cfg->Get<bool>("libtorrent.proxy_peers").value());
+        settings.set_bool(lt::settings_pack::proxy_tracker_connections, cfg->Get<bool>("libtorrent.proxy_trackers").value());
     }
 
     return settings;
@@ -190,7 +193,7 @@ Session::Session(wxEvtHandler* parent, std::shared_ptr<pt::Core::Database> db, s
     m_session->add_extension(&lt::create_ut_metadata_plugin);
     m_session->add_extension(&lt::create_smart_ban_plugin);
 
-    if (cfg->GetBool("enable_pex"))
+    if (cfg->Get<bool>("libtorrent.enable_pex").value())
     {
         m_session->add_extension(lt::create_ut_pex_plugin);
     }
@@ -551,13 +554,13 @@ void Session::OnAlert()
             evt.SetClientData(m_torrents.at(ts.info_hashes));
             wxPostEvent(m_parent, evt);
 
-            bool shouldMove = m_cfg->GetBool("move_completed_downloads");
-            bool onlyFromDefault = m_cfg->GetBool("move_completed_downloads_from_default_only");
-            std::string movePath = m_cfg->GetString("move_completed_downloads_path");
+            bool shouldMove = m_cfg->Get<bool>("move_completed_downloads").value();
+            bool onlyFromDefault = m_cfg->Get<bool>("move_completed_downloads_from_default_only").value();
+            std::string movePath = m_cfg->Get<std::string>("move_completed_downloads_path").value();
 
             if (shouldMove)
             {
-                if (onlyFromDefault && ts.save_path != m_cfg->GetString("default_save_path"))
+                if (onlyFromDefault && ts.save_path != m_cfg->Get<std::string>("default_save_path").value())
                 {
                     break;
                 }
