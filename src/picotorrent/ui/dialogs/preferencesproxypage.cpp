@@ -61,25 +61,21 @@ PreferencesProxyPage::PreferencesProxyPage(wxWindow* parent, std::shared_ptr<Con
     {
         auto clientData = reinterpret_cast<ClientData<Configuration::ConnectionProxyType>*>(m_type->GetClientObject(i));
 
-        if (clientData->GetValue() == static_cast<Configuration::ConnectionProxyType>(m_cfg->GetInt("proxy_type")))
+        if (clientData->GetValue() == static_cast<Configuration::ConnectionProxyType>(m_cfg->Get<int>("libtorrent.proxy_type").value()))
         {
             m_type->Select(i);
             break;
         }
     }
 
-    m_host->SetValue(m_cfg->GetString("proxy_host"));
+    if (auto proxyHost = m_cfg->Get<std::string>("libtorrent.proxy_host")) m_host->SetValue(proxyHost.value());
+    if (auto proxyPort = m_cfg->Get<int>("libtorrent.proxy_port")) m_port->SetValue(std::to_string(proxyPort.value()));
+    if (auto proxyUsername = m_cfg->Get<std::string>("libtorrent.proxy_username")) m_username->SetValue(proxyUsername.value());
+    if (auto proxyPassword = m_cfg->Get<std::string>("libtorrent.proxy_password")) m_password->SetValue(proxyPassword.value());
 
-    if (m_cfg->GetInt("proxy_port") > 0)
-    {
-        m_port->SetValue(std::to_string(m_cfg->GetInt("proxy_port")));
-    }
-
-    m_username->SetValue(m_cfg->GetString("proxy_username"));
-    m_password->SetValue(m_cfg->GetString("proxy_password"));
-    m_proxyHostnames->SetValue(m_cfg->GetBool("proxy_hostnames"));
-    m_proxyPeers->SetValue(m_cfg->GetBool("proxy_peers"));
-    m_proxyTrackers->SetValue(m_cfg->GetBool("proxy_trackers"));
+    m_proxyHostnames->SetValue(m_cfg->Get<bool>("libtorrent.proxy_hostnames").value());
+    m_proxyPeers->SetValue(m_cfg->Get<bool>("libtorrent.proxy_peers").value());
+    m_proxyTrackers->SetValue(m_cfg->Get<bool>("libtorrent.proxy_trackers").value());
 
     this->SetSizerAndFit(sizer);
     this->UpdateUI();
@@ -93,14 +89,14 @@ void PreferencesProxyPage::Save()
     long proxyPort = 0;
     m_port->GetValue().ToLong(&proxyPort);
 
-    m_cfg->SetInt("proxy_type", typeData->GetValue());
-    m_cfg->SetString("proxy_host", m_host->GetValue().ToStdString());
-    m_cfg->SetInt("proxy_port", static_cast<int>(proxyPort));
-    m_cfg->SetString("proxy_username", m_username->GetValue().ToStdString());
-    m_cfg->SetString("proxy_password", m_password->GetValue().ToStdString());
-    m_cfg->SetBool("proxy_hostnames", m_proxyHostnames->GetValue());
-    m_cfg->SetBool("proxy_peers", m_proxyPeers->GetValue());
-    m_cfg->SetBool("proxy_trackers", m_proxyTrackers->GetValue());
+    m_cfg->Set("libtorrent.proxy_type", static_cast<int>(typeData->GetValue()));
+    m_cfg->Set("libtorrent.proxy_host", m_host->GetValue().ToStdString());
+    m_cfg->Set("libtorrent.proxy_port", static_cast<int>(proxyPort));
+    m_cfg->Set("libtorrent.proxy_username", m_username->GetValue().ToStdString());
+    m_cfg->Set("libtorrent.proxy_password", m_password->GetValue().ToStdString());
+    m_cfg->Set("libtorrent.proxy_hostnames", m_proxyHostnames->GetValue());
+    m_cfg->Set("libtorrent.proxy_peers", m_proxyPeers->GetValue());
+    m_cfg->Set("libtorrent.proxy_trackers", m_proxyTrackers->GetValue());
 }
 
 bool PreferencesProxyPage::IsValid()

@@ -75,7 +75,7 @@ void Database::Statement::Bind(int idx, std::vector<char> const& value)
     }
 }
 
-void Database::Statement::Execute()
+bool Database::Statement::Execute()
 {
     int res = sqlite3_step(m_stmt);
 
@@ -83,9 +83,10 @@ void Database::Statement::Execute()
     {
         const char* err = sqlite3_errmsg(sqlite3_db_handle(m_stmt));
         LOG_F(ERROR, "Failed to execute statement: %s", err);
-
-        throw std::runtime_error(err);
+        return false;
     }
+
+    return true;
 }
 
 void Database::Statement::GetBlob(int idx, std::vector<char>& result)

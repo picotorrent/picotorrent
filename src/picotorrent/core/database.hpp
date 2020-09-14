@@ -26,7 +26,7 @@ namespace Core
             void Bind(int idx, int value);
             void Bind(int idx, std::string const& value);
             void Bind(int idx, std::vector<char> const& value);
-            void Execute();
+            bool Execute();
             void GetBlob(int idx, std::vector<char>& res);
             bool GetBool(int idx);
             int GetInt(int idx);

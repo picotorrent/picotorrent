@@ -83,7 +83,7 @@ bool Application::OnInit()
 
     pt::UI::Translator& translator = pt::UI::Translator::GetInstance();
     translator.LoadEmbedded(GetModuleHandle(NULL));
-    translator.SetLanguage(cfg->GetInt("language_id"));
+    translator.SetLanguage(cfg->Get<int>("language_id").value());
 
     // Load plugins
     for (auto& p : fs::directory_iterator(env->GetApplicationPath()))
@@ -116,13 +116,13 @@ bool Application::OnInit()
         m_plugins.end(),
         [mainFrame](auto plugin) { plugin->EmitEvent(libpico_event_mainwnd_created, mainFrame); });
 
-    auto windowState = static_cast<pt::Core::Configuration::WindowState>(cfg->GetInt("start_position"));
+    auto windowState = static_cast<pt::Core::Configuration::WindowState>(cfg->Get<int>("start_position").value());
 
     switch (windowState)
     {
     case pt::Core::Configuration::WindowState::Hidden:
         // Only valid if we have a notify icon
-        if (cfg->GetBool("show_in_notification_area"))
+        if (cfg->Get<bool>("show_in_notification_area").value())
         {
             mainFrame->MSWGetTaskBarButton()->Hide();
         }

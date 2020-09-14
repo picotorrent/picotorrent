@@ -16,13 +16,13 @@ PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared
     wxFlexGridSizer* transfersGrid = new wxFlexGridSizer(2, 10, 10);
 
     m_savePathCtrl = new wxDirPickerCtrl(transfersSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
-    m_savePathCtrl->SetPath(wxString::FromUTF8(m_cfg->GetString("default_save_path")));
+    m_savePathCtrl->SetPath(wxString::FromUTF8(m_cfg->Get<std::string>("default_save_path").value()));
 
     m_moveCompletedEnabled = new wxCheckBox(transfersSizer->GetStaticBox(), wxID_ANY, i18n("move_completed_downloads"));
     m_moveCompletedPathCtrl = new wxDirPickerCtrl(transfersSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
     m_moveCompletedOnlyFromDefault = new wxCheckBox(transfersSizer->GetStaticBox(), wxID_ANY, i18n("only_move_from_default_save_path"));
     m_pauseLowDiskSpace = new wxCheckBox(transfersSizer->GetStaticBox(), wxID_ANY, i18n("pause_on_low_disk_space"));
-    m_pauseLowDiskSpace->SetValue(cfg->GetBool("pause_on_low_disk_space"));
+    m_pauseLowDiskSpace->SetValue(cfg->Get<bool>("pause_on_low_disk_space").value());
 
     transfersGrid->AddGrowableCol(1, 1);
     transfersGrid->Add(new wxStaticText(transfersSizer->GetStaticBox(), wxID_ANY, i18n("save_path")), 0, wxALIGN_CENTER_VERTICAL);
@@ -50,20 +50,20 @@ PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared
     wxFlexGridSizer* transferLimitsGrid = new wxFlexGridSizer(3, 10, 10);
 
     m_enableDownloadLimit = new wxCheckBox(limitsSizer->GetStaticBox(), wxID_ANY, i18n("dl_limit"));
-    m_enableDownloadLimit->SetValue(m_cfg->GetBool("enable_download_rate_limit"));
+    m_enableDownloadLimit->SetValue(m_cfg->Get<bool>("libtorrent.enable_download_rate_limit").value());
 
     m_downloadLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
-    m_downloadLimit->Enable(m_cfg->GetBool("enable_download_rate_limit"));
+    m_downloadLimit->Enable(m_cfg->Get<bool>("libtorrent.enable_download_rate_limit").value());
     m_downloadLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
-    m_downloadLimit->SetValue(std::to_string(m_cfg->GetInt("download_rate_limit")));
+    m_downloadLimit->SetValue(std::to_string(m_cfg->Get<int>("libtorrent.download_rate_limit").value()));
 
     m_enableUploadLimit = new wxCheckBox(limitsSizer->GetStaticBox(), wxID_ANY, i18n("ul_limit"));
-    m_enableUploadLimit->SetValue(m_cfg->GetBool("enable_upload_rate_limit"));
+    m_enableUploadLimit->SetValue(m_cfg->Get<bool>("libtorrent.enable_upload_rate_limit").value());
 
     m_uploadLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
-    m_uploadLimit->Enable(m_cfg->GetBool("enable_upload_rate_limit"));
+    m_uploadLimit->Enable(m_cfg->Get<bool>("libtorrent.enable_upload_rate_limit").value());
     m_uploadLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
-    m_uploadLimit->SetValue(std::to_string(m_cfg->GetInt("upload_rate_limit")));
+    m_uploadLimit->SetValue(std::to_string(m_cfg->Get<int>("libtorrent.upload_rate_limit").value()));
 
     m_enableDownloadLimit->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { m_downloadLimit->Enable(m_enableDownloadLimit->GetValue()); });
     m_enableUploadLimit->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { m_uploadLimit->Enable(m_enableUploadLimit->GetValue()); });
@@ -81,15 +81,15 @@ PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared
 
     m_activeLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
     m_activeLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
-    m_activeLimit->SetValue(std::to_string(m_cfg->GetInt("active_limit")));
+    m_activeLimit->SetValue(std::to_string(m_cfg->Get<int>("libtorrent.active_limit").value()));
 
     m_activeDownloadsLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
     m_activeDownloadsLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
-    m_activeDownloadsLimit->SetValue(std::to_string(m_cfg->GetInt("active_downloads")));
+    m_activeDownloadsLimit->SetValue(std::to_string(m_cfg->Get<int>("libtorrent.active_downloads").value()));
 
     m_activeSeedsLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
     m_activeSeedsLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
-    m_activeSeedsLimit->SetValue(std::to_string(m_cfg->GetInt("active_seeds")));
+    m_activeSeedsLimit->SetValue(std::to_string(m_cfg->Get<int>("libtorrent.active_seeds").value()));
 
     activeLimitsGrid->AddGrowableCol(0, 1);
     activeLimitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, i18n("total_active")));
@@ -117,9 +117,9 @@ PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared
         m_moveCompletedOnlyFromDefault->Enable(m_moveCompletedEnabled->IsChecked());
     });
 
-    m_moveCompletedEnabled->SetValue(cfg->GetBool("move_completed_downloads"));
-    m_moveCompletedPathCtrl->SetPath(wxString::FromUTF8(cfg->GetString("move_completed_downloads_path")));
-    m_moveCompletedOnlyFromDefault->SetValue(cfg->GetBool("move_completed_downloads_from_default_only"));
+    m_moveCompletedEnabled->SetValue(cfg->Get<bool>("move_completed_downloads").value());
+    m_moveCompletedPathCtrl->SetPath(wxString::FromUTF8(cfg->Get<std::string>("move_completed_downloads_path").value_or("")));
+    m_moveCompletedOnlyFromDefault->SetValue(cfg->Get<bool>("move_completed_downloads_from_default_only").value());
 
     m_moveCompletedPathCtrl->Enable(m_moveCompletedEnabled->IsChecked());
     m_moveCompletedOnlyFromDefault->Enable(m_moveCompletedEnabled->IsChecked());
@@ -133,18 +133,18 @@ void PreferencesDownloadsPage::Save()
     long ulLimit = 0;
     m_uploadLimit->GetValue().ToLong(&ulLimit);
 
-    m_cfg->SetString("default_save_path", m_savePathCtrl->GetPath().ToStdString());
-    m_cfg->SetBool("enable_download_rate_limit", m_enableDownloadLimit->GetValue());
-    m_cfg->SetInt("download_rate_limit", static_cast<int>(dlLimit));
-    m_cfg->SetBool("enable_upload_rate_limit", m_enableUploadLimit->GetValue());
-    m_cfg->SetInt("upload_rate_limit", static_cast<int>(ulLimit));
+    m_cfg->Set("default_save_path", m_savePathCtrl->GetPath().ToStdString());
+    m_cfg->Set("libtorrent.enable_download_rate_limit", m_enableDownloadLimit->GetValue());
+    m_cfg->Set("libtorrent.download_rate_limit", static_cast<int>(dlLimit));
+    m_cfg->Set("libtorrent.enable_upload_rate_limit", m_enableUploadLimit->GetValue());
+    m_cfg->Set("libtorrent.upload_rate_limit", static_cast<int>(ulLimit));
 
-    m_cfg->SetBool("pause_on_low_disk_space", m_pauseLowDiskSpace->IsChecked());
+    m_cfg->Set("pause_on_low_disk_space", m_pauseLowDiskSpace->IsChecked());
 
     // Move
-    m_cfg->SetBool("move_completed_downloads", m_moveCompletedEnabled->IsChecked());
-    m_cfg->SetBool("move_completed_downloads_from_default_only", m_moveCompletedOnlyFromDefault->IsChecked());
-    m_cfg->SetString("move_completed_downloads_path", m_moveCompletedPathCtrl->GetPath().ToStdString());
+    m_cfg->Set("move_completed_downloads", m_moveCompletedEnabled->IsChecked());
+    m_cfg->Set("move_completed_downloads_from_default_only", m_moveCompletedOnlyFromDefault->IsChecked());
+    m_cfg->Set("move_completed_downloads_path", m_moveCompletedPathCtrl->GetPath().ToStdString());
 
     // Active limits
     long activeLimit = 0;
@@ -156,9 +156,9 @@ void PreferencesDownloadsPage::Save()
     long activeSeeds = 0;
     m_activeSeedsLimit->GetValue().ToLong(&activeSeeds);
 
-    m_cfg->SetInt("active_limit", static_cast<int>(activeLimit));
-    m_cfg->SetInt("active_downloads", static_cast<int>(activeDownloads));
-    m_cfg->SetInt("active_seeds", static_cast<int>(activeSeeds));
+    m_cfg->Set("libtorrent.active_limit", static_cast<int>(activeLimit));
+    m_cfg->Set("libtorrent.active_downloads", static_cast<int>(activeDownloads));
+    m_cfg->Set("libtorrent.active_seeds", static_cast<int>(activeSeeds));
 }
 
 bool PreferencesDownloadsPage::IsValid()

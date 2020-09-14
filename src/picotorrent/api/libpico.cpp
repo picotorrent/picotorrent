@@ -94,14 +94,14 @@ libpico_result_t libpico_config_get(libpico_plugin_t* plugin, libpico_config_t**
 libpico_result_t libpico_config_bool_get(libpico_config_t* cfg, const char* key, bool* result)
 {
     auto config = reinterpret_cast<pt::Core::Configuration*>(cfg);
-    *result = config->GetBool(key);
+    *result = config->Get<bool>(key).value();
     return libpico_ok;
 }
 
 libpico_result_t libpico_config_string_get(libpico_config_t* cfg, const char* key, char* result, size_t* len)
 {
     auto config = reinterpret_cast<pt::Core::Configuration*>(cfg);
-    auto res = config->GetString(key);
+    auto res = config->Get<std::string>(key).value_or("");
     strncpy(result, res.c_str(), *len);
     *len = res.size();
     return libpico_ok;
@@ -113,7 +113,7 @@ libpico_result_t libpico_config_string_set(libpico_config_t* config, const char*
         ? std::string(value)
         : std::string(value, len);
 
-    reinterpret_cast<pt::Core::Configuration*>(config)->SetString(key, val);
+    reinterpret_cast<pt::Core::Configuration*>(config)->Set(key, val);
 
     return libpico_ok;
 }
