@@ -6,6 +6,8 @@ packaging/AppX/PicoTorrentManifest.xml
 packaging/Chocolatey/tools/chocolateyinstall.ps1
 src/VersionInformation.cpp
 src/core/version_info.cpp
+src/installer/bin
+src/installer/obj
 src/picotorrent/buildinfo.cpp
 tools/Cake
 tools/Cake.CMake
