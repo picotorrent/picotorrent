@@ -47,7 +47,7 @@ namespace Models
 
         struct ListItem
         {
-            std::string key;
+            std::wstring key;
             int tier;
             ListItemStatus status;
             int numDownloaded;

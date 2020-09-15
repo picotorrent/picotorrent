@@ -283,6 +283,7 @@
         "cancel": "Cancel",
         "restore_defaults": "Restore defaults",
         "documentation": "Documentation",
-        "restore_defaults_description": "This will restore most settings to their default value. Are you sure?"
+        "restore_defaults_description": "This will restore most settings to their default value. Are you sure?",
+        "eta_format": "{0}h {1}m {2}s"
     }
 }
