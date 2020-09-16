@@ -92,6 +92,13 @@
                         Advertise="yes" />
             </Component>
 
+            <Component Id="C_coredb.sqlite" Guid="8a2a5387-391b-4a72-9915-403441906b83">
+                <File Id="F_coredb.sqlite"
+                    KeyPath="yes"
+                    Name="coredb.sqlite"
+                    Source="$(var.PublishDirectory)\coredb.sqlite" />
+            </Component>
+
             <Component Id="C_crashpad_handler.exe" Guid="99f10c73-7f2e-466b-a46b-cf755f884823">
                 <File Id="F_crashpad_handler.exe"
                     KeyPath="yes"

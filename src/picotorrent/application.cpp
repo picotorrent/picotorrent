@@ -82,8 +82,10 @@ bool Application::OnInit()
     auto cfg = std::make_shared<pt::Core::Configuration>(db);
 
     pt::UI::Translator& translator = pt::UI::Translator::GetInstance();
-    translator.LoadEmbedded(GetModuleHandle(NULL));
-    translator.SetLanguage(cfg->Get<int>("language_id").value());
+    translator.LoadDatabase(env->GetCoreDbFilePath());
+    translator.SetLocale(
+        cfg->Get<std::string>("locale_name")
+            .value_or(env->GetCurrentLocale()));
 
     // Load plugins
     for (auto& p : fs::directory_iterator(env->GetApplicationPath()))

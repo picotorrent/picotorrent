@@ -134,12 +134,12 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
 
     for (auto& lang : Translator::GetInstance().Languages())
     {
-        int pos = m_language->Append(lang.name, new ClientData<int>(lang.code));
+        int pos = m_language->Append(lang.name);// , new ClientData<int>(lang.code));
 
-        if (lang.code == m_cfg->Get<int>("language_id").value())
+        /*if (lang.code == m_cfg->Get<int>("language_id").value())
         {
             m_language->SetSelection(pos);
-        }
+        }*/
     }
 
     m_skipAddTorrentDialog->SetValue(m_cfg->Get<bool>("skip_add_torrent_dialog").value());
