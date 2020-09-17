@@ -1,6 +1,7 @@
 [Files]
 "%{PublishDirectory}/PicoTorrent.exe"                                 "PicoTorrent.exe"
 "%{PublishDirectory}/crashpad_handler.exe"                            "crashpad_handler.exe"
+"%{PublishDirectory}/coredb.sqlite"                                   "coredb.sqlite"
 "%{ResourceDirectory}/logo150.png"                                    "logo150.png"
 "%{ResourceDirectory}/logo44.png"                                     "logo44.png"
 "%{PackagingDirectory}/appx.dummy"                                    "appx.dummy"

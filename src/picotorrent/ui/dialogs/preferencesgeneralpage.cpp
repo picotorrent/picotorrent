@@ -134,9 +134,9 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
 
     for (auto& lang : Translator::GetInstance().Languages())
     {
-        int pos = m_language->Append(lang.name, new ClientData<int>(lang.code));
+        int pos = m_language->Append(lang.name, new ClientData<std::string>(lang.locale));
 
-        if (lang.code == m_cfg->Get<int>("language_id").value())
+        if (lang.locale == Translator::GetInstance().GetLocale())
         {
             m_language->SetSelection(pos);
         }
@@ -183,8 +183,8 @@ bool PreferencesGeneralPage::IsValid()
 void PreferencesGeneralPage::Save()
 {
     int langIndex = m_language->GetSelection();
-    ClientData<int>* langData = langIndex >= 0
-        ? reinterpret_cast<ClientData<int>*>(m_language->GetClientObject(langIndex))
+    ClientData<std::string>* langData = langIndex >= 0
+        ? reinterpret_cast<ClientData<std::string>*>(m_language->GetClientObject(langIndex))
         : nullptr;
 
     int startPosIndex = m_startPosition->GetSelection();
@@ -192,9 +192,7 @@ void PreferencesGeneralPage::Save()
 
     if (langData != nullptr)
     {
-        // Sometimes we see crashes where langData is null. Can't reproduce,
-        // but the simple fix is to null check.
-        m_cfg->Set("language_id", static_cast<int>(langData->GetValue()));
+        m_cfg->Set("locale_name", langData->GetValue());
     }
 
     if (startPosData != nullptr)

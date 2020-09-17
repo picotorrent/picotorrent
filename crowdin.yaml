@@ -1,0 +1,7 @@
+project_id: "406844"
+base_path: "./"
+preserve_hierarchy: true
+
+files:
+  - source: "/lang/en.json"
+    translation: "/lang/%locale%.json"

@@ -2,6 +2,7 @@
 
 #include <loguru.hpp>
 #include <nlohmann/json.hpp>
+#include <sqlite3.h>
 
 #include "../core/utils.hpp"
 
@@ -9,6 +10,7 @@ using json = nlohmann::json;
 using pt::UI::Translator;
 
 Translator::Translator()
+    : m_selectedLocale("en")
 {
 }
 
@@ -18,66 +20,71 @@ Translator& Translator::GetInstance()
     return translator;
 }
 
-void Translator::LoadEmbedded(HINSTANCE hInstance)
+std::string Translator::GetLocale()
 {
-    EnumResourceNames(
-        hInstance,
-        TEXT("LANGFILE"),
-        EnumLanguageFiles,
-        reinterpret_cast<LONG_PTR>(this));
-
-    LOG_F(INFO, "Found %d embedded translation files", m_languages.size());
+    return m_selectedLocale;
 }
 
-BOOL Translator::EnumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
+void Translator::LoadDatabase(std::filesystem::path const& filePath)
 {
-    Translator* translator = reinterpret_cast<Translator*>(lParam);
+    std::string convertedPath = Utils::toStdString(filePath.wstring());
 
-    HRSRC rc = FindResource(hModule, lpszName, lpszType);
-    DWORD size = SizeofResource(hModule, rc);
-    HGLOBAL data = LoadResource(hModule, rc);
-    const char* buffer = reinterpret_cast<const char*>(LockResource(data));
+    LOG_F(INFO, "Loading translations from %s", convertedPath.c_str());
 
-    std::string jsonData(buffer, static_cast<size_t>(size));
-    json j;
+    sqlite3* db = nullptr;
 
-    try
+    if (sqlite3_open(convertedPath.c_str(), &db) != SQLITE_OK)
     {
-        j = json::parse(jsonData);
+        LOG_F(ERROR, "Failed to load translations database");
+        return;
     }
-    catch (std::exception const& ex)
+
+    sqlite3_exec(
+        db,
+        "SELECT locale, key, value FROM translations ORDER BY locale, key ASC",
+        &Translator::LoadDatabaseCallback,
+        this,
+        nullptr);
+
+    sqlite3_close(db);
+}
+
+int Translator::LoadDatabaseCallback(void* user, int count, char** data, char** columns)
+{
+    Translator* tr = static_cast<Translator*>(user);
+
+    std::string loc = data[0];
+    std::string key = data[1];
+    std::wstring val = Utils::toStdWString(data[2]);
+    TCHAR localeNameBuffer[1024];
+
+    if (tr->m_languages.find(loc) == tr->m_languages.end())
     {
-        if (IS_INTRESOURCE(lpszName))
+        Language l;
+        l.locale = loc;
+
+
+        int res = GetLocaleInfoEx(
+            Utils::toStdWString(l.locale).c_str(),
+            LOCALE_SLOCALIZEDLANGUAGENAME,
+            localeNameBuffer,
+            ARRAYSIZE(localeNameBuffer));
+
+        if (res > 0)
         {
-            LOG_F(ERROR, "Failed to parse language json (%d): %s", reinterpret_cast<int>(lpszName), ex.what());
+            l.name = std::wstring(localeNameBuffer, res);
         }
         else
         {
-            LOG_F(ERROR, "Failed to parse language json: %s", ex.what());
+            LOG_F(ERROR, "GetLocaleInfoEx returned %d for %s", res, l.locale.c_str());
         }
 
-        return TRUE;
+        tr->m_languages.insert({ loc, l });
     }
 
-    int langId = j["lang_id"];
-    std::string langName = j["lang_name"];
+    tr->m_languages.at(loc).translations.insert({ key, val });
 
-    Language l;
-    l.code = langId;
-    l.name = Utils::toStdWString(langName);
-
-    for (auto& p : j["strings"].items())
-    {
-        std::string key = p.key(); // Specifically do not use ToStdWString here
-                                   // since we do not want to find Unicode keys
-        std::wstring val = Utils::toStdWString(p.value());
-
-        l.translations.insert({ key, val });
-    }
-
-    translator->m_languages.insert({ l.code, l });
-
-    return TRUE;
+    return SQLITE_OK;
 }
 
 std::vector<Translator::Language> Translator::Languages()
@@ -102,8 +109,13 @@ std::vector<Translator::Language> Translator::Languages()
 
 std::wstring Translator::Translate(std::string const& key)
 {
-    auto lang = m_languages.find(m_selectedLanguage);
-    if (lang == m_languages.end()) { lang = m_languages.find(1033); }
+    // Try to find the language we have selected
+    auto lang = m_languages.find(m_selectedLocale);
+
+    // Didn't find our selected language, try with 'en' instead
+    if (lang == m_languages.end()) { lang = m_languages.find("en"); }
+
+    // Didn't find 'en', return the key
     if (lang == m_languages.end()) { return Utils::toStdWString(key); }
 
     auto translation = lang->second.translations.find(key);
@@ -116,7 +128,43 @@ std::wstring Translator::Translate(std::string const& key)
     return translation->second;
 }
 
-void Translator::SetLanguage(int langCode)
+void Translator::SetLocale(std::string const& locale)
 {
-    m_selectedLanguage = langCode;
+    // a locale can be en-SV (english language but swedish format on dates etc)
+    // in this case, we want to use the 'en' translations. check if we have an
+    // exact match, otherwise remove the -SV part and check again
+
+    if (m_languages.find(locale) == m_languages.end())
+    {
+        std::string tmpLocale = locale;
+
+        if (locale.find_first_of('-') != std::string::npos)
+        {
+            tmpLocale = locale.substr(0, locale.find_first_of('-'));
+        }
+
+        if (m_languages.find(tmpLocale) != m_languages.end())
+        {
+            LOG_F(INFO, "Adjusting locale from %s to %s in order to match available language", locale.c_str(), tmpLocale.c_str());
+            m_selectedLocale = tmpLocale;
+        }
+        else
+        {
+            // loop through and see if we have other locales which might match. take first
+            for (auto const& lang : m_languages)
+            {
+                if (lang.first.size() >= tmpLocale.size()
+                    && lang.first.substr(0, tmpLocale.size()) == tmpLocale)
+                {
+                    // we found a match on language with a different culture... use it
+                    LOG_F(INFO, "Adjusting locale from %s to %s after substring matching", locale.c_str(), lang.first.c_str());
+                    m_selectedLocale = lang.first;
+                }
+            }
+        }
+    }
+    else
+    {
+        m_selectedLocale = locale;
+    }
 }
