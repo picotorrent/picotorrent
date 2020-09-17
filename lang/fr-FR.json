@@ -168,7 +168,7 @@
     "privacy": "Vie privé",
     "encryption": "Encryption",
     "require_encryption_incoming": "Requérir pour les connections en aval.",
-    "require_encryption_outgoing": "Requérir pour les connections en amont." ,
+    "require_encryption_outgoing": "Requérir pour les connections en amont.",
     "move_completed_downloads": "Déplacer les téléchargements completés",
     "only_move_from_default_save_path": "Déplacer seulement du chemin de téléchargement par défault.",
     "include": "Inclure",
@@ -276,5 +276,8 @@
     "status_saving_torrent": "Sauvegarde du torrent",
     "add_to_session": "Ajouter à la session",
     "no_such_file_or_directory": "Le fichier/dossier n'existe pas",
-    "leeches" : "Sangsues"
+    "cancel": "Cancel",
+    "restore_defaults": "Restore defaults",
+    "documentation": "Documentation",
+    "restore_defaults_description": "This will restore most settings to their default value. Are you sure?"
 }
