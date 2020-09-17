@@ -20,6 +20,11 @@ Translator& Translator::GetInstance()
     return translator;
 }
 
+std::string Translator::GetLocale()
+{
+    return m_selectedLocale;
+}
+
 void Translator::LoadDatabase(std::filesystem::path const& filePath)
 {
     std::string convertedPath = Utils::toStdString(filePath.wstring());
@@ -56,11 +61,11 @@ int Translator::LoadDatabaseCallback(void* user, int count, char** data, char** 
     if (tr->m_languages.find(loc) == tr->m_languages.end())
     {
         Language l;
-        l.locale = Utils::toStdWString(loc);
+        l.locale = loc;
 
 
         int res = GetLocaleInfoEx(
-            l.locale.c_str(),
+            Utils::toStdWString(l.locale).c_str(),
             LOCALE_SLOCALIZEDLANGUAGENAME,
             localeNameBuffer,
             ARRAYSIZE(localeNameBuffer));
@@ -71,7 +76,7 @@ int Translator::LoadDatabaseCallback(void* user, int count, char** data, char** 
         }
         else
         {
-            LOG_F(ERROR, "GetLocaleInfoEx returned %d for %s", res, Utils::toStdString(l.locale).c_str());
+            LOG_F(ERROR, "GetLocaleInfoEx returned %d for %s", res, l.locale.c_str());
         }
 
         tr->m_languages.insert({ loc, l });

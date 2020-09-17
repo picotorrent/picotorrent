@@ -19,7 +19,7 @@ namespace UI
     public:
         struct Language
         {
-            std::wstring locale;
+            std::string locale;
             std::wstring name;
             std::map<std::string, std::wstring> translations;
         };
@@ -29,6 +29,7 @@ namespace UI
         Translator(Translator const&) = delete;
         void operator=(Translator const&) = delete;
 
+        std::string GetLocale();
         std::vector<Language> Languages();
         void LoadDatabase(std::filesystem::path const& filePath);
         void SetLocale(std::string const& localeName);
