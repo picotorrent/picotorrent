@@ -2,6 +2,10 @@
 
 os: Visual Studio 2019
 
+branches:
+  except:
+    - l10n
+
 environment:
   global:
     BOOST_ROOT: C:\Libraries\boost_1_71_0
