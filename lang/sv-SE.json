@@ -218,6 +218,10 @@
     "num_torrents": "{0} torrent(er)",
     "dl_s_ul_s": "DL: {0}/s, UL: {1}/s",
     "amp_details_panel": "&Detaljpanel",
+    "network_adapter": "Nätverksadapter",
     "private": "Privat",
-    "options": "Inställningar"
+    "yes": "Ja",
+    "no": "Nej",
+    "options": "Inställningar",
+    "compatibility": "Kompatibilitet"
 }
