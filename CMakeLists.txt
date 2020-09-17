@@ -101,29 +101,29 @@ target_include_directories(
 add_executable(
     PicoTorrent-coredb
     src/l10n/main
-    lang/ca.json
-    lang/de.json
-    lang/el.json
-    lang/en.json
-    lang/es.json
-    lang/fi.json
-    lang/fr.json
-    lang/hu.json
+    lang/ca-ES.json
+    lang/de-DE.json
+    lang/el-GR.json
+    lang/en-US.json
+    lang/es-ES.json
+    lang/fi-FI.json
+    lang/fr-FR.json
+    lang/hu-HU.json
     lang/hy-AM.json
-    lang/id.json
-    lang/it.json
-    lang/ka.json
-    lang/ko.json
-    lang/lt.json
-    lang/lv.json
-    lang/nl.json
-    lang/pl.json
+    lang/id-ID.json
+    lang/it-IT.json
+    lang/ka-GE.json
+    lang/ko-KR.json
+    lang/lt-LT.json
+    lang/lv-LV.json
+    lang/nl-NL.json
+    lang/pl-PL.json
     lang/pt-BR.json
-    lang/ro.json
-    lang/ru.json
+    lang/ro-RO.json
+    lang/ru-RU.json
     lang/sv-SE.json
-    lang/tr.json
-    lang/uk.json
+    lang/tr-TR.json
+    lang/uk-UA.json
     lang/zh-CN.json
 )
 
