@@ -223,5 +223,6 @@
     "yes": "Ja",
     "no": "Nej",
     "options": "Inställningar",
-    "compatibility": "Kompatibilitet"
+    "compatibility": "Kompatibilitet",
+    "build_info_format": "Branch: {0}\nSHA1: {1}"
 }
