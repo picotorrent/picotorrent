@@ -62,6 +62,7 @@
     "connection": "Соединение",
     "the_transfers_path_cannot_be_empty": "Путь не может быть пустым.",
     "none": "Без прокси-сервера",
+    "http": "HTTP",
     "http_with_credentials": "HTTP (с сертификатом)",
     "socks5_with_credentials": "SOCKS5 (с сертификатом)",
     "invalid_listen_port": "Неверный порт. Должно быть число между 1024 и 65535.",
@@ -247,5 +248,15 @@
     "tier_n": "Уровень №{0}",
     "ok": "Ок",
     "updating": "Обновление",
-    "options": "Настройки"
+    "create_torrent": "Создать торрент",
+    "select_file": "Выбрать файл",
+    "select_directory": "Выберите папку",
+    "options": "Настройки",
+    "status_s": "Статус: {0}",
+    "status_hashing_piece": "Хэширование частей {0} из {1}",
+    "status_saving_torrent": "Сохранить торрент",
+    "no_such_file_or_directory": "Файл или каталог не существует",
+    "restore_defaults": "Восстановить настройки по умолчанию",
+    "documentation": "Документация",
+    "restore_defaults_description": "Это приведет к восстановлению большинства настроек к первоначальному варианту. Вы уверены?"
 }
