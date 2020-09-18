@@ -99,12 +99,17 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
     for (auto const& li : cfg->GetListenInterfaces())
     {
         ifaces << "," << li.address << ":" << li.port;
+        if (li.address == "0.0.0.0" || li.address == "[::]") continue;
         outfaces << "," << li.address;
     }
 
     settings.set_str(lt::settings_pack::dht_bootstrap_nodes, dhtNodes.str().substr(1));
     settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
-    settings.set_str(lt::settings_pack::outgoing_interfaces, outfaces.str().substr(1));
+
+    if (outfaces.str().size() > 0)
+    {
+        settings.set_str(lt::settings_pack::outgoing_interfaces, outfaces.str().substr(1));
+    }
 
     // Features
     settings.set_bool(lt::settings_pack::enable_dht, cfg->Get<bool>("libtorrent.enable_dht").value());
@@ -258,18 +263,12 @@ void Session::AddTorrent(lt::add_torrent_params const& params)
     // If we are searching for metadata for this torrent, stop
     // that search and add this one instead.
 
-    if (m_metadataSearches.find(params.info_hashes) != m_metadataSearches.end())
+    lt::info_hash_t res;
+    if (IsSearching(params.info_hashes, res))
     {
-        lt::torrent_handle& hndl = m_metadataSearches.at(params.info_hashes);
-
-        // By default, an invalid torrent handle is added to the metadata
-        // search map. Only remove the handle from the session if it has
-        // been replaced with a valid one in the add_torrent_alert handler.
-
-        if (hndl.is_valid())
-        {
-            m_session->remove_torrent(hndl, lt::session::delete_files);
-        }
+        m_session->remove_torrent(
+            m_metadataSearches.at(res),
+            lt::session::delete_files);
     }
 
     m_session->async_add_torrent(params);
@@ -625,6 +624,11 @@ void Session::OnAlert()
 
 bool Session::IsSearching(lt::info_hash_t hash)
 {
+    return IsSearching(hash, lt::info_hash_t());
+}
+
+bool Session::IsSearching(lt::info_hash_t hash, lt::info_hash_t& result)
+{
     // Check if this torrent is part of a metadata search.
     // Compare either v1 or v2 hash since hybrid torrents
     // can be added with a v1 info hash and then get a v1+v2 hash
@@ -633,9 +637,25 @@ bool Session::IsSearching(lt::info_hash_t hash)
     lt::info_hash_t v1(hash.v1);
     lt::info_hash_t v2(hash.v2);
 
-    return m_metadataSearches.count(hash) > 0
-        || (!v1.v1.is_all_zeros() && m_metadataSearches.count(v1) > 0)
-        || (!v2.v2.is_all_zeros() && m_metadataSearches.count(v2) > 0);
+    if (m_metadataSearches.count(hash) > 0)
+    {
+        result = hash;
+        return true;
+    }
+
+    if (!v1.v1.is_all_zeros() && m_metadataSearches.count(v1) > 0)
+    {
+        result = v1;
+        return true;
+    }
+
+    if (!v2.v2.is_all_zeros() && m_metadataSearches.count(v2) > 0)
+    {
+        result = v2;
+        return true;
+    }
+
+    return false;
 }
 
 void Session::LoadTorrents()
@@ -865,7 +885,7 @@ void Session::UpdateMetadataHandle(lt::info_hash_t hash, lt::torrent_handle hand
     lt::info_hash_t v1(hash.v1);
     lt::info_hash_t v2(hash.v2);
 
-    for (auto it : m_metadataSearches)
+    for (auto& it : m_metadataSearches)
     {
         if (it.first == hash
             || it.first == v1

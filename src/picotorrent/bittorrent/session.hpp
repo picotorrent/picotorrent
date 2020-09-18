@@ -88,6 +88,7 @@ namespace BitTorrent
 
     private:
         bool IsSearching(libtorrent::info_hash_t hash);
+        bool IsSearching(libtorrent::info_hash_t hash, libtorrent::info_hash_t& result);
         void LoadTorrents();
         void OnAlert();
         void PauseAfterRecheck(TorrentHandle*);
