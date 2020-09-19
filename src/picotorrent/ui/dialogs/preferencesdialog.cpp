@@ -13,6 +13,7 @@
 #include "preferencesconnectionpage.hpp"
 #include "preferencesdownloadspage.hpp"
 #include "preferencesgeneralpage.hpp"
+#include "preferenceslabelspage.hpp"
 #include "preferencesproxypage.hpp"
 #include "../translator.hpp"
 
@@ -23,6 +24,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Con
     m_book(new wxSimplebook(this, wxID_ANY)),
     m_general(new PreferencesGeneralPage(m_book, cfg)),
     m_downloads(new PreferencesDownloadsPage(m_book, cfg)),
+    m_labels(new PreferencesLabelsPage(m_book, cfg)),
     m_connection(new PreferencesConnectionPage(m_book, cfg)),
     m_proxy(new PreferencesProxyPage(m_book, cfg)),
     m_advanced(new PreferencesAdvancedPage(m_book, cfg))
@@ -30,6 +32,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Con
     m_list = new wxListBox(this, wxID_ANY);
     m_list->Append(i18n("general"));
     m_list->Append(i18n("downloads"));
+    m_list->Append(i18n("labels"));
     m_list->Append(i18n("connection"));
     m_list->Append(i18n("proxy"));
     m_list->Append(i18n("advanced"));
@@ -37,6 +40,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Con
 
     m_book->AddPage(m_general, wxEmptyString, true);
     m_book->AddPage(m_downloads, wxEmptyString, false);
+    m_book->AddPage(m_labels, wxEmptyString, false);
     m_book->AddPage(m_connection, wxEmptyString, false);
     m_book->AddPage(m_proxy, wxEmptyString, false);
     m_book->AddPage(m_advanced, wxEmptyString, false);
@@ -105,6 +109,11 @@ void PreferencesDialog::OnOk(wxCommandEvent& evt)
         return;
     }
 
+    if (!m_labels->IsValid())
+    {
+        return;
+    }
+
     if (!m_connection->IsValid())
     {
         return;
@@ -122,6 +131,7 @@ void PreferencesDialog::OnOk(wxCommandEvent& evt)
 
     m_general->Save();
     m_downloads->Save();
+    m_labels->Save();
     m_connection->Save();
     m_proxy->Save();
     m_advanced->Save();

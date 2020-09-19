@@ -24,6 +24,7 @@ namespace Dialogs
     class PreferencesConnectionPage;
     class PreferencesDownloadsPage;
     class PreferencesGeneralPage;
+    class PreferencesLabelsPage;
     class PreferencesProxyPage;
 
     class PreferencesDialog : public wxDialog
@@ -46,6 +47,7 @@ namespace Dialogs
 
         PreferencesGeneralPage* m_general;
         PreferencesDownloadsPage* m_downloads;
+        PreferencesLabelsPage* m_labels;
         PreferencesConnectionPage* m_connection;
         PreferencesProxyPage* m_proxy;
         PreferencesAdvancedPage* m_advanced;
