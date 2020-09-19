@@ -7,6 +7,9 @@
 
 #include <memory>
 
+class wxDirPickerCtrl;
+class wxListView;
+
 namespace pt
 {
 namespace Core
@@ -27,6 +30,11 @@ namespace Dialogs
 
     private:
         std::shared_ptr<Core::Configuration> m_cfg;
+
+        wxListView* m_labelsList;
+        wxTextCtrl* m_name;
+        wxTextCtrl* m_color;
+        wxDirPickerCtrl* m_savePath;
     };
 }
 }
