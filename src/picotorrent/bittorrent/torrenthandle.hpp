@@ -55,6 +55,11 @@ namespace BitTorrent
         void SetFilePriority(libtorrent::file_index_t index, libtorrent::download_priority_t priority);
         void SetSequentialDownload(bool seq);
 
+        // Labels
+        int Label();
+        void ClearLabel();
+        void SetLabel(int id);
+
     private:
         TorrentHandle(Session* session, libtorrent::torrent_handle const& th);
         void UpdateStatus(libtorrent::torrent_status const& ts);
@@ -63,6 +68,7 @@ namespace BitTorrent
         Session* m_session;
         std::unique_ptr<libtorrent::torrent_handle> m_th;
         std::unique_ptr<libtorrent::torrent_status> m_ts;
+        int m_labelId;
     };
 }
 }

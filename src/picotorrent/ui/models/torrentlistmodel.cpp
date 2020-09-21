@@ -12,7 +12,8 @@ using pt::BitTorrent::TorrentStatus;
 using pt::UI::Models::TorrentListModel;
 
 TorrentListModel::TorrentListModel()
-    : m_filter(nullptr)
+    : m_filter(nullptr),
+    m_filterLabelId(-1)
 {
 }
 
@@ -23,30 +24,29 @@ TorrentListModel::~TorrentListModel()
 void TorrentListModel::AddTorrent(BitTorrent::TorrentHandle* torrent)
 {
     m_torrents.insert({ torrent->InfoHash(), torrent });
-
-    if (m_filter == nullptr || m_filter(torrent))
-    {
-        m_filtered.push_back(torrent->InfoHash());
-        RowAppended();
-    }
+    ApplyFilter();
 }
 
 void TorrentListModel::ClearFilter()
 {
     m_filter = nullptr;
-    m_filtered.clear();
+}
 
-    for (auto const& [hash, torrent] : m_torrents)
-    {
-        m_filtered.push_back(hash);
-    }
-
-    Reset(m_filtered.size());
+void TorrentListModel::ClearLabelFilter()
+{
+    m_filterLabelId = -1;
+    ApplyFilter();
 }
 
 void TorrentListModel::SetFilter(std::function<bool(BitTorrent::TorrentHandle*)> const& filter)
 {
     m_filter = filter;
+    ApplyFilter();
+}
+
+void TorrentListModel::SetLabelFilter(int labelId)
+{
+    m_filterLabelId = labelId;
     ApplyFilter();
 }
 
@@ -70,50 +70,22 @@ void TorrentListModel::RemoveTorrent(lt::info_hash_t const& hash)
 {
     m_torrents.erase(hash);
 
-    auto iter = std::find(m_filtered.begin(), m_filtered.end(), hash);
-    auto dist = std::distance(m_filtered.begin(), iter);
+    auto iter = std::find(
+        m_filtered.begin(),
+        m_filtered.end(),
+        hash);
 
-    m_filtered.erase(iter);
-
-    RowDeleted(dist);
+    if (iter != m_filtered.end())
+    {
+        auto dist = std::distance(m_filtered.begin(), iter);
+        m_filtered.erase(iter);
+        RowDeleted(dist);
+    }
 }
 
 void TorrentListModel::UpdateTorrents(std::vector<TorrentHandle*> torrents)
 {
-    for (auto torrent : torrents)
-    {
-        auto iter = std::find(
-            m_filtered.begin(),
-            m_filtered.end(),
-            torrent->InfoHash());
-
-        auto dist = std::distance(
-            m_filtered.begin(),
-            iter);
-
-        if (iter == m_filtered.end())
-        {
-            if ((m_filter && m_filter(torrent))
-                || !m_filter)
-            {
-                m_filtered.push_back(torrent->InfoHash());
-                RowAppended();
-            }
-        }
-        else
-        {
-            if (m_filter && !m_filter(torrent))
-            {
-                m_filtered.erase(iter);
-                RowDeleted(dist);
-            }
-            else if ((m_filter && m_filter(torrent))
-                || !m_filter)
-            {
-                RowChanged(dist);
-            }
-        }
-    }
+    ApplyFilter(torrents);
 }
 
 int TorrentListModel::Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending) const
@@ -212,12 +184,23 @@ int TorrentListModel::Compare(const wxDataViewItem& item1, const wxDataViewItem&
 
 bool TorrentListModel::GetAttrByRow(unsigned int row, unsigned int col, wxDataViewItemAttr& attr) const
 {
+    auto const& hash = m_filtered.at(row);
+    BitTorrent::TorrentHandle* torrent = m_torrents.at(hash);
+
+    // torrent has a label and a color
+    if (torrent->Label() > 0
+        && m_labelColors.find(torrent->Label()) != m_labelColors.end())
+    {
+        wxColor c;
+        c.Set(m_labelColors.at(torrent->Label()));
+        attr.SetBackgroundColour(c);
+    }
+
     switch (col)
     {
     case Columns::Status:
     {
-        auto const& hash = m_filtered.at(row);
-        BitTorrent::TorrentHandle* torrent = m_torrents.at(hash);
+        
         BitTorrent::TorrentStatus  status = torrent->Status();
 
         if (status.state == TorrentStatus::State::Error)
@@ -473,39 +456,135 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
     }
 }
 
-bool TorrentListModel::ApplyFilter()
+void TorrentListModel::UpdateLabelColors(std::map<int, std::string> const& colors)
 {
-    if (m_filter)
-    {
-        for (auto const& [hash, torrent] : m_torrents)
-        {
-            auto isAdded = std::find(
-                m_filtered.begin(),
-                m_filtered.end(),
-                hash);
+    std::vector<BitTorrent::TorrentHandle*> torrents;
 
-            if (m_filter(torrent))
-            {
-                // Torrent should be included.
-                if (isAdded == m_filtered.end())
-                {
-                    m_filtered.push_back(hash);
-                    RowAppended();
-                }
-            }
-            else
-            {
-                if (isAdded != m_filtered.end())
-                {
-                    auto distance = std::distance(m_filtered.begin(), isAdded);
-                    m_filtered.erase(isAdded);
-                    RowDeleted(distance);
-                }
-            }
+    for (auto const& infoHash : m_filtered)
+    {
+        // if this torrent has a label which have changed color, we need to update it
+        auto torrent = m_torrents.at(infoHash);
+
+        // skip torrent if no label
+        if (torrent->Label() < 0) { continue; }
+
+        auto oldColor = m_labelColors.find(torrent->Label());
+        auto newColor = colors.find(torrent->Label());
+
+        // color has changed
+        if (oldColor != m_labelColors.end()
+            && newColor != colors.end()
+            && *oldColor != *newColor)
+        {
+            torrents.push_back(torrent);
+            continue;
+        }
+
+        // color was removed
+        if (oldColor != m_labelColors.end()
+            && newColor == colors.end())
+        {
+            torrents.push_back(torrent);
+            continue;
+        }
+
+        // color was added
+        if (oldColor == m_labelColors.end()
+            && newColor != colors.end())
+        {
+            torrents.push_back(torrent);
+            continue;
+        }
+    }
+
+    m_labelColors = colors;
+
+    for (auto const& torrent : torrents)
+    {
+        auto iter = std::find(
+            m_filtered.begin(),
+            m_filtered.end(),
+            torrent->InfoHash());
+
+        auto dist = std::distance(
+            m_filtered.begin(),
+            iter);
+
+        RowChanged(dist);
+    }
+}
+
+void TorrentListModel::ApplyFilter()
+{
+    std::vector<TorrentHandle*> filter;
+    for (auto const& [hash, torrent] : m_torrents)
+    {
+        filter.push_back(torrent);
+    }
+    ApplyFilter(filter);
+}
+
+void TorrentListModel::ApplyFilter(std::vector<BitTorrent::TorrentHandle*> torrents)
+{
+    const std::function<bool(TorrentHandle*)> show = [this](TorrentHandle* torrent)
+    {
+        // if both label id and filter function is set - this function must check that
+        // the torrent both has the label and is included in the filter function
+        // otherwise, check each
+        if (m_filter && m_filterLabelId > 0)
+        {
+            return m_filter(torrent) && torrent->Label() == m_filterLabelId;
+        }
+        else if (m_filter)
+        {
+            return m_filter(torrent);
+        }
+        else if (m_filterLabelId > 0)
+        {
+            return torrent->Label() == m_filterLabelId;
         }
 
         return true;
-    }
+    };
 
-    return false;
+    for (auto torrent : torrents)
+    {
+        auto iter = std::find(
+            m_filtered.begin(),
+            m_filtered.end(),
+            torrent->InfoHash());
+
+        auto dist = std::distance(
+            m_filtered.begin(),
+            iter);
+
+        // the torrent is not in the list of filtered torrents
+        if (iter == m_filtered.end())
+        {
+            // but we want to show it according to the filters
+            if (show(torrent))
+            {
+                // so show it
+                m_filtered.push_back(torrent->InfoHash());
+                RowAppended();
+            }
+        }
+        // the torrent *is* in the list of filtered torrents
+        else
+        {
+            // but we don't want to show it
+            if (!show(torrent))
+            {
+                // so delete it
+                m_filtered.erase(iter);
+                RowDeleted(dist);
+            }
+            // and we still want to show it
+            else
+            {
+                // so update it
+                RowChanged(dist);
+            }
+        }
+    }
 }

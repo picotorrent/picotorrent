@@ -83,6 +83,9 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     this->SetSizerAndFit(sizer);
     this->SetStatusBar(m_statusBar);
 
+    this->CreateLabelMenuItems();
+    this->UpdateLabelColors();
+
     // Set checked on menu items
     m_menuItemDetailsPanel->SetCheckable(true);
     m_menuItemDetailsPanel->Check(m_cfg->Get<bool>("ui.show_details_panel").value());
@@ -504,6 +507,21 @@ void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const
     }
 }
 
+void MainFrame::CreateLabelMenuItems()
+{
+    for (int i = static_cast<int>(m_labelsMenu->GetMenuItemCount()) - 1; i >= 0; i--)
+    {
+        wxMenuItem* item = m_labelsMenu->FindItemByPosition(i);
+        if (item->GetId() <= ptID_EVT_LABELS_USER) { continue; }
+        m_labelsMenu->Delete(item);
+    }
+
+    for (auto const& label : m_cfg->GetLabels())
+    {
+        m_labelsMenu->AppendRadioItem(ptID_EVT_LABELS_USER + label.id, label.name);
+    }
+}
+
 wxMenuBar* MainFrame::CreateMainMenu()
 {
     auto fileMenu = new wxMenu();
@@ -515,6 +533,28 @@ wxMenuBar* MainFrame::CreateMainMenu()
     fileMenu->Append(ptID_EVT_EXIT, i18n("amp_exit"));
 
     m_viewMenu = new wxMenu();
+    m_labelsMenu = new wxMenu();
+    m_labelsMenu->Append(ptID_EVT_LABELS_EDIT, i18n("edit"));
+    m_labelsMenu->AppendSeparator();
+    m_labelsMenu->AppendRadioItem(ptID_EVT_LABELS_NONE, i18n("none"));
+    m_labelsMenu->Bind(
+        wxEVT_MENU,
+        [this](wxCommandEvent& evt)
+        {
+            if (evt.GetId() > ptID_EVT_LABELS_USER)
+            {
+                int labelId = evt.GetId() - ptID_EVT_LABELS_USER;
+                m_torrentListModel->SetLabelFilter(labelId);
+            }
+            else if (evt.GetId() == ptID_EVT_LABELS_NONE)
+            {
+                m_torrentListModel->ClearLabelFilter();
+            }
+        });
+
+    m_menuItemLabels = m_viewMenu->AppendSubMenu(m_labelsMenu, i18n("labels"));
+    m_viewMenu->AppendSeparator();
+
     m_menuItemDetailsPanel = m_viewMenu->Append(ptID_EVT_SHOW_DETAILS, i18n("amp_details_panel"));
     m_menuItemStatusBar = m_viewMenu->Append(ptID_EVT_SHOW_STATUS_BAR, i18n("amp_status_bar"));
     m_viewMenu->AppendSeparator();
@@ -647,6 +687,9 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
         {
             m_taskBarIcon->Hide();
         }
+
+        this->CreateLabelMenuItems();
+        this->UpdateLabelColors();
     }
 }
 
@@ -687,6 +730,16 @@ void MainFrame::ShowTorrentContextMenu(wxCommandEvent&)
             m_torrentListModel->GetTorrentFromItem(item));
     }
 
-    TorrentContextMenu menu(this, selectedTorrents);
+    TorrentContextMenu menu(this, m_cfg, selectedTorrents);
     PopupMenu(&menu);
+}
+
+void MainFrame::UpdateLabelColors()
+{
+    std::map<int, std::string> labelColors;
+    for (auto const& label : m_cfg->GetLabels())
+    {
+        labelColors.insert({ label.id, label.color });
+    }
+    m_torrentListModel->UpdateLabelColors(labelColors);
 }

@@ -6,6 +6,7 @@
 #endif
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include <libtorrent/info_hash.hpp>
@@ -55,7 +56,9 @@ namespace Models
         void UpdateTorrents(std::vector<BitTorrent::TorrentHandle*> torrents);
 
         void ClearFilter();
+        void ClearLabelFilter();
         void SetFilter(std::function<bool(BitTorrent::TorrentHandle*)> const& filter);
+        void SetLabelFilter(int labelId);
 
         int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending) const wxOVERRIDE;
 
@@ -71,11 +74,16 @@ namespace Models
 
         bool SetValueByRow(const wxVariant& variant, uint32_t row, uint32_t col) wxOVERRIDE { return false; }
 
-    private:
-        bool ApplyFilter();
+        void UpdateLabelColors(std::map<int, std::string> const& colors);
 
+    private:
+        void ApplyFilter();
+        void ApplyFilter(std::vector<BitTorrent::TorrentHandle*> torrents);
+
+        int m_filterLabelId;
         std::function<bool(BitTorrent::TorrentHandle*)> m_filter;
         std::vector<libtorrent::info_hash_t> m_filtered;
+        std::map<int, std::string> m_labelColors;
         std::map<libtorrent::info_hash_t, BitTorrent::TorrentHandle*> m_torrents;
     };
 }

@@ -67,6 +67,54 @@ std::vector<Configuration::DhtBootstrapNode> Configuration::GetDhtBootstrapNodes
     return result;
 }
 
+std::vector<Configuration::Label> Configuration::GetLabels()
+{
+    std::vector<Label> result;
+
+    auto stmt = m_db->CreateStatement("select id, name, color, save_path from label");
+
+    while (stmt->Read())
+    {
+        Label lbl;
+        lbl.id = stmt->GetInt(0);
+        lbl.name = stmt->GetString(1);
+        lbl.color = stmt->GetString(2);
+        lbl.savePath = stmt->GetString(3);
+
+        result.push_back(lbl);
+    }
+
+    return result;
+}
+
+void Configuration::DeleteLabel(int32_t id)
+{
+    auto stmt = m_db->CreateStatement("delete from label where id = ?");
+    stmt->Bind(1, id);
+    stmt->Execute();
+}
+
+void Configuration::UpsertLabel(Configuration::Label const& label)
+{
+    if (label.id < 0)
+    {
+        auto stmt = m_db->CreateStatement("insert into label (name, color, save_path) values (?, ?, ?);");
+        stmt->Bind(1, label.name);
+        stmt->Bind(2, label.color);
+        stmt->Bind(3, label.savePath);
+        stmt->Execute();
+    }
+    else
+    {
+        auto stmt = m_db->CreateStatement("update label set name = ?, color = ?, save_path = ? where id = ?");
+        stmt->Bind(1, label.name);
+        stmt->Bind(2, label.color);
+        stmt->Bind(3, label.savePath);
+        stmt->Bind(4, label.id);
+        stmt->Execute();
+    }
+}
+
 std::vector<Configuration::ListenInterface> Configuration::GetListenInterfaces()
 {
     std::vector<ListenInterface> result;

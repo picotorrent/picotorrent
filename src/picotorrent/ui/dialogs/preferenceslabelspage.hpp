@@ -6,6 +6,7 @@
 #endif
 
 #include <memory>
+#include <memory>
 
 class wxDirPickerCtrl;
 class wxListView;
@@ -24,12 +25,14 @@ namespace Dialogs
     {
     public:
         PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg);
+        virtual ~PreferencesLabelsPage();
 
         bool IsValid();
         void Save();
 
     private:
         std::shared_ptr<Core::Configuration> m_cfg;
+        std::vector<int32_t> m_removedLabels;
 
         wxListView* m_labelsList;
         wxTextCtrl* m_name;

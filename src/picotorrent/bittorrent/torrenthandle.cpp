@@ -322,6 +322,22 @@ std::vector<lt::announce_entry> TorrentHandle::Trackers() const
     return m_th->trackers();
 }
 
+void TorrentHandle::ClearLabel()
+{
+    // call session
+    m_labelId = -1;
+}
+
+int TorrentHandle::Label()
+{
+    return m_labelId;
+}
+
+void TorrentHandle::SetLabel(int id)
+{
+    m_labelId = id;
+}
+
 void TorrentHandle::UpdateStatus(lt::torrent_status const& ts)
 {
     m_ts = std::make_unique<lt::torrent_status>(ts);

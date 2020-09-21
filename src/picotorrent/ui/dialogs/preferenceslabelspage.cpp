@@ -10,13 +10,6 @@
 using pt::Core::Configuration;
 using pt::UI::Dialogs::PreferencesLabelsPage;
 
-struct Label
-{
-    std::string name;
-    std::string color;
-    std::string savePath;
-};
-
 PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<Configuration> cfg)
     : wxPanel(parent, wxID_ANY),
     m_cfg(cfg)
@@ -46,7 +39,7 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
     labelDetailsGrid->Add(new wxStaticText(labelDetailsSizer->GetStaticBox(), wxID_ANY, i18n("name")), 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(3));
     labelDetailsGrid->Add(m_name, 1, wxEXPAND | wxALL, FromDIP(3));
     labelDetailsGrid->Add(new wxStaticText(labelDetailsSizer->GetStaticBox(), wxID_ANY, i18n("color")), 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(3));
-    labelDetailsGrid->Add(m_color, 1, wxEXPAND | wxALL, FromDIP(3));
+    labelDetailsGrid->Add(m_color, 1, wxALL, FromDIP(3));
     labelDetailsGrid->Add(new wxStaticText(labelDetailsSizer->GetStaticBox(), wxID_ANY, i18n("save_path")), 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(3));
     labelDetailsGrid->Add(m_savePath, 1, wxEXPAND | wxALL, FromDIP(3));
 
@@ -59,9 +52,19 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
 
     this->SetSizerAndFit(sizer);
 
+    removeLabel->Enable(false);
+
     m_name->Enable(false);
     m_color->Enable(false);
     m_savePath->Enable(false);
+
+    // add labels to list view
+    for (auto const& label : m_cfg->GetLabels())
+    {
+        int row = m_labelsList->GetItemCount();
+        m_labelsList->InsertItem(row, label.name);
+        m_labelsList->SetItemPtrData(row, reinterpret_cast<wxUIntPtr>(new Configuration::Label(label)));
+    }
 
     addLabel->Bind(
         wxEVT_BUTTON,
@@ -70,7 +73,8 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
             int row = m_labelsList->GetItemCount();
             std::string name = "Label #" + std::to_string(row + 1);
 
-            auto lbl = new Label();
+            auto lbl = new Configuration::Label();
+            lbl->id = -1;
             lbl->name = name;
 
             m_labelsList->InsertItem(row, name);
@@ -78,15 +82,30 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
             m_labelsList->Select(row);
         });
 
-    m_labelsList->Bind(
-        wxEVT_LIST_ITEM_SELECTED,
+    removeLabel->Bind(
+        wxEVT_BUTTON,
         [this](wxCommandEvent&)
         {
+            long sel = m_labelsList->GetFirstSelected();
+            if (sel < 0) { return; }
+            auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
+            m_removedLabels.push_back(label->id);
+
+            delete label;
+
+            m_labelsList->DeleteItem(sel);
+        });
+
+    m_labelsList->Bind(
+        wxEVT_LIST_ITEM_SELECTED,
+        [this, removeLabel](wxCommandEvent&)
+        {
+            removeLabel->Enable(true);
             m_name->Enable(true);
             m_color->Enable(true);
             m_savePath->Enable(true);
 
-            auto label = reinterpret_cast<Label*>(
+            auto label = reinterpret_cast<Configuration::Label*>(
                 m_labelsList->GetItemData(
                     m_labelsList->GetFirstSelected()));
 
@@ -97,8 +116,9 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
 
     m_labelsList->Bind(
         wxEVT_LIST_ITEM_DESELECTED,
-        [this](wxCommandEvent&)
+        [this, removeLabel](wxCommandEvent&)
         {
+            removeLabel->Enable(false);
             m_name->Enable(false);
             m_color->Enable(false);
             m_savePath->Enable(false);
@@ -113,7 +133,7 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
         {
             long sel = m_labelsList->GetFirstSelected();
             if (sel < 0) { return; }
-            auto label = reinterpret_cast<Label*>(m_labelsList->GetItemData(sel));
+            auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
             label->name = m_name->GetValue();
             m_labelsList->SetItemText(sel, label->name);
         });
@@ -124,7 +144,7 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
         {
             long sel = m_labelsList->GetFirstSelected();
             if (sel < 0) { return; }
-            auto label = reinterpret_cast<Label*>(m_labelsList->GetItemData(sel));
+            auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
             label->color = m_color->GetValue();
         });
 
@@ -134,13 +154,31 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
         {
             long sel = m_labelsList->GetFirstSelected();
             if (sel < 0) { return; }
-            auto label = reinterpret_cast<Label*>(m_labelsList->GetItemData(sel));
+            auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
             label->savePath = m_savePath->GetPath();
         });
 }
 
+PreferencesLabelsPage::~PreferencesLabelsPage()
+{
+    for (int i = 0; i < m_labelsList->GetItemCount(); i++)
+    {
+        delete reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(i));
+    }
+}
+
 void PreferencesLabelsPage::Save()
 {
+    for (int i = 0; i < m_labelsList->GetItemCount(); i++)
+    {
+        auto lbl = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(i));
+        m_cfg->UpsertLabel(*lbl);
+    }
+
+    for (int i = 0; i < m_removedLabels.size(); i++)
+    {
+        m_cfg->DeleteLabel(m_removedLabels.at(i));
+    }
 }
 
 bool PreferencesLabelsPage::IsValid()
