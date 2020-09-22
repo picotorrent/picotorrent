@@ -84,7 +84,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     this->SetStatusBar(m_statusBar);
 
     this->CreateLabelMenuItems();
-    this->UpdateLabelColors();
+    this->UpdateLabels();
 
     // Set checked on menu items
     m_menuItemDetailsPanel->SetCheckable(true);
@@ -534,8 +534,6 @@ wxMenuBar* MainFrame::CreateMainMenu()
 
     m_viewMenu = new wxMenu();
     m_labelsMenu = new wxMenu();
-    m_labelsMenu->Append(ptID_EVT_LABELS_EDIT, i18n("edit"));
-    m_labelsMenu->AppendSeparator();
     m_labelsMenu->AppendRadioItem(ptID_EVT_LABELS_NONE, i18n("none"));
     m_labelsMenu->Bind(
         wxEVT_MENU,
@@ -689,7 +687,7 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
         }
 
         this->CreateLabelMenuItems();
-        this->UpdateLabelColors();
+        this->UpdateLabels();
     }
 }
 
@@ -734,7 +732,7 @@ void MainFrame::ShowTorrentContextMenu(wxCommandEvent&)
     PopupMenu(&menu);
 }
 
-void MainFrame::UpdateLabelColors()
+void MainFrame::UpdateLabels()
 {
     std::map<int, std::string> labelColors;
     for (auto const& label : m_cfg->GetLabels())

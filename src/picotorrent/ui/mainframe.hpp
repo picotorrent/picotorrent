@@ -72,7 +72,7 @@ namespace Models
         void OnViewPreferences(wxCommandEvent&);
         void ParseTorrentFiles(std::vector<libtorrent::add_torrent_params>& params, std::vector<std::string> const& paths);
         void ShowTorrentContextMenu(wxCommandEvent&);
-        void UpdateLabelColors();
+        void UpdateLabels();
 
         wxSplitterWindow* m_splitter;
 
