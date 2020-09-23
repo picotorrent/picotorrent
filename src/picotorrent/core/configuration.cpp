@@ -71,7 +71,7 @@ std::vector<Configuration::Label> Configuration::GetLabels()
 {
     std::vector<Label> result;
 
-    auto stmt = m_db->CreateStatement("select id, name, color, save_path from label");
+    auto stmt = m_db->CreateStatement("select id, name, color, color_enabled, save_path, save_path_enabled, apply_filter, apply_filter_enabled from label");
 
     while (stmt->Read())
     {
@@ -79,7 +79,11 @@ std::vector<Configuration::Label> Configuration::GetLabels()
         lbl.id = stmt->GetInt(0);
         lbl.name = stmt->GetString(1);
         lbl.color = stmt->GetString(2);
-        lbl.savePath = stmt->GetString(3);
+        lbl.colorEnabled = stmt->GetBool(3);
+        lbl.savePath = stmt->GetString(4);
+        lbl.savePathEnabled = stmt->GetBool(5);
+        lbl.applyFilter = stmt->GetString(6);
+        lbl.applyFilterEnabled = stmt->GetBool(7);
 
         result.push_back(lbl);
     }
@@ -98,19 +102,27 @@ void Configuration::UpsertLabel(Configuration::Label const& label)
 {
     if (label.id < 0)
     {
-        auto stmt = m_db->CreateStatement("insert into label (name, color, save_path) values (?, ?, ?);");
+        auto stmt = m_db->CreateStatement("insert into label (name, color, color_enabled, save_path, save_path_enabled, apply_filter, apply_filter_enabled) values ($1, $2, $3, $4, $5, $6, $7);");
         stmt->Bind(1, label.name);
         stmt->Bind(2, label.color);
-        stmt->Bind(3, label.savePath);
+        stmt->Bind(3, label.colorEnabled);
+        stmt->Bind(4, label.savePath);
+        stmt->Bind(5, label.savePathEnabled);
+        stmt->Bind(6, label.applyFilter);
+        stmt->Bind(7, label.applyFilterEnabled);
         stmt->Execute();
     }
     else
     {
-        auto stmt = m_db->CreateStatement("update label set name = ?, color = ?, save_path = ? where id = ?");
+        auto stmt = m_db->CreateStatement("update label set name = $1, color = $2, color_enabled = $3, save_path = $4, save_path_enabled = $5, apply_filter = $6, apply_filter_enabled = $7 where id = $8");
         stmt->Bind(1, label.name);
         stmt->Bind(2, label.color);
-        stmt->Bind(3, label.savePath);
-        stmt->Bind(4, label.id);
+        stmt->Bind(3, label.colorEnabled);
+        stmt->Bind(4, label.savePath);
+        stmt->Bind(5, label.savePathEnabled);
+        stmt->Bind(6, label.applyFilter);
+        stmt->Bind(7, label.applyFilterEnabled);
+        stmt->Bind(8, label.id);
         stmt->Execute();
     }
 }

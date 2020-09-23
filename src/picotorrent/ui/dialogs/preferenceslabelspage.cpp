@@ -32,16 +32,34 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
 
     m_name = new wxTextCtrl(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
     m_color = new wxTextCtrl(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
+    m_colorEnabled = new wxCheckBox(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
     m_savePath = new wxDirPickerCtrl(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
+    m_savePathEnabled = new wxCheckBox(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
+    m_applyFilter = new wxTextCtrl(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
+    m_applyFilterEnabled = new wxCheckBox(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
 
-    auto labelDetailsGrid = new wxFlexGridSizer(2, FromDIP(7), FromDIP(25));
+    auto labelDetailsGrid = new wxFlexGridSizer(2, FromDIP(4), FromDIP(25));
     labelDetailsGrid->AddGrowableCol(1, 1);
     labelDetailsGrid->Add(new wxStaticText(labelDetailsSizer->GetStaticBox(), wxID_ANY, i18n("name")), 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(3));
     labelDetailsGrid->Add(m_name, 1, wxEXPAND | wxALL, FromDIP(3));
+
     labelDetailsGrid->Add(new wxStaticText(labelDetailsSizer->GetStaticBox(), wxID_ANY, i18n("color")), 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(3));
-    labelDetailsGrid->Add(m_color, 1, wxALL, FromDIP(3));
+    auto colorSizer = new wxBoxSizer(wxHORIZONTAL);
+    colorSizer->Add(m_colorEnabled, 0, wxALIGN_CENTER_VERTICAL);
+    colorSizer->Add(m_color, 1, wxEXPAND);
+    labelDetailsGrid->Add(colorSizer, 1, wxALL, FromDIP(3));
+
     labelDetailsGrid->Add(new wxStaticText(labelDetailsSizer->GetStaticBox(), wxID_ANY, i18n("save_path")), 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(3));
-    labelDetailsGrid->Add(m_savePath, 1, wxEXPAND | wxALL, FromDIP(3));
+    auto savePathSizer = new wxBoxSizer(wxHORIZONTAL);
+    savePathSizer->Add(m_savePathEnabled, 0, wxALIGN_CENTER_VERTICAL);
+    savePathSizer->Add(m_savePath, 1, wxEXPAND);
+    labelDetailsGrid->Add(savePathSizer, 1, wxEXPAND | wxALL, FromDIP(3));
+
+    labelDetailsGrid->Add(new wxStaticText(labelDetailsSizer->GetStaticBox(), wxID_ANY, i18n("apply_filter")), 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(3));
+    auto applyFilterSizer = new wxBoxSizer(wxHORIZONTAL);
+    applyFilterSizer->Add(m_applyFilterEnabled, 0, wxALIGN_CENTER_VERTICAL);
+    applyFilterSizer->Add(m_applyFilter, 1, wxEXPAND);
+    labelDetailsGrid->Add(applyFilterSizer, 1, wxALL, FromDIP(3));
 
     labelDetailsSizer->Add(labelDetailsGrid, 1, wxEXPAND);
 
@@ -51,12 +69,9 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
     sizer->Add(labelDetailsSizer, 0, wxEXPAND);
 
     this->SetSizerAndFit(sizer);
+    this->EnableDisableAll(false);
 
     removeLabel->Enable(false);
-
-    m_name->Enable(false);
-    m_color->Enable(false);
-    m_savePath->Enable(false);
 
     // add labels to list view
     for (auto const& label : m_cfg->GetLabels())
@@ -101,17 +116,25 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
         [this, removeLabel](wxCommandEvent&)
         {
             removeLabel->Enable(true);
-            m_name->Enable(true);
-            m_color->Enable(true);
-            m_savePath->Enable(true);
+            this->EnableDisableAll(true);
 
             auto label = reinterpret_cast<Configuration::Label*>(
                 m_labelsList->GetItemData(
                     m_labelsList->GetFirstSelected()));
 
             m_name->SetValue(label->name);
+
+            m_color->Enable(label->colorEnabled);
             m_color->SetValue(label->color);
+            m_colorEnabled->SetValue(label->colorEnabled);
+
+            m_savePath->Enable(label->savePathEnabled);
             m_savePath->SetPath(label->savePath);
+            m_savePathEnabled->SetValue(label->savePathEnabled);
+
+            m_applyFilter->Enable(label->applyFilterEnabled);
+            m_applyFilter->SetValue(label->applyFilter);
+            m_applyFilterEnabled->SetValue(label->applyFilterEnabled);
         });
 
     m_labelsList->Bind(
@@ -119,12 +142,7 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
         [this, removeLabel](wxCommandEvent&)
         {
             removeLabel->Enable(false);
-            m_name->Enable(false);
-            m_color->Enable(false);
-            m_savePath->Enable(false);
-            m_name->SetValue("");
-            m_color->SetValue("");
-            m_savePath->SetPath("");
+            this->EnableDisableAll(false);
         });
 
     m_name->Bind(
@@ -148,6 +166,28 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
             label->color = m_color->GetValue();
         });
 
+    m_colorEnabled->Bind(
+        wxEVT_CHECKBOX,
+        [this](wxCommandEvent&)
+        {
+            long sel = m_labelsList->GetFirstSelected();
+            if (sel < 0) { return; }
+            auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
+            label->colorEnabled = m_colorEnabled->GetValue();
+            m_color->Enable(m_colorEnabled->GetValue());
+        });
+
+    m_savePathEnabled->Bind(
+        wxEVT_CHECKBOX,
+        [this](wxCommandEvent&)
+        {
+            long sel = m_labelsList->GetFirstSelected();
+            if (sel < 0) { return; }
+            auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
+            label->savePathEnabled = m_savePathEnabled->GetValue();
+            m_savePath->Enable(m_savePathEnabled->GetValue());
+        });
+
     m_savePath->Bind(
         wxEVT_DIRPICKER_CHANGED,
         [this](wxCommandEvent&)
@@ -156,6 +196,27 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
             if (sel < 0) { return; }
             auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
             label->savePath = m_savePath->GetPath();
+        });
+
+    m_applyFilter->Bind(
+        wxEVT_TEXT,
+        [this](wxCommandEvent&)
+        {
+            long sel = m_labelsList->GetFirstSelected();
+            if (sel < 0) { return; }
+            auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
+            label->applyFilter = m_applyFilter->GetValue();
+        });
+
+    m_applyFilterEnabled->Bind(
+        wxEVT_CHECKBOX,
+        [this](wxCommandEvent&)
+        {
+            long sel = m_labelsList->GetFirstSelected();
+            if (sel < 0) { return; }
+            auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
+            label->applyFilterEnabled = m_applyFilterEnabled->GetValue();
+            m_applyFilter->Enable(m_applyFilterEnabled->GetValue());
         });
 }
 
@@ -184,4 +245,26 @@ void PreferencesLabelsPage::Save()
 bool PreferencesLabelsPage::IsValid()
 {
     return true;
+}
+
+void PreferencesLabelsPage::EnableDisableAll(bool enabled)
+{
+    m_name->Enable(enabled);
+    m_color->Enable(enabled);
+    m_colorEnabled->Enable(enabled);
+    m_savePath->Enable(enabled);
+    m_savePathEnabled->Enable(enabled);
+    m_applyFilter->Enable(enabled);
+    m_applyFilterEnabled->Enable(enabled);
+
+    if (!enabled)
+    {
+        m_name->SetValue("");
+        m_color->SetValue("");
+        m_colorEnabled->SetValue(false);
+        m_savePath->SetPath("");
+        m_savePathEnabled->SetValue(false);
+        m_applyFilter->SetValue("");
+        m_applyFilterEnabled->SetValue(false);
+    }
 }

@@ -26,10 +26,15 @@ namespace Core
 
         struct Label
         {
+            Label() : id(-1), colorEnabled(false), savePathEnabled(false), applyFilterEnabled(false) {}
             int32_t id;
             std::string name;
             std::string color;
+            bool colorEnabled;
             std::string savePath;
+            bool savePathEnabled;
+            std::string applyFilter;
+            bool applyFilterEnabled;
         };
 
         struct ListenInterface

@@ -31,13 +31,19 @@ namespace Dialogs
         void Save();
 
     private:
+        void EnableDisableAll(bool enabled);
+
         std::shared_ptr<Core::Configuration> m_cfg;
         std::vector<int32_t> m_removedLabels;
 
         wxListView* m_labelsList;
         wxTextCtrl* m_name;
         wxTextCtrl* m_color;
+        wxCheckBox* m_colorEnabled;
         wxDirPickerCtrl* m_savePath;
+        wxCheckBox* m_savePathEnabled;
+        wxTextCtrl* m_applyFilter;
+        wxCheckBox* m_applyFilterEnabled;
     };
 }
 }
