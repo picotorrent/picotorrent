@@ -30,11 +30,14 @@ namespace API
     private:
         struct Options
         {
+            Options() : pid(-1) {}
+            long pid;
             std::vector<std::string> files;
             std::vector<std::string> magnets;
         };
 
         void ActivateOtherInstance();
+        void WaitForPreviousInstance(long pid);
 
         Options m_options;
         std::vector<API::IPlugin*> m_plugins;
