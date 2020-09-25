@@ -1,6 +1,7 @@
 #include "preferencesdownloadspage.hpp"
 
 #include "../../core/configuration.hpp"
+#include "../../core/utils.hpp"
 #include "../translator.hpp"
 
 #include <wx/filepicker.h>
@@ -118,7 +119,7 @@ PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared
     });
 
     m_moveCompletedEnabled->SetValue(cfg->Get<bool>("move_completed_downloads").value());
-    m_moveCompletedPathCtrl->SetPath(wxString::FromUTF8(cfg->Get<std::string>("move_completed_downloads_path").value_or("")));
+    m_moveCompletedPathCtrl->SetPath(Utils::toStdWString(cfg->Get<std::string>("move_completed_downloads_path").value_or("")));
     m_moveCompletedOnlyFromDefault->SetValue(cfg->Get<bool>("move_completed_downloads_from_default_only").value());
 
     m_moveCompletedPathCtrl->Enable(m_moveCompletedEnabled->IsChecked());
@@ -144,7 +145,7 @@ void PreferencesDownloadsPage::Save()
     // Move
     m_cfg->Set("move_completed_downloads", m_moveCompletedEnabled->IsChecked());
     m_cfg->Set("move_completed_downloads_from_default_only", m_moveCompletedOnlyFromDefault->IsChecked());
-    m_cfg->Set("move_completed_downloads_path", m_moveCompletedPathCtrl->GetPath().ToStdString());
+    m_cfg->Set("move_completed_downloads_path", Utils::toStdString(m_moveCompletedPathCtrl->GetPath().ToStdWstring()));
 
     // Active limits
     long activeLimit = 0;

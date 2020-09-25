@@ -22,6 +22,7 @@
 #include "../core/configuration.hpp"
 #include "../core/database.hpp"
 #include "../core/environment.hpp"
+#include "../core/utils.hpp"
 #include "../buildinfo.hpp"
 #include "semver.hpp"
 #include "sessionstatistics.hpp"
@@ -514,6 +515,13 @@ void Session::OnAlert()
             break;
         }
 
+        case lt::storage_moved_failed_alert::alert_type:
+        {
+            lt::storage_moved_failed_alert* smfa = lt::alert_cast<lt::storage_moved_failed_alert>(alert);
+            LOG_F(ERROR, "Error when moving torrent storage: %s", smfa->error.message().c_str());
+            break;
+        }
+
         case lt::torrent_checked_alert::alert_type:
         {
             lt::torrent_checked_alert* tca = lt::alert_cast<lt::torrent_checked_alert>(alert);
@@ -553,18 +561,25 @@ void Session::OnAlert()
             evt.SetClientData(m_torrents.at(ts.info_hashes));
             wxPostEvent(m_parent, evt);
 
-            bool shouldMove = m_cfg->Get<bool>("move_completed_downloads").value();
-            bool onlyFromDefault = m_cfg->Get<bool>("move_completed_downloads_from_default_only").value();
-            std::string movePath = m_cfg->Get<std::string>("move_completed_downloads_path").value();
-
-            if (shouldMove)
+            if (auto shouldMove = m_cfg->Get<bool>("move_completed_downloads"))
             {
-                if (onlyFromDefault && ts.save_path != m_cfg->Get<std::string>("default_save_path").value())
+                if (shouldMove.value())
                 {
-                    break;
-                }
+                    auto onlyFromDefault = m_cfg->Get<bool>("move_completed_downloads_from_default_only");
+                    auto movePath = m_cfg->Get<std::string>("move_completed_downloads_path");
 
-                tfa->handle.move_storage(movePath);
+                    if (onlyFromDefault.has_value()
+                        && onlyFromDefault.value()
+                        && ts.save_path != m_cfg->Get<std::string>("default_save_path").value())
+                    {
+                        break;
+                    }
+
+                    if (movePath.has_value())
+                    {
+                        tfa->handle.move_storage(movePath.value());
+                    }
+                }
             }
 
             break;
