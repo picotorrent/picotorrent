@@ -187,7 +187,8 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
 
 Session::Session(wxEvtHandler* parent, std::shared_ptr<pt::Core::Database> db, std::shared_ptr<pt::Core::Configuration> cfg, std::shared_ptr<pt::Core::Environment> env)
     : m_parent(parent),
-    m_timer(new wxTimer(this)),
+    m_timer(new wxTimer(this, ptID_TIMER_SESSION)),
+    m_resumeDataTimer(new wxTimer(this, ptID_TIMER_RESUME_DATA)),
     m_cfg(cfg),
     m_db(db),
     m_env(env)
@@ -214,18 +215,29 @@ Session::Session(wxEvtHandler* parent, std::shared_ptr<pt::Core::Database> db, s
 
     m_timer->Start(1000, wxTIMER_CONTINUOUS);
 
-    this->Bind(wxEVT_TIMER, [this](wxTimerEvent&)
+    if (auto saveInterval = m_cfg->Get<int>("save_resume_data_interval"))
+    {
+        m_resumeDataTimer->Start(
+            saveInterval.value_or(300) * 1000);
+    }
+
+    this->Bind(wxEVT_TIMER,
+        [this](wxTimerEvent&)
         {
             m_session->post_dht_stats();
             m_session->post_session_stats();
             m_session->post_torrent_updates();
-        });
+        },
+        ptID_TIMER_SESSION);
+
+    this->Bind(wxEVT_TIMER, &Session::OnSaveResumeDataTimer, this, ptID_TIMER_RESUME_DATA);
 }
 
 Session::~Session()
 {
     m_session->set_alert_notify([] {});
     m_timer->Stop();
+    m_resumeDataTimer->Stop();
 
     this->SaveState();
     this->SaveTorrents();
@@ -284,6 +296,13 @@ void Session::ReloadSettings()
 {
     lt::settings_pack settings = getSettingsPack(m_cfg);
     m_session->apply_settings(settings);
+
+    if (auto saveInterval = m_cfg->Get<int>("save_resume_data_interval"))
+    {
+        m_resumeDataTimer->Stop();
+        m_resumeDataTimer->Start(
+            saveInterval.value_or(300) * 1000);
+    }
 }
 
 void Session::OnAlert()
@@ -635,6 +654,27 @@ void Session::OnAlert()
         }
         }
     }
+}
+
+void Session::OnSaveResumeDataTimer(wxTimerEvent&)
+{
+    // save resume data for all torrents which need it
+    int saved = 0;
+
+    for (auto const& [hash, torrent] : m_torrents)
+    {
+        lt::torrent_handle& th = torrent->WrappedHandle();
+        if (th.need_save_resume_data())
+        {
+            saved++;
+
+            th.save_resume_data(
+                lt::torrent_handle::flush_disk_cache
+                | lt::torrent_handle::save_info_dict);
+        }
+    }
+
+    LOG_F(INFO, "%d torrent(s) needed to save resume data", saved);
 }
 
 bool Session::IsSearching(lt::info_hash_t hash)
