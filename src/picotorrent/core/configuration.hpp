@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include <loguru.hpp>
 #include <nlohmann/json.hpp>
 
 namespace pt
@@ -61,7 +62,17 @@ namespace Core
             {
                 return std::nullopt;
             }
-            return nlohmann::json::parse(val).get<T>();
+
+            try
+            {
+                return nlohmann::json::parse(val).get<T>();
+            }
+            catch (nlohmann::json::exception const& ex)
+            {
+                LOG_F(WARNING, "Failed to parse setting %s: %s (%s)", key.c_str(), val.c_str(), ex.what());
+            }
+
+            return std::nullopt;
         }
 
         template<typename T>
