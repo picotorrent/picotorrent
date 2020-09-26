@@ -165,6 +165,9 @@ add_executable(
     src/picotorrent/ipc/applicationoptionsconnection
     src/picotorrent/ipc/server
 
+    # RSS
+    src/picotorrent/rss/feedmanager
+
     # Dialogs
     src/picotorrent/ui/dialogs/aboutdialog
     src/picotorrent/ui/dialogs/addmagnetlinkdialog
@@ -178,6 +181,7 @@ add_executable(
     src/picotorrent/ui/dialogs/preferencesdownloadspage
     src/picotorrent/ui/dialogs/preferencesgeneralpage
     src/picotorrent/ui/dialogs/preferencesproxypage
+    src/picotorrent/ui/dialogs/preferencesrsspage
 
     # Models
     src/picotorrent/ui/models/filestoragemodel
@@ -241,7 +245,7 @@ target_link_libraries(
     PRIVATE
 
     # wxWidgets
-    core base propgrid
+    core base propgrid xml
 
     # Windows
     Comctl32

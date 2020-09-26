@@ -10,21 +10,16 @@
 class wxBookCtrlEvent;
 class wxSimplebook;
 
-namespace pt
-{
-namespace Core
-{
-    class Configuration;
-}
-namespace UI
-{
-namespace Dialogs
+namespace pt::Core { class Configuration; }
+
+namespace pt::UI::Dialogs
 {
     class PreferencesAdvancedPage;
     class PreferencesConnectionPage;
     class PreferencesDownloadsPage;
     class PreferencesGeneralPage;
     class PreferencesProxyPage;
+    class PreferencesRssPage;
 
     class PreferencesDialog : public wxDialog
     {
@@ -52,8 +47,7 @@ namespace Dialogs
         PreferencesDownloadsPage* m_downloads;
         PreferencesConnectionPage* m_connection;
         PreferencesProxyPage* m_proxy;
+        PreferencesRssPage* m_rss;
         PreferencesAdvancedPage* m_advanced;
     };
-}
-}
 }

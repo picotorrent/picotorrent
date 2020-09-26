@@ -20,6 +20,7 @@ AppIcon ICON "..\\..\\res\\app.ico"
 20200912230012_enhance_setting_table            DBMIGRATION "..\\..\\res\\dbmigrations\\20200912230012_enhance_setting_table.sql"
 20200916213321_insert_locale_name_setting       DBMIGRATION "..\\..\\res\\dbmigrations\\20200916213321_insert_locale_name_setting.sql"
 20200925235912_save_resume_data_interval        DBMIGRATION "..\\..\\res\\dbmigrations\\20200925235912_save_resume_data_interval.sql"
+20200927003412_rss_tables                       DBMIGRATION "..\\..\\res\\dbmigrations\\20200927003412_rss_tables.sql"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION        VER_FILE_VERSION

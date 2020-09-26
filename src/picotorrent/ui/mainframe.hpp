@@ -14,9 +14,10 @@
 class wxSplitterWindow;
 class wxTaskBarIconEvent;
 
+namespace pt::RSS { class FeedManager; }
+
 namespace pt
 {
-    class UpdateChecker;
 
 namespace BitTorrent
 {
@@ -84,6 +85,7 @@ namespace Models
         std::shared_ptr<Core::Database> m_db;
         std::shared_ptr<Core::Configuration> m_cfg;
         std::unique_ptr<IPC::Server> m_ipc;
+        std::unique_ptr<RSS::FeedManager> m_feedManager;
 
         wxMenu* m_viewMenu;
         wxMenu* m_filtersMenu;

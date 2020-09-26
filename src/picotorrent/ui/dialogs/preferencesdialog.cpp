@@ -16,6 +16,7 @@
 #include "preferencesdownloadspage.hpp"
 #include "preferencesgeneralpage.hpp"
 #include "preferencesproxypage.hpp"
+#include "preferencesrsspage.hpp"
 #include "../translator.hpp"
 
 using pt::UI::Dialogs::PreferencesDialog;
@@ -27,6 +28,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Con
     m_downloads(new PreferencesDownloadsPage(m_book, cfg)),
     m_connection(new PreferencesConnectionPage(m_book, cfg)),
     m_proxy(new PreferencesProxyPage(m_book, cfg)),
+    m_rss(new PreferencesRssPage(m_book, cfg)),
     m_advanced(new PreferencesAdvancedPage(m_book, cfg)),
     m_wantsRestart(false)
 {
@@ -35,6 +37,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Con
     m_list->Append(i18n("downloads"));
     m_list->Append(i18n("connection"));
     m_list->Append(i18n("proxy"));
+    m_list->Append(i18n("rss"));
     m_list->Append(i18n("advanced"));
     m_list->Select(0);
 
@@ -42,6 +45,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Con
     m_book->AddPage(m_downloads, wxEmptyString, false);
     m_book->AddPage(m_connection, wxEmptyString, false);
     m_book->AddPage(m_proxy, wxEmptyString, false);
+    m_book->AddPage(m_rss, wxEmptyString, false);
     m_book->AddPage(m_advanced, wxEmptyString, false);
 
     m_mainSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -118,6 +122,11 @@ void PreferencesDialog::OnOk(wxCommandEvent& evt)
         return;
     }
 
+    if (!m_rss->IsValid())
+    {
+        return;
+    }
+
     if (!m_advanced->IsValid())
     {
         return;
@@ -129,6 +138,7 @@ void PreferencesDialog::OnOk(wxCommandEvent& evt)
     m_downloads->Save();
     m_connection->Save(&restartRequired);
     m_proxy->Save();
+    m_rss->Save();
     m_advanced->Save();
 
     if (restartRequired)

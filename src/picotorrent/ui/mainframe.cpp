@@ -22,6 +22,7 @@
 #include "../core/environment.hpp"
 #include "../core/utils.hpp"
 #include "../ipc/server.hpp"
+#include "../rss/feedmanager.hpp"
 #include "dialogs/aboutdialog.hpp"
 #include "dialogs/addmagnetlinkdialog.hpp"
 #include "dialogs/addtorrentdialog.hpp"
@@ -46,6 +47,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_env(env),
     m_db(db),
     m_cfg(cfg),
+    m_feedManager(std::make_unique<RSS::FeedManager>()),
     m_session(new BitTorrent::Session(this, db, cfg, env)),
     m_splitter(new wxSplitterWindow(this, ptID_MAIN_SPLITTER)),
     m_statusBar(new StatusBar(this)),
