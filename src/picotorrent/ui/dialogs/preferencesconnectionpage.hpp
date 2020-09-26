@@ -26,8 +26,7 @@ namespace Dialogs
         virtual ~PreferencesConnectionPage();
 
         bool IsValid();
-        void Save();
-        void SetupNetworkAdapters();
+        void Save(bool* restartRequired);
 
     private:
         wxWindow* m_parent;

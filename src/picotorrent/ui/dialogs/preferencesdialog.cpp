@@ -1,5 +1,7 @@
 #include "preferencesdialog.hpp"
 
+#include <CommCtrl.h>
+
 #include <wx/bookctrl.h>
 #include <wx/listbook.h>
 #include <wx/listctrl.h>
@@ -25,7 +27,8 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Con
     m_downloads(new PreferencesDownloadsPage(m_book, cfg)),
     m_connection(new PreferencesConnectionPage(m_book, cfg)),
     m_proxy(new PreferencesProxyPage(m_book, cfg)),
-    m_advanced(new PreferencesAdvancedPage(m_book, cfg))
+    m_advanced(new PreferencesAdvancedPage(m_book, cfg)),
+    m_wantsRestart(false)
 {
     m_list = new wxListBox(this, wxID_ANY);
     m_list->Append(i18n("general"));
@@ -120,11 +123,48 @@ void PreferencesDialog::OnOk(wxCommandEvent& evt)
         return;
     }
 
-    m_general->Save();
+    bool restartRequired = false;
+
+    m_general->Save(&restartRequired);
     m_downloads->Save();
-    m_connection->Save();
+    m_connection->Save(&restartRequired);
     m_proxy->Save();
     m_advanced->Save();
 
+    if (restartRequired)
+    {
+        ShowRestartRequiredDialog();
+    }
+
     evt.Skip();
+}
+
+void PreferencesDialog::ShowRestartRequiredDialog()
+{
+    std::wstring btn = i18n("restart_picotorrent");
+    std::wstring main = i18n("prompt_restart");
+    std::wstring title = i18n("prompt_restart_title");
+
+    const TASKDIALOG_BUTTON pButtons[] =
+    {
+        { 1000, btn.c_str() },
+    };
+
+    TASKDIALOGCONFIG tdf = { sizeof(TASKDIALOGCONFIG) };
+    tdf.cButtons = ARRAYSIZE(pButtons);
+    tdf.dwCommonButtons = TDCBF_CANCEL_BUTTON;
+    tdf.dwFlags = TDF_POSITION_RELATIVE_TO_WINDOW;
+    tdf.hwndParent = GetHWND();
+    tdf.pButtons = pButtons;
+    tdf.pszMainIcon = TD_INFORMATION_ICON;
+    tdf.pszMainInstruction = main.c_str();
+    tdf.pszWindowTitle = title.c_str();
+
+    int pnButton = -1;
+    int pnRadioButton = -1;
+    BOOL pfVerificationFlagChecked = FALSE;
+
+    TaskDialogIndirect(&tdf, &pnButton, &pnRadioButton, &pfVerificationFlagChecked);
+
+    m_wantsRestart = (pnButton == 1000);
 }
