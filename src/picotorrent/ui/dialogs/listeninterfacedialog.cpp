@@ -36,9 +36,11 @@ ListenInterfaceDialog::ListenInterfaceDialog(wxWindow* parent, wxWindowID id, st
     grid->Add(new wxStaticText(this, wxID_ANY, i18n("port")));
     grid->Add(m_port);
 
+    auto ok = new wxButton(this, wxID_OK, i18n("ok"));
+
     auto buttonSizer = new wxBoxSizer(wxHORIZONTAL);
     buttonSizer->AddStretchSpacer();
-    buttonSizer->Add(new wxButton(this, wxID_OK, i18n("ok")));
+    buttonSizer->Add(ok);
     buttonSizer->Add(new wxButton(this, wxID_CANCEL, i18n("cancel")));
 
     auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -67,10 +69,31 @@ ListenInterfaceDialog::ListenInterfaceDialog(wxWindow* parent, wxWindowID id, st
         }
     }
 
+    if (m_adapters->GetSelection() < 0)
+    {
+        m_adapters->SetSelection(0);
+    }
+
     if (port > 0)
     {
         m_port->SetValue(std::to_string(port));
     }
+
+    ok->Enable(false);
+
+    m_adapters->Bind(
+        wxEVT_CHOICE,
+        [this, ok](wxCommandEvent&)
+        {
+            ok->Enable(true);
+        });
+
+    m_port->Bind(
+        wxEVT_TEXT,
+        [this, ok](wxCommandEvent&)
+        {
+            ok->Enable(!m_port->GetValue().IsEmpty());
+        });
 }
 
 ListenInterfaceDialog::~ListenInterfaceDialog()
@@ -108,75 +131,87 @@ void ListenInterfaceDialog::LoadAdapters()
         m_adapters->GetCount(),
         new ClientData<NetworkAdapter>(any6));
 
-    ULONG bufferSize = 15000;
-    IP_ADAPTER_ADDRESSES* pAddresses = new IP_ADAPTER_ADDRESSES[bufferSize];
+    static constexpr int MAX_GETADAPTERSADDRESSES_TRIES = 10;
+    static constexpr int INITIAL_BUFFER_SIZE = 15000;
 
-    ULONG ret = GetAdaptersAddresses(
-        AF_UNSPEC,
-        GAA_FLAG_INCLUDE_PREFIX,
-        NULL,
-        pAddresses,
-        &bufferSize);
+    ULONG len = INITIAL_BUFFER_SIZE;
+    ULONG flags = 0;
+    char initial_buf[INITIAL_BUFFER_SIZE];
+    std::unique_ptr<char[]> buf;
 
-    if (ret == ERROR_SUCCESS)
+    IP_ADAPTER_ADDRESSES* adapters = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(&initial_buf);
+    ULONG result = GetAdaptersAddresses(AF_UNSPEC, flags, nullptr, adapters, &len);
+
+    for (int tries = 1; result == ERROR_BUFFER_OVERFLOW && tries < MAX_GETADAPTERSADDRESSES_TRIES; ++tries)
     {
-        for (PIP_ADAPTER_ADDRESSES pCurrAddresses = pAddresses; pCurrAddresses != nullptr; pCurrAddresses = pCurrAddresses->Next)
+        buf.reset(new char[len]);
+        adapters = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(buf.get());
+        result = GetAdaptersAddresses(AF_UNSPEC, flags, nullptr, adapters, &len);
+    }
+
+    if (result == NO_ERROR)
+    {
+        for (const IP_ADAPTER_ADDRESSES* adapter = adapters; adapter != NULL; adapter = adapter->Next)
         {
-            if (pCurrAddresses->IfType != IF_TYPE_SOFTWARE_LOOPBACK)
+            // Ignore the loopback device.
+            if (adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK)
             {
-                IP_ADAPTER_UNICAST_ADDRESS* pu = pCurrAddresses->FirstUnicastAddress;
+                continue;
+            }
 
-                while (pu)
+            if (adapter->OperStatus != IfOperStatusUp)
+            {
+                continue;
+            }
+
+            for (IP_ADAPTER_UNICAST_ADDRESS* address = adapter->FirstUnicastAddress; address; address = address->Next)
+            {
+                int family = address->Address.lpSockaddr->sa_family;
+
+                switch (family)
                 {
-                    switch (pu->Address.lpSockaddr->sa_family)
-                    {
-                    case AF_INET:
-                    {
-                        char buf[INET_ADDRSTRLEN] = {};
-                        sockaddr_in* si = reinterpret_cast<sockaddr_in*>(pu->Address.lpSockaddr);
-                        inet_ntop(AF_INET, &(si->sin_addr), buf, sizeof(buf));
+                case AF_INET:
+                {
+                    char buf[INET_ADDRSTRLEN] = {};
+                    sockaddr_in* si = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
+                    inet_ntop(AF_INET, &(si->sin_addr), buf, sizeof(buf));
 
-                        std::stringstream ss;
-                        ss << buf << " (" << Utils::toStdString(pCurrAddresses->FriendlyName) << ")";
+                    std::stringstream ss;
+                    ss << buf << " (" << Utils::toStdString(adapter->FriendlyName) << ")";
 
-                        NetworkAdapter ipv4;
-                        ipv4.address = buf;
-                        ipv4.name = ss.str();
+                    NetworkAdapter ipv4;
+                    ipv4.address = buf;
+                    ipv4.name = ss.str();
 
-                        m_adapters->Insert(
-                            ipv4.name,
-                            m_adapters->GetCount(),
-                            new ClientData<NetworkAdapter>(ipv4));
+                    m_adapters->Insert(
+                        ipv4.name,
+                        m_adapters->GetCount(),
+                        new ClientData<NetworkAdapter>(ipv4));
 
-                        break;
-                    }
-                    case AF_INET6:
-                    {
-                        char buf[INET6_ADDRSTRLEN] = {};
-                        sockaddr_in6* si = reinterpret_cast<sockaddr_in6*>(pu->Address.lpSockaddr);
-                        inet_ntop(AF_INET6, &(si->sin6_addr), buf, sizeof(buf));
+                    break;
+                }
+                case AF_INET6:
+                {
+                    char buf[INET6_ADDRSTRLEN] = {};
+                    sockaddr_in6* si = reinterpret_cast<sockaddr_in6*>(address->Address.lpSockaddr);
+                    inet_ntop(AF_INET6, &(si->sin6_addr), buf, sizeof(buf));
 
-                        std::stringstream ss;
-                        ss << "[" << buf << "]" << " (" << Utils::toStdString(pCurrAddresses->FriendlyName) << ")";
+                    std::stringstream ss;
+                    ss << "[" << buf << "]" << " (" << Utils::toStdString(adapter->FriendlyName) << ")";
 
-                        NetworkAdapter ipv6;
-                        ipv6.address = "[" + std::string(buf) + "]";
-                        ipv6.name = ss.str();
+                    NetworkAdapter ipv6;
+                    ipv6.address = "[" + std::string(buf) + "]";
+                    ipv6.name = ss.str();
 
-                        m_adapters->Insert(
-                            ipv6.name,
-                            m_adapters->GetCount(),
-                            new ClientData<NetworkAdapter>(ipv6));
+                    m_adapters->Insert(
+                        ipv6.name,
+                        m_adapters->GetCount(),
+                        new ClientData<NetworkAdapter>(ipv6));
 
-                        break;
-                    }
-                    }
-
-                    pu = pu->Next;
+                    break;
+                }
                 }
             }
         }
     }
-
-    delete[] pAddresses;
 }
