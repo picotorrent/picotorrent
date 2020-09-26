@@ -4,7 +4,10 @@
 #include <ShlObj.h>
 #include <Shlwapi.h>
 
-#include <loguru.hpp>
+#include <boost/log/core.hpp>
+#include <boost/log/sinks/text_file_backend.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/utility/setup/file.hpp>
 
 #include "utils.hpp"
 
@@ -19,12 +22,12 @@ Environment::Environment()
 std::shared_ptr<Environment> Environment::Create()
 {
     auto env = new Environment();
-    loguru::add_file(
-        Utils::toStdString(env->GetLogFilePath().generic_wstring()).c_str(),
-        loguru::Truncate,
-        loguru::Verbosity_INFO);
 
-    LOG_F(INFO, "PicoTorrent starting up...");
+    boost::log::add_file_log(
+        boost::log::keywords::file_name = Utils::toStdString(env->GetLogFilePath().generic_wstring())
+    );
+
+    BOOST_LOG_TRIVIAL(info) << "PicoTorrent starting up...";
 
     return std::shared_ptr<Environment>(env);
 }
@@ -70,7 +73,7 @@ std::string Environment::GetCurrentLocale()
 
     if (res == 0)
     {
-        LOG_F(ERROR, "Failed to get current locale - defaulting to 'en'");
+        BOOST_LOG_TRIVIAL(error) << "Failed to get current locale - defaulting to 'en'";
         return "en";
     }
 
@@ -98,7 +101,7 @@ fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
         break;
 
     default:
-        LOG_F(FATAL, "Unknown KnownFolder specified: %d", knownFolder);
+        BOOST_LOG_TRIVIAL(fatal) << "Unknown KnownFolder specified: " << static_cast<int>(knownFolder);
         throw std::runtime_error("Unknown folder");
     }
 
@@ -112,7 +115,7 @@ fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
         return p;
     }
 
-    LOG_F(FATAL, "Failed to get KnownFolder: %d", knownFolder);
+    BOOST_LOG_TRIVIAL(fatal) << "Failed to get KnownFolder: " << static_cast<int>(knownFolder);
 
     throw std::runtime_error("Could not get known folder path");
 }

@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include <loguru.hpp>
+#include <boost/log/trivial.hpp>
 #include <nlohmann/json.hpp>
 
 namespace pt
@@ -69,7 +69,7 @@ namespace Core
             }
             catch (nlohmann::json::exception const& ex)
             {
-                LOG_F(WARNING, "Failed to parse setting %s: %s (%s)", key.c_str(), val.c_str(), ex.what());
+                BOOST_LOG_TRIVIAL(warning) << "Failed to parse setting " << key << ": " << val << " (" << ex.what() << ")";
             }
 
             return std::nullopt;

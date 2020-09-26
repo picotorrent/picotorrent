@@ -9,10 +9,10 @@
 #include <Windows.h>
 #include <CommCtrl.h>
 
+#include <boost/log/trivial.hpp>
 #include <client/crash_report_database.h>
 #include <client/settings.h>
 #include <client/crashpad_client.h>
-#include <loguru.hpp>
 
 #include "buildinfo.hpp"
 #include "core/environment.hpp"
@@ -26,13 +26,11 @@ void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
     auto databasePath = env->GetApplicationDataPath() / "Crashpad" / "db";
     auto handlerPath = env->GetApplicationPath() / "crashpad_handler.exe";
 
-    LOG_F(INFO, "Initializing Crashpad (path: %s, url: %s)",
-        handlerPath.string().c_str(),
-        env->GetCrashpadReportUrl().c_str());
+    BOOST_LOG_TRIVIAL(info) << "Initializing Crashpad (path: " << handlerPath << ", url: " << env->GetCrashpadReportUrl() << ")";
 
     if (!fs::exists(handlerPath))
     {
-        LOG_F(WARNING, "Could not find crashpad_handler.exe, skipping initialization...");
+        BOOST_LOG_TRIVIAL(warning) << "Could not find crashpad_handler.exe, skipping initialization...";
         return;
     }
 
@@ -41,7 +39,7 @@ void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
 
     if (ec)
     {
-        LOG_F(ERROR, "Failed to check if database path exists: %s", ec.message().c_str());
+        BOOST_LOG_TRIVIAL(error) << "Failed to check if database path exists: " << ec;
         return;
     }
 
@@ -51,7 +49,7 @@ void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
 
         if (ec)
         {
-            LOG_F(ERROR, "Failed to create Crashpad database directories: %s", ec.message().c_str());
+            BOOST_LOG_TRIVIAL(error) << "Failed to create Crashpad database directories: " << ec;
             return;
         }
     }
@@ -60,13 +58,13 @@ void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
 
     if (database == nullptr || database->GetSettings() == nullptr)
     {
-        LOG_F(ERROR, "Failed to initialize Crashpad database from path: %s", databasePath.string().c_str());
+        BOOST_LOG_TRIVIAL(error) << "Failed to initialize Crashpad database from path: " << databasePath;
         return;
     }
 
     if (!database->GetSettings()->SetUploadsEnabled(true))
     {
-        LOG_F(ERROR, "Failed to set uploads in Crashpad database");
+        BOOST_LOG_TRIVIAL(error) << "Failed to set uploads in Crashpad database";
         return;
     }
 
@@ -93,15 +91,15 @@ void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
         true,
         true))
     {
-        LOG_F(ERROR, "Failed to start Crashpad");
+        BOOST_LOG_TRIVIAL(error) << "Failed to start Crashpad";
         return;
     }
 
     if (!client.WaitForHandlerStart(10000))
     {
-        LOG_F(ERROR, "Failed to wait for Crashpad handler start");
+        BOOST_LOG_TRIVIAL(error) << "Failed to wait for Crashpad handler start";
         return;
     }
 
-    LOG_F(INFO, "Crashpad handler started");
+    BOOST_LOG_TRIVIAL(info) << "Crashpad handler started";
 }

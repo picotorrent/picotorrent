@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <vector>
 
-#include <loguru.hpp>
+#include <boost/log/trivial.hpp>
 #include <sqlite3.h>
 
 #include "environment.hpp"
@@ -76,7 +76,7 @@ void Database::Statement::Bind(int idx, std::vector<char> const& value)
 
     if (res != SQLITE_OK)
     {
-        LOG_F(ERROR, "Failed to bind argument: %d", res);
+        BOOST_LOG_TRIVIAL(error) << "Failed to bind argument: " << res;
     }
 }
 
@@ -87,7 +87,7 @@ bool Database::Statement::Execute()
     if (res != SQLITE_ROW && res != SQLITE_DONE)
     {
         const char* err = sqlite3_errmsg(sqlite3_db_handle(m_stmt));
-        LOG_F(ERROR, "Failed to execute statement: %s", err);
+        BOOST_LOG_TRIVIAL(error) << "Failed to execute statement: " << err;
         return false;
     }
 
@@ -143,7 +143,7 @@ Database::Database(std::shared_ptr<pt::Core::Environment> env)
     fs::path dbFile = env->GetDatabaseFilePath();
     std::string convertedPath = Utils::toStdString(dbFile.wstring());
 
-    LOG_F(INFO, "Loading PicoTorrent database from %s", convertedPath.c_str());
+    BOOST_LOG_TRIVIAL(info) << "Loading PicoTorrent database from " << convertedPath;
 
     sqlite3_open(convertedPath.c_str(), &m_db);
 
@@ -199,7 +199,7 @@ bool Database::Migrate()
         &EnumMigrations,
         reinterpret_cast<LONG_PTR>(&migrations));
 
-    LOG_F(INFO, "Found %d migrations", migrations.size());
+    BOOST_LOG_TRIVIAL(info) << "Found " << migrations.size() << " migrations";
 
     Execute("BEGIN TRANSACTION;");
 
@@ -222,7 +222,7 @@ bool Database::Migrate()
                 &statement,
                 &sql) != SQLITE_OK)
             {
-                LOG_F(ERROR, "Failed to prepare migration %s: (%s)", m.name.c_str(), sqlite3_errmsg(m_db));
+                BOOST_LOG_TRIVIAL(error) << "Failed to prepare migration " << m.name << " (" << sqlite3_errmsg(m_db) << ")";
                 return false;
             }
 
@@ -235,7 +235,7 @@ bool Database::Migrate()
 
             if (stepResult != SQLITE_OK && stepResult != SQLITE_DONE)
             {
-                LOG_F(ERROR, "Failed to step/execute migration %s: (%s)", m.name.c_str(), sqlite3_errmsg(m_db));
+                BOOST_LOG_TRIVIAL(error) << "Failed to step/execute migration " << m.name << " (" << sqlite3_errmsg(m_db) << ")";
                 return false;
             }
 
@@ -246,7 +246,7 @@ bool Database::Migrate()
         stmt->Bind(1, m.name.c_str());
         stmt->Execute();
 
-        LOG_F(INFO, "Migration %s applied", m.name.c_str());
+        BOOST_LOG_TRIVIAL(info) << "Migration " << m.name << " applied";
     }
 
     Execute("COMMIT;");
@@ -261,7 +261,7 @@ std::shared_ptr<Database::Statement> Database::CreateStatement(std::string const
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_ERROR)
     {
         const char* err = sqlite3_errmsg(m_db);
-        LOG_F(ERROR, "Failed to execute SQL statement: %s", err);
+        BOOST_LOG_TRIVIAL(error) << "failed to execute SQL statement: " << err;
         throw std::runtime_error(err);
     }
 

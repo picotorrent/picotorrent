@@ -2,11 +2,11 @@
 
 #include <filesystem>
 
+#include <boost/log/trivial.hpp>
 #include <fmt/format.h>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/create_torrent.hpp>
 #include <libtorrent/torrent_info.hpp>
-#include <loguru.hpp>
 #include <wx/hyperlink.h>
 #include <wx/tokenzr.h>
 
@@ -308,7 +308,7 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
 
     if (ec)
     {
-        LOG_F(ERROR, "Error when setting piece hashes: %s", ec.message().c_str());
+        BOOST_LOG_TRIVIAL(error) << "Error when setting piece hashes: " << ec;
         auto err = new wxThreadEvent(ptEVT_CREATE_TORRENT_THREAD_ERROR);
         err->SetPayload<std::string>(ec.message());
         wxQueueEvent(this, err);
@@ -323,7 +323,7 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
     }
     catch (const std::exception& ex)
     {
-        LOG_F(ERROR, "Error when generating torrent: %s", ex.what());
+        BOOST_LOG_TRIVIAL(error) << "Error when generating torrent: " << ec;
         auto err = new wxThreadEvent(ptEVT_CREATE_TORRENT_THREAD_ERROR);
         err->SetPayload<std::string>(ex.what());
         wxQueueEvent(this, err);

@@ -2,7 +2,7 @@
 
 #include <libtorrent/announce_entry.hpp>
 
-#include <loguru.hpp>
+#include <boost/log/trivial.hpp>
 #include <wx/clipbrd.h>
 #include <wx/dataview.h>
 #include <wx/sizer.h>
@@ -190,7 +190,7 @@ void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
 
             if (selectedTracker == originalTrackers.end())
             {
-                LOG_F(WARNING, "Could not find selected tracker in torrent trackers: %s", item->key.c_str());
+                BOOST_LOG_TRIVIAL(warning) << "Could not find selected tracker in torrent trackers: " << item->key;
                 return;
             }
 
