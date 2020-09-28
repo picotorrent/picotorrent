@@ -43,6 +43,7 @@ namespace Models
             Peers,
             AddedOn,
             CompletedOn,
+            Label,
             _Max
         };
 
@@ -75,7 +76,7 @@ namespace Models
 
         bool SetValueByRow(const wxVariant& variant, uint32_t row, uint32_t col) wxOVERRIDE { return false; }
 
-        void UpdateLabelColors(std::map<int, std::string> const& colors);
+        void UpdateLabels(std::map<int, std::tuple<std::string, std::string>> const& labels);
 
     private:
         void ApplyFilter();
@@ -85,7 +86,9 @@ namespace Models
         int m_filterLabelId;
         std::function<bool(BitTorrent::TorrentHandle*)> m_filter;
         std::vector<libtorrent::info_hash_t> m_filtered;
-        std::map<int, std::string> m_labelColors;
+        std::map<int, std::tuple<std::string, std::string>> m_labels;
+        std::map<int, wxColor> m_labelsColors;
+        std::map<int, wxIcon> m_labelsIcons;
         std::map<libtorrent::info_hash_t, BitTorrent::TorrentHandle*> m_torrents;
     };
 }

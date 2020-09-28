@@ -93,9 +93,16 @@ std::vector<Configuration::Label> Configuration::GetLabels()
 
 void Configuration::DeleteLabel(int32_t id)
 {
-    auto stmt = m_db->CreateStatement("delete from label where id = ?");
-    stmt->Bind(1, id);
-    stmt->Execute();
+    {
+        auto stmt = m_db->CreateStatement("update torrent set label_id = NULL where label_id = $1");
+        stmt->Bind(1, id);
+        stmt->Execute();
+    }
+    {
+        auto stmt = m_db->CreateStatement("delete from label where id = $1");
+        stmt->Bind(1, id);
+        stmt->Execute();
+    }
 }
 
 void Configuration::UpsertLabel(Configuration::Label const& label)

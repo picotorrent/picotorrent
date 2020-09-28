@@ -195,12 +195,12 @@ bool TorrentListModel::GetAttrByRow(unsigned int row, unsigned int col, wxDataVi
 
     // torrent has a label and a color
     if (torrent->Label() > 0
-        && m_labelColors.find(torrent->Label()) != m_labelColors.end()
+        && m_labelsColors.find(torrent->Label()) != m_labelsColors.end()
         && m_backgroundColorEnabled)
     {
-        wxColor c;
-        c.Set(m_labelColors.at(torrent->Label()));
-        attr.SetBackgroundColour(c);
+        attr.SetBackgroundColour(
+            m_labelsColors.at(
+                torrent->Label()));
     }
 
     switch (col)
@@ -459,10 +459,30 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
 
         break;
     }
+    case Columns::Label:
+    {
+        if (torrent->Label() < 0)
+        {
+            variant << wxDataViewIconText("-");
+            break;
+        }
+
+        wxIcon ic = wxNullIcon;
+        auto [name, _] = m_labels.at(torrent->Label());
+
+        if (m_labelsIcons.find(torrent->Label()) != m_labelsIcons.end())
+        {
+            ic = m_labelsIcons.at(torrent->Label());
+        }
+
+        variant << wxDataViewIconText(name, ic);
+
+        break;
+    }
     }
 }
 
-void TorrentListModel::UpdateLabelColors(std::map<int, std::string> const& colors)
+void TorrentListModel::UpdateLabels(std::map<int, std::tuple<std::string, std::string>> const& labels)
 {
     std::vector<BitTorrent::TorrentHandle*> torrents;
 
@@ -474,36 +494,62 @@ void TorrentListModel::UpdateLabelColors(std::map<int, std::string> const& color
         // skip torrent if no label
         if (torrent->Label() < 0) { continue; }
 
-        auto oldColor = m_labelColors.find(torrent->Label());
-        auto newColor = colors.find(torrent->Label());
+        auto oldLabel = m_labels.find(torrent->Label());
+        auto label = labels.find(torrent->Label());
 
         // color has changed
-        if (oldColor != m_labelColors.end()
-            && newColor != colors.end()
-            && *oldColor != *newColor)
+        if (oldLabel != m_labels.end()
+            && label != labels.end()
+            && oldLabel->second != label->second)
         {
             torrents.push_back(torrent);
             continue;
         }
 
         // color was removed
-        if (oldColor != m_labelColors.end()
-            && newColor == colors.end())
+        if (oldLabel != m_labels.end()
+            && label == labels.end())
         {
             torrents.push_back(torrent);
             continue;
         }
 
         // color was added
-        if (oldColor == m_labelColors.end()
-            && newColor != colors.end())
+        if (oldLabel == m_labels.end()
+            && label != labels.end())
         {
             torrents.push_back(torrent);
             continue;
         }
     }
 
-    m_labelColors = colors;
+    m_labels = labels;
+    m_labelsColors.clear();
+    m_labelsIcons.clear();
+
+    for (auto const& [id, nv] : m_labels)
+    {
+        auto [name, color] = nv;
+
+        if (color.empty()) { continue; }
+
+        m_labelsColors.insert({ id, wxColor(color) });
+
+        wxBitmap bmp(24, 24);
+
+        {
+            wxMemoryDC dc;
+            wxDCBrushChanger dcbc(dc, m_labelsColors.at(id));
+            dc.SelectObject(bmp);
+            dc.Clear();
+            // dc.DrawRectangle(wxRect(bmp.GetSize()));
+        }
+
+        wxIcon ic;
+        ic.CopyFromBitmap(bmp);
+
+        m_labelsIcons.insert({ id, ic });
+    }
 
     for (auto const& torrent : torrents)
     {

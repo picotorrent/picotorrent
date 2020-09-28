@@ -63,6 +63,9 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         m_torrentList,
         m_torrentDetails);
 
+    m_torrentListModel->SetBackgroundColorEnabled(
+        m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
+
     auto sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(m_splitter, 1, wxEXPAND, 0);
     sizer->SetSizeHints(this);
@@ -751,10 +754,10 @@ void MainFrame::ShowTorrentContextMenu(wxCommandEvent&)
 
 void MainFrame::UpdateLabels()
 {
-    std::map<int, std::string> labelColors;
+    std::map<int, std::tuple<std::string, std::string>> labels;
     for (auto const& label : m_cfg->GetLabels())
     {
-        labelColors.insert({ label.id, label.color });
+        labels.insert({ label.id, { label.name, label.color } });
     }
-    m_torrentListModel->UpdateLabelColors(labelColors);
+    m_torrentListModel->UpdateLabels(labels);
 }
