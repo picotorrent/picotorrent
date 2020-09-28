@@ -17,7 +17,7 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
     auto labelsListSizer = new wxStaticBoxSizer(wxHORIZONTAL, this, i18n("labels"));
 
     m_labelsList = new wxListView(labelsListSizer->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL);
-    m_labelsList->AppendColumn(i18n("name"), wxLIST_FORMAT_LEFT, FromDIP(200));
+    m_labelsList->AppendColumn(i18n("name"), wxLIST_FORMAT_LEFT, FromDIP(280));
 
     auto buttonsSizer = new wxBoxSizer(wxVERTICAL);
     auto addLabel = new wxButton(labelsListSizer->GetStaticBox(), wxID_ANY, "+");

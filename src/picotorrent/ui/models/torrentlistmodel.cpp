@@ -88,6 +88,12 @@ void TorrentListModel::UpdateTorrents(std::vector<TorrentHandle*> torrents)
     ApplyFilter(torrents);
 }
 
+void TorrentListModel::SetBackgroundColorEnabled(bool enabled)
+{
+    m_backgroundColorEnabled = enabled;
+    Reset(m_filtered.size());
+}
+
 int TorrentListModel::Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending) const
 {
     auto const& hash1 = m_filtered.at(GetRow(item1));
@@ -189,7 +195,8 @@ bool TorrentListModel::GetAttrByRow(unsigned int row, unsigned int col, wxDataVi
 
     // torrent has a label and a color
     if (torrent->Label() > 0
-        && m_labelColors.find(torrent->Label()) != m_labelColors.end())
+        && m_labelColors.find(torrent->Label()) != m_labelColors.end()
+        && m_backgroundColorEnabled)
     {
         wxColor c;
         c.Set(m_labelColors.at(torrent->Label()));
@@ -200,7 +207,6 @@ bool TorrentListModel::GetAttrByRow(unsigned int row, unsigned int col, wxDataVi
     {
     case Columns::Status:
     {
-        
         BitTorrent::TorrentStatus  status = torrent->Status();
 
         if (status.state == TorrentStatus::State::Error)

@@ -11,3 +11,7 @@ CREATE TABLE label (
 
 /* Add label_id column to torrent table */
 ALTER TABLE torrent ADD COLUMN label_id INTEGER REFERENCES label(id);
+
+/* Setting to toggle background color in list view */
+INSERT INTO setting (key, value, default_value)
+VALUES ('use_label_as_list_bgcolor', NULL, 'false');

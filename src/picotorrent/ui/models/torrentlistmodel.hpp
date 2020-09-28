@@ -54,6 +54,7 @@ namespace Models
         BitTorrent::TorrentHandle* GetTorrentFromItem(wxDataViewItem const& item);
         void RemoveTorrent(libtorrent::info_hash_t const& hash);
         void UpdateTorrents(std::vector<BitTorrent::TorrentHandle*> torrents);
+        void SetBackgroundColorEnabled(bool enabled);
 
         void ClearFilter();
         void ClearLabelFilter();
@@ -80,6 +81,7 @@ namespace Models
         void ApplyFilter();
         void ApplyFilter(std::vector<BitTorrent::TorrentHandle*> torrents);
 
+        bool m_backgroundColorEnabled;
         int m_filterLabelId;
         std::function<bool(BitTorrent::TorrentHandle*)> m_filter;
         std::vector<libtorrent::info_hash_t> m_filtered;

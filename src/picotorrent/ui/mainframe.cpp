@@ -700,6 +700,9 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
             m_taskBarIcon->Hide();
         }
 
+        m_torrentListModel->SetBackgroundColorEnabled(
+            m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
+
         this->CreateLabelMenuItems();
         this->UpdateLabels();
     }
