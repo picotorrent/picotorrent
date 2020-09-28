@@ -141,7 +141,9 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<Core::C
 
             for (auto torrent : selectedTorrents)
             {
-                torrent->MoveStorage(dlg.GetPath().ToStdString());
+                torrent->MoveStorage(
+                    Utils::toStdString(
+                        dlg.GetPath().ToStdWstring()));
             }
         },
         TorrentContextMenu::ptID_MOVE);

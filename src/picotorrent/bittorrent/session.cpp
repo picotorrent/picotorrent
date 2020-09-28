@@ -22,6 +22,7 @@
 #include "../core/configuration.hpp"
 #include "../core/database.hpp"
 #include "../core/environment.hpp"
+#include "../core/utils.hpp"
 #include "../buildinfo.hpp"
 #include "semver.hpp"
 #include "sessionstatistics.hpp"
@@ -202,7 +203,8 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
 
 Session::Session(wxEvtHandler* parent, std::shared_ptr<pt::Core::Database> db, std::shared_ptr<pt::Core::Configuration> cfg, std::shared_ptr<pt::Core::Environment> env)
     : m_parent(parent),
-    m_timer(new wxTimer(this)),
+    m_timer(new wxTimer(this, ptID_TIMER_SESSION)),
+    m_resumeDataTimer(new wxTimer(this, ptID_TIMER_RESUME_DATA)),
     m_cfg(cfg),
     m_db(db),
     m_env(env)
@@ -229,18 +231,29 @@ Session::Session(wxEvtHandler* parent, std::shared_ptr<pt::Core::Database> db, s
 
     m_timer->Start(1000, wxTIMER_CONTINUOUS);
 
-    this->Bind(wxEVT_TIMER, [this](wxTimerEvent&)
+    if (auto saveInterval = m_cfg->Get<int>("save_resume_data_interval"))
+    {
+        m_resumeDataTimer->Start(
+            saveInterval.value_or(300) * 1000);
+    }
+
+    this->Bind(wxEVT_TIMER,
+        [this](wxTimerEvent&)
         {
             m_session->post_dht_stats();
             m_session->post_session_stats();
             m_session->post_torrent_updates();
-        });
+        },
+        ptID_TIMER_SESSION);
+
+    this->Bind(wxEVT_TIMER, &Session::OnSaveResumeDataTimer, this, ptID_TIMER_RESUME_DATA);
 }
 
 Session::~Session()
 {
     m_session->set_alert_notify([] {});
     m_timer->Stop();
+    m_resumeDataTimer->Stop();
 
     this->SaveState();
     this->SaveTorrents();
@@ -327,6 +340,13 @@ void Session::ReloadSettings()
         TorrentsUpdatedEvent evtUpdated(ptEVT_TORRENTS_UPDATED);
         evtUpdated.SetData(updated);
         wxPostEvent(m_parent, evtUpdated);
+    }
+
+    if (auto saveInterval = m_cfg->Get<int>("save_resume_data_interval"))
+    {
+        m_resumeDataTimer->Stop();
+        m_resumeDataTimer->Start(
+            saveInterval.value_or(300) * 1000);
     }
 }
 
@@ -541,6 +561,13 @@ void Session::OnAlert()
             break;
         }
 
+        case lt::storage_moved_failed_alert::alert_type:
+        {
+            lt::storage_moved_failed_alert* smfa = lt::alert_cast<lt::storage_moved_failed_alert>(alert);
+            LOG_F(ERROR, "Error when moving torrent storage: %s", smfa->error.message().c_str());
+            break;
+        }
+
         case lt::torrent_checked_alert::alert_type:
         {
             lt::torrent_checked_alert* tca = lt::alert_cast<lt::torrent_checked_alert>(alert);
@@ -580,18 +607,25 @@ void Session::OnAlert()
             evt.SetClientData(m_torrents.at(ts.info_hashes));
             wxPostEvent(m_parent, evt);
 
-            bool shouldMove = m_cfg->Get<bool>("move_completed_downloads").value();
-            bool onlyFromDefault = m_cfg->Get<bool>("move_completed_downloads_from_default_only").value();
-            std::string movePath = m_cfg->Get<std::string>("move_completed_downloads_path").value();
-
-            if (shouldMove)
+            if (auto shouldMove = m_cfg->Get<bool>("move_completed_downloads"))
             {
-                if (onlyFromDefault && ts.save_path != m_cfg->Get<std::string>("default_save_path").value())
+                if (shouldMove.value())
                 {
-                    break;
-                }
+                    auto onlyFromDefault = m_cfg->Get<bool>("move_completed_downloads_from_default_only");
+                    auto movePath = m_cfg->Get<std::string>("move_completed_downloads_path");
 
-                tfa->handle.move_storage(movePath);
+                    if (onlyFromDefault.has_value()
+                        && onlyFromDefault.value()
+                        && ts.save_path != m_cfg->Get<std::string>("default_save_path").value())
+                    {
+                        break;
+                    }
+
+                    if (movePath.has_value())
+                    {
+                        tfa->handle.move_storage(movePath.value());
+                    }
+                }
             }
 
             break;
@@ -636,6 +670,27 @@ void Session::OnAlert()
         }
         }
     }
+}
+
+void Session::OnSaveResumeDataTimer(wxTimerEvent&)
+{
+    // save resume data for all torrents which need it
+    int saved = 0;
+
+    for (auto const& [hash, torrent] : m_torrents)
+    {
+        lt::torrent_handle& th = torrent->WrappedHandle();
+        if (th.need_save_resume_data())
+        {
+            saved++;
+
+            th.save_resume_data(
+                lt::torrent_handle::flush_disk_cache
+                | lt::torrent_handle::save_info_dict);
+        }
+    }
+
+    LOG_F(INFO, "%d torrent(s) needed to save resume data", saved);
 }
 
 bool Session::IsSearching(lt::info_hash_t hash)

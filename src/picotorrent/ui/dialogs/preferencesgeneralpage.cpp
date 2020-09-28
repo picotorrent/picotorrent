@@ -180,7 +180,7 @@ bool PreferencesGeneralPage::IsValid()
     return true;
 }
 
-void PreferencesGeneralPage::Save()
+void PreferencesGeneralPage::Save(bool* restartRequired)
 {
     int langIndex = m_language->GetSelection();
     ClientData<std::string>* langData = langIndex >= 0
@@ -192,6 +192,11 @@ void PreferencesGeneralPage::Save()
 
     if (langData != nullptr)
     {
+        if (langData->GetValue() != m_cfg->Get<std::string>("locale_name"))
+        {
+            *restartRequired = true;
+        }
+
         m_cfg->Set("locale_name", langData->GetValue());
     }
 

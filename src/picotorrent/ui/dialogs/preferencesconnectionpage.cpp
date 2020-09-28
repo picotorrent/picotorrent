@@ -154,7 +154,7 @@ PreferencesConnectionPage::~PreferencesConnectionPage()
 {
 }
 
-void PreferencesConnectionPage::Save()
+void PreferencesConnectionPage::Save(bool* restartRequired)
 {
     for (int removed : m_removedListenInterfaces)
     {
@@ -174,6 +174,11 @@ void PreferencesConnectionPage::Save()
     m_cfg->Set("libtorrent.require_incoming_encryption", m_incomingEncryption->GetValue());
     m_cfg->Set("libtorrent.require_outgoing_encryption", m_outgoingEncryption->GetValue());
 
+    if (m_enablePex->GetValue() != m_cfg->Get<bool>("libtorrent.enable_pex"))
+    {
+        *restartRequired = true;
+    }
+
     m_cfg->Set("libtorrent.enable_dht", m_enableDht->GetValue());
     m_cfg->Set("libtorrent.enable_lsd", m_enableLsd->GetValue());
     m_cfg->Set("libtorrent.enable_pex", m_enablePex->GetValue());
@@ -181,88 +186,5 @@ void PreferencesConnectionPage::Save()
 
 bool PreferencesConnectionPage::IsValid()
 {
-    if (m_enablePex->GetValue() != m_cfg->Get<bool>("libtorrent.enable_pex").value())
-    {
-        wxMessageBox(
-            i18n("changing_pex_settings_requires_restart"),
-            i18n("restart_required"),
-            wxOK | wxCENTRE,
-            m_parent);
-    }
-
     return true;
-}
-
-void PreferencesConnectionPage::SetupNetworkAdapters()
-{
-    /*// Add the <any> adapter
-    auto any = new NetworkAdapter();
-    any->description = "<any>";
-    any->ipv4 = "0.0.0.0";
-    any->ipv6 = "::";
-
-    m_listenInterfaces->Insert(
-        any->description,
-        m_listenInterfaces->GetCount(),
-        new ClientData<NetworkAdapter*>(any));
-
-    ULONG bufferSize = 15000;
-    IP_ADAPTER_ADDRESSES* pAddresses = new IP_ADAPTER_ADDRESSES[bufferSize];
-
-    ULONG ret = GetAdaptersAddresses(
-        AF_UNSPEC,
-        GAA_FLAG_INCLUDE_PREFIX,
-        NULL,
-        pAddresses,
-        &bufferSize);
-
-    if (ret == ERROR_SUCCESS)
-    {
-        for (PIP_ADAPTER_ADDRESSES pCurrAddresses = pAddresses; pCurrAddresses != nullptr; pCurrAddresses = pCurrAddresses->Next)
-
-            if (pCurrAddresses->IfType != IF_TYPE_SOFTWARE_LOOPBACK)
-            {
-                IP_ADAPTER_UNICAST_ADDRESS* pu = pCurrAddresses->FirstUnicastAddress;
-
-                auto adapter = new NetworkAdapter();
-
-                while (pu)
-                {
-                    switch (pu->Address.lpSockaddr->sa_family)
-                    {
-                    case AF_INET:
-                    {
-                        char buf[INET_ADDRSTRLEN] = {};
-                        sockaddr_in* si = reinterpret_cast<sockaddr_in*>(pu->Address.lpSockaddr);
-                        inet_ntop(AF_INET, &(si->sin_addr), buf, sizeof(buf));
-                        adapter->ipv4 = buf;
-                        break;
-                    }
-                    case AF_INET6:
-                    {
-                        char buf[INET6_ADDRSTRLEN] = {};
-                        sockaddr_in6* si = reinterpret_cast<sockaddr_in6*>(pu->Address.lpSockaddr);
-                        inet_ntop(AF_INET6, &(si->sin6_addr), buf, sizeof(buf));
-                        adapter->ipv6 = buf;
-                        break;
-                    }
-                    }
-
-                    pu = pu->Next;
-                }
-
-                std::stringstream adapterDescription;
-                adapterDescription << Utils::toStdString(pCurrAddresses->FriendlyName).c_str();
-                adapterDescription << " (" << adapter->ipv4.c_str() << ")";
-
-                adapter->description = adapterDescription.str();
-
-                m_listenInterfaces->Insert(
-                    adapter->description,
-                    m_listenInterfaces->GetCount(),
-                    new ClientData<NetworkAdapter*>(adapter));
-            }
-    }
-
-    delete[] pAddresses;*/
 }

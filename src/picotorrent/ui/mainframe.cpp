@@ -674,6 +674,20 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
     
     if (dlg.ShowModal() == wxID_OK)
     {
+        if (dlg.WantsRestart())
+        {
+            TCHAR path[MAX_PATH];
+            GetModuleFileName(NULL, path, ARRAYSIZE(path));
+
+            std::wstringstream proc;
+            proc << path << L" --wait-for-pid=" << std::to_wstring(GetCurrentProcessId());
+
+            wxExecute(proc.str(), wxEXEC_ASYNC);
+            Close(true);
+
+            return;
+        }
+
         // Reload settings
         m_session->ReloadSettings();
 

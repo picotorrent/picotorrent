@@ -24,7 +24,7 @@ namespace Dialogs
         virtual ~PreferencesGeneralPage();
 
         bool IsValid();
-        void Save();
+        void Save(bool* restartRequired);
 
     private:
         std::shared_ptr<Core::Configuration> m_cfg;

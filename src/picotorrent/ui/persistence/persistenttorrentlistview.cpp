@@ -131,7 +131,10 @@ void PersistentTorrentListView::Save() const
     json models;
     json widths;
 
-    for (uint32_t i = 0; i < m_tlv->GetColumnCount(); i++)
+    // subtract one from the column count since we have a fake column
+    // at the very end
+
+    for (uint32_t i = 0; i < m_tlv->GetColumnCount() - 1; i++)
     {
         auto col = m_tlv->GetColumnAt(i);
 

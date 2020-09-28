@@ -87,10 +87,17 @@ namespace BitTorrent
         void RemoveTorrent(TorrentHandle* handle, libtorrent::remove_flags_t flags = {});
 
     private:
+        enum
+        {
+            ptID_TIMER_SESSION = 1000,
+            ptID_TIMER_RESUME_DATA
+        };
+
         bool IsSearching(libtorrent::info_hash_t hash);
         bool IsSearching(libtorrent::info_hash_t hash, libtorrent::info_hash_t& result);
         void LoadTorrents();
         void OnAlert();
+        void OnSaveResumeDataTimer(wxTimerEvent&);
         void PauseAfterRecheck(TorrentHandle*);
         void RemoveMetadataHandle(libtorrent::info_hash_t hash);
         void SaveState();
@@ -100,6 +107,7 @@ namespace BitTorrent
 
         wxEvtHandler* m_parent;
         wxTimer* m_timer;
+        wxTimer* m_resumeDataTimer;
         
         std::unique_ptr<libtorrent::session> m_session;
         std::shared_ptr<Core::Database> m_db;
