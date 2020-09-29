@@ -8,6 +8,7 @@
 #include <memory>
 #include <memory>
 
+class wxColourPickerCtrl;
 class wxDirPickerCtrl;
 class wxListView;
 
@@ -38,8 +39,8 @@ namespace Dialogs
 
         wxListView* m_labelsList;
         wxTextCtrl* m_name;
-        wxTextCtrl* m_color;
         wxCheckBox* m_colorEnabled;
+        wxColourPickerCtrl* m_colorPicker;
         wxDirPickerCtrl* m_savePath;
         wxCheckBox* m_savePathEnabled;
         wxTextCtrl* m_applyFilter;

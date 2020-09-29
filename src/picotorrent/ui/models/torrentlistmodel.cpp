@@ -542,7 +542,6 @@ void TorrentListModel::UpdateLabels(std::map<int, std::tuple<std::string, std::s
             wxDCBrushChanger dcbc(dc, m_labelsColors.at(id));
             dc.SelectObject(bmp);
             dc.Clear();
-            // dc.DrawRectangle(wxRect(bmp.GetSize()));
         }
 
         wxIcon ic;

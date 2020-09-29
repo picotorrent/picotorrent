@@ -1,5 +1,6 @@
 #include "preferenceslabelspage.hpp"
 
+#include <wx/clrpicker.h>
 #include <wx/filepicker.h>
 #include <wx/listctrl.h>
 
@@ -31,8 +32,8 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
     auto labelDetailsSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("label_details"));
 
     m_name = new wxTextCtrl(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
-    m_color = new wxTextCtrl(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
     m_colorEnabled = new wxCheckBox(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
+    m_colorPicker = new wxColourPickerCtrl(labelDetailsSizer->GetStaticBox(), wxID_ANY, *wxBLACK);
     m_savePath = new wxDirPickerCtrl(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL);
     m_savePathEnabled = new wxCheckBox(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
     m_applyFilter = new wxTextCtrl(labelDetailsSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
@@ -46,7 +47,7 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
     labelDetailsGrid->Add(new wxStaticText(labelDetailsSizer->GetStaticBox(), wxID_ANY, i18n("color")), 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(3));
     auto colorSizer = new wxBoxSizer(wxHORIZONTAL);
     colorSizer->Add(m_colorEnabled, 0, wxALIGN_CENTER_VERTICAL);
-    colorSizer->Add(m_color, 1, wxEXPAND);
+    colorSizer->Add(m_colorPicker);
     labelDetailsGrid->Add(colorSizer, 1, wxALL, FromDIP(3));
 
     labelDetailsGrid->Add(new wxStaticText(labelDetailsSizer->GetStaticBox(), wxID_ANY, i18n("save_path")), 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(3));
@@ -124,9 +125,12 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
 
             m_name->SetValue(label->name);
 
-            m_color->Enable(label->colorEnabled);
-            m_color->SetValue(label->color);
             m_colorEnabled->SetValue(label->colorEnabled);
+
+            if (!label->color.empty())
+            {
+                m_colorPicker->SetColour(wxColor(label->color));
+            }
 
             m_savePath->Enable(label->savePathEnabled);
             m_savePath->SetPath(label->savePath);
@@ -156,16 +160,6 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
             m_labelsList->SetItemText(sel, label->name);
         });
 
-    m_color->Bind(
-        wxEVT_TEXT,
-        [this](wxCommandEvent&)
-        {
-            long sel = m_labelsList->GetFirstSelected();
-            if (sel < 0) { return; }
-            auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
-            label->color = m_color->GetValue();
-        });
-
     m_colorEnabled->Bind(
         wxEVT_CHECKBOX,
         [this](wxCommandEvent&)
@@ -174,7 +168,17 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
             if (sel < 0) { return; }
             auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
             label->colorEnabled = m_colorEnabled->GetValue();
-            m_color->Enable(m_colorEnabled->GetValue());
+            m_colorPicker->Enable(m_colorEnabled->GetValue());
+        });
+
+    m_colorPicker->Bind(
+        wxEVT_COLOURPICKER_CHANGED,
+        [this](wxColourPickerEvent&)
+        {
+            long sel = m_labelsList->GetFirstSelected();
+            if (sel < 0) { return; }
+            auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
+            label->color = m_colorPicker->GetColour().GetAsString(wxC2S_HTML_SYNTAX);
         });
 
     m_savePathEnabled->Bind(
@@ -250,8 +254,8 @@ bool PreferencesLabelsPage::IsValid()
 void PreferencesLabelsPage::EnableDisableAll(bool enabled)
 {
     m_name->Enable(enabled);
-    m_color->Enable(enabled);
     m_colorEnabled->Enable(enabled);
+    m_colorPicker->Enable(enabled);
     m_savePath->Enable(enabled);
     m_savePathEnabled->Enable(enabled);
     m_applyFilter->Enable(enabled);
@@ -260,8 +264,8 @@ void PreferencesLabelsPage::EnableDisableAll(bool enabled)
     if (!enabled)
     {
         m_name->SetValue("");
-        m_color->SetValue("");
         m_colorEnabled->SetValue(false);
+        m_colorPicker->SetColour(*wxBLACK);
         m_savePath->SetPath("");
         m_savePathEnabled->SetValue(false);
         m_applyFilter->SetValue("");
