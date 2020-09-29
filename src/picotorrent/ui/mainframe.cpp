@@ -1,6 +1,7 @@
 #include "mainframe.hpp"
 
 #include <filesystem>
+#include <regex>
 
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/magnet_uri.hpp>
@@ -12,6 +13,7 @@
 #include <wx/splitter.h>
 #include <wx/taskbarbutton.h>
 
+#include "../bittorrent/addparams.hpp"
 #include "../bittorrent/session.hpp"
 #include "../bittorrent/sessionstatistics.hpp"
 #include "../bittorrent/torrenthandle.hpp"
@@ -386,11 +388,17 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
     std::vector<lt::info_hash_t> hashes;
 
     // Set up default values for all params
+    // Also match labels
+
+    auto labels = m_cfg->GetLabels();
 
     for (lt::add_torrent_params& p : params)
     {
+        auto our = new BitTorrent::AddParams();
+
         p.flags |= lt::torrent_flags::duplicate_is_error;
         p.save_path = m_cfg->Get<std::string>("default_save_path").value();
+        p.userdata = lt::client_data_t(our);
 
         // If we have a param with an info hash and no torrent info,
         // let the session find metadata for us
@@ -401,6 +409,41 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
             && !p.ti)
         {
             hashes.push_back(p.info_hashes);
+        }
+
+        // match any label that has an apply filter
+        for (auto const& label : labels)
+        {
+            if (!label.applyFilterEnabled
+                || label.applyFilter.empty())
+            {
+                continue;
+            }
+
+            std::string name;
+            if (auto ti = p.ti) { name = ti->name(); }
+            if (p.name.size() > 0) { name = p.name; }
+
+            if (name.empty())
+            {
+                continue;
+            }
+
+            std::regex re(label.applyFilter, std::regex_constants::ECMAScript | std::regex_constants::icase);
+            
+            if (std::regex_search(name, re))
+            {
+                // we have a match
+                our->labelId = label.id;
+
+                if (label.savePath.size() > 0
+                    && label.savePathEnabled)
+                {
+                    p.save_path = label.savePath;
+                }
+
+                break;
+            }
         }
     }
 
@@ -414,7 +457,7 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         return;
     }
 
-    Dialogs::AddTorrentDialog dlg(this, wxID_ANY, params, m_db);
+    Dialogs::AddTorrentDialog dlg(this, wxID_ANY, params, m_db, m_cfg);
 
     this->Bind(
         ptEVT_TORRENT_METADATA_FOUND,

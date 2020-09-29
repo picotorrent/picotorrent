@@ -240,13 +240,20 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<Core::C
         wxEVT_MENU,
         [&](wxCommandEvent& evt)
         {
+            if (evt.GetId() != ptID_LABELS_NONE
+                && evt.GetId() < ptID_LABELS_USER)
+            {
+                evt.Skip();
+                return;
+            }
+
             // handle others - i.e labels
             switch (evt.GetId())
             {
             case ptID_LABELS_NONE:
             {
                 for (auto torrent : selectedTorrents) { torrent->ClearLabel(); }
-                return;
+                break;
             }
             }
 

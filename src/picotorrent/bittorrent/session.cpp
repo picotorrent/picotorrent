@@ -24,6 +24,7 @@
 #include "../core/environment.hpp"
 #include "../core/utils.hpp"
 #include "../buildinfo.hpp"
+#include "addparams.hpp"
 #include "semver.hpp"
 #include "sessionstatistics.hpp"
 #include "torrenthandle.hpp"
@@ -381,29 +382,24 @@ void Session::OnAlert()
             std::string infoHash = str(ata->handle.info_hashes());
 
             TorrentHandle* handle = new TorrentHandle(this, ata->handle);
+
+            AddParams* add = ata->params.userdata.get<AddParams>();
+            if (add && add->labelId > 0) { handle->SetLabelMuted(add->labelId); }
+
             m_torrents.insert({ ata->handle.info_hashes(), handle });
 
-            auto stmt = m_db->CreateStatement("SELECT label_id FROM torrent WHERE info_hash = $1");
+            auto stmt = m_db->CreateStatement("SELECT COUNT(*) FROM torrent WHERE info_hash = $1");
             stmt->Bind(1, infoHash);
 
-            if (stmt->Read())
-            {
-                // Apply properties that we couldn't set when we added the torrent - mostly our own stuff
-                int labelId = stmt->GetInt(0);
-
-                if (labelId > 0)
-                {
-                    handle->SetLabelMuted(labelId);
-                }
-            }
-            else
+            if (stmt->Read() && stmt->GetInt(0) == 0)
             {
                 // torrent was not in session before, so insert it
                 lt::torrent_status ts = ata->handle.status();
 
-                stmt = m_db->CreateStatement("INSERT INTO torrent (info_hash, queue_position) VALUES ($1, $2)");
+                stmt = m_db->CreateStatement("INSERT INTO torrent (info_hash, queue_position, label_id) VALUES ($1, $2, $3)");
                 stmt->Bind(1, infoHash);
                 stmt->Bind(2, static_cast<int>(ts.queue_position));
+                stmt->Bind(3, (add && add->labelId > 0) ? std::optional(add->labelId) : std::nullopt);
                 stmt->Execute();
 
                 // at this point, trigger a save_resume_data for it
@@ -731,7 +727,7 @@ bool Session::IsSearching(lt::info_hash_t hash, lt::info_hash_t& result)
 
 void Session::LoadTorrents()
 {
-    auto stmt = m_db->CreateStatement("SELECT t.info_hash, tmu.magnet_uri, trd.resume_data, tmu.save_path, t.label_id FROM torrent t\n"
+    auto stmt = m_db->CreateStatement("SELECT t.info_hash, tmu.magnet_uri, trd.resume_data, tmu.save_path, IFNULL(t.label_id, -1) FROM torrent t\n"
         "LEFT JOIN torrent_magnet_uri  tmu ON t.info_hash = tmu.info_hash\n"
         "LEFT JOIN torrent_resume_data trd ON t.info_hash = trd.info_hash\n"
         "ORDER BY t.queue_position ASC");
@@ -748,14 +744,10 @@ void Session::LoadTorrents()
 
         lt::add_torrent_params params;
 
-        // Always parse magnet uri if it is empty
-        if (!magnet_uri.empty())
+        // Always parse magnet uri if it is not empty
+        if (!magnet_uri.empty() && !save_path.empty())
         {
             params = lt::parse_magnet_uri(magnet_uri);
-        }
-
-        if (!save_path.empty())
-        {
             params.save_path = save_path;
         }
 
@@ -777,6 +769,13 @@ void Session::LoadTorrents()
                 LOG_F(WARNING, "Failed to read resume data: %s", ec.message().data());
                 continue;
             }
+        }
+
+        params.userdata = lt::client_data_t(new AddParams());
+
+        if (label_id > 0)
+        {
+            params.userdata.get<AddParams>()->labelId = label_id;
         }
 
         m_session->async_add_torrent(params);

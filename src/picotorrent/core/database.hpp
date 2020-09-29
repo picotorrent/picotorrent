@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -24,6 +25,7 @@ namespace Core
 
             ~Statement();
             void Bind(int idx, int value);
+            void Bind(int idx, std::optional<int> value);
             void Bind(int idx, std::string const& value);
             void Bind(int idx, std::vector<char> const& value);
             bool Execute();
