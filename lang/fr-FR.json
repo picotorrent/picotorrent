@@ -129,7 +129,7 @@
     "general": "Général",
     "user_interface": "Interface utilisateur",
     "language": "Langue",
-    "prompt_restart": "PicoTorrent doit redémarrer pour que les changements prennent effet.",
+    "prompt_restart": "PicoTorrent doit redémarrer pour que certains changements prennent effet.",
     "prompt_restart_title": "Redémarrage requis",
     "add_torrent": "Ajouter torrent",
     "exit": "Quitter",
@@ -279,5 +279,11 @@
     "cancel": "Annuler",
     "restore_defaults": "Rétablir les paramètres par défaut",
     "documentation": "Documentation",
-    "restore_defaults_description": "Cela restaurera la plupart des paramètres à leur valeur par défaut. Êtes-vous sûr(e) ?"
+    "restore_defaults_description": "Cela restaurera la plupart des paramètres à leur valeur par défaut. Êtes-vous sûr(e) ?",
+    "restart_picotorrent": "Redémarrer PicoTorrent",
+    "use_label_color_as_background_in_torrent_list": "Utiliser la couleur de l'étiquette comme fond dans la liste des torrents",
+    "labels": "Étiquettes",
+    "label_details": "Détails de l'étiquette",
+    "color": "Couleur",
+    "apply_filter": "Appliquer le filtre"
 }
