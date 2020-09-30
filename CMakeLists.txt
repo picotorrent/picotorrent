@@ -177,6 +177,7 @@ add_executable(
     src/picotorrent/ui/dialogs/preferencesdialog
     src/picotorrent/ui/dialogs/preferencesdownloadspage
     src/picotorrent/ui/dialogs/preferencesgeneralpage
+    src/picotorrent/ui/dialogs/preferenceslabelspage
     src/picotorrent/ui/dialogs/preferencesproxypage
 
     # Models

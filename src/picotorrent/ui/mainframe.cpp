@@ -1,6 +1,7 @@
 #include "mainframe.hpp"
 
 #include <filesystem>
+#include <regex>
 
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/magnet_uri.hpp>
@@ -12,6 +13,7 @@
 #include <wx/splitter.h>
 #include <wx/taskbarbutton.h>
 
+#include "../bittorrent/addparams.hpp"
 #include "../bittorrent/session.hpp"
 #include "../bittorrent/sessionstatistics.hpp"
 #include "../bittorrent/torrenthandle.hpp"
@@ -63,6 +65,9 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         m_torrentList,
         m_torrentDetails);
 
+    m_torrentListModel->SetBackgroundColorEnabled(
+        m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
+
     auto sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(m_splitter, 1, wxEXPAND, 0);
     sizer->SetSizeHints(this);
@@ -82,6 +87,9 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     this->SetMenuBar(this->CreateMainMenu());
     this->SetSizerAndFit(sizer);
     this->SetStatusBar(m_statusBar);
+
+    this->CreateLabelMenuItems();
+    this->UpdateLabels();
 
     // Set checked on menu items
     m_menuItemDetailsPanel->SetCheckable(true);
@@ -380,11 +388,17 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
     std::vector<lt::info_hash_t> hashes;
 
     // Set up default values for all params
+    // Also match labels
+
+    auto labels = m_cfg->GetLabels();
 
     for (lt::add_torrent_params& p : params)
     {
+        auto our = new BitTorrent::AddParams();
+
         p.flags |= lt::torrent_flags::duplicate_is_error;
         p.save_path = m_cfg->Get<std::string>("default_save_path").value();
+        p.userdata = lt::client_data_t(our);
 
         // If we have a param with an info hash and no torrent info,
         // let the session find metadata for us
@@ -395,6 +409,41 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
             && !p.ti)
         {
             hashes.push_back(p.info_hashes);
+        }
+
+        // match any label that has an apply filter
+        for (auto const& label : labels)
+        {
+            if (!label.applyFilterEnabled
+                || label.applyFilter.empty())
+            {
+                continue;
+            }
+
+            std::string name;
+            if (auto ti = p.ti) { name = ti->name(); }
+            if (p.name.size() > 0) { name = p.name; }
+
+            if (name.empty())
+            {
+                continue;
+            }
+
+            std::regex re(label.applyFilter, std::regex_constants::ECMAScript | std::regex_constants::icase);
+            
+            if (std::regex_search(name, re))
+            {
+                // we have a match
+                our->labelId = label.id;
+
+                if (label.savePath.size() > 0
+                    && label.savePathEnabled)
+                {
+                    p.save_path = label.savePath;
+                }
+
+                break;
+            }
         }
     }
 
@@ -408,7 +457,7 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         return;
     }
 
-    Dialogs::AddTorrentDialog dlg(this, wxID_ANY, params, m_db);
+    Dialogs::AddTorrentDialog dlg(this, wxID_ANY, params, m_db, m_cfg);
 
     this->Bind(
         ptEVT_TORRENT_METADATA_FOUND,
@@ -504,6 +553,21 @@ void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const
     }
 }
 
+void MainFrame::CreateLabelMenuItems()
+{
+    for (int i = static_cast<int>(m_labelsMenu->GetMenuItemCount()) - 1; i >= 0; i--)
+    {
+        wxMenuItem* item = m_labelsMenu->FindItemByPosition(i);
+        if (item->GetId() <= ptID_EVT_LABELS_USER) { continue; }
+        m_labelsMenu->Delete(item);
+    }
+
+    for (auto const& label : m_cfg->GetLabels())
+    {
+        m_labelsMenu->AppendRadioItem(ptID_EVT_LABELS_USER + label.id, label.name);
+    }
+}
+
 wxMenuBar* MainFrame::CreateMainMenu()
 {
     auto fileMenu = new wxMenu();
@@ -515,6 +579,26 @@ wxMenuBar* MainFrame::CreateMainMenu()
     fileMenu->Append(ptID_EVT_EXIT, i18n("amp_exit"));
 
     m_viewMenu = new wxMenu();
+    m_labelsMenu = new wxMenu();
+    m_labelsMenu->AppendRadioItem(ptID_EVT_LABELS_NONE, i18n("none"));
+    m_labelsMenu->Bind(
+        wxEVT_MENU,
+        [this](wxCommandEvent& evt)
+        {
+            if (evt.GetId() > ptID_EVT_LABELS_USER)
+            {
+                int labelId = evt.GetId() - ptID_EVT_LABELS_USER;
+                m_torrentListModel->SetLabelFilter(labelId);
+            }
+            else if (evt.GetId() == ptID_EVT_LABELS_NONE)
+            {
+                m_torrentListModel->ClearLabelFilter();
+            }
+        });
+
+    m_menuItemLabels = m_viewMenu->AppendSubMenu(m_labelsMenu, i18n("labels"));
+    m_viewMenu->AppendSeparator();
+
     m_menuItemDetailsPanel = m_viewMenu->Append(ptID_EVT_SHOW_DETAILS, i18n("amp_details_panel"));
     m_menuItemStatusBar = m_viewMenu->Append(ptID_EVT_SHOW_STATUS_BAR, i18n("amp_status_bar"));
     m_viewMenu->AppendSeparator();
@@ -661,6 +745,12 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
         {
             m_taskBarIcon->Hide();
         }
+
+        m_torrentListModel->SetBackgroundColorEnabled(
+            m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
+
+        this->CreateLabelMenuItems();
+        this->UpdateLabels();
     }
 }
 
@@ -701,6 +791,16 @@ void MainFrame::ShowTorrentContextMenu(wxCommandEvent&)
             m_torrentListModel->GetTorrentFromItem(item));
     }
 
-    TorrentContextMenu menu(this, selectedTorrents);
+    TorrentContextMenu menu(this, m_cfg, selectedTorrents);
     PopupMenu(&menu);
+}
+
+void MainFrame::UpdateLabels()
+{
+    std::map<int, std::tuple<std::string, std::string>> labels;
+    for (auto const& label : m_cfg->GetLabels())
+    {
+        labels.insert({ label.id, { label.name, label.color } });
+    }
+    m_torrentListModel->UpdateLabels(labels);
 }

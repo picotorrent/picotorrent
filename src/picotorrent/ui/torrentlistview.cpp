@@ -170,6 +170,17 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, Models::Torren
                 wxALIGN_RIGHT,
                 defaultFlags)));
 
+    m_columns.push_back(
+        ColumnMetadata(
+            new wxDataViewColumn(
+                i18n("label"),
+                new wxDataViewIconTextRenderer(),
+                TorrentListModel::Columns::Label,
+                FromDIP(80),
+                wxALIGN_LEFT,
+                defaultFlags),
+            true));
+
     /*
     nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
     statusCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);*/

@@ -61,6 +61,7 @@ namespace Models
 
         void AddTorrents(std::vector<libtorrent::add_torrent_params>& params);
         void CheckDiskSpace(std::vector<BitTorrent::TorrentHandle*> const& updatedTorrents);
+        void CreateLabelMenuItems();
         void OnClose(wxCloseEvent&);
         void OnFileAddMagnetLink(wxCommandEvent&);
         void OnFileAddTorrent(wxCommandEvent&);
@@ -71,6 +72,7 @@ namespace Models
         void OnViewPreferences(wxCommandEvent&);
         void ParseTorrentFiles(std::vector<libtorrent::add_torrent_params>& params, std::vector<std::string> const& paths);
         void ShowTorrentContextMenu(wxCommandEvent&);
+        void UpdateLabels();
 
         wxSplitterWindow* m_splitter;
 
@@ -87,6 +89,8 @@ namespace Models
 
         wxMenu* m_viewMenu;
         wxMenu* m_filtersMenu;
+        wxMenu* m_labelsMenu;
+        wxMenuItem* m_menuItemLabels;
         wxMenuItem* m_menuItemFilters;
         wxMenuItem* m_menuItemDetailsPanel;
         wxMenuItem* m_menuItemStatusBar;
