@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <thread>
 
 #include <libtorrent/fwd.hpp>
 #include <libtorrent/info_hash.hpp>
@@ -95,6 +96,7 @@ namespace BitTorrent
 
         bool IsSearching(libtorrent::info_hash_t hash);
         bool IsSearching(libtorrent::info_hash_t hash, libtorrent::info_hash_t& result);
+        void LoadIPFilter(std::string const& filePath);
         void LoadTorrents();
         void OnAlert();
         void OnSaveResumeDataTimer(wxTimerEvent&);
@@ -112,6 +114,7 @@ namespace BitTorrent
         std::shared_ptr<Core::Database> m_db;
         std::shared_ptr<Core::Configuration> m_cfg;
         std::shared_ptr<Core::Environment> m_env;
+        std::thread m_filterLoader;
 
         std::map<libtorrent::info_hash_t, TorrentHandle*> m_pauseAfterRecheck;
         std::map<libtorrent::info_hash_t, TorrentHandle*> m_torrents;
