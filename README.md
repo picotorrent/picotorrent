@@ -50,6 +50,11 @@ Build your desired configuration and architecture.
 ```
 
 
+## Translations
+
+PicoTorrent uses [Weblate](https://translate.picotorrent.org/) to handle the translation process. If you want to help, feel free to signup and give your contribution.
+
+
 ## License
 
 Copyright (c) Viktor Elofsson and contributors. PicoTorrent is provided
