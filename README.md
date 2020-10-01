@@ -1,7 +1,7 @@
 # PicoTorrent
 
-[![AppVeyor](https://ci.appveyor.com/api/projects/status/github/picotorrent/picotorrent?svg=true)](https://ci.appveyor.com/project/picotorrent/picotorrent)
-[![Join the chat at https://gitter.im/picotorrent/picotorrent](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/picotorrent/picotorrent?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+![CI](https://github.com/picotorrent/picotorrent/workflows/CI/badge.svg)
+[![Discord](https://img.shields.io/discord/759537913205227580)](https://discord.gg/tV3dFrv)
 
 A tiny, hackable BitTorrent client written in modern C++. Based on
 Rasterbar-libtorrent to provide high performance and low memory usage.
