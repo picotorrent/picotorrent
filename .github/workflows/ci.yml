@@ -1,0 +1,64 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - feature/**
+      - master
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        arch: [x86, x64]
+        os: [windows-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Git
+        run: |
+          git fetch --prune --unshallow
+          git ls-tree HEAD vendor/crashpad vendor/fmt vendor/libtorrent vendor/loguru vendor/nlohmann-json vendor/wx > .vendor-status
+
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            build-${{ matrix.arch }}/vendor
+          key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('.vendor-status') }}
+
+      - name: Prepare
+        run: |
+          git submodule update --init --recursive
+  
+      - name: Install OpenSSL
+        run: |
+          if ('${{ matrix.arch }}' -eq 'x64') {
+            choco install openssl --no-progress
+          } elseif ('${{ matrix.arch }}' -eq 'x86') {
+            choco install openssl --no-progress --x86
+          }
+
+      - name: Set environment variables
+        run: |
+          echo "::set-env name=BOOST_ROOT::$env:BOOST_ROOT_1_72_0"
+          if ('${{ matrix.arch }}' -eq 'x64') {
+            echo "::set-env name=OPENSSL_ROOT_DIR::$env:ProgramFiles\OpenSSL-Win64"
+          } elseif ('${{ matrix.arch }}' -eq 'x86') {
+            echo "::set-env name=OPENSSL_ROOT_DIR::${env:ProgramFiles(x86)}\OpenSSL-Win32"
+          }
+
+      - name: Build
+        run: .\build.ps1 -Configuration Release -Platform ${{ matrix.arch }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: PicoTorrent-${{ matrix.arch }}-CI-binaries
+          path: |
+            build-${{ matrix.arch }}/Release/packages/PicoTorrent-*-${{ matrix.arch }}.exe
+            build-${{ matrix.arch }}/Release/packages/PicoTorrent-*-${{ matrix.arch }}.zip
+            build-${{ matrix.arch }}/Release/packages/PicoTorrent-*-${{ matrix.arch }}.symbols.zip
