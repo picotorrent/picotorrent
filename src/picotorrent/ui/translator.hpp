@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <string>
@@ -18,7 +19,7 @@ namespace UI
     public:
         struct Language
         {
-            int code;
+            std::string locale;
             std::wstring name;
             std::map<std::string, std::wstring> translations;
         };
@@ -28,18 +29,19 @@ namespace UI
         Translator(Translator const&) = delete;
         void operator=(Translator const&) = delete;
 
+        std::string GetLocale();
         std::vector<Language> Languages();
-        void LoadEmbedded(HINSTANCE hInstance);
-        void SetLanguage(int languageCode);
+        void LoadDatabase(std::filesystem::path const& filePath);
+        void SetLocale(std::string const& localeName);
         std::wstring Translate(std::string const& key);
 
     private:
         Translator();
 
-        static BOOL CALLBACK EnumLanguageFiles(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam);
+        static int LoadDatabaseCallback(void* user, int count, char** data, char** columns);
 
-        int m_selectedLanguage;
-        std::map<int, Language> m_languages;
+        std::string m_selectedLocale;
+        std::map<std::string, Language> m_languages;
     };
 }
 }

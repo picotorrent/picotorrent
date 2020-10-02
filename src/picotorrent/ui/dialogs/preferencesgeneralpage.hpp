@@ -24,12 +24,13 @@ namespace Dialogs
         virtual ~PreferencesGeneralPage();
 
         bool IsValid();
-        void Save();
+        void Save(bool* restartRequired);
 
     private:
         std::shared_ptr<Core::Configuration> m_cfg;
 
         wxChoice* m_language;
+        wxCheckBox* m_labelColor;
         wxCheckBox* m_skipAddTorrentDialog;
         wxCheckBox* m_autoStart;
         wxChoice* m_startPosition;

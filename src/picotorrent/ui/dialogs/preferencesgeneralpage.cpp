@@ -96,11 +96,14 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
     wxStaticBoxSizer* miscSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("miscellaneous"));
     wxFlexGridSizer* miscGrid = new wxFlexGridSizer(2, FromDIP(10), FromDIP(10));
 
+    m_labelColor = new wxCheckBox(miscSizer->GetStaticBox(), wxID_ANY, i18n("use_label_color_as_background_in_torrent_list"));
     m_skipAddTorrentDialog = new wxCheckBox(miscSizer->GetStaticBox(), wxID_ANY, i18n("skip_add_torrent_dialog"));
     m_autoStart = new wxCheckBox(miscSizer->GetStaticBox(), wxID_ANY, i18n("start_with_windows"));
     m_startPosition = new wxChoice(miscSizer->GetStaticBox(), wxID_ANY);
 
     miscGrid->AddGrowableCol(1, 1);
+    miscGrid->Add(m_labelColor, 0, wxALIGN_CENTER_VERTICAL);
+    miscGrid->Add(0, 0);
     miscGrid->Add(m_skipAddTorrentDialog, 0, wxALIGN_CENTER_VERTICAL);
     miscGrid->Add(0, 0);
     miscGrid->Add(m_autoStart, 0, wxALIGN_CENTER_VERTICAL);
@@ -134,14 +137,15 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
 
     for (auto& lang : Translator::GetInstance().Languages())
     {
-        int pos = m_language->Append(lang.name, new ClientData<int>(lang.code));
+        int pos = m_language->Append(lang.name, new ClientData<std::string>(lang.locale));
 
-        if (lang.code == m_cfg->Get<int>("language_id").value())
+        if (lang.locale == Translator::GetInstance().GetLocale())
         {
             m_language->SetSelection(pos);
         }
     }
 
+    m_labelColor->SetValue(m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
     m_skipAddTorrentDialog->SetValue(m_cfg->Get<bool>("skip_add_torrent_dialog").value());
 
     AutoRunKey key;
@@ -180,11 +184,11 @@ bool PreferencesGeneralPage::IsValid()
     return true;
 }
 
-void PreferencesGeneralPage::Save()
+void PreferencesGeneralPage::Save(bool* restartRequired)
 {
     int langIndex = m_language->GetSelection();
-    ClientData<int>* langData = langIndex >= 0
-        ? reinterpret_cast<ClientData<int>*>(m_language->GetClientObject(langIndex))
+    ClientData<std::string>* langData = langIndex >= 0
+        ? reinterpret_cast<ClientData<std::string>*>(m_language->GetClientObject(langIndex))
         : nullptr;
 
     int startPosIndex = m_startPosition->GetSelection();
@@ -192,9 +196,12 @@ void PreferencesGeneralPage::Save()
 
     if (langData != nullptr)
     {
-        // Sometimes we see crashes where langData is null. Can't reproduce,
-        // but the simple fix is to null check.
-        m_cfg->Set("language_id", static_cast<int>(langData->GetValue()));
+        if (langData->GetValue() != m_cfg->Get<std::string>("locale_name"))
+        {
+            *restartRequired = true;
+        }
+
+        m_cfg->Set("locale_name", langData->GetValue());
     }
 
     if (startPosData != nullptr)
@@ -216,6 +223,7 @@ void PreferencesGeneralPage::Save()
         }
     }
 
+    m_cfg->Set("use_label_as_list_bgcolor", m_labelColor->GetValue());
     m_cfg->Set("skip_add_torrent_dialog", m_skipAddTorrentDialog->GetValue());
     m_cfg->Set("show_in_notification_area", m_showNotificationIcon->GetValue());
     m_cfg->Set("minimize_to_notification_area", m_minimizeNotification->GetValue());

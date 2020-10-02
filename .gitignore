@@ -22,6 +22,7 @@ tools/wxWidgets
 .vscode
 [D|d]ebug
 [R|r]elease
+.vendor-status
 
 .vs
 *.db

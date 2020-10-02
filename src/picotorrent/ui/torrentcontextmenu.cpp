@@ -6,13 +6,14 @@
 
 #include "../bittorrent/torrenthandle.hpp"
 #include "../bittorrent/torrentstatus.hpp"
+#include "../core/configuration.hpp"
 #include "../core/utils.hpp"
 #include "translator.hpp"
 
 namespace fs = std::filesystem;
 using pt::UI::TorrentContextMenu;
 
-TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::vector<BitTorrent::TorrentHandle*> const& selectedTorrents)
+TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg, std::vector<BitTorrent::TorrentHandle*> const& selectedTorrents)
     : wxMenu(),
     m_parent(parent)
 {
@@ -73,6 +74,31 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::vector<BitTorrent:
         item->Check(t->IsSequentialDownload());
     }
 
+    // Labels
+    auto labels = cfg->GetLabels();
+
+    if (labels.size() > 0)
+    {
+        AppendSeparator();
+        wxMenu* labelsMenu = new wxMenu();
+        wxMenuItem* noneItem = labelsMenu->AppendRadioItem(ptID_LABELS_NONE, i18n("none"));
+
+        if (selectedTorrents.size() == 1 && selectedTorrents.at(0)->Label() < 0)
+        {
+            noneItem->Check(true);
+        }
+
+        for (auto const& label : labels)
+        {
+            labelsMenu->AppendRadioItem(ptID_LABELS_USER + label.id, label.name)
+                ->Check(
+                    selectedTorrents.size() == 1
+                    && selectedTorrents.at(0)->Label() == label.id);
+        }
+
+        AppendSubMenu(labelsMenu, i18n("label"));
+    }
+
     AppendSeparator();
     Append(ptID_MOVE, i18n("move"));
     AppendSubMenu(removeMenu, i18n("remove"));
@@ -115,7 +141,9 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::vector<BitTorrent:
 
             for (auto torrent : selectedTorrents)
             {
-                torrent->MoveStorage(dlg.GetPath().ToStdString());
+                torrent->MoveStorage(
+                    Utils::toStdString(
+                        dlg.GetPath().ToStdWstring()));
             }
         },
         TorrentContextMenu::ptID_MOVE);
@@ -207,4 +235,32 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::vector<BitTorrent:
         wxEVT_MENU,
         [&](wxCommandEvent& evt) { for (auto torrent : selectedTorrents) { torrent->SetSequentialDownload(evt.IsChecked()); } },
         TorrentContextMenu::ptID_SEQUENTIAL_DOWNLOAD);
+
+    Bind(
+        wxEVT_MENU,
+        [&](wxCommandEvent& evt)
+        {
+            if (evt.GetId() != ptID_LABELS_NONE
+                && evt.GetId() < ptID_LABELS_USER)
+            {
+                evt.Skip();
+                return;
+            }
+
+            // handle others - i.e labels
+            switch (evt.GetId())
+            {
+            case ptID_LABELS_NONE:
+            {
+                for (auto torrent : selectedTorrents) { torrent->ClearLabel(); }
+                break;
+            }
+            }
+
+            if (evt.GetId() > ptID_LABELS_USER)
+            {
+                int id = evt.GetId() - ptID_LABELS_USER;
+                for (auto torrent : selectedTorrents) { torrent->SetLabel(id); }
+            }
+        });
 }

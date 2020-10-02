@@ -58,6 +58,26 @@ std::string Environment::GetCrashpadReportUrl()
     return "https://api.picotorrent.org/crashpad";
 }
 
+fs::path Environment::GetCoreDbFilePath()
+{
+    return GetApplicationPath() / "coredb.sqlite";
+}
+
+std::string Environment::GetCurrentLocale()
+{
+    TCHAR loc[512];
+    int res = GetUserDefaultLocaleName(loc, 512);
+
+    if (res == 0)
+    {
+        LOG_F(ERROR, "Failed to get current locale - defaulting to 'en'");
+        return "en";
+    }
+
+    return Utils::toStdString(
+        std::wstring(loc, res));
+}
+
 fs::path Environment::GetDatabaseFilePath()
 {
     return GetApplicationDataPath() / "PicoTorrent.sqlite";

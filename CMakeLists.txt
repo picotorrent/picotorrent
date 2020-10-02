@@ -99,6 +99,42 @@ target_include_directories(
 )
 
 add_executable(
+    PicoTorrent-coredb
+    src/l10n/main
+    lang/ca-ES.json
+    lang/de-DE.json
+    lang/el-GR.json
+    lang/en-US.json
+    lang/es-ES.json
+    lang/fi-FI.json
+    lang/fr-FR.json
+    lang/hu-HU.json
+    lang/hy-AM.json
+    lang/id-ID.json
+    lang/it-IT.json
+    lang/ka-GE.json
+    lang/ko-KR.json
+    lang/lt-LT.json
+    lang/lv-LV.json
+    lang/nl-NL.json
+    lang/pl-PL.json
+    lang/pt-BR.json
+    lang/ro-RO.json
+    lang/ru-RU.json
+    lang/sv-SE.json
+    lang/tr-TR.json
+    lang/uk-UA.json
+    lang/zh-CN.json
+)
+
+target_link_libraries(
+    PicoTorrent-coredb
+    PRIVATE
+    nlohmann_json::nlohmann_json
+    sqlite
+)
+
+add_executable(
     PicoTorrent
     WIN32
 
@@ -141,6 +177,7 @@ add_executable(
     src/picotorrent/ui/dialogs/preferencesdialog
     src/picotorrent/ui/dialogs/preferencesdownloadspage
     src/picotorrent/ui/dialogs/preferencesgeneralpage
+    src/picotorrent/ui/dialogs/preferenceslabelspage
     src/picotorrent/ui/dialogs/preferencesproxypage
 
     # Models
@@ -264,4 +301,10 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:crashpad_handler>
         $<TARGET_FILE_DIR:PicoTorrent>
+)
+
+# Generate coredb
+add_custom_command(
+    TARGET PicoTorrent POST_BUILD
+    COMMAND PicoTorrent-coredb "${CMAKE_SOURCE_DIR}/lang" $<TARGET_FILE_DIR:PicoTorrent>
 )

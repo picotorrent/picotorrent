@@ -55,9 +55,21 @@ void Database::Statement::Bind(int idx, int value)
     sqlite3_bind_int(m_stmt, idx, value);
 }
 
+void Database::Statement::Bind(int idx, std::optional<int> value)
+{
+    value.has_value()
+        ? sqlite3_bind_int(m_stmt, idx, value.value())
+        : sqlite3_bind_null(m_stmt, idx);
+}
+
 void Database::Statement::Bind(int idx, std::string const& value)
 {
-    sqlite3_bind_text(m_stmt, idx, value.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(
+        m_stmt,
+        idx,
+        value.c_str(),
+        value.size(),
+        SQLITE_TRANSIENT);
 }
 
 void Database::Statement::Bind(int idx, std::vector<char> const& value)
@@ -117,7 +129,9 @@ std::string Database::Statement::GetString(int idx)
         return std::string();
     }
 
-    return reinterpret_cast<const char*>(res);
+    return std::string(
+        reinterpret_cast<const char*>(res),
+        sqlite3_column_bytes(m_stmt, idx));
 }
 
 bool Database::Statement::Read()

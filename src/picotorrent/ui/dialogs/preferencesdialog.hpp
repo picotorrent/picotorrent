@@ -24,6 +24,7 @@ namespace Dialogs
     class PreferencesConnectionPage;
     class PreferencesDownloadsPage;
     class PreferencesGeneralPage;
+    class PreferencesLabelsPage;
     class PreferencesProxyPage;
 
     class PreferencesDialog : public wxDialog
@@ -31,6 +32,7 @@ namespace Dialogs
     public:
         PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg);
         virtual ~PreferencesDialog();
+        bool WantsRestart() { return m_wantsRestart; }
 
     private:
         enum
@@ -39,13 +41,17 @@ namespace Dialogs
         };
 
         void OnOk(wxCommandEvent&);
+        void ShowRestartRequiredDialog();
 
         wxListBox* m_list;
         wxBoxSizer* m_mainSizer;
         wxSimplebook* m_book;
 
+        bool m_wantsRestart;
+
         PreferencesGeneralPage* m_general;
         PreferencesDownloadsPage* m_downloads;
+        PreferencesLabelsPage* m_labels;
         PreferencesConnectionPage* m_connection;
         PreferencesProxyPage* m_proxy;
         PreferencesAdvancedPage* m_advanced;

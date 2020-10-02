@@ -22,7 +22,6 @@ var SigningPublisher   = EnvironmentVariable("PICO_SIGNING_PUBLISHER") ?? "CN=Pi
 var Version            = GitVersion();
 var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version.SemVer, platform);
 var InstallerBundle    = string.Format("PicoTorrent-{0}-{1}.exe", Version.SemVer, platform);
-var AppXPackage        = string.Format("PicoTorrent-{0}-{1}.appx", Version.SemVer, platform);
 var PortablePackage    = string.Format("PicoTorrent-{0}-{1}.zip", Version.SemVer, platform);
 var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Version.SemVer, platform);
 
@@ -96,6 +95,7 @@ Task("Setup-Publish-Directory")
     var files = new FilePath[]
     {
         MakeAbsolute(BuildDirectory + File("PicoTorrent.exe")),
+        MakeAbsolute(BuildDirectory + File("coredb.sqlite")),
         MakeAbsolute(BuildDirectory + File("crashpad_handler.exe")),
         MakeAbsolute(BuildDirectory + File("Plugin_Filters.dll")),
         MakeAbsolute(BuildDirectory + File("Plugin_Updater.dll")),
@@ -107,61 +107,6 @@ Task("Setup-Publish-Directory")
         files,            // Source
         PublishDirectory, // Target
         true);            // Preserve folder structure
-});
-
-Task("Build-AppX-Package")
-    .IsDependentOn("Build")
-    .IsDependentOn("Setup-Publish-Directory")
-    .Does(() =>
-{
-    var VCRedistPath        = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Redist\\MSVC";
-    var VCRedistVersionFile = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\Microsoft.VCRedistVersion.default.txt";
-
-    if (!System.IO.File.Exists(VCRedistVersionFile))
-    {
-        VCRedistPath        = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Redist\\MSVC";
-        VCRedistVersionFile = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\Microsoft.VCRedistVersion.default.txt";
-    }
-
-    var VCRedistVersion = System.IO.File.ReadAllText(VCRedistVersionFile).Trim();
-    var VCRedist = Directory(VCRedistPath)
-                 + Directory(VCRedistVersion)
-                 + Directory(platform)
-                 + Directory("Microsoft.VC142.CRT");
-
-    var CRTRedist = Directory("C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\10.0.18362.0\\ucrt\\DLLs")
-                  + Directory(platform);
-
-    TransformTextFile("./packaging/AppX/PicoTorrent.mapping.template", "%{", "}")
-        .WithToken("VCDir", VCRedist)
-        .WithToken("CRTDir", CRTRedist)
-        .WithToken("PublishDirectory", MakeAbsolute(PublishDirectory))
-        .WithToken("ResourceDirectory", MakeAbsolute(ResourceDirectory))
-        .WithToken("PackagingDirectory", MakeAbsolute(Directory("./packaging/AppX")))
-        .Save("./packaging/AppX/PicoTorrent.mapping");
-
-    TransformTextFile("./packaging/AppX/PicoTorrentManifest.xml.template", "%{", "}")
-        .WithToken("Platform", platform)
-        .WithToken("Publisher", SigningPublisher)
-        .WithToken("Version", Version.MajorMinorPatch + ".0")
-        .Save("./packaging/AppX/PicoTorrentManifest.xml");
-
-    var argsBuilder = new ProcessArgumentBuilder();
-
-    argsBuilder.Append("pack");
-    argsBuilder.Append("/f {0}", MakeAbsolute(File("./packaging/AppX/PicoTorrent.mapping")));
-    argsBuilder.Append("/p {0}", MakeAbsolute(PackagesDirectory + File(AppXPackage)));
-
-    var makeAppXTool = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.18362.0\\x86\\makeappx.exe";
-    int exitCode = StartProcess(makeAppXTool, new ProcessSettings
-    {
-        Arguments = argsBuilder
-    });
-
-    if(exitCode != 0)
-    {
-        throw new CakeException("makeappx.exe exited with error: " + exitCode);
-    }
 });
 
 Task("Build-Installer")
@@ -331,7 +276,6 @@ Task("Default")
     .IsDependentOn("Build")
     .IsDependentOn("Build-Installer")
     .IsDependentOn("Build-Installer-Bundle")
-    .IsDependentOn("Build-AppX-Package")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
     .IsDependentOn("Build-Symbols-Package")
@@ -344,7 +288,6 @@ Task("Publish")
     .IsDependentOn("Build-Installer-Bundle")
     .IsDependentOn("Sign-Installer")
     .IsDependentOn("Sign-Installer-Bundle")
-    .IsDependentOn("Build-AppX-Package")
     .IsDependentOn("Build-Chocolatey-Package")
     .IsDependentOn("Build-Portable-Package")
     .IsDependentOn("Build-Symbols-Package");

@@ -22,7 +22,9 @@
 #include "../core/configuration.hpp"
 #include "../core/database.hpp"
 #include "../core/environment.hpp"
+#include "../core/utils.hpp"
 #include "../buildinfo.hpp"
+#include "addparams.hpp"
 #include "semver.hpp"
 #include "sessionstatistics.hpp"
 #include "torrenthandle.hpp"
@@ -54,6 +56,22 @@ struct SessionLoadItem
     std::string magnet_save_path;
     std::string magnet_url;
 };
+
+static std::string str(lt::info_hash_t ih)
+{
+    std::stringstream ss;
+
+    if (ih.has_v2())
+    {
+        ss << ih.v2;
+    }
+    else
+    {
+        ss << ih.v1;
+    }
+
+    return ss.str();
+}
 
 static lt::session_params getSessionParams(std::shared_ptr<pt::Core::Database> db)
 {
@@ -99,12 +117,17 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
     for (auto const& li : cfg->GetListenInterfaces())
     {
         ifaces << "," << li.address << ":" << li.port;
+        if (li.address == "0.0.0.0" || li.address == "[::]") continue;
         outfaces << "," << li.address;
     }
 
     settings.set_str(lt::settings_pack::dht_bootstrap_nodes, dhtNodes.str().substr(1));
     settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
-    settings.set_str(lt::settings_pack::outgoing_interfaces, outfaces.str().substr(1));
+
+    if (outfaces.str().size() > 0)
+    {
+        settings.set_str(lt::settings_pack::outgoing_interfaces, outfaces.str().substr(1));
+    }
 
     // Features
     settings.set_bool(lt::settings_pack::enable_dht, cfg->Get<bool>("libtorrent.enable_dht").value());
@@ -181,7 +204,8 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
 
 Session::Session(wxEvtHandler* parent, std::shared_ptr<pt::Core::Database> db, std::shared_ptr<pt::Core::Configuration> cfg, std::shared_ptr<pt::Core::Environment> env)
     : m_parent(parent),
-    m_timer(new wxTimer(this)),
+    m_timer(new wxTimer(this, ptID_TIMER_SESSION)),
+    m_resumeDataTimer(new wxTimer(this, ptID_TIMER_RESUME_DATA)),
     m_cfg(cfg),
     m_db(db),
     m_env(env)
@@ -208,18 +232,29 @@ Session::Session(wxEvtHandler* parent, std::shared_ptr<pt::Core::Database> db, s
 
     m_timer->Start(1000, wxTIMER_CONTINUOUS);
 
-    this->Bind(wxEVT_TIMER, [this](wxTimerEvent&)
+    if (auto saveInterval = m_cfg->Get<int>("save_resume_data_interval"))
+    {
+        m_resumeDataTimer->Start(
+            saveInterval.value_or(300) * 1000);
+    }
+
+    this->Bind(wxEVT_TIMER,
+        [this](wxTimerEvent&)
         {
             m_session->post_dht_stats();
             m_session->post_session_stats();
             m_session->post_torrent_updates();
-        });
+        },
+        ptID_TIMER_SESSION);
+
+    this->Bind(wxEVT_TIMER, &Session::OnSaveResumeDataTimer, this, ptID_TIMER_RESUME_DATA);
 }
 
 Session::~Session()
 {
     m_session->set_alert_notify([] {});
     m_timer->Stop();
+    m_resumeDataTimer->Stop();
 
     this->SaveState();
     this->SaveTorrents();
@@ -258,18 +293,12 @@ void Session::AddTorrent(lt::add_torrent_params const& params)
     // If we are searching for metadata for this torrent, stop
     // that search and add this one instead.
 
-    if (m_metadataSearches.find(params.info_hashes) != m_metadataSearches.end())
+    lt::info_hash_t res;
+    if (IsSearching(params.info_hashes, res))
     {
-        lt::torrent_handle& hndl = m_metadataSearches.at(params.info_hashes);
-
-        // By default, an invalid torrent handle is added to the metadata
-        // search map. Only remove the handle from the session if it has
-        // been replaced with a valid one in the add_torrent_alert handler.
-
-        if (hndl.is_valid())
-        {
-            m_session->remove_torrent(hndl, lt::session::delete_files);
-        }
+        m_session->remove_torrent(
+            m_metadataSearches.at(res),
+            lt::session::delete_files);
     }
 
     m_session->async_add_torrent(params);
@@ -284,6 +313,42 @@ void Session::ReloadSettings()
 {
     lt::settings_pack settings = getSettingsPack(m_cfg);
     m_session->apply_settings(settings);
+
+    // loop through and remove torrents which labels
+    // are not existent any more
+    auto labels = m_cfg->GetLabels();
+
+    std::vector<TorrentHandle*> updated;
+
+    for (auto const& [infoHash, torrent] : m_torrents)
+    {
+        if (torrent->Label() < 0) { continue; }
+
+        auto it = std::find_if(
+            labels.begin(),
+            labels.end(),
+            [&](auto const& lbl) { return lbl.id == torrent->Label(); });
+
+        if (it == labels.end())
+        {
+            torrent->ClearLabel();
+            updated.push_back(torrent);
+        }
+    }
+
+    if (updated.size() > 0)
+    {
+        TorrentsUpdatedEvent evtUpdated(ptEVT_TORRENTS_UPDATED);
+        evtUpdated.SetData(updated);
+        wxPostEvent(m_parent, evtUpdated);
+    }
+
+    if (auto saveInterval = m_cfg->Get<int>("save_resume_data_interval"))
+    {
+        m_resumeDataTimer->Stop();
+        m_resumeDataTimer->Start(
+            saveInterval.value_or(300) * 1000);
+    }
 }
 
 void Session::OnAlert()
@@ -313,34 +378,37 @@ void Session::OnAlert()
                 continue;
             }
 
-            std::stringstream ss;
+            // At this point, decide whether this is a new torrent or an existing one. Check the torrent table.
+            std::string infoHash = str(ata->handle.info_hashes());
 
-            if (ata->handle.info_hashes().has_v2())
-            {
-                ss << ata->handle.info_hashes().v2;
-            }
-            else
-            {
-                ss << ata->handle.info_hashes().v1;
-            }
+            TorrentHandle* handle = new TorrentHandle(this, ata->handle);
 
-            std::string ih = ss.str();
-
-            lt::torrent_status ts = ata->handle.status();
-
-            auto stmt = m_db->CreateStatement("REPLACE INTO torrent (info_hash, queue_position) VALUES (?, ?)");
-            stmt->Bind(1, ih);
-            stmt->Bind(2, static_cast<int>(ts.queue_position));
-            stmt->Execute();
-
-            ata->handle.save_resume_data(
-                lt::torrent_handle::flush_disk_cache
-                | lt::torrent_handle::save_info_dict);
-
-            auto handle = new TorrentHandle(this, ata->handle);
+            AddParams* add = ata->params.userdata.get<AddParams>();
+            if (add && add->labelId > 0) { handle->SetLabelMuted(add->labelId); }
 
             m_torrents.insert({ ata->handle.info_hashes(), handle });
 
+            auto stmt = m_db->CreateStatement("SELECT COUNT(*) FROM torrent WHERE info_hash = $1");
+            stmt->Bind(1, infoHash);
+
+            if (stmt->Read() && stmt->GetInt(0) == 0)
+            {
+                // torrent was not in session before, so insert it
+                lt::torrent_status ts = ata->handle.status();
+
+                stmt = m_db->CreateStatement("INSERT INTO torrent (info_hash, queue_position, label_id) VALUES ($1, $2, $3)");
+                stmt->Bind(1, infoHash);
+                stmt->Bind(2, static_cast<int>(ts.queue_position));
+                stmt->Bind(3, (add && add->labelId > 0) ? std::optional(add->labelId) : std::nullopt);
+                stmt->Execute();
+
+                // at this point, trigger a save_resume_data for it
+                ata->handle.save_resume_data(
+                    lt::torrent_handle::flush_disk_cache
+                    | lt::torrent_handle::save_info_dict);
+            }
+
+            // Announce it to the world
             wxCommandEvent torrentAdded(ptEVT_TORRENT_ADDED);
             torrentAdded.SetClientData(handle);
             wxPostEvent(m_parent, torrentAdded);
@@ -394,17 +462,6 @@ void Session::OnAlert()
             }
             else
             {
-                std::stringstream ss;
-
-                if (infoHash.has_v2())
-                {
-                    ss << infoHash.v2;
-                }
-                else
-                {
-                    ss << infoHash.v1;
-                }
-
                 if (mra->handle.need_save_resume_data())
                 {
                     mra->handle.save_resume_data(
@@ -421,23 +478,10 @@ void Session::OnAlert()
             lt::save_resume_data_alert* srda = lt::alert_cast<lt::save_resume_data_alert>(alert);
             std::vector<char> buffer = lt::write_resume_data_buf(srda->params);
 
-            std::stringstream ss;
-
-            if (srda->handle.info_hashes().has_v2())
-            {
-                ss << srda->handle.info_hashes().v2;
-            }
-            else
-            {
-                ss << srda->handle.info_hashes().v1;
-            }
-
-            std::string ih = ss.str();
-
             {
                 // Store the data
                 auto stmt = m_db->CreateStatement("REPLACE INTO torrent_resume_data (info_hash, resume_data) VALUES (?, ?);");
-                stmt->Bind(1, ih);
+                stmt->Bind(1, str(srda->handle.info_hashes()));
                 stmt->Bind(2, buffer);
                 stmt->Execute();
             }
@@ -445,7 +489,7 @@ void Session::OnAlert()
             {
                 // at this stage we can remove the magnet link
                 auto stmt = m_db->CreateStatement("DELETE FROM torrent_magnet_uri  WHERE info_hash = ?;");
-                stmt->Bind(1, ss.str());
+                stmt->Bind(1, str(srda->handle.info_hashes()));
                 stmt->Execute();
             }
 
@@ -481,9 +525,7 @@ void Session::OnAlert()
 
             for (lt::torrent_status const& status : sua->status)
             {
-                // Skip torrents which are not found in m_torrents - this can happen
-                // when we recieve alerts for a torrent currently in metadata search
-                if (m_torrents.find(status.info_hashes) == m_torrents.end())
+                if (IsSearching(status.info_hashes))
                 {
                     continue;
                 }
@@ -499,7 +541,7 @@ void Session::OnAlert()
                 }
 
                 auto handle = m_torrents.at(status.info_hashes);
-                handle->UpdateStatus(status);
+                handle->BuildStatus(status);
 
                 handles.push_back(handle);
             }
@@ -512,6 +554,13 @@ void Session::OnAlert()
             evtUpdated.SetData(handles);
             wxPostEvent(m_parent, evtUpdated);
 
+            break;
+        }
+
+        case lt::storage_moved_failed_alert::alert_type:
+        {
+            lt::storage_moved_failed_alert* smfa = lt::alert_cast<lt::storage_moved_failed_alert>(alert);
+            LOG_F(ERROR, "Error when moving torrent storage: %s", smfa->error.message().c_str());
             break;
         }
 
@@ -554,18 +603,25 @@ void Session::OnAlert()
             evt.SetClientData(m_torrents.at(ts.info_hashes));
             wxPostEvent(m_parent, evt);
 
-            bool shouldMove = m_cfg->Get<bool>("move_completed_downloads").value();
-            bool onlyFromDefault = m_cfg->Get<bool>("move_completed_downloads_from_default_only").value();
-            std::string movePath = m_cfg->Get<std::string>("move_completed_downloads_path").value();
-
-            if (shouldMove)
+            if (auto shouldMove = m_cfg->Get<bool>("move_completed_downloads"))
             {
-                if (onlyFromDefault && ts.save_path != m_cfg->Get<std::string>("default_save_path").value())
+                if (shouldMove.value())
                 {
-                    break;
-                }
+                    auto onlyFromDefault = m_cfg->Get<bool>("move_completed_downloads_from_default_only");
+                    auto movePath = m_cfg->Get<std::string>("move_completed_downloads_path");
 
-                tfa->handle.move_storage(movePath);
+                    if (onlyFromDefault.has_value()
+                        && onlyFromDefault.value()
+                        && ts.save_path != m_cfg->Get<std::string>("default_save_path").value())
+                    {
+                        break;
+                    }
+
+                    if (movePath.has_value())
+                    {
+                        tfa->handle.move_storage(movePath.value());
+                    }
+                }
             }
 
             break;
@@ -596,21 +652,10 @@ void Session::OnAlert()
                 "DELETE FROM torrent             WHERE info_hash = ?;",
             };
 
-            std::stringstream hash;
-
-            if (tra->info_hashes.has_v2())
-            {
-                hash << tra->info_hashes.v2;
-            }
-            else
-            {
-                hash << tra->info_hashes.v1;
-            }
-
             for (std::string const& sql : statements)
             {
                 auto stmt = m_db->CreateStatement(sql);
-                stmt->Bind(1, hash.str());
+                stmt->Bind(1, str(tra->info_hashes));
                 stmt->Execute();
             }
 
@@ -623,7 +668,33 @@ void Session::OnAlert()
     }
 }
 
+void Session::OnSaveResumeDataTimer(wxTimerEvent&)
+{
+    // save resume data for all torrents which need it
+    int saved = 0;
+
+    for (auto const& [hash, torrent] : m_torrents)
+    {
+        lt::torrent_handle& th = torrent->WrappedHandle();
+        if (th.need_save_resume_data())
+        {
+            saved++;
+
+            th.save_resume_data(
+                lt::torrent_handle::flush_disk_cache
+                | lt::torrent_handle::save_info_dict);
+        }
+    }
+
+    LOG_F(INFO, "%d torrent(s) needed to save resume data", saved);
+}
+
 bool Session::IsSearching(lt::info_hash_t hash)
+{
+    return IsSearching(hash, lt::info_hash_t());
+}
+
+bool Session::IsSearching(lt::info_hash_t hash, lt::info_hash_t& result)
 {
     // Check if this torrent is part of a metadata search.
     // Compare either v1 or v2 hash since hybrid torrents
@@ -633,14 +704,30 @@ bool Session::IsSearching(lt::info_hash_t hash)
     lt::info_hash_t v1(hash.v1);
     lt::info_hash_t v2(hash.v2);
 
-    return m_metadataSearches.count(hash) > 0
-        || (!v1.v1.is_all_zeros() && m_metadataSearches.count(v1) > 0)
-        || (!v2.v2.is_all_zeros() && m_metadataSearches.count(v2) > 0);
+    if (m_metadataSearches.count(hash) > 0)
+    {
+        result = hash;
+        return true;
+    }
+
+    if (!v1.v1.is_all_zeros() && m_metadataSearches.count(v1) > 0)
+    {
+        result = v1;
+        return true;
+    }
+
+    if (!v2.v2.is_all_zeros() && m_metadataSearches.count(v2) > 0)
+    {
+        result = v2;
+        return true;
+    }
+
+    return false;
 }
 
 void Session::LoadTorrents()
 {
-    auto stmt = m_db->CreateStatement("SELECT t.info_hash AS info_hash, tmu.magnet_uri AS magnet_uri, trd.resume_data AS resume_data, tmu.save_path AS save_path FROM torrent t\n"
+    auto stmt = m_db->CreateStatement("SELECT t.info_hash, tmu.magnet_uri, trd.resume_data, tmu.save_path, IFNULL(t.label_id, -1) FROM torrent t\n"
         "LEFT JOIN torrent_magnet_uri  tmu ON t.info_hash = tmu.info_hash\n"
         "LEFT JOIN torrent_resume_data trd ON t.info_hash = trd.info_hash\n"
         "ORDER BY t.queue_position ASC");
@@ -650,20 +737,17 @@ void Session::LoadTorrents()
         std::string info_hash = stmt->GetString(0);
         std::string magnet_uri = stmt->GetString(1);
         std::string save_path = stmt->GetString(3);
+        int label_id = stmt->GetInt(4);
 
         std::vector<char> resume_data;
         stmt->GetBlob(2, resume_data);
 
         lt::add_torrent_params params;
 
-        // Always parse magnet uri if it is empty
-        if (!magnet_uri.empty())
+        // Always parse magnet uri if it is not empty
+        if (!magnet_uri.empty() && !save_path.empty())
         {
             params = lt::parse_magnet_uri(magnet_uri);
-        }
-
-        if (!save_path.empty())
-        {
             params.save_path = save_path;
         }
 
@@ -685,6 +769,13 @@ void Session::LoadTorrents()
                 LOG_F(WARNING, "Failed to read resume data: %s", ec.message().data());
                 continue;
             }
+        }
+
+        params.userdata = lt::client_data_t(new AddParams());
+
+        if (label_id > 0)
+        {
+            params.userdata.get<AddParams>()->labelId = label_id;
         }
 
         m_session->async_add_torrent(params);
@@ -759,26 +850,15 @@ void Session::SaveTorrents()
 
     for (lt::torrent_status& st : missingMeta)
     {
-        std::stringstream ss;
-
-        if (st.info_hashes.has_v2())
-        {
-            ss << st.info_hashes.v2;
-        }
-        else
-        {
-            ss << st.info_hashes.v1;
-        }
-
         // Store state
-        auto stmt = m_db->CreateStatement("REPLACE INTO torrent (info_hash, queue_position) VALUES (?, ?)");
-        stmt->Bind(1, ss.str());
-        stmt->Bind(2, static_cast<int>(st.queue_position));
+        auto stmt = m_db->CreateStatement("UPDATE torrent SET queue_position = $1 WHERE info_hash = $2");
+        stmt->Bind(1, static_cast<int>(st.queue_position));
+        stmt->Bind(2, str(st.info_hashes));
         stmt->Execute();
 
         // Store the magnet uri
         stmt = m_db->CreateStatement("REPLACE INTO torrent_magnet_uri (info_hash, magnet_uri, save_path) VALUES (?, ?, ?);");
-        stmt->Bind(1, ss.str());
+        stmt->Bind(1, str(st.info_hashes));
         stmt->Bind(2, lt::make_magnet_uri(st.handle));
         stmt->Bind(3, st.handle.status(lt::torrent_handle::query_save_path).save_path);
         stmt->Execute();
@@ -814,29 +894,17 @@ void Session::SaveTorrents()
             --numOutstandingResumeData;
 
             std::vector<char> buffer = lt::write_resume_data_buf(rd->params);
-
-            std::stringstream ss;
-
-            if (rd->handle.info_hashes().has_v2())
-            {
-                ss << rd->handle.info_hashes().v2;
-            }
-            else
-            {
-                ss << rd->handle.info_hashes().v1;
-            }
-
-            std::string ih = ss.str();
+            std::string infoHash = str(rd->handle.info_hashes());
 
             // Store state
-            auto stmt = m_db->CreateStatement("REPLACE INTO torrent (info_hash, queue_position) VALUES (?, ?)");
-            stmt->Bind(1, ih);
-            stmt->Bind(2, static_cast<int>(rd->handle.status().queue_position));
+            auto stmt = m_db->CreateStatement("UPDATE torrent SET queue_position = $1 WHERE info_hash = $2");
+            stmt->Bind(1, static_cast<int>(rd->handle.status().queue_position));
+            stmt->Bind(2, infoHash);
             stmt->Execute();
 
             // Store the data
             stmt = m_db->CreateStatement("REPLACE INTO torrent_resume_data (info_hash, resume_data) VALUES (?, ?);");
-            stmt->Bind(1, ih);
+            stmt->Bind(1, infoHash);
             stmt->Bind(2, buffer);
             stmt->Execute();
         }
@@ -865,7 +933,7 @@ void Session::UpdateMetadataHandle(lt::info_hash_t hash, lt::torrent_handle hand
     lt::info_hash_t v1(hash.v1);
     lt::info_hash_t v2(hash.v2);
 
-    for (auto it : m_metadataSearches)
+    for (auto& it : m_metadataSearches)
     {
         if (it.first == hash
             || it.first == v1
@@ -873,5 +941,24 @@ void Session::UpdateMetadataHandle(lt::info_hash_t hash, lt::torrent_handle hand
         {
             it.second = handle;
         }
+    }
+}
+
+void Session::UpdateTorrentLabel(TorrentHandle* torrent)
+{
+    int labelId = torrent->Label();
+
+    if (labelId < 0)
+    {
+        auto stmt = m_db->CreateStatement("UPDATE torrent SET label_id = NULL WHERE info_hash = ?");
+        stmt->Bind(1, str(torrent->InfoHash()));
+        stmt->Execute();
+    }
+    else
+    {
+        auto stmt = m_db->CreateStatement("UPDATE torrent SET label_id = ? WHERE info_hash = ?");
+        stmt->Bind(1, labelId);
+        stmt->Bind(2, str(torrent->InfoHash()));
+        stmt->Execute();
     }
 }

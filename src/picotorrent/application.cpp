@@ -38,6 +38,12 @@ Application::~Application()
 
 bool Application::OnCmdLineParsed(wxCmdLineParser& parser)
 {
+    long waitForPid = -1;
+    if (parser.Found("wait-for-pid", &waitForPid))
+    {
+        m_options.pid = waitForPid;
+    }
+
     for (size_t i = 0; i < parser.GetParamCount(); i++)
     {
         std::string arg = Utils::toStdString(parser.GetParam(i).ToStdWstring());
@@ -58,6 +64,11 @@ bool Application::OnCmdLineParsed(wxCmdLineParser& parser)
 bool Application::OnInit()
 {
     if (!wxApp::OnInit()) { return false; }
+
+    if (m_options.pid > 0)
+    {
+        WaitForPreviousInstance(m_options.pid);
+    }
 
     if (m_singleInstance->IsAnotherRunning())
     {
@@ -82,8 +93,10 @@ bool Application::OnInit()
     auto cfg = std::make_shared<pt::Core::Configuration>(db);
 
     pt::UI::Translator& translator = pt::UI::Translator::GetInstance();
-    translator.LoadEmbedded(GetModuleHandle(NULL));
-    translator.SetLanguage(cfg->Get<int>("language_id").value());
+    translator.LoadDatabase(env->GetCoreDbFilePath());
+    translator.SetLocale(
+        cfg->Get<std::string>("locale_name")
+            .value_or(env->GetCurrentLocale()));
 
     // Load plugins
     for (auto& p : fs::directory_iterator(env->GetApplicationPath()))
@@ -159,7 +172,8 @@ void Application::OnInitCmdLine(wxCmdLineParser& parser)
 {
     static const wxCmdLineEntryDesc cmdLineDesc[] =
     {
-        { wxCMD_LINE_PARAM, NULL, NULL, "params", wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_PARAM_MULTIPLE },
+        { wxCMD_LINE_OPTION, NULL, "wait-for-pid", NULL,     wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
+        { wxCMD_LINE_PARAM,  NULL, NULL,           "params", wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_PARAM_MULTIPLE },
         { wxCMD_LINE_NONE }
     };
 
@@ -184,4 +198,12 @@ void Application::ActivateOtherInstance()
         conn->Execute(j.dump());
         conn->Disconnect();
     }
+}
+
+void Application::WaitForPreviousInstance(long pid)
+{
+    HANDLE hProc = OpenProcess(SYNCHRONIZE, FALSE, pid);
+    if (hProc == NULL) { return; }
+    DWORD res = WaitForSingleObject(hProc, 10000);
+    CloseHandle(hProc);
 }
