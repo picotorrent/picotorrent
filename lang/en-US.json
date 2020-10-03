@@ -92,7 +92,7 @@
     "client": "Client",
     "flags": "Flags",
     "trackers": "Trackers",
-    "url": "Url",
+    "url": "URL",
     "next_announce": "Next announce",
     "scrape": "Scrape",
     "picotorrent_v_available": "PicoTorrent %s available",
