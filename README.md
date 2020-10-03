@@ -20,7 +20,7 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 - Native look-and-feel across Windows versions.
 - Easy to use with high performance.
 
-*The portable version of PicoTorrent requires manual installation of [the Microsoft Visual C++ Redistributable for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)*
+*The portable version of PicoTorrent requires manual installation of [the Microsoft Visual C++ Redistributable for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/).*
 
 
 ## Building PicoTorrent
