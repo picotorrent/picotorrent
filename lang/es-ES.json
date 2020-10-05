@@ -84,7 +84,7 @@
     "new_version_available": "Una nueva versión de PicoTorrent está disponible.",
     "ignore_update": "Ignorar esta actualización",
     "confirm_remove_description": "Esto eliminará cualquier archivo descargado para este torrent.",
-    "confirm_remove": "Confirmar eliminar",
+    "confirm_remove": "Confirmar eliminación",
     "do_not_ask_again": "No volver a preguntar",
     "close_picotorrent": "Cerrar PicoTorrent",
     "minimize_to_tray": "Minimizar a la bandeja",
@@ -280,10 +280,10 @@
     "build_info_format": "Rama: {0}\nSHA1: {1}",
     "dl_s_ul_s": "Descarga: {0}/s, Subida: {1}/s",
     "add_magnet_link_s_description": "Enlaces magnéticos o información de hashes (uno por línea)",
-    "restart_picotorrent": "Reiniciar PicoTorrent",
-    "use_label_color_as_background_in_torrent_list": "Usar color de etiqueta como fondo en lista torrent",
     "labels": "Etiquetas",
     "label_details": "Detalles de etiqueta",
     "color": "Color",
-    "apply_filter": "Aplicar filtro"
+    "apply_filter": "Aplicar filtro",
+    "restart_picotorrent": "Reiniciar PicoTorrent",
+    "use_label_color_as_background_in_torrent_list": "Usar color de etiqueta como fondo en lista torrent"
 }
