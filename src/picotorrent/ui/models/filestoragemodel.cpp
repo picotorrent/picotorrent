@@ -93,10 +93,10 @@ wxDataViewItem FileStorageModel::GetRootItem()
 void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
 {
     m_map.clear();
+    m_root->children.clear();
 
     if (ti->num_files() == 0)
     {
-        m_root->children.clear();
         return;
     }
 
