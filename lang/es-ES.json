@@ -76,7 +76,7 @@
     "peers": "Pares",
     "client": "Cliente",
     "flags": "Marcadores",
-    "url": "Url",
+    "url": "URL",
     "next_announce": "Siguiente anuncio",
     "picotorrent_v_available": "PicoTorrent {0} disponible",
     "no_update_available": "Ninguna actualización disponible",
