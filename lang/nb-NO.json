@@ -4,8 +4,8 @@
     "status": "Status",
     "progress": "Framdrift",
     "eta": "Forventet",
-    "dl": "Opplasting",
-    "ul": "Nedlasting",
+    "dl": "↓",
+    "ul": "↑",
     "pause": "Pause",
     "resume": "Fortsett",
     "resume_force": "Fortsett (påtving)",
@@ -279,5 +279,11 @@
     "status_adding_files": "Legger til filer i lager",
     "restore_defaults_description": "Dette vil gjenopprette de fleste innstillingene til deres forvalg. Er du sikker?",
     "state_uploading_stalled": "Venter på likemenn (deler)",
-    "invalid_download_rate_limit": "Ugyldig grense for nedlastingstakt."
+    "invalid_download_rate_limit": "Ugyldig grense for nedlastingstakt.",
+    "labels": "Etiketter",
+    "label_details": "Etikettdetaljer",
+    "color": "Farge",
+    "apply_filter": "Bruk filter",
+    "restart_picotorrent": "Start PicoTorrent på ny",
+    "use_label_color_as_background_in_torrent_list": "Bruk etikettfarge som bakgrunn i torrent-liste"
 }
