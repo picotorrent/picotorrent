@@ -90,7 +90,7 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<Core::C
 
         for (auto const& label : labels)
         {
-            labelsMenu->AppendRadioItem(ptID_LABELS_USER + label.id, label.name)
+            labelsMenu->AppendRadioItem(ptID_LABELS_USER + label.id, Utils::toStdWString(label.name))
                 ->Check(
                     selectedTorrents.size() == 1
                     && selectedTorrents.at(0)->Label() == label.id);

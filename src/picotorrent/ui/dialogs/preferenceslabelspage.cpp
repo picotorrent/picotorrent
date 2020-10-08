@@ -6,6 +6,7 @@
 
 #include "../clientdata.hpp"
 #include "../../core/configuration.hpp"
+#include "../../core/utils.hpp"
 #include "../translator.hpp"
 
 using pt::Core::Configuration;
@@ -123,7 +124,7 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
                 m_labelsList->GetItemData(
                     m_labelsList->GetFirstSelected()));
 
-            m_name->SetValue(label->name);
+            m_name->SetValue(Utils::toStdWString(label->name));
 
             m_colorEnabled->SetValue(label->colorEnabled);
 
@@ -133,7 +134,7 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
             }
 
             m_savePath->Enable(label->savePathEnabled);
-            m_savePath->SetPath(label->savePath);
+            m_savePath->SetPath(Utils::toStdWString(label->savePath));
             m_savePathEnabled->SetValue(label->savePathEnabled);
 
             m_applyFilter->Enable(label->applyFilterEnabled);
@@ -156,8 +157,8 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
             long sel = m_labelsList->GetFirstSelected();
             if (sel < 0) { return; }
             auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
-            label->name = m_name->GetValue();
-            m_labelsList->SetItemText(sel, label->name);
+            label->name = Utils::toStdString(m_name->GetValue().wc_str());
+            m_labelsList->SetItemText(sel, Utils::toStdWString(label->name));
         });
 
     m_colorEnabled->Bind(
@@ -199,7 +200,7 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
             long sel = m_labelsList->GetFirstSelected();
             if (sel < 0) { return; }
             auto label = reinterpret_cast<Configuration::Label*>(m_labelsList->GetItemData(sel));
-            label->savePath = m_savePath->GetPath();
+            label->savePath = Utils::toStdString(m_savePath->GetPath().wc_str());
         });
 
     m_applyFilter->Bind(

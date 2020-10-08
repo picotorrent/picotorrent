@@ -564,7 +564,7 @@ void MainFrame::CreateLabelMenuItems()
 
     for (auto const& label : m_cfg->GetLabels())
     {
-        m_labelsMenu->AppendRadioItem(ptID_EVT_LABELS_USER + label.id, label.name);
+        m_labelsMenu->AppendRadioItem(ptID_EVT_LABELS_USER + label.id, Utils::toStdWString(label.name));
     }
 }
 
