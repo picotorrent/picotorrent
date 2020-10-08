@@ -36,10 +36,10 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(wxUSE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
 # --------------------
 
-add_subdirectory(vendor/crashpad)
 add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/nlohmann-json)
+add_subdirectory(vendor/sentry-crashpad)
 add_subdirectory(vendor/wx)
 
 gitversion_install()
