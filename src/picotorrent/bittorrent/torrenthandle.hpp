@@ -58,7 +58,7 @@ namespace BitTorrent
         // Labels
         int Label();
         void ClearLabel();
-        void SetLabel(int id);
+        void SetLabel(int id, std::string const& name);
 
     private:
         TorrentHandle(Session* session, libtorrent::torrent_handle const& th);
@@ -72,6 +72,7 @@ namespace BitTorrent
         std::unique_ptr<libtorrent::torrent_handle> m_th;
         std::unique_ptr<TorrentStatus> m_status;
         int m_labelId;
+        std::string m_labelName;
     };
 }
 }

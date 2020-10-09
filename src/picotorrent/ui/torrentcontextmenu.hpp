@@ -5,7 +5,9 @@
 #include <wx/wx.h>
 #endif
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace pt
@@ -48,6 +50,7 @@ namespace UI
         };
 
         wxWindow* m_parent;
+        std::map<int, std::string> m_labels;
     };
 }
 }
