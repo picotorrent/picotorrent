@@ -94,6 +94,8 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<Core::C
                 ->Check(
                     selectedTorrents.size() == 1
                     && selectedTorrents.at(0)->Label() == label.id);
+
+            m_labels.insert({ label.id, label.name });
         }
 
         AppendSubMenu(labelsMenu, i18n("label"));
@@ -260,7 +262,7 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<Core::C
             if (evt.GetId() > ptID_LABELS_USER)
             {
                 int id = evt.GetId() - ptID_LABELS_USER;
-                for (auto torrent : selectedTorrents) { torrent->SetLabel(id); }
+                for (auto torrent : selectedTorrents) { torrent->SetLabel(id, m_labels.at(id)); }
             }
         });
 }
