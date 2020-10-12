@@ -124,7 +124,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
             auto torrent = static_cast<BitTorrent::TorrentHandle*>(evt.GetClientData());
             m_taskBarIcon->ShowBalloon(
                 i18n("torrent_finished"),
-                torrent->Status().name);
+                Utils::toStdWString(torrent->Status().name));
         });
 
     this->Bind(ptEVT_TORRENT_REMOVED, [this](pt::BitTorrent::InfoHashEvent& evt)
