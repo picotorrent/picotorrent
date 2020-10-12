@@ -18,6 +18,7 @@ namespace pt::UI::Dialogs
     class PreferencesConnectionPage;
     class PreferencesDownloadsPage;
     class PreferencesGeneralPage;
+    class PreferencesLabelsPage;
     class PreferencesProxyPage;
     class PreferencesRssPage;
 
@@ -45,6 +46,7 @@ namespace pt::UI::Dialogs
 
         PreferencesGeneralPage* m_general;
         PreferencesDownloadsPage* m_downloads;
+        PreferencesLabelsPage* m_labels;
         PreferencesConnectionPage* m_connection;
         PreferencesProxyPage* m_proxy;
         PreferencesRssPage* m_rss;

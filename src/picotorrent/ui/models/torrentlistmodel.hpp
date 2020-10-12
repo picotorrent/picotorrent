@@ -6,6 +6,7 @@
 #endif
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include <libtorrent/info_hash.hpp>
@@ -42,6 +43,7 @@ namespace Models
             Peers,
             AddedOn,
             CompletedOn,
+            Label,
             _Max
         };
 
@@ -53,9 +55,12 @@ namespace Models
         BitTorrent::TorrentHandle* GetTorrentFromItem(wxDataViewItem const& item);
         void RemoveTorrent(libtorrent::info_hash_t const& hash);
         void UpdateTorrents(std::vector<BitTorrent::TorrentHandle*> torrents);
+        void SetBackgroundColorEnabled(bool enabled);
 
         void ClearFilter();
+        void ClearLabelFilter();
         void SetFilter(std::function<bool(BitTorrent::TorrentHandle*)> const& filter);
+        void SetLabelFilter(int labelId);
 
         int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending) const wxOVERRIDE;
 
@@ -71,11 +76,19 @@ namespace Models
 
         bool SetValueByRow(const wxVariant& variant, uint32_t row, uint32_t col) wxOVERRIDE { return false; }
 
-    private:
-        bool ApplyFilter();
+        void UpdateLabels(std::map<int, std::tuple<std::string, std::string>> const& labels);
 
+    private:
+        void ApplyFilter();
+        void ApplyFilter(std::vector<BitTorrent::TorrentHandle*> torrents);
+
+        bool m_backgroundColorEnabled;
+        int m_filterLabelId;
         std::function<bool(BitTorrent::TorrentHandle*)> m_filter;
         std::vector<libtorrent::info_hash_t> m_filtered;
+        std::map<int, std::tuple<std::string, std::string>> m_labels;
+        std::map<int, wxColor> m_labelsColors;
+        std::map<int, wxIcon> m_labelsIcons;
         std::map<libtorrent::info_hash_t, BitTorrent::TorrentHandle*> m_torrents;
     };
 }

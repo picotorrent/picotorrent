@@ -55,6 +55,13 @@ void Database::Statement::Bind(int idx, int value)
     sqlite3_bind_int(m_stmt, idx, value);
 }
 
+void Database::Statement::Bind(int idx, std::optional<int> value)
+{
+    value.has_value()
+        ? sqlite3_bind_int(m_stmt, idx, value.value())
+        : sqlite3_bind_null(m_stmt, idx);
+}
+
 void Database::Statement::Bind(int idx, std::string const& value)
 {
     sqlite3_bind_text(

@@ -1,7 +1,7 @@
 # PicoTorrent
 
-[![AppVeyor](https://ci.appveyor.com/api/projects/status/github/picotorrent/picotorrent?svg=true)](https://ci.appveyor.com/project/picotorrent/picotorrent)
-[![Join the chat at https://gitter.im/picotorrent/picotorrent](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/picotorrent/picotorrent?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+![CI](https://github.com/picotorrent/picotorrent/workflows/CI/badge.svg)
+[![Discord](https://img.shields.io/discord/759537913205227580)](https://discord.gg/tV3dFrv)
 
 A tiny, hackable BitTorrent client written in modern C++. Based on
 Rasterbar-libtorrent to provide high performance and low memory usage.
@@ -20,7 +20,7 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 - Native look-and-feel across Windows versions.
 - Easy to use with high performance.
 
-*The portable version of PicoTorrent requires manual installation of [the Microsoft Visual C++ Redistributable for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)*
+*The portable version of PicoTorrent requires manual installation of [the Microsoft Visual C++ Redistributable for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/).*
 
 
 ## Building PicoTorrent
@@ -48,6 +48,11 @@ Build your desired configuration and architecture.
 ```
 λ .\build.ps1 --platform [x86|x64] --configuration [Debug|Release]
 ```
+
+
+## Translations
+
+PicoTorrent uses [Weblate](https://translate.picotorrent.org/) to handle the translation process. If you want to help, feel free to signup and give your contribution.
 
 
 ## License

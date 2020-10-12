@@ -29,6 +29,7 @@ static std::map<TorrentListModel::Columns, std::string> ColumnNames =
     { TorrentListModel::Columns::Peers,         "Col_Peers" },
     { TorrentListModel::Columns::AddedOn,       "Col_AddedOn" },
     { TorrentListModel::Columns::CompletedOn,   "Col_CompletedOn" },
+    { TorrentListModel::Columns::Label,         "Col_Label" },
 };
 
 PersistentTorrentListView::PersistentTorrentListView(TorrentListView* tlv)
