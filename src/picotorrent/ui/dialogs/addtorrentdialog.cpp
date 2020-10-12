@@ -311,12 +311,12 @@ wxString AddTorrentDialog::GetTorrentDisplayName(libtorrent::add_torrent_params 
 {
     if (params.ti)
     {
-        return params.ti->name();
+        return Utils::toStdWString(params.ti->name());
     }
 
     if (params.name.size() > 0)
     {
-        return params.name;
+        return Utils::toStdWString(params.name);
     }
 
     std::stringstream hash;
