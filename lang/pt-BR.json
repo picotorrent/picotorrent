@@ -236,5 +236,8 @@
     "normal": "Normal",
     "build_info_format": "Branch: {0}\nSHA1: {1}",
     "url": "URL",
-    "magnet_link_s": "Magnet link(s)"
+    "magnet_link_s": "Magnet link(s)",
+    "proxy": "Proxy",
+    "host": "Endereço",
+    "seeds": "Seeds"
 }
