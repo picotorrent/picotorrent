@@ -105,6 +105,7 @@ namespace BitTorrent
         void SaveState();
         void SaveTorrents();
         void UpdateMetadataHandle(libtorrent::info_hash_t hash, libtorrent::torrent_handle handle);
+        void UpdateTorrentLabel(TorrentHandle*);
 
         wxEvtHandler* m_parent;
         wxTimer* m_timer;

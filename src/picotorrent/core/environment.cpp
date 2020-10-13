@@ -55,7 +55,7 @@ std::string Environment::GetCrashpadReportUrl()
         return url;
     }
 
-    return "https://api.picotorrent.org/crashpad";
+    return "https://o314884.ingest.sentry.io/api/1794272/minidump/?sentry_key=722163e5427c4a8892d2c158b5ffe954";
 }
 
 fs::path Environment::GetCoreDbFilePath()
