@@ -49,6 +49,7 @@ wxDEFINE_EVENT(ptEVT_TORRENT_METADATA_FOUND, pt::BitTorrent::MetadataFoundEvent)
 wxDEFINE_EVENT(ptEVT_TORRENT_REMOVED, pt::BitTorrent::InfoHashEvent);
 wxDEFINE_EVENT(ptEVT_TORRENT_STATISTICS, pt::BitTorrent::TorrentStatisticsEvent);
 wxDEFINE_EVENT(ptEVT_TORRENTS_UPDATED, pt::BitTorrent::TorrentsUpdatedEvent);
+wxDEFINE_EVENT(ptEVT_IPFILTER_UPDATED, wxThreadEvent);
 
 static std::string str(lt::info_hash_t ih)
 {
@@ -195,33 +196,40 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
     return settings;
 }
 
-bool ParseIPv4Address(std::string const& input, std::string& output)
+bool ParseIPv4Address(std::string const& input, lt::address& output)
 {
     // make 001.002.123.020 -> 1.2.123.20
-    std::stringstream ss;
 
-    size_t off = 0;
-    size_t pos = input.find_first_of('.');
-
-    while (pos != std::string::npos)
+    try
     {
-        std::string& sub = input.substr(off, std::min(pos - off, input.size()));
+        boost::asio::ip::address_v4::bytes_type bytes;
 
-        size_t notZero = sub.find_first_not_of('0');
+        size_t off = 0;
+        size_t pos = input.find_first_of('.');
 
-        if (notZero == std::string::npos)
+        for (int i = 0; i < bytes.size(); i++)
         {
-            return false;
+            bytes[i] = (unsigned char)std::stoi(input.substr(off, pos - off));
+
+            if (pos == std::string::npos)
+            {
+                break;
+            }
+
+            off = pos + 1;
+            pos = input.find_first_of('.', off);
         }
 
-        ss << sub.substr(notZero, sub.size() - notZero) << ".";
+        output = lt::address_v4(bytes);
 
-        off += pos + 1;
-        pos = input.find_first_of('.', std::min(off, input.size()));
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        LOG_F(ERROR, "Failed to parse IPv4 address from string %s: %s", input.c_str(), ex.what());
     }
 
-    output = ss.str();
-    return true;
+    return false;
 }
 
 Session::Session(wxEvtHandler* parent, std::shared_ptr<pt::Core::Database> db, std::shared_ptr<pt::Core::Configuration> cfg, std::shared_ptr<pt::Core::Environment> env)
@@ -292,6 +300,14 @@ Session::Session(wxEvtHandler* parent, std::shared_ptr<pt::Core::Database> db, s
             m_session->post_torrent_updates();
         },
         ptID_TIMER_SESSION);
+
+    this->Bind(ptEVT_IPFILTER_UPDATED,
+        [this](wxThreadEvent& evt)
+        {
+            lt::ip_filter& ipf = evt.GetPayload<lt::ip_filter>();
+            m_session->set_ip_filter(ipf);
+            LOG_F(INFO, "IP filter applied");
+        });
 
     this->Bind(wxEVT_TIMER, &Session::OnSaveResumeDataTimer, this, ptID_TIMER_RESUME_DATA);
 }
@@ -802,28 +818,28 @@ void Session::LoadIPFilter(std::string const& path)
         std::stringstream ss(c);
         std::string line;
 
-        std::regex filter(
-            "^(\\d{3}\\.\\d{3}\\.\\d{3}\\.\\d{3}) - (\\d{3}\\.\\d{3}\\.\\d{3}\\.\\d{3}).*",
+        std::regex filter("([\\d|\\.]+)\\s*-\\s*([\\d|\\.]+)\\s*,\\s*([\\d]+).*",
             std::regex_constants::ECMAScript | std::regex_constants::icase);
 
         while (std::getline(ss, line))
         {
-            std::smatch match;
-            if (std::regex_search(line, match, filter))
+            if (line[line.size() - 1] == '\r') line = line.substr(0, line.size() - 1);
+
+            std::smatch m;
+
+            lt::address start;
+            lt::address end;
+
+            if (std::regex_match(line, m, filter)
+                && ParseIPv4Address(m[1], start)
+                && ParseIPv4Address(m[2], end))
             {
-                std::string first;
-                std::string last;
+                ipf.add_rule(
+                    start,
+                    end,
+                    stoi(m[3]) <= 127 ? lt::ip_filter::blocked : 0);
 
-                if (ParseIPv4Address(match[1].str(), first)
-                    && ParseIPv4Address(match[2].str(), last))
-                {
-                    ipf.add_rule(
-                        lt::make_address(first),
-                        lt::make_address(last),
-                        lt::ip_filter::blocked);
-
-                    rules++;
-                }
+                rules++;
             }
         }
     }
@@ -831,6 +847,10 @@ void Session::LoadIPFilter(std::string const& path)
     auto end = std::chrono::high_resolution_clock::now();
 
     LOG_F(INFO, "Loaded %d IP filter rule(s) in %f seconds", rules, std::chrono::duration_cast<std::chrono::duration<double>>(end - begin).count());
+
+    auto evt = new wxThreadEvent(ptEVT_IPFILTER_UPDATED);
+    evt->SetPayload(ipf);
+    wxQueueEvent(this, evt);
 }
 
 void Session::LoadTorrents()

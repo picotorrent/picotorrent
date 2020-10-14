@@ -6,6 +6,7 @@
 #include <WS2tcpip.h>
 #include <iphlpapi.h>
 
+#include <wx/filepicker.h>
 #include <wx/listctrl.h>
 #include <wx/tokenzr.h>
 
@@ -80,12 +81,18 @@ PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shar
     privacyGrid->Add(m_enablePex, 1, wxEXPAND);
     privacySizer->Add(privacyGrid, 1, wxEXPAND | wxALL, 5);
 
+    wxStaticBoxSizer* filterSizer = new wxStaticBoxSizer(wxHORIZONTAL, this, i18n("ip_filter"));
+    filterSizer->Add(new wxCheckBox(filterSizer->GetStaticBox(), wxID_ANY, wxEmptyString), 0, wxALIGN_CENTER_VERTICAL | wxALL, FromDIP(5));
+    filterSizer->Add(new wxDirPickerCtrl(filterSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL), 1, wxEXPAND | wxALL, FromDIP(5));
+
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(listenSizer, 0, wxEXPAND);
     sizer->AddSpacer(10);
     sizer->Add(encryptionSizer, 0, wxEXPAND);
     sizer->AddSpacer(10);
     sizer->Add(privacySizer, 0, wxEXPAND);
+    sizer->AddSpacer(10);
+    sizer->Add(filterSizer, 0, wxEXPAND);
     sizer->AddStretchSpacer();
 
     this->SetSizerAndFit(sizer);
