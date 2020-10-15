@@ -33,6 +33,7 @@
 #include "models/torrentlistmodel.hpp"
 #include "statusbar.hpp"
 #include "taskbaricon.hpp"
+#include "torrentconsole.hpp"
 #include "torrentcontextmenu.hpp"
 #include "torrentdetailsview.hpp"
 #include "torrentlistview.hpp"
@@ -52,6 +53,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_splitter(new wxSplitterWindow(this, ptID_MAIN_SPLITTER)),
     m_statusBar(new StatusBar(this)),
     m_taskBarIcon(new TaskBarIcon(this)),
+    m_torrentConsole(new TorrentConsole(this, wxID_ANY)),
     m_torrentDetails(new TorrentDetailsView(m_splitter, ptID_MAIN_TORRENT_DETAILS)),
     m_torrentListModel(new Models::TorrentListModel()),
     m_torrentList(new TorrentListView(m_splitter, ptID_MAIN_TORRENT_LIST, m_torrentListModel)),
@@ -69,6 +71,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
 
     auto sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(m_torrentConsole, 0, wxEXPAND);
     sizer->Add(m_splitter, 1, wxEXPAND, 0);
     sizer->SetSizeHints(this);
 
@@ -92,11 +95,14 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     this->UpdateLabels();
 
     // Set checked on menu items
+    m_menuItemConsoleInput->SetCheckable(true);
+    m_menuItemConsoleInput->Check(m_cfg->Get<bool>("ui.show_console_input").value());
     m_menuItemDetailsPanel->SetCheckable(true);
     m_menuItemDetailsPanel->Check(m_cfg->Get<bool>("ui.show_details_panel").value());
     m_menuItemStatusBar->SetCheckable(true);
     m_menuItemStatusBar->Check(m_cfg->Get<bool>("ui.show_status_bar").value());
 
+    if (!m_cfg->Get<bool>("ui.show_console_input").value()) { m_torrentConsole->Hide(); }
     if (!m_cfg->Get<bool>("ui.show_details_panel").value()) { m_splitter->Unsplit(); }
     if (!m_cfg->Get<bool>("ui.show_status_bar").value()) { m_statusBar->Hide(); }
 
@@ -302,6 +308,18 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         wxEVT_MENU,
         [this](wxCommandEvent&)
         {
+            m_cfg->Set("ui.show_console_input", m_menuItemConsoleInput->IsChecked());
+
+            if (m_menuItemConsoleInput->IsChecked()) { m_torrentConsole->Show(); }
+            else { m_torrentConsole->Hide(); }
+
+            this->SendSizeEvent();
+        }, ptID_EVT_SHOW_CONSOLE);
+
+    this->Bind(
+        wxEVT_MENU,
+        [this](wxCommandEvent&)
+        {
             m_cfg->Set("ui.show_details_panel", m_menuItemDetailsPanel->IsChecked());
 
             if (m_menuItemDetailsPanel->IsChecked())
@@ -324,6 +342,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
 
             if (m_menuItemStatusBar->IsChecked()) { m_statusBar->Show(); }
             else { m_statusBar->Hide(); }
+
             this->SendSizeEvent();
         }, ptID_EVT_SHOW_STATUS_BAR);
 
@@ -599,6 +618,7 @@ wxMenuBar* MainFrame::CreateMainMenu()
     m_menuItemLabels = m_viewMenu->AppendSubMenu(m_labelsMenu, i18n("labels"));
     m_viewMenu->AppendSeparator();
 
+    m_menuItemConsoleInput = m_viewMenu->Append(ptID_EVT_SHOW_CONSOLE, i18n("amp_console"));
     m_menuItemDetailsPanel = m_viewMenu->Append(ptID_EVT_SHOW_DETAILS, i18n("amp_details_panel"));
     m_menuItemStatusBar = m_viewMenu->Append(ptID_EVT_SHOW_STATUS_BAR, i18n("amp_status_bar"));
     m_viewMenu->AppendSeparator();

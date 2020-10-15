@@ -41,6 +41,7 @@ namespace Models
 }
     class StatusBar;
     class TaskBarIcon;
+    class TorrentConsole;
     class TorrentDetailsView;
     class TorrentListView;
 
@@ -78,6 +79,7 @@ namespace Models
 
         StatusBar* m_statusBar;
         TaskBarIcon* m_taskBarIcon;
+        TorrentConsole* m_torrentConsole;
         TorrentDetailsView* m_torrentDetails;
         Models::TorrentListModel* m_torrentListModel;
         TorrentListView* m_torrentList;
@@ -93,6 +95,7 @@ namespace Models
         wxMenuItem* m_menuItemLabels;
         wxMenuItem* m_menuItemFilters;
         wxMenuItem* m_menuItemDetailsPanel;
+        wxMenuItem* m_menuItemConsoleInput;
         wxMenuItem* m_menuItemStatusBar;
 
         std::map<size_t, std::function<bool(BitTorrent::TorrentHandle*)>> m_filters;

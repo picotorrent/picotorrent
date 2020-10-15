@@ -16,6 +16,10 @@ if(DEFINED ENV{OPENSSL_ROOT_DIR})
     message("Using OpenSSL dir from env variable: ${OPENSSL_ROOT_DIR}")
 endif()
 
+# --------- antlr4 options
+option(WITH_STATIC_CRT "" Off)
+# -----------------------
+
 # --------- libtorrent options
 option(BUILD_SHARED_LIBS    "" off)
 option(deprecated-functions "" off)
@@ -36,11 +40,15 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(wxUSE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
 # --------------------
 
+# vendor libs
 add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/nlohmann-json)
 add_subdirectory(vendor/sentry-crashpad)
 add_subdirectory(vendor/wx)
+
+# pico components
+add_subdirectory(src/pql)
 
 gitversion_install()
 gitversion_showvariable(BranchName      GITVERSION_VAR_BRANCHNAME)
@@ -193,6 +201,7 @@ add_executable(
     src/picotorrent/ui/mainframe
     src/picotorrent/ui/statusbar
     src/picotorrent/ui/taskbaricon
+    src/picotorrent/ui/torrentconsole
     src/picotorrent/ui/torrentcontextmenu
     src/picotorrent/ui/torrentdetailsfilespanel
     src/picotorrent/ui/torrentdetailsoverviewpanel
@@ -269,6 +278,9 @@ target_link_libraries(
 
     # Rasterbar-libtorrent
     "torrent-rasterbar"
+
+    # PQL
+    PicoTorrentPQL
 
     sqlite
 )

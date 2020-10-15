@@ -283,5 +283,6 @@
     "labels": "Labels",
     "label_details": "Label details",
     "color": "Color",
-    "apply_filter": "Apply filter"
+    "apply_filter": "Apply filter",
+    "amp_console": "&Console"
 }
