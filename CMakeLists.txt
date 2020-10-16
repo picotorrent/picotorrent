@@ -202,6 +202,9 @@ add_executable(
     src/picotorrent/ui/torrentfilelistview
     src/picotorrent/ui/torrentlistview
     src/picotorrent/ui/translator
+
+    # Win32 specific stuff
+    src/picotorrent/ui/win32/openfiledialog
 )
 
 target_compile_definitions(
@@ -249,6 +252,7 @@ target_link_libraries(
     crypt32
     iphlpapi
     legacy_stdio_definitions
+    propsys
     shlwapi
     wininet
     winhttp
