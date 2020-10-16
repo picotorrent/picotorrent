@@ -69,5 +69,5 @@ AddTrackerDialog::~AddTrackerDialog()
 
 std::string AddTrackerDialog::GetUrl()
 {
-    return m_url->GetValue();
+    return m_url->GetValue().ToStdString();
 }

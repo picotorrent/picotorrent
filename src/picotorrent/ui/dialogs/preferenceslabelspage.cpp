@@ -241,7 +241,7 @@ void PreferencesLabelsPage::Save()
         m_cfg->UpsertLabel(*lbl);
     }
 
-    for (int i = 0; i < m_removedLabels.size(); i++)
+    for (size_t i = 0; i < m_removedLabels.size(); i++)
     {
         m_cfg->DeleteLabel(m_removedLabels.at(i));
     }

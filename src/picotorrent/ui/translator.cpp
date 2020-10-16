@@ -49,7 +49,7 @@ void Translator::LoadDatabase(std::filesystem::path const& filePath)
     sqlite3_close(db);
 }
 
-int Translator::LoadDatabaseCallback(void* user, int count, char** data, char** columns)
+int Translator::LoadDatabaseCallback(void* user, int, char** data, char**)
 {
     Translator* tr = static_cast<Translator*>(user);
 

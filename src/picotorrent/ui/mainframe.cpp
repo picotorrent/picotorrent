@@ -207,7 +207,8 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
 
     this->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &MainFrame::ShowTorrentContextMenu, this, ptID_MAIN_TORRENT_LIST);
 
-    this->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, [this](wxCommandEvent& evt)
+    this->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED,
+        [this](wxCommandEvent&)
         {
             wxDataViewItemArray items;
             m_torrentList->GetSelections(items);
@@ -644,7 +645,8 @@ void MainFrame::OnFileAddMagnetLink(wxCommandEvent&)
 
     if (dlg.ShowModal() == wxID_OK)
     {
-        this->AddTorrents(dlg.GetParams());
+        auto params = dlg.GetParams();
+        this->AddTorrents(params);
     }
 }
 

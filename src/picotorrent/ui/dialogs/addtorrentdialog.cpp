@@ -106,7 +106,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
         FromDIP(80));
 
     // Ugly hack to prevent the last "real" column from stretching.
-    m_filesView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0));
+    m_filesView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), Models::FileStorageModel::Columns::_Max, 0));
 
     nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
     prioCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
@@ -271,7 +271,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
 
 AddTorrentDialog::~AddTorrentDialog()
 {
-    for (int i = 0; i < m_params.size(); i++)
+    for (size_t i = 0; i < m_params.size(); i++)
     {
         lt::add_torrent_params const& p = m_params.at(i);
 
@@ -299,7 +299,9 @@ void AddTorrentDialog::MetadataFound(std::shared_ptr<lt::torrent_info> const& ti
 
             m_torrents->SetString(i, GetTorrentDisplayName(params));
 
-            if (i == m_torrents->GetSelection())
+            if (m_torrents->GetSelection() < 0) { continue; }
+
+            if (m_torrents->GetSelection() == static_cast<int>(i))
             {
                 Load(i);
             }
@@ -438,16 +440,18 @@ void AddTorrentDialog::SetFilePriorities(wxDataViewItemArray& items, lt::downloa
 
     for (lt::file_index_t idx : fileIndices)
     {
-        if (param.file_priorities.size() <= static_cast<int>(idx))
+        size_t fileIdx = static_cast<size_t>(int32_t(idx));
+
+        if (param.file_priorities.size() <= fileIdx)
         {
-            param.file_priorities.resize(static_cast<int>(idx) + 1, lt::default_priority);
+            param.file_priorities.resize(fileIdx + 1, lt::default_priority);
         }
 
-        param.file_priorities.at(static_cast<int>(idx)) = prio;
+        param.file_priorities.at(fileIdx) = prio;
     }
 }
 
-void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent& evt)
+void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent&)
 {
     wxDataViewItemArray items;
     m_filesView->GetSelections(items);
@@ -468,9 +472,9 @@ void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent& evt)
         fileIndices.end(),
         [&](lt::file_index_t i)
         {
-            int i32 = static_cast<int>(i);
-            auto p = param.file_priorities.size() >= i32 + 1
-                ? param.file_priorities[i32]
+            size_t fileIdx = static_cast<size_t>(int32_t(i));
+            auto p = param.file_priorities.size() >= fileIdx + 1
+                ? param.file_priorities[fileIdx]
                 : lt::default_priority;
             return firstPrio == p;
         });

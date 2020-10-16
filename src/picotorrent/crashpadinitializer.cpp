@@ -9,9 +9,13 @@
 #include <Windows.h>
 #include <CommCtrl.h>
 
+#pragma warning(push)
+#pragma warning(disable: 4100)
 #include <client/crash_report_database.h>
 #include <client/settings.h>
 #include <client/crashpad_client.h>
+#pragma warning(pop)
+
 #include <loguru.hpp>
 
 #include "buildinfo.hpp"

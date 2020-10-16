@@ -21,20 +21,26 @@ jobs:
       - name: Setup Git
         run: |
           git fetch --prune --unshallow
-          git ls-tree HEAD vendor/crashpad vendor/fmt vendor/libtorrent vendor/loguru vendor/nlohmann-json vendor/wx > .vendor-status
+          git ls-tree HEAD vendor/fmt vendor/libtorrent vendor/loguru vendor/nlohmann-json vendor/sentry-crashpad vendor/wx > .vendor-status
 
       - name: Restore cache
         uses: actions/cache@v2
         with:
           path: |
-            build-${{ matrix.arch }}/vendor
+            build-${{ matrix.arch }}
+            !build-${{ matrix.arch }}/PicoTorrent-coredb.dir
+            !build-${{ matrix.arch }}/PicoTorrent.dir
+            !build-${{ matrix.arch }}/Plugin_Filters.dir
+            !build-${{ matrix.arch }}/Plugin_Updater.dir
+            !build-${{ matrix.arch }}/Release
+            !build-${{ matrix.arch }}/CMakeCache.txt
           key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('.vendor-status') }}
 
       - name: Prepare
         run: |
           git submodule update --init --recursive
   
-      - name: Install OpenSSL
+      - name: Install dependencies
         run: |
           if ('${{ matrix.arch }}' -eq 'x64') {
             choco install openssl --no-progress
@@ -42,17 +48,19 @@ jobs:
             choco install openssl --no-progress --x86
           }
 
+          dotnet tool restore
+
       - name: Set environment variables
         run: |
-          echo "::set-env name=BOOST_ROOT::$env:BOOST_ROOT_1_72_0"
+          echo "BOOST_ROOT=$env:BOOST_ROOT_1_72_0" >> $GITHUB_ENV
           if ('${{ matrix.arch }}' -eq 'x64') {
-            echo "::set-env name=OPENSSL_ROOT_DIR::$env:ProgramFiles\OpenSSL-Win64"
+            echo "OPENSSL_ROOT_DIR=$env:ProgramFiles\OpenSSL-Win64" >> $GITHUB_ENV
           } elseif ('${{ matrix.arch }}' -eq 'x86') {
-            echo "::set-env name=OPENSSL_ROOT_DIR::${env:ProgramFiles(x86)}\OpenSSL-Win32"
+            echo "OPENSSL_ROOT_DIR=${env:ProgramFiles(x86)}\OpenSSL-Win32" >> $GITHUB_ENV
           }
 
       - name: Build
-        run: .\build.ps1 -Configuration Release -Platform ${{ matrix.arch }}
+        run: dotnet cake --platform=${{ matrix.arch }} --target=Publish
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
