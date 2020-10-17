@@ -71,7 +71,7 @@ unsigned int PeerListModel::GetColumnCount() const
     return Column::_Max;
 }
 
-wxString PeerListModel::GetColumnType(unsigned int col) const
+wxString PeerListModel::GetColumnType(unsigned int) const
 {
     return "string";
 }
@@ -209,7 +209,7 @@ void PeerListModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned
     }
 }
 
-bool PeerListModel::SetValueByRow(const wxVariant &variant, unsigned row, unsigned col)
+bool PeerListModel::SetValueByRow(const wxVariant&, unsigned int, unsigned int)
 {
     return false;
 }

@@ -201,7 +201,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, Models::Torren
     }
 
     // insert the "fake" column last, always
-    AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0, wxALIGN_CENTER, 0));
+    AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), TorrentListModel::Columns::_Max, 0, wxALIGN_CENTER, 0));
 
     this->Bind(wxEVT_DATAVIEW_COLUMN_HEADER_RIGHT_CLICK, &TorrentListView::ShowHeaderContextMenu, this);
 }
@@ -210,7 +210,7 @@ TorrentListView::~TorrentListView()
 {
 }
 
-void TorrentListView::ShowHeaderContextMenu(wxCommandEvent& evt)
+void TorrentListView::ShowHeaderContextMenu(wxCommandEvent&)
 {
     wxMenu menu;
 
