@@ -34,10 +34,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BootstrapperCore">
-      <HintPath>..\..\tools\WiX\tools\sdk\BootstrapperCore.dll</HintPath>
+      <HintPath>..\..\tools\WiX.3.11.2\tools\sdk\BootstrapperCore.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Deployment.WindowsInstaller">
-      <HintPath>..\..\tools\WiX\tools\Microsoft.Deployment.WindowsInstaller.dll</HintPath>
+      <HintPath>..\..\tools\WiX.3.11.2\tools\Microsoft.Deployment.WindowsInstaller.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

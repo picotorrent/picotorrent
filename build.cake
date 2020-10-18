@@ -143,8 +143,20 @@ Task("Build-Installer")
     });
 });
 
+Task("Build-Installer-Bootstrapper")
+    .Does(() =>
+{
+    var settings = new MSBuildSettings()
+        .SetConfiguration(configuration)
+        .SetMaxCpuCount(0)
+        .UseToolVersion(MSBuildToolVersion.VS2019);
+
+    MSBuild("./src/installer/PicoTorrentBootstrapper.sln", settings);
+});
+
 Task("Build-Installer-Bundle")
     .IsDependentOn("Build-Installer")
+    .IsDependentOn("Build-Installer-Bootstrapper")
     .Does(() =>
 {
     var arch = Architecture.X64;
