@@ -691,7 +691,8 @@ void Session::OnSaveResumeDataTimer(wxTimerEvent&)
 
 bool Session::IsSearching(lt::info_hash_t hash)
 {
-    return IsSearching(hash, lt::info_hash_t());
+    lt::info_hash_t t;
+    return IsSearching(hash, t);
 }
 
 bool Session::IsSearching(lt::info_hash_t hash, lt::info_hash_t& result)
@@ -866,8 +867,8 @@ void Session::SaveTorrents()
 
     while (numOutstandingResumeData > 0)
     {
-        lt::alert const* a = m_session->wait_for_alert(lt::seconds(10));
-        if (a == nullptr) { continue; }
+        lt::alert const* tmp = m_session->wait_for_alert(lt::seconds(10));
+        if (tmp == nullptr) { continue; }
 
         std::vector<lt::alert*> alerts;
         m_session->pop_alerts(&alerts);

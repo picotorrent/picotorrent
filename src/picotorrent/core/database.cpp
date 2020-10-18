@@ -68,7 +68,7 @@ void Database::Statement::Bind(int idx, std::string const& value)
         m_stmt,
         idx,
         value.c_str(),
-        value.size(),
+        static_cast<int>(value.size()),
         SQLITE_TRANSIENT);
 }
 
@@ -302,7 +302,7 @@ void Database::GetKnownFolderPath(sqlite3_context* ctx, int argc, sqlite3_value*
     }
 }
 
-void Database::GetUserDefaultUILanguage(sqlite3_context* ctx, int argc, sqlite3_value** argv)
+void Database::GetUserDefaultUILanguage(sqlite3_context* ctx, int, sqlite3_value**)
 {
     sqlite3_result_int(ctx, static_cast<int>(::GetUserDefaultUILanguage()));
 }

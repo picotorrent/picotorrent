@@ -21,20 +21,9 @@ jobs:
       - name: Setup Git
         run: |
           git fetch --prune --unshallow
-          git ls-tree HEAD vendor/crashpad vendor/fmt vendor/libtorrent vendor/loguru vendor/nlohmann-json vendor/wx > .vendor-status
-
-      - name: Restore cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            build-${{ matrix.arch }}/vendor
-          key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('.vendor-status') }}
-
-      - name: Prepare
-        run: |
           git submodule update --init --recursive
-  
-      - name: Install OpenSSL
+
+      - name: Install dependencies
         run: |
           if ('${{ matrix.arch }}' -eq 'x64') {
             choco install openssl --no-progress
@@ -42,17 +31,19 @@ jobs:
             choco install openssl --no-progress --x86
           }
 
+          dotnet tool restore
+
       - name: Set environment variables
         run: |
-          echo "::set-env name=BOOST_ROOT::$env:BOOST_ROOT_1_72_0"
+          echo "BOOST_ROOT=$env:BOOST_ROOT_1_72_0" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           if ('${{ matrix.arch }}' -eq 'x64') {
-            echo "::set-env name=OPENSSL_ROOT_DIR::$env:ProgramFiles\OpenSSL-Win64"
+            echo "OPENSSL_ROOT_DIR=$env:ProgramFiles\OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           } elseif ('${{ matrix.arch }}' -eq 'x86') {
-            echo "::set-env name=OPENSSL_ROOT_DIR::${env:ProgramFiles(x86)}\OpenSSL-Win32"
+            echo "OPENSSL_ROOT_DIR=${env:ProgramFiles(x86)}\OpenSSL-Win32" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           }
 
       - name: Build
-        run: .\build.ps1 -Configuration Release -Platform ${{ matrix.arch }}
+        run: dotnet cake --platform=${{ matrix.arch }} --target=Publish
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2

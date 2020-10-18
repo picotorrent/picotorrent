@@ -78,7 +78,7 @@ void TorrentDetailsFilesPanel::Reset()
     m_filesModel->Cleared();
 }
 
-void TorrentDetailsFilesPanel::ShowFileContextMenu(wxCommandEvent& evt)
+void TorrentDetailsFilesPanel::ShowFileContextMenu(wxCommandEvent&)
 {
     wxDataViewItemArray items;
     m_fileList->GetSelections(items);
@@ -127,13 +127,13 @@ void TorrentDetailsFilesPanel::ShowFileContextMenu(wxCommandEvent& evt)
             {
                 for (lt::file_index_t idx : fileIndices)
                 {
-                    int i32 = static_cast<int>(idx);
-                    if (priorities.size() <= i32)
+                    size_t fileIdx = static_cast<size_t>(int32_t(idx));
+                    if (priorities.size() <= fileIdx)
                     {
-                        priorities.resize(size_t(i32) + 1, lt::default_priority);
+                        priorities.resize(fileIdx + 1, lt::default_priority);
                     }
 
-                    priorities.at(i32) = p;
+                    priorities.at(fileIdx) = p;
                 }
             };
 

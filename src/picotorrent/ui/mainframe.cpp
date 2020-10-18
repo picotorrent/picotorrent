@@ -38,6 +38,8 @@
 #include "torrentlistview.hpp"
 #include "translator.hpp"
 
+#include "win32/openfiledialog.hpp"
+
 namespace fs = std::filesystem;
 using pt::UI::MainFrame;
 
@@ -124,7 +126,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
             auto torrent = static_cast<BitTorrent::TorrentHandle*>(evt.GetClientData());
             m_taskBarIcon->ShowBalloon(
                 i18n("torrent_finished"),
-                torrent->Status().name);
+                Utils::toStdWString(torrent->Status().name));
         });
 
     this->Bind(ptEVT_TORRENT_REMOVED, [this](pt::BitTorrent::InfoHashEvent& evt)
@@ -205,7 +207,8 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
 
     this->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &MainFrame::ShowTorrentContextMenu, this, ptID_MAIN_TORRENT_LIST);
 
-    this->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, [this](wxCommandEvent& evt)
+    this->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED,
+        [this](wxCommandEvent&)
         {
             wxDataViewItemArray items;
             m_torrentList->GetSelections(items);
@@ -564,7 +567,7 @@ void MainFrame::CreateLabelMenuItems()
 
     for (auto const& label : m_cfg->GetLabels())
     {
-        m_labelsMenu->AppendRadioItem(ptID_EVT_LABELS_USER + label.id, label.name);
+        m_labelsMenu->AppendRadioItem(ptID_EVT_LABELS_USER + label.id, Utils::toStdWString(label.name));
     }
 }
 
@@ -642,39 +645,34 @@ void MainFrame::OnFileAddMagnetLink(wxCommandEvent&)
 
     if (dlg.ShowModal() == wxID_OK)
     {
-        this->AddTorrents(dlg.GetParams());
+        auto params = dlg.GetParams();
+        this->AddTorrents(params);
     }
 }
 
 void MainFrame::OnFileAddTorrent(wxCommandEvent&)
 {
-    wxFileDialog openDialog(
-        this,
-        i18n("add_torrent_s"),
-        wxEmptyString,
-        wxEmptyString,
-        "Torrent files (*.torrent)|*.torrent|All files (*.*)|*.*",
-        wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
+    Win32::OpenFileDialog ofd;
 
-    if (openDialog.ShowModal() != wxID_OK)
+    ofd.SetFileTypes({
+        std::make_tuple(L"Torrent files", L"*.torrent"),
+        std::make_tuple(L"All files (*.*)", L"*.*")
+    });
+
+    ofd.SetOption(Win32::OpenFileDialog::Option::Multi);
+    ofd.SetTitle(i18n("add_torrent_s"));
+    ofd.Show(this);
+
+    std::vector<std::string> files;
+    ofd.GetFiles(files);
+
+    if (files.empty())
     {
         return;
     }
 
-    wxArrayString paths;
-    openDialog.GetPaths(paths);
-
-    std::vector<std::string> converted;
-    std::for_each(
-        paths.begin(),
-        paths.end(),
-        [&converted](wxString const& str)
-        {
-            converted.push_back(Utils::toStdString(str.wc_str()));
-        });
-
     std::vector<lt::add_torrent_params> params;
-    this->ParseTorrentFiles(params, converted);
+    this->ParseTorrentFiles(params, files);
     this->AddTorrents(params);
 }
 

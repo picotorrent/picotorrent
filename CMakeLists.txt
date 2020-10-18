@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_policy(SET CMP0092 NEW) # don't add /W3 as default
 
 project("PicoTorrent")
 
@@ -36,10 +37,10 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(wxUSE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
 # --------------------
 
-add_subdirectory(vendor/crashpad)
 add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/nlohmann-json)
+add_subdirectory(vendor/sentry-crashpad)
 add_subdirectory(vendor/wx)
 
 gitversion_install()
@@ -64,7 +65,7 @@ configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_S
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
 
 # Release flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GUARD:CF /Zi")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
@@ -202,6 +203,9 @@ add_executable(
     src/picotorrent/ui/torrentfilelistview
     src/picotorrent/ui/torrentlistview
     src/picotorrent/ui/translator
+
+    # Win32 specific stuff
+    src/picotorrent/ui/win32/openfiledialog
 )
 
 target_compile_definitions(
@@ -229,6 +233,8 @@ target_compile_definitions(
     -DPICO_WX_GIT_COMMITISH=${PICO_WX_GIT_COMMITISH}
 )
 
+target_compile_options(PicoTorrent PRIVATE /guard:cf /W4 /WX)
+
 target_include_directories(
     PicoTorrent
     PRIVATE
@@ -249,6 +255,7 @@ target_link_libraries(
     crypt32
     iphlpapi
     legacy_stdio_definitions
+    propsys
     shlwapi
     wininet
     winhttp
@@ -291,7 +298,7 @@ add_library(
     src/plugins/updater/updater
 )
 
-target_compile_definitions(Plugin_Updater PRIVATE -D_UNICODE -D_WIN32 -DWIN32_LEAN_AND_MEAN)
+target_compile_definitions(Plugin_Updater PRIVATE -D_WIN32 -DUNICODE -DWIN32_LEAN_AND_MEAN)
 target_include_directories(Plugin_Updater PRIVATE include)
 target_link_libraries(Plugin_Updater PRIVATE PicoTorrent Comctl32)
 

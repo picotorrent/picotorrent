@@ -20,7 +20,7 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 - Native look-and-feel across Windows versions.
 - Easy to use with high performance.
 
-*The portable version of PicoTorrent requires manual installation of [the Microsoft Visual C++ Redistributable for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)*
+*The portable version of PicoTorrent requires manual installation of [the Microsoft Visual C++ Redistributable for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/).*
 
 
 ## Building PicoTorrent
@@ -36,17 +36,12 @@ applications installed,
  * [Boost 1.73.0](https://www.boost.org).
  * [Chocolatey](https://chocolatey.org/install) (Optional) if you plan to build
    or test the Chocolatey package.
-
-Make sure all submodules are updated.
+ * [.NET Core](https://dotnet.microsoft.com/download). Used for the build scripts.
 
 ```
 λ git submodule update --init --recursive
-```
-
-Build your desired configuration and architecture.
-
-```
-λ .\build.ps1 --platform [x86|x64] --configuration [Debug|Release]
+λ dotnet tool restore
+λ dotnet cake --platorm=[x86|x64] --configuration=[Debug|Release]
 ```
 
 

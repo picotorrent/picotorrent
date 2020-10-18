@@ -9,6 +9,7 @@
 #include <libtorrent/fwd.hpp>
 #include <libtorrent/info_hash.hpp>
 #include <memory>
+#include <set>
 #include <vector>
 
 class wxBitmapComboBox;
@@ -85,6 +86,7 @@ namespace Dialogs
         std::shared_ptr<Core::Configuration> m_cfg;
         std::shared_ptr<Core::Database> m_db;
         std::vector<libtorrent::add_torrent_params> m_params;
+        std::set<libtorrent::info_hash_t> m_manualSavePath;
     };
 }
 }

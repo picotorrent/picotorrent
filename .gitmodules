@@ -17,3 +17,6 @@
 [submodule "vendor/crashpad"]
 	path = vendor/crashpad
 	url = https://github.com/picotorrent/crashpad
+[submodule "vendor/sentry-crashpad"]
+	path = vendor/sentry-crashpad
+	url = https://github.com/picotorrent/sentry-crashpad

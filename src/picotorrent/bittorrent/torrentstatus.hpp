@@ -46,6 +46,7 @@ namespace BitTorrent
         std::string                                   errorDetails;
         std::chrono::seconds                          eta;
         std::string                                   infoHash;
+        std::string                                   labelName;
         std::chrono::seconds                          lastDownload;
         std::chrono::seconds                          lastUpload;
         std::string                                   name;

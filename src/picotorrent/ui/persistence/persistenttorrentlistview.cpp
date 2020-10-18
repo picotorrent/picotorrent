@@ -108,8 +108,8 @@ bool PersistentTorrentListView::Restore()
         col->SetWidth(widths[i]);
     }
 
-    int sortIndex;
-    bool sortAscending;
+    int sortIndex = -1;
+    bool sortAscending = false;
 
     if (RestoreValue("SortIndex", &sortIndex)
         && RestoreValue("SortAscending", &sortAscending))

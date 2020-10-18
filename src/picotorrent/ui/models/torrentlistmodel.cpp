@@ -109,79 +109,102 @@ int TorrentListModel::Compare(const wxDataViewItem& item1, const wxDataViewItem&
         return 0;
     };
 
+    auto nameSort = [&hashSort](bool ascending, TorrentStatus const& l, TorrentStatus const& r) -> int
+    {
+        if (l.name < r.name) { return ascending ? -1 : 1; }
+        if (l.name > r.name) { return ascending ? 1 : -1; }
+        return hashSort(ascending, l, l);
+    };
+
     switch (column)
     {
     case Columns::Name:
     {
-        if (lhs.name < rhs.name)  { return ascending ? -1 :  1; }
-        if (lhs.name > rhs.name)  { return ascending ?  1 : -1; }
-        if (lhs.name == rhs.name) { return hashSort(ascending, lhs, rhs); }
+        return nameSort(ascending, lhs, rhs);
     }
     case Columns::QueuePosition:
     {
         if (lhs.queuePosition < rhs.queuePosition)  { return ascending ? -1 :  1; }
         if (lhs.queuePosition > rhs.queuePosition)  { return ascending ?  1 : -1; }
         if (lhs.queuePosition == rhs.queuePosition) { return hashSort(ascending, lhs, rhs); }
+        break;
     }
     case Columns::Size:
     {
         if (lhs.totalWanted < rhs.totalWanted) { return ascending ? -1 :  1; }
         if (lhs.totalWanted > rhs.totalWanted) { return ascending ?  1 : -1; }
         if (lhs.totalWanted == rhs.totalWanted) { return hashSort(ascending, lhs, rhs); }
+        break;
     }
     case Columns::SizeRemaining:
     {
         if (lhs.totalWantedRemaining < rhs.totalWantedRemaining) { return ascending ? -1 : 1; }
         if (lhs.totalWantedRemaining > rhs.totalWantedRemaining) { return ascending ? 1 : -1; }
         if (lhs.totalWantedRemaining == rhs.totalWantedRemaining) { return hashSort(ascending, lhs, rhs); }
+        break;
     }
     case Columns::Progress:
     {
         if (lhs.progress < rhs.progress) { return ascending ? -1 : 1; }
         if (lhs.progress > rhs.progress) { return ascending ? 1 : -1; }
         if (lhs.progress == rhs.progress) { return hashSort(ascending, lhs, rhs); }
+        break;
     }
     case Columns::ETA:
     {
         if (lhs.eta < rhs.eta) { return ascending ? -1 : 1; }
         if (lhs.eta > rhs.eta) { return ascending ? 1 : -1; }
         if (lhs.eta == rhs.eta) { return hashSort(ascending, lhs, rhs); }
+        break;
     }
     case Columns::DownloadSpeed:
     {
         if (lhs.downloadPayloadRate < rhs.downloadPayloadRate) { return ascending ? -1 : 1; }
         if (lhs.downloadPayloadRate > rhs.downloadPayloadRate) { return ascending ? 1 : -1; }
         if (lhs.downloadPayloadRate == rhs.downloadPayloadRate) { return hashSort(ascending, lhs, rhs); }
+        break;
     }
     case Columns::UploadSpeed:
     {
         if (lhs.uploadPayloadRate < rhs.uploadPayloadRate) { return ascending ? -1 : 1; }
         if (lhs.uploadPayloadRate > rhs.uploadPayloadRate) { return ascending ? 1 : -1; }
         if (lhs.uploadPayloadRate == rhs.uploadPayloadRate) { return hashSort(ascending, lhs, rhs); }
+        break;
     }
     case Columns::Availability:
     {
         if (lhs.availability < rhs.availability) { return ascending ? -1 : 1; }
         if (lhs.availability > rhs.availability) { return ascending ? 1 : -1; }
         if (lhs.availability == rhs.availability) { return hashSort(ascending, lhs, rhs); }
+        break;
     }
     case Columns::Ratio:
     {
         if (lhs.ratio < rhs.ratio) { return ascending ? -1 : 1; }
         if (lhs.ratio > rhs.ratio) { return ascending ? 1 : -1; }
         if (lhs.ratio == rhs.ratio) { return hashSort(ascending, lhs, rhs); }
+        break;
     }
     case Columns::AddedOn:
     {
         if (lhs.addedOn < rhs.addedOn) { return ascending ? -1 : 1; }
         if (lhs.addedOn > rhs.addedOn) { return ascending ? 1 : -1; }
         if (lhs.addedOn == rhs.addedOn) { return hashSort(ascending, lhs, rhs); }
+        break;
     }
     case Columns::CompletedOn:
     {
         if (lhs.completedOn < rhs.completedOn) { return ascending ? -1 : 1; }
         if (lhs.completedOn > rhs.completedOn) { return ascending ? 1 : -1; }
         if (lhs.completedOn == rhs.completedOn) { return hashSort(ascending, lhs, rhs); }
+        break;
+    }
+    case Columns::Label:
+    {
+        if (lhs.labelName < rhs.labelName) { return ascending ? -1 : 1; }
+        if (lhs.labelName > rhs.labelName) { return ascending ? 1 : -1; }
+        if (lhs.labelName == rhs.labelName) { return nameSort(ascending, lhs, rhs); }
+        break;
     }
     }
 
@@ -222,7 +245,7 @@ bool TorrentListModel::GetAttrByRow(unsigned int row, unsigned int col, wxDataVi
     return false;
 }
 
-wxString TorrentListModel::GetColumnType(unsigned int column) const
+wxString TorrentListModel::GetColumnType(unsigned int) const
 {
     return "string";
 }
@@ -475,7 +498,8 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             ic = m_labelsIcons.at(torrent->Label());
         }
 
-        variant << wxDataViewIconText(name, ic);
+        variant << wxDataViewIconText(
+            Utils::toStdWString(name), ic);
 
         break;
     }
