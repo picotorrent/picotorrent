@@ -21,25 +21,8 @@ jobs:
       - name: Setup Git
         run: |
           git fetch --prune --unshallow
-          git ls-tree HEAD vendor/fmt vendor/libtorrent vendor/loguru vendor/nlohmann-json vendor/sentry-crashpad vendor/wx > .vendor-status
-
-      - name: Restore cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            build-${{ matrix.arch }}
-            !build-${{ matrix.arch }}/PicoTorrent-coredb.dir
-            !build-${{ matrix.arch }}/PicoTorrent.dir
-            !build-${{ matrix.arch }}/Plugin_Filters.dir
-            !build-${{ matrix.arch }}/Plugin_Updater.dir
-            !build-${{ matrix.arch }}/Release
-            !build-${{ matrix.arch }}/CMakeCache.txt
-          key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('.vendor-status') }}
-
-      - name: Prepare
-        run: |
           git submodule update --init --recursive
-  
+
       - name: Install dependencies
         run: |
           if ('${{ matrix.arch }}' -eq 'x64') {
@@ -52,11 +35,11 @@ jobs:
 
       - name: Set environment variables
         run: |
-          echo "BOOST_ROOT=$env:BOOST_ROOT_1_72_0" >> $GITHUB_ENV
+          echo "BOOST_ROOT=$env:BOOST_ROOT_1_72_0" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           if ('${{ matrix.arch }}' -eq 'x64') {
-            echo "OPENSSL_ROOT_DIR=$env:ProgramFiles\OpenSSL-Win64" >> $GITHUB_ENV
+            echo "OPENSSL_ROOT_DIR=$env:ProgramFiles\OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           } elseif ('${{ matrix.arch }}' -eq 'x86') {
-            echo "OPENSSL_ROOT_DIR=${env:ProgramFiles(x86)}\OpenSSL-Win32" >> $GITHUB_ENV
+            echo "OPENSSL_ROOT_DIR=${env:ProgramFiles(x86)}\OpenSSL-Win32" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           }
 
       - name: Build
