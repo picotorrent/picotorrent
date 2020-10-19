@@ -35,5 +35,12 @@ namespace UI
         ptID_EVT_FILTERS_NONE,
         ptID_EVT_FILTERS_USER,
     };
+
+    enum
+    {
+        ptID_EVT_LABELS_EDIT = ptID_EVT_FILTERS_USER + 1000,
+        ptID_EVT_LABELS_NONE,
+        ptID_EVT_LABELS_USER
+    };
 }
 }

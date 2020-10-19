@@ -25,6 +25,19 @@ namespace Core
             int32_t port;
         };
 
+        struct Label
+        {
+            Label() : id(-1), colorEnabled(false), savePathEnabled(false), applyFilterEnabled(false) {}
+            int32_t id;
+            std::string name;
+            std::string color;
+            bool colorEnabled;
+            std::string savePath;
+            bool savePathEnabled;
+            std::string applyFilter;
+            bool applyFilterEnabled;
+        };
+
         struct ListenInterface
         {
             int32_t id;
@@ -82,6 +95,11 @@ namespace Core
         }
 
         std::vector<DhtBootstrapNode> GetDhtBootstrapNodes();
+
+        // Labels
+        std::vector<Label> GetLabels();
+        void DeleteLabel(int32_t id);
+        void UpsertLabel(Label const& label);
 
         std::vector<ListenInterface> GetListenInterfaces();
         void DeleteListenInterface(int id);

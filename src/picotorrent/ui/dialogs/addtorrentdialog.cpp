@@ -1,21 +1,28 @@
 #include "addtorrentdialog.hpp"
 
+#include <regex>
+
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/torrent_info.hpp>
+#include <wx/bmpcbox.h>
 #include <wx/dataview.h>
 #include <wx/sizer.h>
 
+#include "../../bittorrent/addparams.hpp"
+#include "../../core/configuration.hpp"
 #include "../../core/database.hpp"
 #include "../../core/utils.hpp"
+#include "../clientdata.hpp"
 #include "../models/filestoragemodel.hpp"
 #include "../translator.hpp"
 
 using pt::UI::Dialogs::AddTorrentDialog;
 
-AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<lt::add_torrent_params>& params, std::shared_ptr<Core::Database> db)
+AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<lt::add_torrent_params>& params, std::shared_ptr<Core::Database> db, std::shared_ptr<Core::Configuration> cfg)
     : wxDialog(parent, id, i18n("add_torrent_s"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     m_params(params),
     m_db(db),
+    m_cfg(cfg),
     m_filesModel(new Models::FileStorageModel(std::bind(&AddTorrentDialog::SetFilePriorities, this, std::placeholders::_1, std::placeholders::_2)))
 {
     auto fileSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("file"));
@@ -42,23 +49,27 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
     infoGrid->Add(m_torrentComment);
     infoSizer->Add(infoGrid);
 
-    auto storageSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("storage"));
+    auto optionsSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("options"));
 
-    m_torrentSavePath = new wxComboBox(storageSizer->GetStaticBox(), ptID_SAVE_PATH_INPUT);
-    m_torrentSavePathBrowse = new wxButton(storageSizer->GetStaticBox(), ptID_SAVE_PATH_BROWSE, i18n("browse"));
-    m_filesView = new wxDataViewCtrl(storageSizer->GetStaticBox(), ptID_FILE_LIST, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE);
-    m_sequentialDownload = new wxCheckBox(storageSizer->GetStaticBox(), ptID_SEQUENTIAL_DOWNLOAD, i18n("sequential_download"));
-    m_startTorrent = new wxCheckBox(storageSizer->GetStaticBox(), ptID_START_TORRENT, i18n("start_torrent"));
+    m_torrentLabel = new wxBitmapComboBox(optionsSizer->GetStaticBox(), ptID_LABEL_COMBO, "", wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_READONLY);
+    m_torrentSavePath = new wxComboBox(optionsSizer->GetStaticBox(), ptID_SAVE_PATH_INPUT);
+    m_torrentSavePathBrowse = new wxButton(optionsSizer->GetStaticBox(), ptID_SAVE_PATH_BROWSE, i18n("browse"));
+    m_filesView = new wxDataViewCtrl(optionsSizer->GetStaticBox(), ptID_FILE_LIST, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE);
+    m_sequentialDownload = new wxCheckBox(optionsSizer->GetStaticBox(), ptID_SEQUENTIAL_DOWNLOAD, i18n("sequential_download"));
+    m_startTorrent = new wxCheckBox(optionsSizer->GetStaticBox(), ptID_START_TORRENT, i18n("start_torrent"));
 
-    auto storageGrid = new wxFlexGridSizer(2, FromDIP(7), FromDIP(10));
-    storageGrid->AddGrowableCol(1, 1);
+    auto optionsGrid = new wxFlexGridSizer(2, FromDIP(7), FromDIP(10));
+    optionsGrid->AddGrowableCol(1, 1);
+
+    optionsGrid->Add(new wxStaticText(optionsSizer->GetStaticBox(), wxID_ANY, i18n("label")), 0, wxALIGN_CENTER_VERTICAL);
+    optionsGrid->Add(m_torrentLabel, 1, wxEXPAND | wxALL, FromDIP(3));
 
     auto savePathSizer = new wxBoxSizer(wxHORIZONTAL);
     savePathSizer->Add(m_torrentSavePath, 1, wxALL, FromDIP(3));
     savePathSizer->Add(m_torrentSavePathBrowse, 0, wxALL, FromDIP(3));
 
-    storageGrid->Add(new wxStaticText(storageSizer->GetStaticBox(), wxID_ANY, i18n("save_path")), 0, wxALIGN_CENTER_VERTICAL);
-    storageGrid->Add(savePathSizer, 1, wxEXPAND);
+    optionsGrid->Add(new wxStaticText(optionsSizer->GetStaticBox(), wxID_ANY, i18n("save_path")), 0, wxALIGN_CENTER_VERTICAL);
+    optionsGrid->Add(savePathSizer, 1, wxEXPAND);
 
     // seq. download, paused, etc
 
@@ -66,11 +77,11 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
     flagsGrid->Add(m_sequentialDownload, 1, wxALL);
     flagsGrid->Add(m_startTorrent, 1, wxALL);
 
-    storageGrid->AddSpacer(1);
-    storageGrid->Add(flagsGrid, 1, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, FromDIP(3));
+    optionsGrid->AddSpacer(1);
+    optionsGrid->Add(flagsGrid, 1, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, FromDIP(3));
 
-    storageSizer->Add(storageGrid, 0, wxEXPAND);
-    storageSizer->Add(m_filesView, 1, wxEXPAND | wxALL, FromDIP(3));
+    optionsSizer->Add(optionsGrid, 0, wxEXPAND);
+    optionsSizer->Add(m_filesView, 1, wxEXPAND | wxALL, FromDIP(3));
 
     auto nameCol = new wxDataViewColumn(
         i18n("name"),
@@ -95,7 +106,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
         FromDIP(80));
 
     // Ugly hack to prevent the last "real" column from stretching.
-    m_filesView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0));
+    m_filesView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), Models::FileStorageModel::Columns::_Max, 0));
 
     nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
     prioCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
@@ -114,12 +125,42 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
     mainSizer->Add(fileSizer, 0, wxEXPAND | wxALL, FromDIP(11));
     mainSizer->Add(infoSizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(11));
-    mainSizer->Add(storageSizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(11));
+    mainSizer->Add(optionsSizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(11));
     mainSizer->Add(buttonsSizer, 0, wxALIGN_RIGHT | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(11));
 
     this->SetSizerAndFit(mainSizer);
     this->SetSize(FromDIP(wxSize(400, 500)));
     this->SetMinSize(FromDIP(wxSize(400, 450)));
+
+    // Load labels
+    Core::Configuration::Label lbl;
+    lbl.id = -1;
+    lbl.savePath = m_cfg->Get<std::string>("default_save_path").value();
+    lbl.savePathEnabled = true;
+
+    m_torrentLabel->Append(i18n("none"), wxNullBitmap, new ClientData<Core::Configuration::Label>(lbl));
+
+    for (auto const& label : cfg->GetLabels())
+    {
+        wxBitmap bmp = wxNullBitmap;
+
+        if (label.colorEnabled && label.color.size() > 0)
+        {
+            bmp = wxBitmap(24, 24);
+
+            {
+                wxMemoryDC dc;
+                wxDCBrushChanger dcbc(dc, wxColor(label.color));
+                dc.SelectObject(bmp);
+                dc.Clear();
+            }
+        }
+
+        m_torrentLabel->Append(
+            Utils::toStdWString(label.name),
+            bmp,
+            new ClientData<Core::Configuration::Label>(label));
+    }
 
     // Load save path history
     auto stmt = m_db->CreateStatement("SELECT path FROM path_history WHERE type = 'add_torrent_dialog' ORDER BY timestamp DESC LIMIT 5");
@@ -142,6 +183,26 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
     m_torrents->Select(0);
 
     this->Bind(wxEVT_CHOICE, [this](wxCommandEvent& evt) { this->Load(evt.GetInt()); }, ptID_TORRENTS_COMBO);
+
+    this->Bind(
+        wxEVT_COMBOBOX,
+        [this](wxCommandEvent&)
+        {
+            int idx = m_torrents->GetSelection();
+            lt::add_torrent_params& params = m_params.at(idx);
+            auto label = reinterpret_cast<ClientData<Core::Configuration::Label>*>(m_torrentLabel->GetClientObject(m_torrentLabel->GetSelection()));
+
+            if (m_manualSavePath.find(params.info_hashes) == m_manualSavePath.end()
+                && label->GetValue().savePathEnabled
+                && !label->GetValue().savePath.empty())
+            {
+                params.save_path = label->GetValue().savePath;
+                m_torrentSavePath->ChangeValue(Utils::toStdWString(params.save_path));
+            }
+
+            params.userdata.get<BitTorrent::AddParams>()->labelId = label->GetValue().id;
+        },
+        ptID_LABEL_COMBO);
 
     this->Bind(
         wxEVT_BUTTON,
@@ -169,6 +230,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
             int idx = m_torrents->GetSelection();
             lt::add_torrent_params& params = m_params.at(idx);
             params.save_path = Utils::toStdString(m_torrentSavePath->GetValue().wc_str());
+            m_manualSavePath.insert(params.info_hashes);
         },
         ptID_SAVE_PATH_INPUT);
 
@@ -209,7 +271,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
 
 AddTorrentDialog::~AddTorrentDialog()
 {
-    for (int i = 0; i < m_params.size(); i++)
+    for (size_t i = 0; i < m_params.size(); i++)
     {
         lt::add_torrent_params const& p = m_params.at(i);
 
@@ -237,7 +299,9 @@ void AddTorrentDialog::MetadataFound(std::shared_ptr<lt::torrent_info> const& ti
 
             m_torrents->SetString(i, GetTorrentDisplayName(params));
 
-            if (i == m_torrents->GetSelection())
+            if (m_torrents->GetSelection() < 0) { continue; }
+
+            if (m_torrents->GetSelection() == static_cast<int>(i))
             {
                 Load(i);
             }
@@ -249,12 +313,12 @@ wxString AddTorrentDialog::GetTorrentDisplayName(libtorrent::add_torrent_params 
 {
     if (params.ti)
     {
-        return params.ti->name();
+        return Utils::toStdWString(params.ti->name());
     }
 
     if (params.name.size() > 0)
     {
-        return params.name;
+        return Utils::toStdWString(params.name);
     }
 
     std::stringstream hash;
@@ -329,7 +393,7 @@ void AddTorrentDialog::Load(size_t index)
     m_torrentComment->SetLabel(this->GetTorrentDisplayComment(params));
 
     // Save path
-    m_torrentSavePath->SetValue(wxString::FromUTF8(params.save_path));
+    m_torrentSavePath->ChangeValue(wxString::FromUTF8(params.save_path));
 
     m_sequentialDownload->SetValue(
         (params.flags & lt::torrent_flags::sequential_download) == lt::torrent_flags::sequential_download);
@@ -353,6 +417,20 @@ void AddTorrentDialog::Load(size_t index)
     {
         m_filesModel->Cleared();
     }
+
+    // set correct label item
+    m_torrentLabel->SetSelection(0);
+    for (uint32_t i = 0; i < m_torrentLabel->GetCount(); i++)
+    {
+        auto label = reinterpret_cast<ClientData<Core::Configuration::Label>*>(m_torrentLabel->GetClientObject(i));
+
+        if (label->GetValue().id == params.userdata.get<BitTorrent::AddParams>()->labelId)
+        {
+            // yup
+            m_torrentLabel->SetSelection(i);
+            break;
+        }
+    }
 }
 
 void AddTorrentDialog::SetFilePriorities(wxDataViewItemArray& items, lt::download_priority_t prio)
@@ -362,16 +440,18 @@ void AddTorrentDialog::SetFilePriorities(wxDataViewItemArray& items, lt::downloa
 
     for (lt::file_index_t idx : fileIndices)
     {
-        if (param.file_priorities.size() <= static_cast<int>(idx))
+        size_t fileIdx = static_cast<size_t>(int32_t(idx));
+
+        if (param.file_priorities.size() <= fileIdx)
         {
-            param.file_priorities.resize(static_cast<int>(idx) + 1, lt::default_priority);
+            param.file_priorities.resize(fileIdx + 1, lt::default_priority);
         }
 
-        param.file_priorities.at(static_cast<int>(idx)) = prio;
+        param.file_priorities.at(fileIdx) = prio;
     }
 }
 
-void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent& evt)
+void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent&)
 {
     wxDataViewItemArray items;
     m_filesView->GetSelections(items);
@@ -392,9 +472,9 @@ void AddTorrentDialog::ShowFileContextMenu(wxDataViewEvent& evt)
         fileIndices.end(),
         [&](lt::file_index_t i)
         {
-            int i32 = static_cast<int>(i);
-            auto p = param.file_priorities.size() >= i32 + 1
-                ? param.file_priorities[i32]
+            size_t fileIdx = static_cast<size_t>(int32_t(i));
+            auto p = param.file_priorities.size() >= fileIdx + 1
+                ? param.file_priorities[fileIdx]
                 : lt::default_priority;
             return firstPrio == p;
         });

@@ -204,6 +204,6 @@ void Application::WaitForPreviousInstance(long pid)
 {
     HANDLE hProc = OpenProcess(SYNCHRONIZE, FALSE, pid);
     if (hProc == NULL) { return; }
-    DWORD res = WaitForSingleObject(hProc, 10000);
+    WaitForSingleObject(hProc, 10000);
     CloseHandle(hProc);
 }

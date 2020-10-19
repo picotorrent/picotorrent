@@ -92,7 +92,7 @@
     "client": "Client",
     "flags": "Flags",
     "trackers": "Trackers",
-    "url": "Url",
+    "url": "URL",
     "next_announce": "Next announce",
     "scrape": "Scrape",
     "picotorrent_v_available": "PicoTorrent %s available",
@@ -278,5 +278,10 @@
     "cancel": "Cancel",
     "restore_defaults": "Restore defaults",
     "documentation": "Documentation",
-    "restore_defaults_description": "This will restore most settings to their default value. Are you sure?"
+    "restore_defaults_description": "This will restore most settings to their default value. Are you sure?",
+    "use_label_color_as_background_in_torrent_list": "Use label color as background in torrent list",
+    "labels": "Labels",
+    "label_details": "Label details",
+    "color": "Color",
+    "apply_filter": "Apply filter"
 }

@@ -49,7 +49,8 @@ public:
     CopyableStaticText(wxWindow* parent)
         : wxStaticText(parent, wxID_ANY, "-", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END)
     {
-        this->Bind(wxEVT_RIGHT_DOWN, [this](wxMouseEvent const& ev)
+        this->Bind(wxEVT_RIGHT_DOWN,
+            [this](wxMouseEvent const&)
             {
                 if (this->GetLabel() == "-")
                 {
@@ -58,7 +59,8 @@ public:
 
                 wxMenu menu;
                 menu.Append(9999, i18n("copy"));
-                menu.Bind(wxEVT_MENU, [this](wxCommandEvent const&)
+                menu.Bind(wxEVT_MENU,
+                    [this](wxCommandEvent const&)
                     {
                         if (wxTheClipboard->Open())
                         {

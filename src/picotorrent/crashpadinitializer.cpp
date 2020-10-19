@@ -10,9 +10,12 @@
 #include <CommCtrl.h>
 
 #include <boost/log/trivial.hpp>
+#pragma warning(push)
+#pragma warning(disable: 4100)
 #include <client/crash_report_database.h>
 #include <client/settings.h>
 #include <client/crashpad_client.h>
+#pragma warning(pop)
 
 #include "buildinfo.hpp"
 #include "core/environment.hpp"
@@ -68,25 +71,32 @@ void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
         return;
     }
 
+    std::string environment = "Production";
+    std::string release = "PicoTorrent-" + std::string(pt::BuildInfo::version());
+
+    if (strcmp(pt::BuildInfo::branch(), "master") != 0)
+    {
+        environment = "Experimental";
+        release = "";
+    }
+
     crashpad::CrashpadClient client;
-    if (!client.StartHandlerForBacktrace(base::FilePath(handlerPath.wstring()),
+    if (!client.StartHandler(base::FilePath(handlerPath.wstring()),
         base::FilePath(databasePath.wstring()),
         base::FilePath(databasePath.wstring()),
         env->GetCrashpadReportUrl(),
         // annotations
         {
-            { "branch",    pt::BuildInfo::branch() },
-            { "commitish", pt::BuildInfo::commitish() },
-            { "version",   pt::BuildInfo::semver() }
+            { "branch",              pt::BuildInfo::branch() },
+            { "commitish",           pt::BuildInfo::commitish() },
+            { "version",             pt::BuildInfo::semver() },
+            { "sentry[environment]", environment },
+            { "sentry[release]",     release },
         },
         {
 #if _DEBUG
             "--no-rate-limit"
 #endif
-        },
-        // attachments
-        {
-            { "log_file", env->GetLogFilePath().string() }
         },
         true,
         true))

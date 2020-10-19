@@ -170,6 +170,17 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, Models::Torren
                 wxALIGN_RIGHT,
                 defaultFlags)));
 
+    m_columns.push_back(
+        ColumnMetadata(
+            new wxDataViewColumn(
+                i18n("label"),
+                new wxDataViewIconTextRenderer(),
+                TorrentListModel::Columns::Label,
+                FromDIP(80),
+                wxALIGN_LEFT,
+                defaultFlags),
+            true));
+
     /*
     nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
     statusCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);*/
@@ -190,7 +201,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, Models::Torren
     }
 
     // insert the "fake" column last, always
-    AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0, wxALIGN_CENTER, 0));
+    AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), TorrentListModel::Columns::_Max, 0, wxALIGN_CENTER, 0));
 
     this->Bind(wxEVT_DATAVIEW_COLUMN_HEADER_RIGHT_CLICK, &TorrentListView::ShowHeaderContextMenu, this);
 }
@@ -199,7 +210,7 @@ TorrentListView::~TorrentListView()
 {
 }
 
-void TorrentListView::ShowHeaderContextMenu(wxCommandEvent& evt)
+void TorrentListView::ShowHeaderContextMenu(wxCommandEvent&)
 {
     wxMenu menu;
 

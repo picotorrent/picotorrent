@@ -14,7 +14,7 @@ ApplicationOptionsConnection::ApplicationOptionsConnection(pt::UI::MainFrame* fr
 {
 }
 
-bool ApplicationOptionsConnection::OnExecute(const wxString& topic, const void *data, size_t size, wxIPCFormat format)
+bool ApplicationOptionsConnection::OnExecute(const wxString&, const void *data, size_t size, wxIPCFormat format)
 {
     std::string textData = GetTextFromData(data, size, format);
 

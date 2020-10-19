@@ -286,7 +286,7 @@ unsigned int TrackerListModel::GetColumnCount() const
     return Column::_Max;
 }
 
-wxString TrackerListModel::GetColumnType(unsigned int col) const
+wxString TrackerListModel::GetColumnType(unsigned int) const
 {
     return "string";
 }
@@ -424,7 +424,7 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
     }
 }
 
-bool TrackerListModel::SetValue(const wxVariant& variant, const wxDataViewItem& item, unsigned int col)
+bool TrackerListModel::SetValue(const wxVariant&, const wxDataViewItem&, unsigned int)
 {
     return false;
 }

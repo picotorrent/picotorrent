@@ -80,7 +80,7 @@ TorrentHandle::TorrentHandle(pt::BitTorrent::Session* session, lt::torrent_handl
     : m_session(session)
 {
     m_th = std::make_unique<lt::torrent_handle>(th);
-    m_ts = std::make_unique<lt::torrent_status>(th.status());
+    m_status = Update(th.status());
 }
 
 TorrentHandle::~TorrentHandle()
@@ -236,85 +236,7 @@ void TorrentHandle::SetSequentialDownload(bool seq)
 
 TorrentStatus TorrentHandle::Status()
 {
-    std::stringstream hash;
-
-    if (m_ts->info_hashes.has_v2())
-    {
-        hash << m_ts->info_hashes.v2;
-    }
-    else
-    {
-        hash << m_ts->info_hashes.v1;
-    }
-
-    if (!m_th->is_valid())
-    {
-        TorrentStatus ts;
-        ts.infoHash = hash.str();
-        return ts;
-    }
-
-    auto eta = std::chrono::seconds(0);
-
-    if ((m_ts->total_wanted - m_ts->total_wanted_done > 0) && m_ts->download_payload_rate > 0)
-    {
-        eta = std::chrono::seconds((m_ts->total_wanted - m_ts->total_wanted_done) / m_ts->download_payload_rate);
-    }
-
-    float ratio = 0;
-
-    if (m_ts->all_time_download > 0)
-    {
-        ratio = static_cast<float>(m_ts->all_time_upload) / static_cast<float>(m_ts->all_time_download);
-    }
-
-    std::string error;
-    std::string error_details;
-
-    if (m_ts->errc)
-    {
-        error = m_ts->errc.message();
-
-        // If we have an error in a file, get file info
-        auto ti = m_ts->torrent_file.lock();
-
-        if (m_ts->error_file >= lt::file_index_t{ 0 } && ti)
-        {
-            error_details = ti->files().file_path(m_ts->error_file);
-        }
-    }
-
-    TorrentStatus ts;
-    ts.addedOn              = wxDateTime(m_ts->added_time);
-    ts.allTimeDownload      = m_ts->all_time_download;
-    ts.allTimeUpload        = m_ts->all_time_upload;
-    ts.availability         = m_ts->distributed_copies;
-    ts.completedOn          = m_ts->completed_time > 0 ? wxDateTime(m_ts->completed_time) : wxDateTime();
-    ts.downloadPayloadRate  = m_ts->download_payload_rate;
-    ts.error                = error;
-    ts.errorDetails         = error_details;
-    ts.eta                  = eta;
-    ts.forced               = (!(m_ts->flags & lt::torrent_flags::paused) && !(m_ts->flags & lt::torrent_flags::auto_managed));
-    ts.infoHash             = hash.str();
-    ts.lastDownload         = m_ts->last_download.time_since_epoch().count() > 0 ? std::chrono::seconds(lt::total_seconds(lt::clock_type::now() - m_ts->last_download)) : std::chrono::seconds(-1);
-    ts.lastUpload           = m_ts->last_upload.time_since_epoch().count() > 0 ? std::chrono::seconds(lt::total_seconds(lt::clock_type::now() - m_ts->last_upload)) : std::chrono::seconds(-1);
-    ts.name                 = m_ts->name.empty() ? ts.infoHash : m_ts->name;
-    ts.paused               = (m_th->flags() & lt::torrent_flags::paused) == lt::torrent_flags::paused;
-    ts.peersCurrent         = m_ts->num_peers - m_ts->num_seeds;
-    ts.peersTotal           = m_ts->list_peers - m_ts->list_seeds;
-    ts.pieces               = m_ts->pieces;
-    ts.progress             = m_ts->progress;
-    ts.queuePosition        = static_cast<int>(m_ts->queue_position);
-    ts.ratio                = ratio;
-    ts.savePath             = m_ts->save_path;
-    ts.seedsCurrent         = m_ts->num_seeds;
-    ts.seedsTotal           = m_ts->list_seeds;
-    ts.state                = getTorrentStatusState(*m_ts.get());
-    ts.torrentFile          = m_ts->torrent_file;
-    ts.totalWanted          = m_ts->total_wanted;
-    ts.totalWantedRemaining = m_ts->total_wanted - m_ts->total_wanted_done;
-    ts.uploadPayloadRate    = m_ts->upload_payload_rate;
-    return ts;
+    return *m_status.get();
 }
 
 std::vector<lt::announce_entry> TorrentHandle::Trackers() const
@@ -322,9 +244,117 @@ std::vector<lt::announce_entry> TorrentHandle::Trackers() const
     return m_th->trackers();
 }
 
-void TorrentHandle::UpdateStatus(lt::torrent_status const& ts)
+void TorrentHandle::ClearLabel()
 {
-    m_ts = std::make_unique<lt::torrent_status>(ts);
+    m_labelId = -1;
+    m_session->UpdateTorrentLabel(this);
+}
+
+int TorrentHandle::Label()
+{
+    return m_labelId;
+}
+
+void TorrentHandle::BuildStatus(libtorrent::torrent_status const& ts)
+{
+    m_status = Update(ts);
+}
+
+void TorrentHandle::SetLabel(int id, std::string const& name)
+{
+    m_labelId = id;
+    m_labelName = name;
+    m_session->UpdateTorrentLabel(this);
+}
+
+void TorrentHandle::SetLabelMuted(int id)
+{
+    m_labelId = id;
+}
+
+std::unique_ptr<TorrentStatus> TorrentHandle::Update(lt::torrent_status const& ts)
+{
+    std::stringstream hash;
+
+    if (ts.info_hashes.has_v2())
+    {
+        hash << ts.info_hashes.v2;
+    }
+    else
+    {
+        hash << ts.info_hashes.v1;
+    }
+
+    if (!m_th->is_valid())
+    {
+        TorrentStatus invalid;
+        invalid.infoHash = hash.str();
+        return std::make_unique<TorrentStatus>(invalid);
+    }
+
+    auto eta = std::chrono::seconds(0);
+
+    if ((ts.total_wanted - ts.total_wanted_done > 0) && ts.download_payload_rate > 0)
+    {
+        eta = std::chrono::seconds((ts.total_wanted - ts.total_wanted_done) / ts.download_payload_rate);
+    }
+
+    float ratio = 0;
+
+    if (ts.all_time_download > 0)
+    {
+        ratio = static_cast<float>(ts.all_time_upload) / static_cast<float>(ts.all_time_download);
+    }
+
+    std::string error;
+    std::string error_details;
+
+    if (ts.errc)
+    {
+        error = ts.errc.message();
+
+        // If we have an error in a file, get file info
+        auto ti = ts.torrent_file.lock();
+
+        if (ts.error_file >= lt::file_index_t{ 0 } && ti)
+        {
+            error_details = ti->files().file_path(ts.error_file);
+        }
+    }
+
+    TorrentStatus nts;
+    nts.addedOn = wxDateTime(ts.added_time);
+    nts.allTimeDownload = ts.all_time_download;
+    nts.allTimeUpload = ts.all_time_upload;
+    nts.availability = ts.distributed_copies;
+    nts.completedOn = ts.completed_time > 0 ? wxDateTime(ts.completed_time) : wxDateTime();
+    nts.downloadPayloadRate = ts.download_payload_rate;
+    nts.error = error;
+    nts.errorDetails = error_details;
+    nts.eta = eta;
+    nts.forced = (!(ts.flags & lt::torrent_flags::paused) && !(ts.flags & lt::torrent_flags::auto_managed));
+    nts.infoHash = hash.str();
+    nts.labelName = m_labelName;
+    nts.lastDownload = ts.last_download.time_since_epoch().count() > 0 ? std::chrono::seconds(lt::total_seconds(lt::clock_type::now() - ts.last_download)) : std::chrono::seconds(-1);
+    nts.lastUpload = ts.last_upload.time_since_epoch().count() > 0 ? std::chrono::seconds(lt::total_seconds(lt::clock_type::now() - ts.last_upload)) : std::chrono::seconds(-1);
+    nts.name = ts.name.empty() ? nts.infoHash : ts.name;
+    nts.paused = (m_th->flags() & lt::torrent_flags::paused) == lt::torrent_flags::paused;
+    nts.peersCurrent = ts.num_peers - ts.num_seeds;
+    nts.peersTotal = ts.list_peers - ts.list_seeds;
+    nts.pieces = ts.pieces;
+    nts.progress = ts.progress;
+    nts.queuePosition = static_cast<int>(ts.queue_position);
+    nts.ratio = ratio;
+    nts.savePath = ts.save_path;
+    nts.seedsCurrent = ts.num_seeds;
+    nts.seedsTotal = ts.list_seeds;
+    nts.state = getTorrentStatusState(ts);
+    nts.torrentFile = ts.torrent_file;
+    nts.totalWanted = ts.total_wanted;
+    nts.totalWantedRemaining = ts.total_wanted - ts.total_wanted_done;
+    nts.uploadPayloadRate = ts.upload_payload_rate;
+
+    return std::make_unique<TorrentStatus>(nts);
 }
 
 lt::torrent_handle& TorrentHandle::WrappedHandle()

@@ -29,6 +29,7 @@ static std::map<TorrentListModel::Columns, std::string> ColumnNames =
     { TorrentListModel::Columns::Peers,         "Col_Peers" },
     { TorrentListModel::Columns::AddedOn,       "Col_AddedOn" },
     { TorrentListModel::Columns::CompletedOn,   "Col_CompletedOn" },
+    { TorrentListModel::Columns::Label,         "Col_Label" },
 };
 
 PersistentTorrentListView::PersistentTorrentListView(TorrentListView* tlv)
@@ -107,8 +108,8 @@ bool PersistentTorrentListView::Restore()
         col->SetWidth(widths[i]);
     }
 
-    int sortIndex;
-    bool sortAscending;
+    int sortIndex = -1;
+    bool sortAscending = false;
 
     if (RestoreValue("SortIndex", &sortIndex)
         && RestoreValue("SortAscending", &sortAscending))

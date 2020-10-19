@@ -5,6 +5,9 @@
 #include <wx/wx.h>
 #endif
 
+#include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 namespace pt
@@ -13,12 +16,16 @@ namespace BitTorrent
 {
     class TorrentHandle;
 }
+namespace Core
+{
+    class Configuration;
+}
 namespace UI
 {
     class TorrentContextMenu : public wxMenu
     {
     public:
-        TorrentContextMenu(wxWindow* parent, std::vector<BitTorrent::TorrentHandle*> const&);
+        TorrentContextMenu(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg, std::vector<BitTorrent::TorrentHandle*> const&);
 
     private:
         enum
@@ -37,10 +44,13 @@ namespace UI
             ptID_OPEN_IN_EXPLORER,
             ptID_FORCE_RECHECK,
             ptID_FORCE_REANNOUNCE,
-            ptID_SEQUENTIAL_DOWNLOAD
+            ptID_SEQUENTIAL_DOWNLOAD,
+            ptID_LABELS_NONE,
+            ptID_LABELS_USER
         };
 
         wxWindow* m_parent;
+        std::map<int, std::string> m_labels;
     };
 }
 }

@@ -93,10 +93,10 @@ wxDataViewItem FileStorageModel::GetRootItem()
 void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
 {
     m_map.clear();
+    m_root->children.clear();
 
     if (ti->num_files() == 0)
     {
-        m_root->children.clear();
         return;
     }
 
@@ -177,12 +177,13 @@ void FileStorageModel::UpdatePriorities(const std::vector<libtorrent::download_p
 {
     for (auto& item : m_map)
     {
+        size_t fileIdx = static_cast<size_t>(int32_t(item.first));
         lt::download_priority_t prio = lt::default_priority;
         std::shared_ptr<Node> const& node = item.second;
 
-        if (priorities.size() >= static_cast<int>(item.first) + 1)
+        if (priorities.size() >= fileIdx + 1)
         {
-            prio = priorities.at(static_cast<int>(item.first));
+            prio = priorities.at(fileIdx);
         }
 
         if (node->priority == prio)
@@ -238,7 +239,7 @@ unsigned int FileStorageModel::GetColumnCount() const
     return Columns::_Max;
 }
 
-wxString FileStorageModel::GetColumnType(unsigned int col) const
+wxString FileStorageModel::GetColumnType(unsigned int) const
 {
     return "string";
 }

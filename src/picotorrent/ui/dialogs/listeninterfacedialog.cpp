@@ -172,15 +172,15 @@ void ListenInterfaceDialog::LoadAdapters()
                 {
                 case AF_INET:
                 {
-                    char buf[INET_ADDRSTRLEN] = {};
+                    char addrbuf[INET_ADDRSTRLEN] = {};
                     sockaddr_in* si = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
-                    inet_ntop(AF_INET, &(si->sin_addr), buf, sizeof(buf));
+                    inet_ntop(AF_INET, &(si->sin_addr), addrbuf, sizeof(addrbuf));
 
                     std::stringstream ss;
-                    ss << buf << " (" << Utils::toStdString(adapter->FriendlyName) << ")";
+                    ss << addrbuf << " (" << Utils::toStdString(adapter->FriendlyName) << ")";
 
                     NetworkAdapter ipv4;
-                    ipv4.address = buf;
+                    ipv4.address = addrbuf;
                     ipv4.name = ss.str();
 
                     m_adapters->Insert(
@@ -192,15 +192,15 @@ void ListenInterfaceDialog::LoadAdapters()
                 }
                 case AF_INET6:
                 {
-                    char buf[INET6_ADDRSTRLEN] = {};
+                    char addrbuf[INET6_ADDRSTRLEN] = {};
                     sockaddr_in6* si = reinterpret_cast<sockaddr_in6*>(address->Address.lpSockaddr);
-                    inet_ntop(AF_INET6, &(si->sin6_addr), buf, sizeof(buf));
+                    inet_ntop(AF_INET6, &(si->sin6_addr), addrbuf, sizeof(addrbuf));
 
                     std::stringstream ss;
-                    ss << "[" << buf << "]" << " (" << Utils::toStdString(adapter->FriendlyName) << ")";
+                    ss << "[" << addrbuf << "]" << " (" << Utils::toStdString(adapter->FriendlyName) << ")";
 
                     NetworkAdapter ipv6;
-                    ipv6.address = "[" + std::string(buf) + "]";
+                    ipv6.address = "[" + std::string(addrbuf) + "]";
                     ipv6.name = ss.str();
 
                     m_adapters->Insert(
