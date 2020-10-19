@@ -21,7 +21,7 @@ AddMagnetLinkDialog::AddMagnetLinkDialog(wxWindow* parent, wxWindowID id)
     ok->SetDefault();
 
     buttonsSizer->Add(ok);
-    buttonsSizer->Add(new wxButton(this, wxID_CANCEL), 0, wxLEFT, FromDIP(7));
+    buttonsSizer->Add(new wxButton(this, wxID_CANCEL, i18n("cancel")), 0, wxLEFT, FromDIP(7));
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
     mainSizer->AddSpacer(FromDIP(11));

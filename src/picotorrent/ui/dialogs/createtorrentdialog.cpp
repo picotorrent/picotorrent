@@ -155,7 +155,7 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, Sessio
     buttonsSizer->AddStretchSpacer();
     buttonsSizer->Add(m_create);
     buttonsSizer->AddSpacer(FromDIP(7));
-    buttonsSizer->Add(new wxButton(this, wxID_CANCEL));
+    buttonsSizer->Add(new wxButton(this, wxID_CANCEL, i18n("cancel")));
 
     auto sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(pathSizer, 0, wxEXPAND | wxALL, FromDIP(11));
