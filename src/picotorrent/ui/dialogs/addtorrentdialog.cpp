@@ -115,12 +115,12 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<
     m_filesModel->DecRef();
 
     auto buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
-    wxButton* ok = new wxButton(this, wxID_OK);
+    wxButton* ok = new wxButton(this, wxID_OK, i18n("ok"));
     ok->SetDefault();
 
     buttonsSizer->Add(ok);
     buttonsSizer->AddSpacer(FromDIP(7));
-    buttonsSizer->Add(new wxButton(this, wxID_CANCEL));
+    buttonsSizer->Add(new wxButton(this, wxID_CANCEL, i18n("cancel")));
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
     mainSizer->Add(fileSizer, 0, wxEXPAND | wxALL, FromDIP(11));

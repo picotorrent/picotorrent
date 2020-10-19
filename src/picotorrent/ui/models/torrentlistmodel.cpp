@@ -377,16 +377,16 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
         {
             if (min_left.count() <= 0)
             {
-                variant = fmt::format("{0}s", sec_left.count());
+                variant = fmt::format(i18n("eta_s_format"), sec_left.count());
                 break;
             }
 
-            variant = fmt::format("{0}m {1}s", min_left.count(), sec_left.count());
+            variant = fmt::format(i18n("eta_ms_format"), min_left.count(), sec_left.count());
             break;
         }
 
         variant = fmt::format(
-            "{0}h {1}m {2}s",
+            i18n("eta_hms_format"),
             hours_left.count(),
             min_left.count(),
             sec_left.count());
@@ -402,7 +402,9 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = fmt::format(L"{0}/s", Utils::toHumanFileSize(status.downloadPayloadRate));
+        variant = fmt::format(
+            i18n("per_second_format"),
+            Utils::toHumanFileSize(status.downloadPayloadRate));
 
         break;
     }
@@ -415,7 +417,9 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = fmt::format(L"{0}/s", Utils::toHumanFileSize(status.uploadPayloadRate));
+        variant = fmt::format(
+            i18n("per_second_format"),
+            Utils::toHumanFileSize(status.uploadPayloadRate));
 
         break;
     }

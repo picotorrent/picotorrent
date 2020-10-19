@@ -11,11 +11,11 @@ AddTrackerDialog::AddTrackerDialog(wxWindow* parent, wxWindowID id)
     m_url(new wxTextCtrl(this, wxID_ANY))
 {
     auto buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
-    wxButton* ok = new wxButton(this, wxID_OK);
+    wxButton* ok = new wxButton(this, wxID_OK, i18n("cancel"));
     ok->SetDefault();
 
     buttonsSizer->Add(ok);
-    buttonsSizer->Add(new wxButton(this, wxID_CANCEL), 0, wxLEFT, FromDIP(7));
+    buttonsSizer->Add(new wxButton(this, wxID_CANCEL, i18n("cancel")), 0, wxLEFT, FromDIP(7));
 
     auto formSizer = new wxFlexGridSizer(2, FromDIP(7), FromDIP(10));
     formSizer->AddGrowableCol(1, 1);
