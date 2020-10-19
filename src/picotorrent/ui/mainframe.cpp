@@ -3,10 +3,10 @@
 #include <filesystem>
 #include <regex>
 
+#include <boost/log/trivial.hpp>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/torrent_info.hpp>
-#include <loguru.hpp>
 #include <wx/persist.h>
 #include <wx/persist/toplevel.h>
 #include <wx/sizer.h>
@@ -499,7 +499,7 @@ void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<
 
             if (ec)
             {
-                LOG_F(WARNING, "Failed to parse magnet uri: %s, error: %s", magnet.c_str(), ec.message().c_str());
+                BOOST_LOG_TRIVIAL(warning) << "Failed to parse magnet uri: " << magnet << ", error: " << ec;
                 continue;
             }
 
@@ -541,10 +541,10 @@ void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const
 
             if (diskSpaceAvailable < diskSpaceLimit)
             {
-                LOG_F(INFO, "Pausing torrent %s due to disk space too low (avail: %.2f, limit: %.2f)",
-                    status.infoHash.c_str(),
-                    diskSpaceAvailable,
-                    diskSpaceLimit);
+                BOOST_LOG_TRIVIAL(info) << "Pausing torrent "
+                    << status.infoHash << " due to disk space too low (avail: "
+                    << diskSpaceAvailable << ", limit: "
+                    << diskSpaceLimit << ")";
 
                 torrent->Pause();
 
@@ -763,7 +763,7 @@ void MainFrame::ParseTorrentFiles(std::vector<lt::add_torrent_params>& params, s
 
         if (ec)
         {
-            LOG_F(ERROR, "Failed to parse torrent file: %s", ec.message().c_str());
+            BOOST_LOG_TRIVIAL(error) << "Failed to parse torrent file: " << ec;
             continue;
         }
 

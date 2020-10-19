@@ -4,12 +4,22 @@
 #include <ShlObj.h>
 #include <Shlwapi.h>
 
-#include <loguru.hpp>
+#pragma warning(push)
+#pragma warning(disable: 4244)
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/attributes/timer.hpp>
+#include <boost/log/support/date_time.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#pragma warning(pop)
 
 #include "utils.hpp"
 
 namespace fs = std::filesystem;
 using pt::Core::Environment;
+
+namespace expr = boost::log::expressions;
 
 Environment::Environment()
     : m_startupTime(std::chrono::system_clock::now())
@@ -19,12 +29,22 @@ Environment::Environment()
 std::shared_ptr<Environment> Environment::Create()
 {
     auto env = new Environment();
-    loguru::add_file(
-        Utils::toStdString(env->GetLogFilePath().generic_wstring()).c_str(),
-        loguru::Truncate,
-        loguru::Verbosity_INFO);
 
-    LOG_F(INFO, "PicoTorrent starting up...");
+    boost::log::add_file_log
+    (
+        boost::log::keywords::file_name = Utils::toStdString(env->GetLogFilePath().generic_wstring()),
+        boost::log::keywords::format = expr::stream
+            << expr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f") << " "
+            << "[" << expr::attr<boost::log::attributes::timer::value_type>("Uptime") << "] "
+            << "[" << expr::attr<boost::log::attributes::current_thread_id::value_type>("ThreadID") << "] "
+            << boost::log::trivial::severity << ": "
+            << expr::message
+    );
+
+    boost::log::add_common_attributes();
+    boost::log::core::get()->add_global_attribute("Uptime", boost::log::attributes::timer());
+
+    BOOST_LOG_TRIVIAL(info) << "PicoTorrent starting up...";
 
     return std::shared_ptr<Environment>(env);
 }
@@ -70,7 +90,7 @@ std::string Environment::GetCurrentLocale()
 
     if (res == 0)
     {
-        LOG_F(ERROR, "Failed to get current locale - defaulting to 'en'");
+        BOOST_LOG_TRIVIAL(error) << "Failed to get current locale - defaulting to 'en'";
         return "en";
     }
 
@@ -98,7 +118,7 @@ fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
         break;
 
     default:
-        LOG_F(FATAL, "Unknown KnownFolder specified: %d", knownFolder);
+        BOOST_LOG_TRIVIAL(fatal) << "Unknown KnownFolder specified: " << static_cast<int>(knownFolder);
         throw std::runtime_error("Unknown folder");
     }
 
@@ -112,7 +132,7 @@ fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
         return p;
     }
 
-    LOG_F(FATAL, "Failed to get KnownFolder: %d", knownFolder);
+    BOOST_LOG_TRIVIAL(fatal) << "Failed to get KnownFolder: " << static_cast<int>(knownFolder);
 
     throw std::runtime_error("Could not get known folder path");
 }

@@ -37,6 +37,8 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(wxUSE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
 # --------------------
 
+find_package(Boost REQUIRED COMPONENTS log)
+
 add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/nlohmann-json)
@@ -68,24 +70,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
-
-add_library(
-    loguru
-    STATIC
-    vendor/loguru/loguru
-)
-
-target_compile_definitions(
-    loguru
-    PRIVATE
-    -D_CRT_SECURE_NO_WARNINGS
-)
-
-target_include_directories(
-    loguru
-    INTERFACE
-    vendor/loguru
-)
 
 add_library(
     sqlite
@@ -247,6 +231,8 @@ target_link_libraries(
 
     PRIVATE
 
+    ${Boost_LIBRARIES}
+
     # wxWidgets
     core base propgrid
 
@@ -267,9 +253,6 @@ target_link_libraries(
 
     # fmt
     fmt
-
-    # loguru
-    loguru
 
     # nlohmann-json
     nlohmann_json::nlohmann_json
