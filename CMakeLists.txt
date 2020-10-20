@@ -234,7 +234,7 @@ target_link_libraries(
     ${Boost_LIBRARIES}
 
     # wxWidgets
-    core base propgrid
+    wxcore wxbase wxpropgrid
 
     # Windows
     Comctl32
