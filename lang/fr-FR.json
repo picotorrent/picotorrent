@@ -285,5 +285,9 @@
     "color": "Couleur",
     "apply_filter": "Appliquer filtre",
     "restart_picotorrent": "Redémarrer PicoTorrent",
-    "use_label_color_as_background_in_torrent_list": "Utiliser la couleur d'étiquette comme couleur de fond dans la liste des torrents"
+    "use_label_color_as_background_in_torrent_list": "Utiliser la couleur d'étiquette comme couleur de fond dans la liste des torrents",
+    "eta_hms_format": "{0}h {1}m {2}s",
+    "eta_ms_format": "{0}m {1}s",
+    "eta_s_format": "{0}s",
+    "per_second_format": "{0}/s"
 }
