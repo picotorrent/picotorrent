@@ -73,7 +73,7 @@ public:
     virtual antlrcpp::Any visitOperatorPredicate(pt::PQL::QueryLangParser::OperatorPredicateContext* ctx) override
     {
         std::string ref = this->visit(ctx->reference());
-        Operator oper = this->visit(ctx->oper());
+        // Operator oper = this->visit(ctx->oper());
 
         if (ref == "size")
         {
@@ -122,8 +122,8 @@ public:
 class ExceptionErrorListener : public antlr4::BaseErrorListener {
 public:
     virtual void syntaxError(
-        antlr4::Recognizer* recognizer,
-        antlr4::Token* offendingSymbol,
+        antlr4::Recognizer* /* recognizer */,
+        antlr4::Token* /* offendingSymbol */,
         size_t line,
         size_t charPositionInLine,
         const std::string& msg,
@@ -147,7 +147,10 @@ TorrentConsole::TorrentConsole(wxWindow* parent, wxWindowID id)
     m_input->SetFont(
         wxFont(9, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Consolas")));
 
+    wxIcon funnel(L"ICO_FUNNEL", wxBITMAP_TYPE_ICO_RESOURCE, FromDIP(16), FromDIP(16));
+
     wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+    sizer->Add(new wxStaticBitmap(this, wxID_ANY, funnel), 0, wxALIGN_CENTER);
     sizer->Add(m_input, 1, wxEXPAND | wxALL, FromDIP(2));
 
     this->SetBackgroundColour(*wxWHITE);
@@ -156,7 +159,7 @@ TorrentConsole::TorrentConsole(wxWindow* parent, wxWindowID id)
     this->Bind(wxEVT_TEXT_ENTER, &TorrentConsole::CreateFilter, this);
 }
 
-void TorrentConsole::CreateFilter(wxCommandEvent& evt)
+void TorrentConsole::CreateFilter(wxCommandEvent&)
 {
     antlr4::ANTLRInputStream input(m_input->GetValue().ToStdString());
 
@@ -179,7 +182,7 @@ void TorrentConsole::CreateFilter(wxCommandEvent& evt)
         t.name = "dbn";
         t.size = 1002;
 
-        bool res = func(t);
+        func(t);
     }
     catch (antlr4::ParseCancellationException const& ex)
     {

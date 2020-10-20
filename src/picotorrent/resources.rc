@@ -2,6 +2,9 @@
 
 AppIcon ICON "..\\..\\res\\app.ico"
 
+// Icons
+ICO_FUNNEL ICON "..\\..\\res\\funnel.ico"
+
 // SQL migrations
 20181208115043_create_setting_table             DBMIGRATION "..\\..\\res\\dbmigrations\\20181208115043_create_setting_table.sql"
 20181208115732_insert_default_settings          DBMIGRATION "..\\..\\res\\dbmigrations\\20181208115732_insert_default_settings.sql"
