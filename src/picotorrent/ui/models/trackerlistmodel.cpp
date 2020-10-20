@@ -286,7 +286,7 @@ unsigned int TrackerListModel::GetColumnCount() const
     return Column::_Max;
 }
 
-wxString TrackerListModel::GetColumnType(unsigned int col) const
+wxString TrackerListModel::GetColumnType(unsigned int) const
 {
     return "string";
 }
@@ -413,8 +413,20 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
         std::chrono::minutes min_left = std::chrono::duration_cast<std::chrono::minutes>(li->nextAnnounce - hours_left);
         std::chrono::seconds sec_left = std::chrono::duration_cast<std::chrono::seconds>(li->nextAnnounce - hours_left - min_left);
 
+        if (hours_left.count() <= 0)
+        {
+            if (min_left.count() <= 0)
+            {
+                variant = fmt::format(i18n("eta_s_format"), sec_left.count());
+                break;
+            }
+
+            variant = fmt::format(i18n("eta_ms_format"), min_left.count(), sec_left.count());
+            break;
+        }
+
         variant = fmt::format(
-            i18n("eta_format"),
+            i18n("eta_hms_format"),
             hours_left.count(),
             min_left.count(),
             sec_left.count());
@@ -424,7 +436,7 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
     }
 }
 
-bool TrackerListModel::SetValue(const wxVariant& variant, const wxDataViewItem& item, unsigned int col)
+bool TrackerListModel::SetValue(const wxVariant&, const wxDataViewItem&, unsigned int)
 {
     return false;
 }

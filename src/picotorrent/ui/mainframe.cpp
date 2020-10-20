@@ -3,10 +3,10 @@
 #include <filesystem>
 #include <regex>
 
+#include <boost/log/trivial.hpp>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/torrent_info.hpp>
-#include <loguru.hpp>
 #include <wx/persist.h>
 #include <wx/persist/toplevel.h>
 #include <wx/sizer.h>
@@ -39,6 +39,8 @@
 #include "torrentlistview.hpp"
 #include "translator.hpp"
 
+#include "win32/openfiledialog.hpp"
+
 namespace fs = std::filesystem;
 using pt::UI::MainFrame;
 
@@ -61,6 +63,8 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_menuItemFilters(nullptr),
     m_ipc(std::make_unique<IPC::Server>(this))
 {
+    m_splitter->SetWindowStyleFlag(
+        m_splitter->GetWindowStyleFlag() | wxSP_LIVE_UPDATE);
     m_splitter->SetMinimumPaneSize(10);
     m_splitter->SetSashGravity(0.5);
     m_splitter->SplitHorizontally(
@@ -211,7 +215,8 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
 
     this->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &MainFrame::ShowTorrentContextMenu, this, ptID_MAIN_TORRENT_LIST);
 
-    this->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, [this](wxCommandEvent& evt)
+    this->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED,
+        [this](wxCommandEvent&)
         {
             wxDataViewItemArray items;
             m_torrentList->GetSelections(items);
@@ -515,7 +520,7 @@ void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<
 
             if (ec)
             {
-                LOG_F(WARNING, "Failed to parse magnet uri: %s, error: %s", magnet.c_str(), ec.message().c_str());
+                BOOST_LOG_TRIVIAL(warning) << "Failed to parse magnet uri: " << magnet << ", error: " << ec;
                 continue;
             }
 
@@ -557,10 +562,10 @@ void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const
 
             if (diskSpaceAvailable < diskSpaceLimit)
             {
-                LOG_F(INFO, "Pausing torrent %s due to disk space too low (avail: %.2f, limit: %.2f)",
-                    status.infoHash.c_str(),
-                    diskSpaceAvailable,
-                    diskSpaceLimit);
+                BOOST_LOG_TRIVIAL(info) << "Pausing torrent "
+                    << status.infoHash << " due to disk space too low (avail: "
+                    << diskSpaceAvailable << ", limit: "
+                    << diskSpaceLimit << ")";
 
                 torrent->Pause();
 
@@ -662,39 +667,34 @@ void MainFrame::OnFileAddMagnetLink(wxCommandEvent&)
 
     if (dlg.ShowModal() == wxID_OK)
     {
-        this->AddTorrents(dlg.GetParams());
+        auto params = dlg.GetParams();
+        this->AddTorrents(params);
     }
 }
 
 void MainFrame::OnFileAddTorrent(wxCommandEvent&)
 {
-    wxFileDialog openDialog(
-        this,
-        i18n("add_torrent_s"),
-        wxEmptyString,
-        wxEmptyString,
-        "Torrent files (*.torrent)|*.torrent|All files (*.*)|*.*",
-        wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
+    Win32::OpenFileDialog ofd;
 
-    if (openDialog.ShowModal() != wxID_OK)
+    ofd.SetFileTypes({
+        std::make_tuple(L"Torrent files", L"*.torrent"),
+        std::make_tuple(L"All files (*.*)", L"*.*")
+    });
+
+    ofd.SetOption(Win32::OpenFileDialog::Option::Multi);
+    ofd.SetTitle(i18n("add_torrent_s"));
+    ofd.Show(this);
+
+    std::vector<std::string> files;
+    ofd.GetFiles(files);
+
+    if (files.empty())
     {
         return;
     }
 
-    wxArrayString paths;
-    openDialog.GetPaths(paths);
-
-    std::vector<std::string> converted;
-    std::for_each(
-        paths.begin(),
-        paths.end(),
-        [&converted](wxString const& str)
-        {
-            converted.push_back(Utils::toStdString(str.wc_str()));
-        });
-
     std::vector<lt::add_torrent_params> params;
-    this->ParseTorrentFiles(params, converted);
+    this->ParseTorrentFiles(params, files);
     this->AddTorrents(params);
 }
 
@@ -785,7 +785,7 @@ void MainFrame::ParseTorrentFiles(std::vector<lt::add_torrent_params>& params, s
 
         if (ec)
         {
-            LOG_F(ERROR, "Failed to parse torrent file: %s", ec.message().c_str());
+            BOOST_LOG_TRIVIAL(error) << "Failed to parse torrent file: " << ec;
             continue;
         }
 

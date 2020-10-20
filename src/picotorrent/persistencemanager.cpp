@@ -1,6 +1,6 @@
 #include "persistencemanager.hpp"
 
-#include <loguru.hpp>
+#include <boost/log/trivial.hpp>
 #include <nlohmann/json.hpp>
 
 #include "core/database.hpp"
@@ -32,7 +32,7 @@ bool PersistenceManager::RestoreValue(const wxPersistentObject& who, const wxStr
         }
         catch (std::exception const& ex)
         {
-            LOG_F(ERROR, "Failed to parse JSON as bool: %s", ex.what());
+            BOOST_LOG_TRIVIAL(error) << "Failed to parse JSON as bool: " << ex.what();
             return false;
         }
     }
@@ -55,7 +55,7 @@ bool PersistenceManager::RestoreValue(const wxPersistentObject& who, const wxStr
         }
         catch (std::exception const& ex)
         {
-            LOG_F(ERROR, "Failed to parse JSON as int: %s", ex.what());
+            BOOST_LOG_TRIVIAL(error) << "Failed to parse JSON as int: " << ex.what();
             return false;
         }
     }
@@ -78,7 +78,7 @@ bool PersistenceManager::RestoreValue(const wxPersistentObject& who, const wxStr
         }
         catch (std::exception const& ex)
         {
-            LOG_F(ERROR, "Failed to parse JSON as long: %s", ex.what());
+            BOOST_LOG_TRIVIAL(error) << "Failed to parse JSON as long: " << ex.what();
             return false;
         }
     }
@@ -101,7 +101,7 @@ bool PersistenceManager::RestoreValue(const wxPersistentObject& who, const wxStr
         }
         catch (std::exception const& ex)
         {
-            LOG_F(ERROR, "Failed to parse JSON as string: %s", ex.what());
+            BOOST_LOG_TRIVIAL(error) << "Failed to parse JSON as string: " << ex.what();
             return false;
         }
     }

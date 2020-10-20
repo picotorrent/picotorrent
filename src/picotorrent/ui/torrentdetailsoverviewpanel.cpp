@@ -30,14 +30,19 @@ std::wstring SecondsToFriendly(std::chrono::seconds secs)
     {
         if (min_left.count() <= 0)
         {
-            return fmt::format(L"{0}s", sec_left.count());
+            return fmt::format(
+                i18n("eta_s_format"),
+                sec_left.count());
         }
 
-        return fmt::format(L"{0}m {1}s", min_left.count(), sec_left.count());
+        return fmt::format(
+            i18n("eta_ms_format"),
+            min_left.count(),
+            sec_left.count());
     }
 
     return fmt::format(
-        L"{0}h {1}m {2}s",
+        i18n("eta_hms_format"),
         hours_left.count(),
         min_left.count(),
         sec_left.count());
@@ -49,7 +54,8 @@ public:
     CopyableStaticText(wxWindow* parent)
         : wxStaticText(parent, wxID_ANY, "-", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END)
     {
-        this->Bind(wxEVT_RIGHT_DOWN, [this](wxMouseEvent const& ev)
+        this->Bind(wxEVT_RIGHT_DOWN,
+            [this](wxMouseEvent const&)
             {
                 if (this->GetLabel() == "-")
                 {
@@ -58,7 +64,8 @@ public:
 
                 wxMenu menu;
                 menu.Append(9999, i18n("copy"));
-                menu.Bind(wxEVT_MENU, [this](wxCommandEvent const&)
+                menu.Bind(wxEVT_MENU,
+                    [this](wxCommandEvent const&)
                     {
                         if (wxTheClipboard->Open())
                         {

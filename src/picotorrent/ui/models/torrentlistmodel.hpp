@@ -74,7 +74,7 @@ namespace Models
 
         void GetValueByRow(wxVariant& variant, unsigned row, unsigned col) const wxOVERRIDE;
 
-        bool SetValueByRow(const wxVariant& variant, uint32_t row, uint32_t col) wxOVERRIDE { return false; }
+        bool SetValueByRow(const wxVariant&, uint32_t, uint32_t) wxOVERRIDE { return false; }
 
         void UpdateLabels(std::map<int, std::tuple<std::string, std::string>> const& labels);
 

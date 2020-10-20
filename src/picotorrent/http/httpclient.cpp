@@ -112,7 +112,7 @@ std::wstring HttpClient::ReadHeader(HINTERNET hRequest, DWORD dwHeader)
     return res;
 }
 
-void HttpClient::StatusCallbackProxy(HINTERNET hInternet, DWORD_PTR dwContext, DWORD dwInternetStatus, LPVOID lpStatusInformation, DWORD dwStatusInformationLength)
+void HttpClient::StatusCallbackProxy(HINTERNET, DWORD_PTR dwContext, DWORD dwInternetStatus, LPVOID lpStatusInformation, DWORD dwStatusInformationLength)
 {
     State* state = reinterpret_cast<State*>(dwContext);
 

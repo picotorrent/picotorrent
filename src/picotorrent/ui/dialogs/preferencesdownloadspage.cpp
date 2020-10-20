@@ -134,7 +134,7 @@ void PreferencesDownloadsPage::Save()
     long ulLimit = 0;
     m_uploadLimit->GetValue().ToLong(&ulLimit);
 
-    m_cfg->Set("default_save_path", m_savePathCtrl->GetPath().ToStdString());
+    m_cfg->Set("default_save_path", Utils::toStdString(m_savePathCtrl->GetPath().ToStdWstring()));
     m_cfg->Set("libtorrent.enable_download_rate_limit", m_enableDownloadLimit->GetValue());
     m_cfg->Set("libtorrent.download_rate_limit", static_cast<int>(dlLimit));
     m_cfg->Set("libtorrent.enable_upload_rate_limit", m_enableUploadLimit->GetValue());

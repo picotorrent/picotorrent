@@ -287,9 +287,9 @@ std::unique_ptr<TorrentStatus> TorrentHandle::Update(lt::torrent_status const& t
 
     if (!m_th->is_valid())
     {
-        TorrentStatus ts;
-        ts.infoHash = hash.str();
-        return std::make_unique<TorrentStatus>(ts);
+        TorrentStatus invalid;
+        invalid.infoHash = hash.str();
+        return std::make_unique<TorrentStatus>(invalid);
     }
 
     auto eta = std::chrono::seconds(0);
