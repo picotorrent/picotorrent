@@ -1,5 +1,5 @@
 
-// Generated from .\QueryLang.g4 by ANTLR 4.8
+// Generated from .\Query.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -10,7 +10,7 @@
 namespace pt::PQL {
 
 
-class  QueryLangParser : public antlr4::Parser {
+class  QueryParser : public antlr4::Parser {
 public:
   enum {
     AND = 1, OR = 2, EQ = 3, CONTAINS = 4, GREATER_THAN = 5, WS = 6, INT = 7, 
@@ -22,8 +22,8 @@ public:
     RuleOper = 4, RuleValue = 5
   };
 
-  QueryLangParser(antlr4::TokenStream *input);
-  ~QueryLangParser();
+  QueryParser(antlr4::TokenStream *input);
+  ~QueryParser();
 
   virtual std::string getGrammarFileName() const override;
   virtual const antlr4::atn::ATN& getATN() const override { return _atn; };

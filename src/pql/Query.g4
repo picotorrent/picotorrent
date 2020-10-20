@@ -1,4 +1,4 @@
-grammar QueryLang;
+grammar Query;
 
 AND          : 'and';
 OR           :  'or';

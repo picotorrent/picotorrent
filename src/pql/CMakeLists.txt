@@ -62,10 +62,10 @@ target_include_directories(
 add_library(
     PicoTorrentPQL
     STATIC
-    generated/QueryLangBaseVisitor
-    generated/QueryLangLexer
-    generated/QueryLangParser
-    generated/QueryLangVisitor
+    generated/QueryBaseVisitor
+    generated/QueryLexer
+    generated/QueryParser
+    generated/QueryVisitor
 )
 
 target_include_directories(

@@ -1,51 +1,51 @@
 
-// Generated from .\QueryLang.g4 by ANTLR 4.8
+// Generated from .\Query.g4 by ANTLR 4.8
 
 
-#include "QueryLangLexer.h"
+#include "QueryLexer.h"
 
 
 using namespace antlr4;
 
 using namespace pt::PQL;
 
-QueryLangLexer::QueryLangLexer(CharStream *input) : Lexer(input) {
+QueryLexer::QueryLexer(CharStream *input) : Lexer(input) {
   _interpreter = new atn::LexerATNSimulator(this, _atn, _decisionToDFA, _sharedContextCache);
 }
 
-QueryLangLexer::~QueryLangLexer() {
+QueryLexer::~QueryLexer() {
   delete _interpreter;
 }
 
-std::string QueryLangLexer::getGrammarFileName() const {
-  return "QueryLang.g4";
+std::string QueryLexer::getGrammarFileName() const {
+  return "Query.g4";
 }
 
-const std::vector<std::string>& QueryLangLexer::getRuleNames() const {
+const std::vector<std::string>& QueryLexer::getRuleNames() const {
   return _ruleNames;
 }
 
-const std::vector<std::string>& QueryLangLexer::getChannelNames() const {
+const std::vector<std::string>& QueryLexer::getChannelNames() const {
   return _channelNames;
 }
 
-const std::vector<std::string>& QueryLangLexer::getModeNames() const {
+const std::vector<std::string>& QueryLexer::getModeNames() const {
   return _modeNames;
 }
 
-const std::vector<std::string>& QueryLangLexer::getTokenNames() const {
+const std::vector<std::string>& QueryLexer::getTokenNames() const {
   return _tokenNames;
 }
 
-dfa::Vocabulary& QueryLangLexer::getVocabulary() const {
+dfa::Vocabulary& QueryLexer::getVocabulary() const {
   return _vocabulary;
 }
 
-const std::vector<uint16_t> QueryLangLexer::getSerializedATN() const {
+const std::vector<uint16_t> QueryLexer::getSerializedATN() const {
   return _serializedATN;
 }
 
-const atn::ATN& QueryLangLexer::getATN() const {
+const atn::ATN& QueryLexer::getATN() const {
   return _atn;
 }
 
@@ -53,40 +53,40 @@ const atn::ATN& QueryLangLexer::getATN() const {
 
 
 // Static vars and initialization.
-std::vector<dfa::DFA> QueryLangLexer::_decisionToDFA;
-atn::PredictionContextCache QueryLangLexer::_sharedContextCache;
+std::vector<dfa::DFA> QueryLexer::_decisionToDFA;
+atn::PredictionContextCache QueryLexer::_sharedContextCache;
 
 // We own the ATN which in turn owns the ATN states.
-atn::ATN QueryLangLexer::_atn;
-std::vector<uint16_t> QueryLangLexer::_serializedATN;
+atn::ATN QueryLexer::_atn;
+std::vector<uint16_t> QueryLexer::_serializedATN;
 
-std::vector<std::string> QueryLangLexer::_ruleNames = {
+std::vector<std::string> QueryLexer::_ruleNames = {
   u8"AND", u8"OR", u8"EQ", u8"CONTAINS", u8"GREATER_THAN", u8"WS", u8"INT", 
   u8"DOUBLE", u8"STRING", u8"ID"
 };
 
-std::vector<std::string> QueryLangLexer::_channelNames = {
+std::vector<std::string> QueryLexer::_channelNames = {
   "DEFAULT_TOKEN_CHANNEL", "HIDDEN"
 };
 
-std::vector<std::string> QueryLangLexer::_modeNames = {
+std::vector<std::string> QueryLexer::_modeNames = {
   u8"DEFAULT_MODE"
 };
 
-std::vector<std::string> QueryLangLexer::_literalNames = {
+std::vector<std::string> QueryLexer::_literalNames = {
   "", u8"'and'", u8"'or'", u8"'='", u8"'~'", u8"'>'"
 };
 
-std::vector<std::string> QueryLangLexer::_symbolicNames = {
+std::vector<std::string> QueryLexer::_symbolicNames = {
   "", u8"AND", u8"OR", u8"EQ", u8"CONTAINS", u8"GREATER_THAN", u8"WS", u8"INT", 
   u8"DOUBLE", u8"STRING", u8"ID"
 };
 
-dfa::Vocabulary QueryLangLexer::_vocabulary(_literalNames, _symbolicNames);
+dfa::Vocabulary QueryLexer::_vocabulary(_literalNames, _symbolicNames);
 
-std::vector<std::string> QueryLangLexer::_tokenNames;
+std::vector<std::string> QueryLexer::_tokenNames;
 
-QueryLangLexer::Initializer::Initializer() {
+QueryLexer::Initializer::Initializer() {
   // This code could be in a static initializer lambda, but VS doesn't allow access to private class members from there.
 	for (size_t i = 0; i < _symbolicNames.size(); ++i) {
 		std::string name = _vocabulary.getLiteralName(i);
@@ -173,4 +173,4 @@ QueryLangLexer::Initializer::Initializer() {
   }
 }
 
-QueryLangLexer::Initializer QueryLangLexer::_init;
+QueryLexer::Initializer QueryLexer::_init;

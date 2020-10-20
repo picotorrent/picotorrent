@@ -7,9 +7,9 @@
 #define ERROR_TMP ERROR
 #undef ERROR
 #include <antlr4-runtime.h>
-#include <QueryLangBaseVisitor.h>
-#include <QueryLangLexer.h>
-#include <QueryLangParser.h>
+#include <QueryBaseVisitor.h>
+#include <QueryLexer.h>
+#include <QueryParser.h>
 #define ERROR ERROR_TMP
 #undef ERROR_TMP
 
@@ -34,10 +34,10 @@ enum class Operator
 
 typedef std::function<bool(Torrent const&)> func_t;
 
-class FilterVisitor : public pt::PQL::QueryLangBaseVisitor
+class FilterVisitor : public pt::PQL::QueryBaseVisitor
 {
 public:
-    virtual antlrcpp::Any visitAndExpression(pt::PQL::QueryLangParser::AndExpressionContext* ctx) override
+    virtual antlrcpp::Any visitAndExpression(pt::PQL::QueryParser::AndExpressionContext* ctx) override
     {
         std::vector<func_t> funcs;
 
@@ -58,19 +58,19 @@ public:
         });
     }
 
-    virtual antlrcpp::Any visitFilter(pt::PQL::QueryLangParser::FilterContext* ctx) override
+    virtual antlrcpp::Any visitFilter(pt::PQL::QueryParser::FilterContext* ctx) override
     {
         return this->visit(ctx->expression());
     }
 
-    virtual antlrcpp::Any visitOper(pt::PQL::QueryLangParser::OperContext* ctx) override
+    virtual antlrcpp::Any visitOper(pt::PQL::QueryParser::OperContext* ctx) override
     {
         std::string oper = ctx->getText();
         if (oper == ">") return Operator::GreaterThan;
         return Operator::Unknown;
     }
 
-    virtual antlrcpp::Any visitOperatorPredicate(pt::PQL::QueryLangParser::OperatorPredicateContext* ctx) override
+    virtual antlrcpp::Any visitOperatorPredicate(pt::PQL::QueryParser::OperatorPredicateContext* ctx) override
     {
         std::string ref = this->visit(ctx->reference());
         // Operator oper = this->visit(ctx->oper());
@@ -90,17 +90,17 @@ public:
         throw new std::exception();
     }
 
-    virtual antlrcpp::Any visitPredicateExpression(pt::PQL::QueryLangParser::PredicateExpressionContext* ctx) override
+    virtual antlrcpp::Any visitPredicateExpression(pt::PQL::QueryParser::PredicateExpressionContext* ctx) override
     {
         return this->visit(ctx->predicate());
     }
 
-    virtual antlrcpp::Any visitReference(pt::PQL::QueryLangParser::ReferenceContext* ctx) override
+    virtual antlrcpp::Any visitReference(pt::PQL::QueryParser::ReferenceContext* ctx) override
     {
         return ctx->getText();
     }
 
-    virtual antlrcpp::Any visitValue(pt::PQL::QueryLangParser::ValueContext* ctx) override
+    virtual antlrcpp::Any visitValue(pt::PQL::QueryParser::ValueContext* ctx) override
     {
         if (auto val = ctx->INT())
         {
@@ -163,13 +163,13 @@ void TorrentConsole::CreateFilter(wxCommandEvent&)
 {
     antlr4::ANTLRInputStream input(m_input->GetValue().ToStdString());
 
-    pt::PQL::QueryLangLexer lexer(&input);
+    pt::PQL::QueryLexer lexer(&input);
     lexer.removeErrorListeners();
     lexer.addErrorListener(new ExceptionErrorListener());
 
     antlr4::CommonTokenStream tokens(&lexer);
 
-    pt::PQL::QueryLangParser parser(&tokens);
+    pt::PQL::QueryParser parser(&tokens);
     parser.removeErrorListeners();
     parser.addErrorListener(new ExceptionErrorListener());
 

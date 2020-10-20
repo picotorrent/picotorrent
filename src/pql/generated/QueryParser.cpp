@@ -1,63 +1,63 @@
 
-// Generated from .\QueryLang.g4 by ANTLR 4.8
+// Generated from .\Query.g4 by ANTLR 4.8
 
 
-#include "QueryLangVisitor.h"
+#include "QueryVisitor.h"
 
-#include "QueryLangParser.h"
+#include "QueryParser.h"
 
 
 using namespace antlrcpp;
 using namespace pt::PQL;
 using namespace antlr4;
 
-QueryLangParser::QueryLangParser(TokenStream *input) : Parser(input) {
+QueryParser::QueryParser(TokenStream *input) : Parser(input) {
   _interpreter = new atn::ParserATNSimulator(this, _atn, _decisionToDFA, _sharedContextCache);
 }
 
-QueryLangParser::~QueryLangParser() {
+QueryParser::~QueryParser() {
   delete _interpreter;
 }
 
-std::string QueryLangParser::getGrammarFileName() const {
-  return "QueryLang.g4";
+std::string QueryParser::getGrammarFileName() const {
+  return "Query.g4";
 }
 
-const std::vector<std::string>& QueryLangParser::getRuleNames() const {
+const std::vector<std::string>& QueryParser::getRuleNames() const {
   return _ruleNames;
 }
 
-dfa::Vocabulary& QueryLangParser::getVocabulary() const {
+dfa::Vocabulary& QueryParser::getVocabulary() const {
   return _vocabulary;
 }
 
 
 //----------------- FilterContext ------------------------------------------------------------------
 
-QueryLangParser::FilterContext::FilterContext(ParserRuleContext *parent, size_t invokingState)
+QueryParser::FilterContext::FilterContext(ParserRuleContext *parent, size_t invokingState)
   : ParserRuleContext(parent, invokingState) {
 }
 
-QueryLangParser::ExpressionContext* QueryLangParser::FilterContext::expression() {
-  return getRuleContext<QueryLangParser::ExpressionContext>(0);
+QueryParser::ExpressionContext* QueryParser::FilterContext::expression() {
+  return getRuleContext<QueryParser::ExpressionContext>(0);
 }
 
 
-size_t QueryLangParser::FilterContext::getRuleIndex() const {
-  return QueryLangParser::RuleFilter;
+size_t QueryParser::FilterContext::getRuleIndex() const {
+  return QueryParser::RuleFilter;
 }
 
 
-antlrcpp::Any QueryLangParser::FilterContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<QueryLangVisitor*>(visitor))
+antlrcpp::Any QueryParser::FilterContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<QueryVisitor*>(visitor))
     return parserVisitor->visitFilter(this);
   else
     return visitor->visitChildren(this);
 }
 
-QueryLangParser::FilterContext* QueryLangParser::filter() {
+QueryParser::FilterContext* QueryParser::filter() {
   FilterContext *_localctx = _tracker.createInstance<FilterContext>(_ctx, getState());
-  enterRule(_localctx, 0, QueryLangParser::RuleFilter);
+  enterRule(_localctx, 0, QueryParser::RuleFilter);
 
   auto onExit = finally([=] {
     exitRule();
@@ -79,93 +79,93 @@ QueryLangParser::FilterContext* QueryLangParser::filter() {
 
 //----------------- ExpressionContext ------------------------------------------------------------------
 
-QueryLangParser::ExpressionContext::ExpressionContext(ParserRuleContext *parent, size_t invokingState)
+QueryParser::ExpressionContext::ExpressionContext(ParserRuleContext *parent, size_t invokingState)
   : ParserRuleContext(parent, invokingState) {
 }
 
 
-size_t QueryLangParser::ExpressionContext::getRuleIndex() const {
-  return QueryLangParser::RuleExpression;
+size_t QueryParser::ExpressionContext::getRuleIndex() const {
+  return QueryParser::RuleExpression;
 }
 
-void QueryLangParser::ExpressionContext::copyFrom(ExpressionContext *ctx) {
+void QueryParser::ExpressionContext::copyFrom(ExpressionContext *ctx) {
   ParserRuleContext::copyFrom(ctx);
 }
 
 //----------------- AndExpressionContext ------------------------------------------------------------------
 
-std::vector<QueryLangParser::ExpressionContext *> QueryLangParser::AndExpressionContext::expression() {
-  return getRuleContexts<QueryLangParser::ExpressionContext>();
+std::vector<QueryParser::ExpressionContext *> QueryParser::AndExpressionContext::expression() {
+  return getRuleContexts<QueryParser::ExpressionContext>();
 }
 
-QueryLangParser::ExpressionContext* QueryLangParser::AndExpressionContext::expression(size_t i) {
-  return getRuleContext<QueryLangParser::ExpressionContext>(i);
+QueryParser::ExpressionContext* QueryParser::AndExpressionContext::expression(size_t i) {
+  return getRuleContext<QueryParser::ExpressionContext>(i);
 }
 
-tree::TerminalNode* QueryLangParser::AndExpressionContext::AND() {
-  return getToken(QueryLangParser::AND, 0);
+tree::TerminalNode* QueryParser::AndExpressionContext::AND() {
+  return getToken(QueryParser::AND, 0);
 }
 
-QueryLangParser::AndExpressionContext::AndExpressionContext(ExpressionContext *ctx) { copyFrom(ctx); }
+QueryParser::AndExpressionContext::AndExpressionContext(ExpressionContext *ctx) { copyFrom(ctx); }
 
 
-antlrcpp::Any QueryLangParser::AndExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<QueryLangVisitor*>(visitor))
+antlrcpp::Any QueryParser::AndExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<QueryVisitor*>(visitor))
     return parserVisitor->visitAndExpression(this);
   else
     return visitor->visitChildren(this);
 }
 //----------------- PredicateExpressionContext ------------------------------------------------------------------
 
-QueryLangParser::PredicateContext* QueryLangParser::PredicateExpressionContext::predicate() {
-  return getRuleContext<QueryLangParser::PredicateContext>(0);
+QueryParser::PredicateContext* QueryParser::PredicateExpressionContext::predicate() {
+  return getRuleContext<QueryParser::PredicateContext>(0);
 }
 
-QueryLangParser::PredicateExpressionContext::PredicateExpressionContext(ExpressionContext *ctx) { copyFrom(ctx); }
+QueryParser::PredicateExpressionContext::PredicateExpressionContext(ExpressionContext *ctx) { copyFrom(ctx); }
 
 
-antlrcpp::Any QueryLangParser::PredicateExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<QueryLangVisitor*>(visitor))
+antlrcpp::Any QueryParser::PredicateExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<QueryVisitor*>(visitor))
     return parserVisitor->visitPredicateExpression(this);
   else
     return visitor->visitChildren(this);
 }
 //----------------- OrExpressionContext ------------------------------------------------------------------
 
-std::vector<QueryLangParser::ExpressionContext *> QueryLangParser::OrExpressionContext::expression() {
-  return getRuleContexts<QueryLangParser::ExpressionContext>();
+std::vector<QueryParser::ExpressionContext *> QueryParser::OrExpressionContext::expression() {
+  return getRuleContexts<QueryParser::ExpressionContext>();
 }
 
-QueryLangParser::ExpressionContext* QueryLangParser::OrExpressionContext::expression(size_t i) {
-  return getRuleContext<QueryLangParser::ExpressionContext>(i);
+QueryParser::ExpressionContext* QueryParser::OrExpressionContext::expression(size_t i) {
+  return getRuleContext<QueryParser::ExpressionContext>(i);
 }
 
-tree::TerminalNode* QueryLangParser::OrExpressionContext::OR() {
-  return getToken(QueryLangParser::OR, 0);
+tree::TerminalNode* QueryParser::OrExpressionContext::OR() {
+  return getToken(QueryParser::OR, 0);
 }
 
-QueryLangParser::OrExpressionContext::OrExpressionContext(ExpressionContext *ctx) { copyFrom(ctx); }
+QueryParser::OrExpressionContext::OrExpressionContext(ExpressionContext *ctx) { copyFrom(ctx); }
 
 
-antlrcpp::Any QueryLangParser::OrExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<QueryLangVisitor*>(visitor))
+antlrcpp::Any QueryParser::OrExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<QueryVisitor*>(visitor))
     return parserVisitor->visitOrExpression(this);
   else
     return visitor->visitChildren(this);
 }
 
-QueryLangParser::ExpressionContext* QueryLangParser::expression() {
+QueryParser::ExpressionContext* QueryParser::expression() {
    return expression(0);
 }
 
-QueryLangParser::ExpressionContext* QueryLangParser::expression(int precedence) {
+QueryParser::ExpressionContext* QueryParser::expression(int precedence) {
   ParserRuleContext *parentContext = _ctx;
   size_t parentState = getState();
-  QueryLangParser::ExpressionContext *_localctx = _tracker.createInstance<ExpressionContext>(_ctx, parentState);
-  QueryLangParser::ExpressionContext *previousContext = _localctx;
+  QueryParser::ExpressionContext *_localctx = _tracker.createInstance<ExpressionContext>(_ctx, parentState);
+  QueryParser::ExpressionContext *previousContext = _localctx;
   (void)previousContext; // Silence compiler, in case the context is not used by generated code.
   size_t startState = 2;
-  enterRecursionRule(_localctx, 2, QueryLangParser::RuleExpression, precedence);
+  enterRecursionRule(_localctx, 2, QueryParser::RuleExpression, precedence);
 
     
 
@@ -201,7 +201,7 @@ QueryLangParser::ExpressionContext* QueryLangParser::expression(int precedence) 
 
           if (!(precpred(_ctx, 3))) throw FailedPredicateException(this, "precpred(_ctx, 3)");
           setState(18);
-          match(QueryLangParser::AND);
+          match(QueryParser::AND);
           setState(19);
           expression(4);
           break;
@@ -215,7 +215,7 @@ QueryLangParser::ExpressionContext* QueryLangParser::expression(int precedence) 
 
           if (!(precpred(_ctx, 2))) throw FailedPredicateException(this, "precpred(_ctx, 2)");
           setState(21);
-          match(QueryLangParser::OR);
+          match(QueryParser::OR);
           setState(22);
           expression(3);
           break;
@@ -238,30 +238,30 @@ QueryLangParser::ExpressionContext* QueryLangParser::expression(int precedence) 
 
 //----------------- ReferenceContext ------------------------------------------------------------------
 
-QueryLangParser::ReferenceContext::ReferenceContext(ParserRuleContext *parent, size_t invokingState)
+QueryParser::ReferenceContext::ReferenceContext(ParserRuleContext *parent, size_t invokingState)
   : ParserRuleContext(parent, invokingState) {
 }
 
-tree::TerminalNode* QueryLangParser::ReferenceContext::ID() {
-  return getToken(QueryLangParser::ID, 0);
+tree::TerminalNode* QueryParser::ReferenceContext::ID() {
+  return getToken(QueryParser::ID, 0);
 }
 
 
-size_t QueryLangParser::ReferenceContext::getRuleIndex() const {
-  return QueryLangParser::RuleReference;
+size_t QueryParser::ReferenceContext::getRuleIndex() const {
+  return QueryParser::RuleReference;
 }
 
 
-antlrcpp::Any QueryLangParser::ReferenceContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<QueryLangVisitor*>(visitor))
+antlrcpp::Any QueryParser::ReferenceContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<QueryVisitor*>(visitor))
     return parserVisitor->visitReference(this);
   else
     return visitor->visitChildren(this);
 }
 
-QueryLangParser::ReferenceContext* QueryLangParser::reference() {
+QueryParser::ReferenceContext* QueryParser::reference() {
   ReferenceContext *_localctx = _tracker.createInstance<ReferenceContext>(_ctx, getState());
-  enterRule(_localctx, 4, QueryLangParser::RuleReference);
+  enterRule(_localctx, 4, QueryParser::RuleReference);
 
   auto onExit = finally([=] {
     exitRule();
@@ -269,7 +269,7 @@ QueryLangParser::ReferenceContext* QueryLangParser::reference() {
   try {
     enterOuterAlt(_localctx, 1);
     setState(28);
-    match(QueryLangParser::ID);
+    match(QueryParser::ID);
    
   }
   catch (RecognitionException &e) {
@@ -283,51 +283,51 @@ QueryLangParser::ReferenceContext* QueryLangParser::reference() {
 
 //----------------- PredicateContext ------------------------------------------------------------------
 
-QueryLangParser::PredicateContext::PredicateContext(ParserRuleContext *parent, size_t invokingState)
+QueryParser::PredicateContext::PredicateContext(ParserRuleContext *parent, size_t invokingState)
   : ParserRuleContext(parent, invokingState) {
 }
 
 
-size_t QueryLangParser::PredicateContext::getRuleIndex() const {
-  return QueryLangParser::RulePredicate;
+size_t QueryParser::PredicateContext::getRuleIndex() const {
+  return QueryParser::RulePredicate;
 }
 
-void QueryLangParser::PredicateContext::copyFrom(PredicateContext *ctx) {
+void QueryParser::PredicateContext::copyFrom(PredicateContext *ctx) {
   ParserRuleContext::copyFrom(ctx);
 }
 
 //----------------- OperatorPredicateContext ------------------------------------------------------------------
 
-QueryLangParser::ReferenceContext* QueryLangParser::OperatorPredicateContext::reference() {
-  return getRuleContext<QueryLangParser::ReferenceContext>(0);
+QueryParser::ReferenceContext* QueryParser::OperatorPredicateContext::reference() {
+  return getRuleContext<QueryParser::ReferenceContext>(0);
 }
 
-QueryLangParser::OperContext* QueryLangParser::OperatorPredicateContext::oper() {
-  return getRuleContext<QueryLangParser::OperContext>(0);
+QueryParser::OperContext* QueryParser::OperatorPredicateContext::oper() {
+  return getRuleContext<QueryParser::OperContext>(0);
 }
 
-QueryLangParser::ValueContext* QueryLangParser::OperatorPredicateContext::value() {
-  return getRuleContext<QueryLangParser::ValueContext>(0);
+QueryParser::ValueContext* QueryParser::OperatorPredicateContext::value() {
+  return getRuleContext<QueryParser::ValueContext>(0);
 }
 
-QueryLangParser::OperatorPredicateContext::OperatorPredicateContext(PredicateContext *ctx) { copyFrom(ctx); }
+QueryParser::OperatorPredicateContext::OperatorPredicateContext(PredicateContext *ctx) { copyFrom(ctx); }
 
 
-antlrcpp::Any QueryLangParser::OperatorPredicateContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<QueryLangVisitor*>(visitor))
+antlrcpp::Any QueryParser::OperatorPredicateContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<QueryVisitor*>(visitor))
     return parserVisitor->visitOperatorPredicate(this);
   else
     return visitor->visitChildren(this);
 }
-QueryLangParser::PredicateContext* QueryLangParser::predicate() {
+QueryParser::PredicateContext* QueryParser::predicate() {
   PredicateContext *_localctx = _tracker.createInstance<PredicateContext>(_ctx, getState());
-  enterRule(_localctx, 6, QueryLangParser::RulePredicate);
+  enterRule(_localctx, 6, QueryParser::RulePredicate);
 
   auto onExit = finally([=] {
     exitRule();
   });
   try {
-    _localctx = dynamic_cast<PredicateContext *>(_tracker.createInstance<QueryLangParser::OperatorPredicateContext>(_localctx));
+    _localctx = dynamic_cast<PredicateContext *>(_tracker.createInstance<QueryParser::OperatorPredicateContext>(_localctx));
     enterOuterAlt(_localctx, 1);
     setState(30);
     reference();
@@ -348,38 +348,38 @@ QueryLangParser::PredicateContext* QueryLangParser::predicate() {
 
 //----------------- OperContext ------------------------------------------------------------------
 
-QueryLangParser::OperContext::OperContext(ParserRuleContext *parent, size_t invokingState)
+QueryParser::OperContext::OperContext(ParserRuleContext *parent, size_t invokingState)
   : ParserRuleContext(parent, invokingState) {
 }
 
-tree::TerminalNode* QueryLangParser::OperContext::EQ() {
-  return getToken(QueryLangParser::EQ, 0);
+tree::TerminalNode* QueryParser::OperContext::EQ() {
+  return getToken(QueryParser::EQ, 0);
 }
 
-tree::TerminalNode* QueryLangParser::OperContext::CONTAINS() {
-  return getToken(QueryLangParser::CONTAINS, 0);
+tree::TerminalNode* QueryParser::OperContext::CONTAINS() {
+  return getToken(QueryParser::CONTAINS, 0);
 }
 
-tree::TerminalNode* QueryLangParser::OperContext::GREATER_THAN() {
-  return getToken(QueryLangParser::GREATER_THAN, 0);
-}
-
-
-size_t QueryLangParser::OperContext::getRuleIndex() const {
-  return QueryLangParser::RuleOper;
+tree::TerminalNode* QueryParser::OperContext::GREATER_THAN() {
+  return getToken(QueryParser::GREATER_THAN, 0);
 }
 
 
-antlrcpp::Any QueryLangParser::OperContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<QueryLangVisitor*>(visitor))
+size_t QueryParser::OperContext::getRuleIndex() const {
+  return QueryParser::RuleOper;
+}
+
+
+antlrcpp::Any QueryParser::OperContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<QueryVisitor*>(visitor))
     return parserVisitor->visitOper(this);
   else
     return visitor->visitChildren(this);
 }
 
-QueryLangParser::OperContext* QueryLangParser::oper() {
+QueryParser::OperContext* QueryParser::oper() {
   OperContext *_localctx = _tracker.createInstance<OperContext>(_ctx, getState());
-  enterRule(_localctx, 8, QueryLangParser::RuleOper);
+  enterRule(_localctx, 8, QueryParser::RuleOper);
   size_t _la = 0;
 
   auto onExit = finally([=] {
@@ -390,9 +390,9 @@ QueryLangParser::OperContext* QueryLangParser::oper() {
     setState(34);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & ((1ULL << QueryLangParser::EQ)
-      | (1ULL << QueryLangParser::CONTAINS)
-      | (1ULL << QueryLangParser::GREATER_THAN))) != 0))) {
+      ((1ULL << _la) & ((1ULL << QueryParser::EQ)
+      | (1ULL << QueryParser::CONTAINS)
+      | (1ULL << QueryParser::GREATER_THAN))) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {
@@ -412,38 +412,38 @@ QueryLangParser::OperContext* QueryLangParser::oper() {
 
 //----------------- ValueContext ------------------------------------------------------------------
 
-QueryLangParser::ValueContext::ValueContext(ParserRuleContext *parent, size_t invokingState)
+QueryParser::ValueContext::ValueContext(ParserRuleContext *parent, size_t invokingState)
   : ParserRuleContext(parent, invokingState) {
 }
 
-tree::TerminalNode* QueryLangParser::ValueContext::INT() {
-  return getToken(QueryLangParser::INT, 0);
+tree::TerminalNode* QueryParser::ValueContext::INT() {
+  return getToken(QueryParser::INT, 0);
 }
 
-tree::TerminalNode* QueryLangParser::ValueContext::DOUBLE() {
-  return getToken(QueryLangParser::DOUBLE, 0);
+tree::TerminalNode* QueryParser::ValueContext::DOUBLE() {
+  return getToken(QueryParser::DOUBLE, 0);
 }
 
-tree::TerminalNode* QueryLangParser::ValueContext::STRING() {
-  return getToken(QueryLangParser::STRING, 0);
-}
-
-
-size_t QueryLangParser::ValueContext::getRuleIndex() const {
-  return QueryLangParser::RuleValue;
+tree::TerminalNode* QueryParser::ValueContext::STRING() {
+  return getToken(QueryParser::STRING, 0);
 }
 
 
-antlrcpp::Any QueryLangParser::ValueContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<QueryLangVisitor*>(visitor))
+size_t QueryParser::ValueContext::getRuleIndex() const {
+  return QueryParser::RuleValue;
+}
+
+
+antlrcpp::Any QueryParser::ValueContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<QueryVisitor*>(visitor))
     return parserVisitor->visitValue(this);
   else
     return visitor->visitChildren(this);
 }
 
-QueryLangParser::ValueContext* QueryLangParser::value() {
+QueryParser::ValueContext* QueryParser::value() {
   ValueContext *_localctx = _tracker.createInstance<ValueContext>(_ctx, getState());
-  enterRule(_localctx, 10, QueryLangParser::RuleValue);
+  enterRule(_localctx, 10, QueryParser::RuleValue);
   size_t _la = 0;
 
   auto onExit = finally([=] {
@@ -454,9 +454,9 @@ QueryLangParser::ValueContext* QueryLangParser::value() {
     setState(36);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & ((1ULL << QueryLangParser::INT)
-      | (1ULL << QueryLangParser::DOUBLE)
-      | (1ULL << QueryLangParser::STRING))) != 0))) {
+      ((1ULL << _la) & ((1ULL << QueryParser::INT)
+      | (1ULL << QueryParser::DOUBLE)
+      | (1ULL << QueryParser::STRING))) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {
@@ -474,7 +474,7 @@ QueryLangParser::ValueContext* QueryLangParser::value() {
   return _localctx;
 }
 
-bool QueryLangParser::sempred(RuleContext *context, size_t ruleIndex, size_t predicateIndex) {
+bool QueryParser::sempred(RuleContext *context, size_t ruleIndex, size_t predicateIndex) {
   switch (ruleIndex) {
     case 1: return expressionSempred(dynamic_cast<ExpressionContext *>(context), predicateIndex);
 
@@ -484,7 +484,7 @@ bool QueryLangParser::sempred(RuleContext *context, size_t ruleIndex, size_t pre
   return true;
 }
 
-bool QueryLangParser::expressionSempred(ExpressionContext *_localctx, size_t predicateIndex) {
+bool QueryParser::expressionSempred(ExpressionContext *_localctx, size_t predicateIndex) {
   switch (predicateIndex) {
     case 0: return precpred(_ctx, 3);
     case 1: return precpred(_ctx, 2);
@@ -496,31 +496,31 @@ bool QueryLangParser::expressionSempred(ExpressionContext *_localctx, size_t pre
 }
 
 // Static vars and initialization.
-std::vector<dfa::DFA> QueryLangParser::_decisionToDFA;
-atn::PredictionContextCache QueryLangParser::_sharedContextCache;
+std::vector<dfa::DFA> QueryParser::_decisionToDFA;
+atn::PredictionContextCache QueryParser::_sharedContextCache;
 
 // We own the ATN which in turn owns the ATN states.
-atn::ATN QueryLangParser::_atn;
-std::vector<uint16_t> QueryLangParser::_serializedATN;
+atn::ATN QueryParser::_atn;
+std::vector<uint16_t> QueryParser::_serializedATN;
 
-std::vector<std::string> QueryLangParser::_ruleNames = {
+std::vector<std::string> QueryParser::_ruleNames = {
   "filter", "expression", "reference", "predicate", "oper", "value"
 };
 
-std::vector<std::string> QueryLangParser::_literalNames = {
+std::vector<std::string> QueryParser::_literalNames = {
   "", "'and'", "'or'", "'='", "'~'", "'>'"
 };
 
-std::vector<std::string> QueryLangParser::_symbolicNames = {
+std::vector<std::string> QueryParser::_symbolicNames = {
   "", "AND", "OR", "EQ", "CONTAINS", "GREATER_THAN", "WS", "INT", "DOUBLE", 
   "STRING", "ID"
 };
 
-dfa::Vocabulary QueryLangParser::_vocabulary(_literalNames, _symbolicNames);
+dfa::Vocabulary QueryParser::_vocabulary(_literalNames, _symbolicNames);
 
-std::vector<std::string> QueryLangParser::_tokenNames;
+std::vector<std::string> QueryParser::_tokenNames;
 
-QueryLangParser::Initializer::Initializer() {
+QueryParser::Initializer::Initializer() {
 	for (size_t i = 0; i < _symbolicNames.size(); ++i) {
 		std::string name = _vocabulary.getLiteralName(i);
 		if (name.empty()) {
@@ -572,4 +572,4 @@ QueryLangParser::Initializer::Initializer() {
   }
 }
 
-QueryLangParser::Initializer QueryLangParser::_init;
+QueryParser::Initializer QueryParser::_init;

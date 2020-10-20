@@ -1,5 +1,5 @@
 
-// Generated from .\QueryLang.g4 by ANTLR 4.8
+// Generated from .\Query.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -10,15 +10,15 @@
 namespace pt::PQL {
 
 
-class  QueryLangLexer : public antlr4::Lexer {
+class  QueryLexer : public antlr4::Lexer {
 public:
   enum {
     AND = 1, OR = 2, EQ = 3, CONTAINS = 4, GREATER_THAN = 5, WS = 6, INT = 7, 
     DOUBLE = 8, STRING = 9, ID = 10
   };
 
-  QueryLangLexer(antlr4::CharStream *input);
-  ~QueryLangLexer();
+  QueryLexer(antlr4::CharStream *input);
+  ~QueryLexer();
 
   virtual std::string getGrammarFileName() const override;
   virtual const std::vector<std::string>& getRuleNames() const override;
