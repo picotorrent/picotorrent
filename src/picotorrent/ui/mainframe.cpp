@@ -61,6 +61,8 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_menuItemFilters(nullptr),
     m_ipc(std::make_unique<IPC::Server>(this))
 {
+    m_splitter->SetWindowStyleFlag(
+        m_splitter->GetWindowStyleFlag() | wxSP_LIVE_UPDATE);
     m_splitter->SetMinimumPaneSize(10);
     m_splitter->SetSashGravity(0.5);
     m_splitter->SplitHorizontally(
