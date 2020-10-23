@@ -2,12 +2,16 @@
 
 #include <fmt/format.h>
 #include <wx/clipbrd.h>
+#include <wx/dcbuffer.h>
 #include <wx/sizer.h>
+
+#include <libtorrent/torrent_status.hpp>
 
 #include "../bittorrent/torrenthandle.hpp"
 #include "../bittorrent/torrentstatus.hpp"
 #include "../core/utils.hpp"
 #include "translator.hpp"
+#include "widgets/pieceprogressbar.hpp"
 
 using pt::UI::TorrentDetailsOverviewPanel;
 
@@ -81,6 +85,7 @@ public:
 
 TorrentDetailsOverviewPanel::TorrentDetailsOverviewPanel(wxWindow* parent, wxWindowID id)
     : wxScrolledWindow(parent, id),
+    m_pieceProgress(new Widgets::PieceProgressBar(this, wxID_ANY)),
     m_name(new CopyableStaticText(this)),
     m_infoHash(new CopyableStaticText(this)),
     m_savePath(new CopyableStaticText(this)),
@@ -129,6 +134,7 @@ TorrentDetailsOverviewPanel::TorrentDetailsOverviewPanel(wxWindow* parent, wxWin
     sizer->Add(m_totalUpload, 1, wxEXPAND);
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
+    mainSizer->Add(m_pieceProgress, 0, wxEXPAND | wxTOP | wxRIGHT | wxLEFT, FromDIP(5));
     mainSizer->Add(sizer, 1, wxALL | wxEXPAND, FromDIP(5));
 
     this->SetSizer(mainSizer);
@@ -139,6 +145,8 @@ TorrentDetailsOverviewPanel::TorrentDetailsOverviewPanel(wxWindow* parent, wxWin
 void TorrentDetailsOverviewPanel::Refresh(BitTorrent::TorrentHandle* torrent)
 {
     auto status = torrent->Status();
+
+    m_pieceProgress->UpdateBitfield(status.pieces);
 
     m_name->SetLabel(Utils::toStdWString(status.name));
     m_savePath->SetLabel(Utils::toStdWString(status.savePath));
@@ -203,6 +211,7 @@ void TorrentDetailsOverviewPanel::Refresh(BitTorrent::TorrentHandle* torrent)
 
 void TorrentDetailsOverviewPanel::Reset()
 {
+    m_pieceProgress->UpdateBitfield({});
     m_name->SetLabel("-");
     m_infoHash->SetLabel("-");
     m_savePath->SetLabel("-");
