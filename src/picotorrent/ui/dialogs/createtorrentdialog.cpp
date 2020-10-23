@@ -78,7 +78,7 @@ struct StopPayload
     std::string bp;
 };
 
-CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, Session* session)
+CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, std::shared_ptr<Session> session)
     : wxDialog(parent, id, i18n("create_torrent"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     m_session(session)
 {

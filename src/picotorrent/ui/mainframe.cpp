@@ -346,9 +346,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
 MainFrame::~MainFrame()
 {
     m_taskBarIcon->Hide();
-
     delete m_taskBarIcon;
-    delete m_session;
 }
 
 void MainFrame::AddFilter(wxString const& name, std::function<bool(BitTorrent::TorrentHandle*)> const& filter)
@@ -462,6 +460,15 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         return;
     }
 
+    for (auto& param : params)
+    {
+        auto dlg = new Dialogs::AddTorrentDialog(this, wxID_ANY, param, m_db, m_cfg, m_session);
+        dlg->Show();
+    }
+
+    m_session->AddMetadataSearch(hashes);
+
+    /*
     Dialogs::AddTorrentDialog dlg(this, wxID_ANY, params, m_db, m_cfg);
 
     this->Bind(
@@ -472,7 +479,6 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         });
 
     // search for metadata
-    m_session->AddMetadataSearch(hashes);
 
     if (dlg.ShowModal() == wxID_OK)
     {
@@ -481,6 +487,7 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
             m_session->AddTorrent(p);
         }
     }
+    */
 }
 
 void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<std::string> const& magnets)

@@ -5,6 +5,7 @@
 #include <wx/wx.h>
 #endif
 
+#include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/download_priority.hpp>
 #include <libtorrent/fwd.hpp>
 #include <libtorrent/info_hash.hpp>
@@ -18,6 +19,13 @@ class wxChoice;
 class wxDataViewCtrl;
 class wxDataViewEvent;
 class wxDataViewItemArray;
+class wxListView;
+class wxSplitterWindow;
+
+namespace pt::BitTorrent
+{
+    class Session;
+}
 
 namespace pt
 {
@@ -37,11 +45,10 @@ namespace Dialogs
     class AddTorrentDialog : public wxDialog
     {
     public:
-        AddTorrentDialog(wxWindow* parent, wxWindowID id, std::vector<libtorrent::add_torrent_params>& params, std::shared_ptr<Core::Database> db, std::shared_ptr<Core::Configuration> cfg);
+        AddTorrentDialog(wxWindow* parent, wxWindowID id, libtorrent::add_torrent_params& params, std::shared_ptr<Core::Database> db, std::shared_ptr<Core::Configuration> cfg, std::shared_ptr<BitTorrent::Session> session);
         virtual ~AddTorrentDialog();
 
-        std::vector<libtorrent::add_torrent_params> GetTorrentParams() { return m_params; };
-        void MetadataFound(std::shared_ptr<libtorrent::torrent_info> const& ti);
+        libtorrent::add_torrent_params GetTorrentParams() { return m_params; };
 
     private:
         enum
@@ -60,15 +67,18 @@ namespace Dialogs
             ptID_CONTEXT_MENU_MAXIMUM,
         };
 
+        void MetadataFound(std::shared_ptr<libtorrent::torrent_info> const& ti);
+
         wxString GetTorrentDisplayName(libtorrent::add_torrent_params const& params);
         wxString GetTorrentDisplaySize(libtorrent::add_torrent_params const& params);
         wxString GetTorrentDisplayInfoHash(libtorrent::add_torrent_params const& params);
         wxString GetTorrentDisplayComment(libtorrent::add_torrent_params const& params);
 
-        void Load(size_t index);
+        void Load();
         void SetFilePriorities(wxDataViewItemArray& items, libtorrent::download_priority_t prio);
         void ShowFileContextMenu(wxDataViewEvent&);
 
+        wxSplitterWindow* m_splitter;
         wxChoice* m_torrents;
         wxStaticText* m_torrentName;
         wxStaticText* m_torrentSize;
@@ -80,12 +90,16 @@ namespace Dialogs
         wxDataViewCtrl* m_filesView;
         wxCheckBox* m_sequentialDownload;
         wxCheckBox* m_startTorrent;
+        wxListView* m_peers;
+        wxListView* m_trackers;
 
         Models::FileStorageModel* m_filesModel;
 
+        libtorrent::add_torrent_params m_params;
+
         std::shared_ptr<Core::Configuration> m_cfg;
         std::shared_ptr<Core::Database> m_db;
-        std::vector<libtorrent::add_torrent_params> m_params;
+        std::shared_ptr<BitTorrent::Session> m_session;
         std::set<libtorrent::info_hash_t> m_manualSavePath;
     };
 }
