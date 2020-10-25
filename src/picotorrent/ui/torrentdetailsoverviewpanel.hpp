@@ -5,6 +5,8 @@
 #include <wx/wx.h>
 #endif
 
+namespace pt::UI::Widgets { class PieceProgressBar; }
+
 namespace pt
 {
 namespace BitTorrent
@@ -22,6 +24,7 @@ namespace UI
         void Reset();
 
     private:
+        Widgets::PieceProgressBar* m_pieceProgress;
         wxStaticText* m_name;
         wxStaticText* m_infoHash;
         wxStaticText* m_savePath;
