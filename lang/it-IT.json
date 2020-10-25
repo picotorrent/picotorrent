@@ -189,7 +189,7 @@
     "changing_pex_settings_requires_restart": "Modifiche alle impostazioni PeX richiedono un riavvio",
     "restart_required": "Riavvio richiesto",
     "comment": "Commento",
-    "skip_add_torrent_dialog": "Salta la finestra 'Aggiunti torrent'",
+    "skip_add_torrent_dialog": "Salta la finestra 'Aggiungi torrent'",
     "start_torrent": "Avvia torrent",
     "auto_managed": "Gestito in automatico",
     "copy": "Copia",
@@ -281,5 +281,9 @@
     "eta_hms_format": "{0}h {1}m {2}s",
     "torrent": "Torrent",
     "amp_file": "&File",
-    "restart_picotorrent": "Riavvia PicoTorrent"
+    "restart_picotorrent": "Riavvia PicoTorrent",
+    "scrape": "Scrape",
+    "amp_none": "&Nessuno",
+    "component": "Componente",
+    "commitish": "Commit"
 }
