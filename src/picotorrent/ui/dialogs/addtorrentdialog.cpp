@@ -507,7 +507,7 @@ void AddTorrentDialog::OnRemoveTracker(wxCommandEvent&)
 
     while (selected >= 0)
     {
-        if (selected < (tiTrackers.size() + tiTrackersRemoved) && tiTrackers.size() > 0)
+        if (size_t(selected) < (tiTrackers.size() + tiTrackersRemoved) && tiTrackers.size() > 0)
         {
             tiTrackers.erase(
                 tiTrackers.begin() + (selected - tiTrackersRemoved));
