@@ -14,6 +14,7 @@
 #include <vector>
 
 class wxBitmapComboBox;
+class wxButton;
 class wxCheckBox;
 class wxChoice;
 class wxDataViewCtrl;
@@ -60,6 +61,10 @@ namespace Dialogs
             ptID_FILE_LIST,
             ptID_SEQUENTIAL_DOWNLOAD,
             ptID_START_TORRENT,
+            ptID_TRACKERS_ADD,
+            ptID_TRACKERS_REMOVE,
+            ptID_OK,
+            ptID_CANCEL,
 
             ptID_CONTEXT_MENU_DO_NOT_DOWNLOAD,
             ptID_CONTEXT_MENU_LOW,
@@ -75,6 +80,11 @@ namespace Dialogs
         wxString GetTorrentDisplayComment(libtorrent::add_torrent_params const& params);
 
         void Load();
+        void OnAddTracker(wxCommandEvent&);
+        void OnCancel(wxCommandEvent&);
+        void OnOk(wxCommandEvent&);
+        void OnRemoveTracker(wxCommandEvent&);
+        void ReloadTrackers();
         void SetFilePriorities(wxDataViewItemArray& items, libtorrent::download_priority_t prio);
         void ShowFileContextMenu(wxDataViewEvent&);
 
@@ -92,6 +102,8 @@ namespace Dialogs
         wxCheckBox* m_startTorrent;
         wxListView* m_peers;
         wxListView* m_trackers;
+        wxButton* m_addTracker;
+        wxButton* m_removeTracker;
 
         Models::FileStorageModel* m_filesModel;
 

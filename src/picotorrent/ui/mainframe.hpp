@@ -9,6 +9,7 @@
 #include <libtorrent/info_hash.hpp>
 
 #include <map>
+#include <unordered_set>
 #include <vector>
 
 class wxSplitterWindow;
@@ -100,7 +101,7 @@ namespace Models
 
         std::map<size_t, std::function<bool(BitTorrent::TorrentHandle*)>> m_filters;
 
-        std::map<libtorrent::info_hash_t, Dialogs::AddTorrentDialog*> m_addDialogs;
+        std::unordered_set<Dialogs::AddTorrentDialog*> m_addDialogs;
         std::map<libtorrent::info_hash_t, BitTorrent::TorrentHandle*> m_selection;
         int64_t m_torrentsCount;
     };
