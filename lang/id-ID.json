@@ -283,5 +283,9 @@
     "labels": "Label",
     "label_details": "Detail label",
     "color": "Warna",
-    "apply_filter": "Terapkan filter"
+    "apply_filter": "Terapkan filter",
+    "eta_hms_format": "{0}j {1}m {2}d",
+    "eta_ms_format": "{0}m {1}d",
+    "eta_s_format": "{0}d",
+    "per_second_format": "{0}/d"
 }
