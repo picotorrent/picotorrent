@@ -17,10 +17,12 @@ namespace Dialogs
         AddTrackerDialog(wxWindow* parent, wxWindowID id);
         virtual ~AddTrackerDialog();
 
+        int GetTier();
         std::string GetUrl();
 
     private:
         wxTextCtrl* m_url;
+        wxTextCtrl* m_tier;
     };
 }
 }

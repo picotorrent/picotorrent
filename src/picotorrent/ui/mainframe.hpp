@@ -9,10 +9,13 @@
 #include <libtorrent/info_hash.hpp>
 
 #include <map>
+#include <unordered_set>
 #include <vector>
 
 class wxSplitterWindow;
 class wxTaskBarIconEvent;
+
+namespace pt::UI::Dialogs { class AddTorrentDialog; }
 
 namespace pt
 {
@@ -82,6 +85,7 @@ namespace Models
         Models::TorrentListModel* m_torrentListModel;
         TorrentListView* m_torrentList;
 
+        std::shared_ptr<BitTorrent::Session> m_session;
         std::shared_ptr<Core::Environment> m_env;
         std::shared_ptr<Core::Database> m_db;
         std::shared_ptr<Core::Configuration> m_cfg;
@@ -97,7 +101,7 @@ namespace Models
 
         std::map<size_t, std::function<bool(BitTorrent::TorrentHandle*)>> m_filters;
 
-        BitTorrent::Session* m_session;
+        std::unordered_set<Dialogs::AddTorrentDialog*> m_addDialogs;
         std::map<libtorrent::info_hash_t, BitTorrent::TorrentHandle*> m_selection;
         int64_t m_torrentsCount;
     };
