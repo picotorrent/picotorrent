@@ -54,7 +54,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_splitter(new wxSplitterWindow(this, ptID_MAIN_SPLITTER)),
     m_statusBar(new StatusBar(this)),
     m_taskBarIcon(new TaskBarIcon(this)),
-    m_torrentDetails(new TorrentDetailsView(m_splitter, ptID_MAIN_TORRENT_DETAILS)),
+    m_torrentDetails(new TorrentDetailsView(m_splitter, ptID_MAIN_TORRENT_DETAILS, cfg)),
     m_torrentListModel(new Models::TorrentListModel()),
     m_torrentList(new TorrentListView(m_splitter, ptID_MAIN_TORRENT_LIST, m_torrentListModel)),
     m_torrentsCount(0),
@@ -751,6 +751,7 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
             m_taskBarIcon->Hide();
         }
 
+        m_torrentDetails->ReloadConfiguration();
         m_torrentListModel->SetBackgroundColorEnabled(
             m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
 

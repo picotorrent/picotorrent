@@ -56,7 +56,7 @@ class CopyableStaticText : public wxStaticText
 {
 public:
     CopyableStaticText(wxWindow* parent)
-        : wxStaticText(parent, wxID_ANY, "-", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END)
+        : wxStaticText(parent, wxID_ANY, "-", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END | wxST_NO_AUTORESIZE)
     {
         this->Bind(wxEVT_RIGHT_DOWN,
             [this](wxMouseEvent const&)
@@ -83,9 +83,9 @@ public:
     }
 };
 
-TorrentDetailsOverviewPanel::TorrentDetailsOverviewPanel(wxWindow* parent, wxWindowID id)
+TorrentDetailsOverviewPanel::TorrentDetailsOverviewPanel(wxWindow* parent, wxWindowID id, int cols, bool showPieceProgress)
     : wxScrolledWindow(parent, id),
-    m_pieceProgress(new Widgets::PieceProgressBar(this, wxID_ANY)),
+    m_pieceProgress(nullptr),
     m_name(new CopyableStaticText(this)),
     m_infoHash(new CopyableStaticText(this)),
     m_savePath(new CopyableStaticText(this)),
@@ -99,45 +99,54 @@ TorrentDetailsOverviewPanel::TorrentDetailsOverviewPanel(wxWindow* parent, wxWin
     m_totalDownload(new CopyableStaticText(this)),
     m_totalUpload(new CopyableStaticText(this))
 {
-    auto sizer = new wxFlexGridSizer(4, FromDIP(10), FromDIP(10));
-    sizer->AddGrowableCol(1, 1);
-    sizer->AddGrowableCol(3, 1);
+    m_sizer = new wxFlexGridSizer(cols * 2, FromDIP(10), FromDIP(10));
 
-    sizer->Add(BoldLabel(this, wxID_ANY, i18n("name")));
-    sizer->Add(m_name, 1, wxEXPAND);
-    sizer->Add(BoldLabel(this, wxID_ANY, i18n("info_hash")));
-    sizer->Add(m_infoHash, 1, wxEXPAND);
+    for (int i = 0; i < cols; i++)
+    {
+        m_sizer->AddGrowableCol(i * 2 + 1, 1);
+    }
 
-    sizer->Add(BoldLabel(this, wxID_ANY, i18n("save_path")));
-    sizer->Add(m_savePath, 1, wxEXPAND);
-    sizer->Add(BoldLabel(this, wxID_ANY, i18n("pieces")));
-    sizer->Add(m_pieces, 1, wxEXPAND);
+    m_sizer->Add(BoldLabel(this, wxID_ANY, i18n("name")));
+    m_sizer->Add(m_name, 0, wxEXPAND);
+    m_sizer->Add(BoldLabel(this, wxID_ANY, i18n("info_hash")));
+    m_sizer->Add(m_infoHash, 0, wxEXPAND);
 
-    sizer->Add(BoldLabel(this, wxID_ANY, i18n("comment")));
-    sizer->Add(m_comment, 1, wxEXPAND);
-    sizer->Add(BoldLabel(this, wxID_ANY, i18n("size")));
-    sizer->Add(m_size, 1, wxEXPAND);
+    m_sizer->Add(BoldLabel(this, wxID_ANY, i18n("save_path")));
+    m_sizer->Add(m_savePath, 0, wxEXPAND);
+    m_sizer->Add(BoldLabel(this, wxID_ANY, i18n("pieces")));
+    m_sizer->Add(m_pieces, 0, wxEXPAND);
 
-    sizer->Add(BoldLabel(this, wxID_ANY, i18n("private")));
-    sizer->Add(m_priv, 1, wxEXPAND);
-    sizer->Add(BoldLabel(this, wxID_ANY, i18n("ratio")));
-    sizer->Add(m_ratio, 1, wxEXPAND);
+    m_sizer->Add(BoldLabel(this, wxID_ANY, i18n("comment")));
+    m_sizer->Add(m_comment, 0, wxEXPAND);
+    m_sizer->Add(BoldLabel(this, wxID_ANY, i18n("size")));
+    m_sizer->Add(m_size, 0, wxEXPAND);
 
-    sizer->Add(BoldLabel(this, wxID_ANY, i18n("last_download")));
-    sizer->Add(m_lastDownload, 1, wxEXPAND);
-    sizer->Add(BoldLabel(this, wxID_ANY, i18n("last_upload")));
-    sizer->Add(m_lastUpload, 1, wxEXPAND);
+    m_sizer->Add(BoldLabel(this, wxID_ANY, i18n("private")));
+    m_sizer->Add(m_priv, 0, wxEXPAND);
+    m_sizer->Add(BoldLabel(this, wxID_ANY, i18n("ratio")));
+    m_sizer->Add(m_ratio, 0, wxEXPAND);
 
-    sizer->Add(BoldLabel(this, wxID_ANY, i18n("total_download")));
-    sizer->Add(m_totalDownload, 1, wxEXPAND);
-    sizer->Add(BoldLabel(this, wxID_ANY, i18n("total_upload")));
-    sizer->Add(m_totalUpload, 1, wxEXPAND);
+    m_sizer->Add(BoldLabel(this, wxID_ANY, i18n("last_download")));
+    m_sizer->Add(m_lastDownload, 0, wxEXPAND);
+    m_sizer->Add(BoldLabel(this, wxID_ANY, i18n("last_upload")));
+    m_sizer->Add(m_lastUpload, 0, wxEXPAND);
 
-    auto mainSizer = new wxBoxSizer(wxVERTICAL);
-    mainSizer->Add(m_pieceProgress, 0, wxEXPAND | wxTOP | wxRIGHT | wxLEFT, FromDIP(5));
-    mainSizer->Add(sizer, 1, wxALL | wxEXPAND, FromDIP(5));
+    m_sizer->Add(BoldLabel(this, wxID_ANY, i18n("total_download")));
+    m_sizer->Add(m_totalDownload, 0, wxEXPAND);
+    m_sizer->Add(BoldLabel(this, wxID_ANY, i18n("total_upload")));
+    m_sizer->Add(m_totalUpload, 0, wxEXPAND);
 
-    this->SetSizer(mainSizer);
+    m_mainSizer = new wxBoxSizer(wxVERTICAL);
+
+    if (showPieceProgress)
+    {
+        m_pieceProgress = new Widgets::PieceProgressBar(this, wxID_ANY);
+        m_mainSizer->Add(m_pieceProgress, 0, wxEXPAND | wxTOP | wxRIGHT | wxLEFT, FromDIP(5));
+    }
+    
+    m_mainSizer->Add(m_sizer, 1, wxALL | wxEXPAND, FromDIP(5));
+
+    this->SetSizer(m_mainSizer);
     this->FitInside();
     this->SetScrollRate(5, 5);
 }
@@ -146,7 +155,10 @@ void TorrentDetailsOverviewPanel::Refresh(BitTorrent::TorrentHandle* torrent)
 {
     auto status = torrent->Status();
 
-    m_pieceProgress->UpdateBitfield(status.pieces);
+    if (m_pieceProgress != nullptr)
+    {
+        m_pieceProgress->UpdateBitfield(status.pieces);
+    }
 
     m_name->SetLabel(Utils::toStdWString(status.name));
     m_savePath->SetLabel(Utils::toStdWString(status.savePath));
@@ -211,7 +223,11 @@ void TorrentDetailsOverviewPanel::Refresh(BitTorrent::TorrentHandle* torrent)
 
 void TorrentDetailsOverviewPanel::Reset()
 {
-    m_pieceProgress->UpdateBitfield({});
+    if (m_pieceProgress != nullptr)
+    {
+        m_pieceProgress->UpdateBitfield({});
+    }
+
     m_name->SetLabel("-");
     m_infoHash->SetLabel("-");
     m_savePath->SetLabel("-");
@@ -224,4 +240,38 @@ void TorrentDetailsOverviewPanel::Reset()
     m_lastUpload->SetLabel("-");
     m_totalDownload->SetLabel("-");
     m_totalUpload->SetLabel("-");
+}
+
+void TorrentDetailsOverviewPanel::UpdateView(int cols, bool showPieceProgress)
+{
+    if (showPieceProgress && m_pieceProgress == nullptr)
+    {
+        m_pieceProgress = new Widgets::PieceProgressBar(this, wxID_ANY);
+        m_mainSizer->Insert(0, m_pieceProgress, 0, wxEXPAND | wxTOP | wxRIGHT | wxLEFT, FromDIP(5));
+    }
+    else if (!showPieceProgress && m_pieceProgress != nullptr)
+    {
+        m_mainSizer->Remove(0);
+
+        delete m_pieceProgress;
+        m_pieceProgress = nullptr;
+    }
+
+    for (int i = 0; i < m_sizer->GetCols(); i++)
+    {
+        if (m_sizer->IsColGrowable(i))
+        {
+            m_sizer->RemoveGrowableCol(i);
+        }
+    }
+
+    m_sizer->SetCols(cols * 2);
+
+    for (int i = 0; i < cols; i++)
+    {
+        m_sizer->AddGrowableCol(i * 2 + 1, 1);
+    }
+
+    this->Layout();
+    this->FitInside();
 }
