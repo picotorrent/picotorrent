@@ -21,6 +21,7 @@ AppIcon ICON "..\\..\\res\\app.ico"
 20200916213321_insert_locale_name_setting       DBMIGRATION "..\\..\\res\\dbmigrations\\20200916213321_insert_locale_name_setting.sql"
 20200919221011_create_label_table               DBMIGRATION "..\\..\\res\\dbmigrations\\20200919221011_create_label_table.sql"
 20200925235912_save_resume_data_interval        DBMIGRATION "..\\..\\res\\dbmigrations\\20200925235912_save_resume_data_interval.sql"
+20201027213145_insert_overview_columns          DBMIGRATION "..\\..\\res\\dbmigrations\\20201027213145_insert_overview_columns.sql"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION        VER_FILE_VERSION

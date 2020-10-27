@@ -3,6 +3,7 @@
 #include <wx/notebook.h>
 #include <wx/sizer.h>
 
+#include "../core/configuration.hpp"
 #include "torrentdetailsfilespanel.hpp"
 #include "torrentdetailsoverviewpanel.hpp"
 #include "torrentdetailspeerspanel.hpp"
@@ -11,8 +12,9 @@
 
 using pt::UI::TorrentDetailsView;
 
-TorrentDetailsView::TorrentDetailsView(wxWindow* parent, wxWindowID id)
+TorrentDetailsView::TorrentDetailsView(wxWindow* parent, wxWindowID id, std::shared_ptr<Core::Configuration> cfg)
     : wxNotebook(parent, id),
+    m_cfg(cfg),
     m_overview(new TorrentDetailsOverviewPanel(this, wxID_ANY)),
     m_files(new TorrentDetailsFilesPanel(this, wxID_ANY)),
     m_peers(new TorrentDetailsPeersPanel(this, wxID_ANY)),
@@ -22,6 +24,7 @@ TorrentDetailsView::TorrentDetailsView(wxWindow* parent, wxWindowID id)
     this->AddPage(m_files,    i18n("files"));
     this->AddPage(m_peers,    i18n("peers"));
     this->AddPage(m_trackers, i18n("trackers"));
+    this->ReloadConfiguration();
 }
 
 TorrentDetailsView::~TorrentDetailsView()
@@ -40,6 +43,16 @@ void TorrentDetailsView::Refresh(std::map<lt::info_hash_t, BitTorrent::TorrentHa
     m_files->Refresh(torrents.begin()->second);
     m_peers->Refresh(torrents.begin()->second);
     m_trackers->Refresh(torrents.begin()->second);
+}
+
+void TorrentDetailsView::ReloadConfiguration()
+{
+    auto showPieceProgress = m_cfg->Get<bool>("ui.torrent_overview.show_piece_progress");
+    auto cols = m_cfg->Get<int>("ui.torrent_overview.columns");
+
+    m_overview->UpdateView(
+        cols.value_or(2),
+        showPieceProgress.value_or(true));
 }
 
 void TorrentDetailsView::Reset()
