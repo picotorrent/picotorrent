@@ -6,7 +6,7 @@
 #include <fmt/core.h>
 #include <libtorrent/version.hpp>
 #include <nlohmann/json.hpp>
-#include <openssl/opensslv.h>
+// #include <openssl/opensslv.h>
 #include <sqlite3.h>
 #include <wx/hyperlink.h>
 #include <wx/listctrl.h>
@@ -58,7 +58,7 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
     lv->SetItem(lv->GetItemCount() - 1, 1, nljson.str());
     lv->SetItem(lv->GetItemCount() - 1, 2, BOOST_STRINGIZE(PICO_NLOHMANN_JSON_GIT_COMMITISH));
 
-    lv->InsertItem(lv->GetItemCount(), OPENSSL_VERSION_TEXT);
+    lv->InsertItem(lv->GetItemCount(), ""); //OPENSSL_VERSION_TEXT);
     lv->SetItem(lv->GetItemCount() - 1, 1, "-");
     lv->SetItem(lv->GetItemCount() - 1, 2, "-");
 
@@ -82,7 +82,7 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
     desc->AppendText(i18n("picotorrent_description"));
 
     auto footerSizer = new wxBoxSizer(wxHORIZONTAL);
-    footerSizer->Add(new wxStaticText(this, wxID_ANY, "© 2015-2020"));
+    footerSizer->Add(new wxStaticText(this, wxID_ANY, "ï¿½ 2015-2020"));
     footerSizer->AddStretchSpacer();
     footerSizer->Add(new wxHyperlinkCtrl(this, wxID_ANY, "https://picotorrent.org", "https://picotorrent.org?app"));
 

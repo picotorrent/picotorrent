@@ -109,6 +109,8 @@ std::vector<Translator::Language> Translator::Languages()
 
 std::wstring Translator::Translate(std::string const& key)
 {
+    return std::wstring(key.begin(), key.end());
+
     // Try to find the language we have selected
     auto lang = m_languages.find(m_selectedLocale);
 

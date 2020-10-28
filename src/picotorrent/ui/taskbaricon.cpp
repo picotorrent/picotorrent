@@ -22,7 +22,7 @@ void TaskBarIcon::Hide()
 
 void TaskBarIcon::Show()
 {
-    SetIcon(m_icon, "PicoTorrent");
+    //SetIcon(m_icon, "PicoTorrent");
 }
 
 wxMenu* TaskBarIcon::CreatePopupMenu()

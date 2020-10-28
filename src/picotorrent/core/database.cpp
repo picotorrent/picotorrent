@@ -150,7 +150,7 @@ Database::Database(std::shared_ptr<pt::Core::Environment> env)
     : m_env(env)
 {
     fs::path dbFile = env->GetDatabaseFilePath();
-    std::string convertedPath = Utils::toStdString(dbFile.wstring());
+    std::string convertedPath = dbFile.c_str(); //::toStdString(dbFile.wstring());
 
     BOOST_LOG_TRIVIAL(info) << "Loading PicoTorrent database from " << convertedPath;
 
