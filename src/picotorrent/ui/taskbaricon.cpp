@@ -7,7 +7,11 @@ using pt::UI::TaskBarIcon;
 
 TaskBarIcon::TaskBarIcon(wxWindow* parent)
     : m_parent(parent),
+#ifdef _WIN32
     m_icon(wxIcon(wxICON(AppIcon)))
+#else
+    m_icon(wxNullIcon)
+#endif
 {
 }
 

@@ -5,7 +5,9 @@
 
 #include <boost/algorithm/string.hpp>
 #include <filesystem>
+#ifdef _WIN32
 #include <shellapi.h>
+#endif
 
 #include <libtorrent/file_storage.hpp>
 #include <libtorrent/torrent_info.hpp>
@@ -22,6 +24,7 @@ FileStorageModel::FileStorageModel(std::function<void(wxDataViewItemArray&, lt::
     : m_priorityChangedCallback(priorityChanged),
     m_root(std::make_shared<Node>())
 {
+#ifdef _WIN32
     if (!FolderIcon.IsOk())
     {
         SHFILEINFO shfi = { 0 };
@@ -44,6 +47,7 @@ FileStorageModel::FileStorageModel(std::function<void(wxDataViewItemArray&, lt::
             UnknownIcon.CreateFromHICON(sii.hIcon);
         }
     }
+#endif
 }
 
 void FileStorageModel::ClearNodes()
@@ -154,6 +158,7 @@ void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
 
             if (m_icons.find(extension) == m_icons.end())
             {
+#ifdef _WIN32
                 SHFILEINFO shfi = { 0 };
                 SHGetFileInfo(
                     Utils::toStdWString(extension).c_str(),
@@ -166,6 +171,7 @@ void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
                 icon.CreateFromHICON(shfi.hIcon);
 
                 m_icons.insert({ extension, icon });
+#endif
             }
         }
     }

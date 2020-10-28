@@ -83,7 +83,7 @@ bool PersistentTorrentListView::Restore()
 
     for (uint32_t i = m_tlv->GetColumnCount(); i > 0 ; i--)
     {
-        auto col = m_tlv->GetColumnAt(i - 1);
+        auto col = m_tlv->GetColumn(i - 1);
 
         // Calculate its order based on the index in the models array
 
@@ -124,7 +124,9 @@ void PersistentTorrentListView::Save() const
 {
     if (auto sortingColumn = m_tlv->GetSortingColumn())
     {
+#ifdef _WIN32
         SaveValue("SortIndex", m_tlv->GetColumnIndex(sortingColumn));
+#endif
         SaveValue("SortAscending", sortingColumn->IsSortOrderAscending());
     }
 
@@ -137,7 +139,7 @@ void PersistentTorrentListView::Save() const
 
     for (uint32_t i = 0; i < m_tlv->GetColumnCount() - 1; i++)
     {
-        auto col = m_tlv->GetColumnAt(i);
+        auto col = m_tlv->GetColumn(i);
 
         hidden.push_back(col->IsHidden());
         models.push_back(col->GetModelColumn());

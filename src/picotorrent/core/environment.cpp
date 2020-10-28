@@ -1,8 +1,10 @@
 #include "environment.hpp"
 
+#ifdef _WIN32
 #include <Windows.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4244)
@@ -61,9 +63,13 @@ fs::path Environment::GetApplicationDataPath()
 
 fs::path Environment::GetApplicationPath()
 {
+#ifdef _WIN32
     TCHAR path[MAX_PATH];
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
     PathRemoveFileSpec(path);
+#else
+    fs::path path;
+#endif
 
     return path;
 }
@@ -85,6 +91,7 @@ fs::path Environment::GetCoreDbFilePath()
 
 std::string Environment::GetCurrentLocale()
 {
+#ifdef _WIN32
     TCHAR loc[512];
     int res = GetUserDefaultLocaleName(loc, 512);
 
@@ -96,6 +103,9 @@ std::string Environment::GetCurrentLocale()
 
     return Utils::toStdString(
         std::wstring(loc, res));
+#else
+    return "en-US";
+#endif
 }
 
 fs::path Environment::GetDatabaseFilePath()
@@ -105,6 +115,7 @@ fs::path Environment::GetDatabaseFilePath()
 
 fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
 {
+#ifdef _WIN32
     KNOWNFOLDERID fid = { 0 };
 
     switch (knownFolder)
@@ -133,19 +144,20 @@ fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
     }
 
     BOOST_LOG_TRIVIAL(fatal) << "Failed to get KnownFolder: " << static_cast<int>(knownFolder);
-
+#endif
     throw std::runtime_error("Could not get known folder path");
 }
 
 fs::path Environment::GetLogFilePath()
 {
+#ifdef _WIN32
     std::time_t tim = std::chrono::system_clock::to_time_t(m_startupTime);
     tm t;
     localtime_s(&t, &tim);
 
     char frmt[100] = { 0 };
     snprintf(frmt,
-        ARRAYSIZE(frmt),
+        100,
         "PicoTorrent.%d%02d%02d%02d%02d%02d.log",
         t.tm_year + 1900,
         t.tm_mon + 1,
@@ -155,10 +167,14 @@ fs::path Environment::GetLogFilePath()
         t.tm_sec);
 
     return GetApplicationDataPath() / "logs" / frmt;
+#else
+    return GetApplicationDataPath() / "logs" / "PicoTorrent.log";
+#endif
 }
 
 bool Environment::IsAppContainerProcess()
 {
+#ifdef _WIN32
     TCHAR path[MAX_PATH];
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
     PathRemoveFileSpec(path);
@@ -166,10 +182,14 @@ bool Environment::IsAppContainerProcess()
     DWORD dwAttr = GetFileAttributes(path);
 
     return (dwAttr != INVALID_FILE_ATTRIBUTES && !(dwAttr & FILE_ATTRIBUTE_DIRECTORY));
+#else
+    return false;
+#endif
 }
 
 bool Environment::IsInstalled()
 {
+#ifdef _WIN32
     HKEY hKey = NULL;
 
     LSTATUS lStatus = RegOpenKeyEx(
@@ -215,6 +235,7 @@ bool Environment::IsInstalled()
     }
 
     if (hKey != NULL) { RegCloseKey(hKey); }
+#endif
 
     return false;
 }

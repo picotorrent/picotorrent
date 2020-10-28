@@ -2,9 +2,11 @@
 
 #include <sstream>
 
+#ifdef _WIN32
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <iphlpapi.h>
+#endif
 
 #include <wx/hyperlink.h>
 #include <wx/statbmp.h>
@@ -131,6 +133,7 @@ void ListenInterfaceDialog::LoadAdapters()
         m_adapters->GetCount(),
         new ClientData<NetworkAdapter>(any6));
 
+#ifdef _WIN32
     static constexpr int MAX_GETADAPTERSADDRESSES_TRIES = 10;
     static constexpr int INITIAL_BUFFER_SIZE = 15000;
 
@@ -214,4 +217,5 @@ void ListenInterfaceDialog::LoadAdapters()
             }
         }
     }
+#endif
 }

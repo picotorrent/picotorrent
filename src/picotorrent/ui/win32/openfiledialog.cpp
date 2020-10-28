@@ -1,5 +1,6 @@
 #include "openfiledialog.hpp"
 
+#ifdef _WIN32
 #define STRICT_TYPED_ITEMIDS
 #include <shlobj.h>
 #include <objbase.h>      // For COM headers
@@ -11,6 +12,7 @@
 #include <propidl.h>      // for the Property System APIs
 #include <strsafe.h>      // for StringCchPrintfW
 #include <shtypes.h>      // for COMDLG_FILTERSPEC
+#endif
 
 #include <string>
 
@@ -21,6 +23,7 @@ using pt::UI::Win32::OpenFileDialog;
 OpenFileDialog::OpenFileDialog()
     : m_wrappedDialog(nullptr)
 {
+#ifdef _WIN32
     if (!SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog,
         NULL,
         CLSCTX_INPROC_SERVER,
@@ -28,15 +31,19 @@ OpenFileDialog::OpenFileDialog()
     {
         throw std::exception();
     }
+#endif
 }
 
 OpenFileDialog::~OpenFileDialog()
 {
+#ifdef _WIN32
     m_wrappedDialog->Release();
+#endif
 }
 
 void OpenFileDialog::GetFiles(std::vector<std::string>& files)
 {
+#ifdef _WIN32
     IShellItemArray* results = nullptr;
 
     if (!SUCCEEDED(m_wrappedDialog->GetResults(&results))
@@ -69,10 +76,12 @@ void OpenFileDialog::GetFiles(std::vector<std::string>& files)
     }
 
     results->Release();
+#endif
 }
 
 void OpenFileDialog::SetFileTypes(std::vector<std::tuple<std::wstring, std::wstring>> const& types)
 {
+#ifdef _WIN32
     std::vector<COMDLG_FILTERSPEC> spec;
 
     for (auto const& t : types)
@@ -83,22 +92,29 @@ void OpenFileDialog::SetFileTypes(std::vector<std::tuple<std::wstring, std::wstr
     }
 
     m_wrappedDialog->SetFileTypes(spec.size(), spec.data());
+#endif
 }
 
 void OpenFileDialog::SetOption(OpenFileDialog::Option option)
 {
+#ifdef _WIN32
     DWORD dwOptions;
     m_wrappedDialog->GetOptions(&dwOptions);
     if (option == Option::Multi) { dwOptions |= FOS_ALLOWMULTISELECT; }
     m_wrappedDialog->SetOptions(dwOptions);
+#endif
 }
 
 void OpenFileDialog::SetTitle(std::wstring const& title)
 {
+#ifdef _WIN32
     m_wrappedDialog->SetTitle(title.c_str());
+#endif
 }
 
 void OpenFileDialog::Show(wxWindow* parent)
 {
+#ifdef _WIN32
     m_wrappedDialog->Show(parent->GetHWND());
+#endif
 }

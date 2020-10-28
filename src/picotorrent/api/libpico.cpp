@@ -1,5 +1,6 @@
 #include "libpico_impl.hpp"
 
+#ifdef _WIN32
 #include <Windows.h>
 
 #include <vector>
@@ -255,3 +256,12 @@ const char* libpico_version()
 {
     return pt::BuildInfo::version();
 }
+#else
+
+
+pt::API::IPlugin* pt::API::IPlugin::Load(fs::path const& p, Core::Environment* env, Core::Configuration* cfg)
+{
+    return nullptr;
+}
+
+#endif

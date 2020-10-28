@@ -1,6 +1,8 @@
 #include "preferencesgeneralpage.hpp"
 
+#ifdef _WIN32
 #include <strsafe.h>
+#endif
 
 #include <boost/log/trivial.hpp>
 
@@ -9,6 +11,7 @@
 #include "../../core/utils.hpp"
 #include "../translator.hpp"
 
+#ifdef _WIN32
 struct AutoRunKey
 {
     AutoRunKey()
@@ -77,6 +80,7 @@ struct AutoRunKey
 private:
     HKEY m_key;
 };
+#endif
 
 using pt::Core::Configuration;
 using pt::UI::Dialogs::PreferencesGeneralPage;
@@ -148,11 +152,13 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
     m_labelColor->SetValue(m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
     m_skipAddTorrentDialog->SetValue(m_cfg->Get<bool>("skip_add_torrent_dialog").value());
 
+#ifdef _WIN32
     AutoRunKey key;
     if (key.Exists())
     {
         m_autoStart->SetValue(true);
     }
+#endif
 
     m_startPosition->Append(i18n("normal"), new ClientData<Configuration::WindowState>(Configuration::WindowState::Normal));
     m_startPosition->Append(i18n("minimized"), new ClientData<Configuration::WindowState>(Configuration::WindowState::Minimized));
@@ -209,6 +215,7 @@ void PreferencesGeneralPage::Save(bool* restartRequired)
         m_cfg->Set("start_position", static_cast<int>(startPosData->GetValue()));
     }
 
+#ifdef _WIN32
     {
         AutoRunKey key;
 
@@ -222,6 +229,7 @@ void PreferencesGeneralPage::Save(bool* restartRequired)
             key.Create();
         }
     }
+#endif
 
     m_cfg->Set("use_label_as_list_bgcolor", m_labelColor->GetValue());
     m_cfg->Set("skip_add_torrent_dialog", m_skipAddTorrentDialog->GetValue());

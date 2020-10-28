@@ -45,7 +45,7 @@ AddTrackerDialog::AddTrackerDialog(wxWindow* parent, wxWindowID id)
 
             if (clipboard->GetData(data))
             {
-                std::string d = data.GetText();
+                std::string d = data.GetText().ToStdString();
 
                 auto colIdx = d.find_first_of(':');
                 bool maybeUrl = colIdx != std::string::npos

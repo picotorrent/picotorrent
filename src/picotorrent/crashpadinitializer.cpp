@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
 #include <Windows.h>
 #include <CommCtrl.h>
 
@@ -16,6 +17,7 @@
 #include <client/settings.h>
 #include <client/crashpad_client.h>
 #pragma warning(pop)
+#endif
 
 #include "buildinfo.hpp"
 #include "core/environment.hpp"
@@ -26,6 +28,7 @@ using pt::CrashpadInitializer;
 
 void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
 {
+#ifdef _WIN32
     auto databasePath = env->GetApplicationDataPath() / "Crashpad" / "db";
     auto handlerPath = env->GetApplicationPath() / "crashpad_handler.exe";
 
@@ -112,4 +115,5 @@ void CrashpadInitializer::Initialize(std::shared_ptr<pt::Core::Environment> env)
     }
 
     BOOST_LOG_TRIVIAL(info) << "Crashpad handler started";
+#endif
 }

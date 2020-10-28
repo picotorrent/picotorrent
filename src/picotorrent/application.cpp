@@ -25,7 +25,9 @@ Application::Application()
     : wxApp(),
     m_singleInstance(std::make_unique<wxSingleInstanceChecker>())
 {
+#ifdef _WIN32
     SetProcessDPIAware();
+#endif
 }
 
 Application::~Application()
@@ -137,7 +139,9 @@ bool Application::OnInit()
         // Only valid if we have a notify icon
         if (cfg->Get<bool>("show_in_notification_area").value())
         {
+#ifdef _WIN32
             mainFrame->MSWGetTaskBarButton()->Hide();
+#endif
         }
         else
         {
@@ -202,8 +206,10 @@ void Application::ActivateOtherInstance()
 
 void Application::WaitForPreviousInstance(long pid)
 {
+#ifdef _WIN32
     HANDLE hProc = OpenProcess(SYNCHRONIZE, FALSE, pid);
     if (hProc == NULL) { return; }
     WaitForSingleObject(hProc, 10000);
     CloseHandle(hProc);
+#endif
 }
