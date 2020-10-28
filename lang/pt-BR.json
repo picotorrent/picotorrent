@@ -289,5 +289,7 @@
     "eta_hms_format": "{0}h {1}m {2}s",
     "eta_ms_format": "{0}m {1}s",
     "eta_s_format": "{0}s",
-    "per_second_format": "{0}/s"
+    "per_second_format": "{0}/s",
+    "tier": "Camada",
+    "contents": "Conteúdos"
 }
