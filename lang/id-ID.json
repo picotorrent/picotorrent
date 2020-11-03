@@ -287,5 +287,6 @@
     "eta_hms_format": "{0}j {1}m {2}d",
     "eta_ms_format": "{0}m {1}d",
     "eta_s_format": "{0}d",
-    "per_second_format": "{0}/d"
+    "per_second_format": "{0}/d",
+    "contents": "Konten"
 }
