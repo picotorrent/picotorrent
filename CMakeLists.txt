@@ -197,6 +197,9 @@ add_executable(
     src/picotorrent/ui/torrentlistview
     src/picotorrent/ui/translator
 
+    # Widgets
+    src/picotorrent/ui/widgets/pieceprogressbar
+
     # Win32 specific stuff
     src/picotorrent/ui/win32/openfiledialog
 )

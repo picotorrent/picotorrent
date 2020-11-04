@@ -56,7 +56,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_statusBar(new StatusBar(this)),
     m_taskBarIcon(new TaskBarIcon(this)),
     m_torrentConsole(new TorrentConsole(this, wxID_ANY)),
-    m_torrentDetails(new TorrentDetailsView(m_splitter, ptID_MAIN_TORRENT_DETAILS)),
+    m_torrentDetails(new TorrentDetailsView(m_splitter, ptID_MAIN_TORRENT_DETAILS, cfg)),
     m_torrentListModel(new Models::TorrentListModel()),
     m_torrentList(new TorrentListView(m_splitter, ptID_MAIN_TORRENT_LIST, m_torrentListModel)),
     m_torrentsCount(0),
@@ -351,6 +351,16 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
             this->SendSizeEvent();
         }, ptID_EVT_SHOW_STATUS_BAR);
 
+    this->Bind(
+        ptEVT_TORRENT_METADATA_FOUND,
+        [this](pt::BitTorrent::MetadataFoundEvent& evt)
+        {
+            for (auto dlg : m_addDialogs)
+            {
+                wxPostEvent(dlg, evt);
+            }
+        });
+
     // Update status bar
     m_statusBar->UpdateDhtNodesCount(m_cfg->Get<bool>("libtorrent.enable_dht").value() ? 0 : -1);
     m_statusBar->UpdateTorrentCount(m_torrentsCount);
@@ -365,9 +375,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
 MainFrame::~MainFrame()
 {
     m_taskBarIcon->Hide();
-
     delete m_taskBarIcon;
-    delete m_session;
 }
 
 void MainFrame::AddFilter(wxString const& name, std::function<bool(BitTorrent::TorrentHandle*)> const& filter)
@@ -481,25 +489,22 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         return;
     }
 
-    Dialogs::AddTorrentDialog dlg(this, wxID_ANY, params, m_db, m_cfg);
-
-    this->Bind(
-        ptEVT_TORRENT_METADATA_FOUND,
-        [&dlg](pt::BitTorrent::MetadataFoundEvent& evt)
-        {
-            dlg.MetadataFound(evt.GetData());
-        });
-
-    // search for metadata
-    m_session->AddMetadataSearch(hashes);
-
-    if (dlg.ShowModal() == wxID_OK)
+    for (auto& param : params)
     {
-        for (lt::add_torrent_params const& p : dlg.GetTorrentParams())
-        {
-            m_session->AddTorrent(p);
-        }
+        auto dlg = new Dialogs::AddTorrentDialog(this, wxID_ANY, param, m_db, m_cfg, m_session);
+        dlg->Bind(
+            wxEVT_CLOSE_WINDOW,
+            [this, dlg](wxCloseEvent& evt)
+            {
+                evt.Skip();
+                m_addDialogs.erase(dlg);
+            });
+        dlg->Show();
+
+        m_addDialogs.insert(dlg);
     }
+
+    m_session->AddMetadataSearch(hashes);
 }
 
 void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<std::string> const& magnets)
@@ -766,6 +771,7 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
             m_taskBarIcon->Hide();
         }
 
+        m_torrentDetails->ReloadConfiguration();
         m_torrentListModel->SetBackgroundColorEnabled(
             m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
 

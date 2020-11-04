@@ -23,7 +23,7 @@ namespace Dialogs
     class CreateTorrentDialog : public wxDialog
     {
     public:
-        explicit CreateTorrentDialog(wxWindow* parent, wxWindowID id, BitTorrent::Session* session);
+        explicit CreateTorrentDialog(wxWindow* parent, wxWindowID id, std::shared_ptr<BitTorrent::Session> session);
         virtual ~CreateTorrentDialog();
 
     private:
@@ -59,7 +59,7 @@ namespace Dialogs
         wxGauge* m_progress;
         wxButton* m_create;
 
-        BitTorrent::Session* m_session;
+        std::shared_ptr<BitTorrent::Session> m_session;
         std::thread m_worker;
     };
 }

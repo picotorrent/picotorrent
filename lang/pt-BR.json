@@ -285,5 +285,11 @@
     "mode_hybrid": "v1 + v2 Híbrido",
     "status_select_file_or_directory": "Selecione um Arquivo ou Diretório",
     "no_such_file_or_directory": "Arquivo ou Diretório não encontrado",
-    "scrape": "Raspar"
+    "scrape": "Raspar",
+    "eta_hms_format": "{0}h {1}m {2}s",
+    "eta_ms_format": "{0}m {1}s",
+    "eta_s_format": "{0}s",
+    "per_second_format": "{0}/s",
+    "tier": "Camada",
+    "contents": "Conteúdos"
 }

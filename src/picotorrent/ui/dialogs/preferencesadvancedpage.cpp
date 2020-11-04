@@ -47,7 +47,9 @@ static std::map<std::string, std::map<std::string, Property>> properties =
     {
         "PicoTorrent",
         {
-            MAKE_PROP(Int,  Integer, int,  "save_resume_data_interval", "save_resume_data_interval", "The interval (in seconds) between checks to save resume data for torrents. Saving resume data will help keep a current state if (for example) the application exits unexpectedly.")
+            MAKE_PROP(Int,  Integer, int,  "save_resume_data_interval",   "save_resume_data_interval", "The interval (in seconds) between checks to save resume data for torrents. Saving resume data will help keep a current state if (for example) the application exits unexpectedly."),
+            MAKE_PROP(Int,  Integer, int,  "ui.torrent_overview.columns", "torrent_overview_columns",  "The number of columns to show in the torrent overview panel."),
+            MAKE_PROP(Bool, Bool,    bool, "ui.torrent_overview.show_piece_progress", "torrent_overview_show_piece_progress",  "When set to true, show the piece progress bar in the torrent overview panel.")
         }
     }
 };
