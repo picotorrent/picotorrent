@@ -24,6 +24,7 @@
 #include "../core/environment.hpp"
 #include "../core/utils.hpp"
 #include "../ipc/server.hpp"
+#include "console.hpp"
 #include "dialogs/aboutdialog.hpp"
 #include "dialogs/addmagnetlinkdialog.hpp"
 #include "dialogs/addtorrentdialog.hpp"
@@ -33,7 +34,6 @@
 #include "models/torrentlistmodel.hpp"
 #include "statusbar.hpp"
 #include "taskbaricon.hpp"
-#include "torrentconsole.hpp"
 #include "torrentcontextmenu.hpp"
 #include "torrentdetailsview.hpp"
 #include "torrentlistview.hpp"
@@ -55,7 +55,6 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_splitter(new wxSplitterWindow(this, ptID_MAIN_SPLITTER)),
     m_statusBar(new StatusBar(this)),
     m_taskBarIcon(new TaskBarIcon(this)),
-    m_torrentConsole(new TorrentConsole(this, wxID_ANY)),
     m_torrentDetails(new TorrentDetailsView(m_splitter, ptID_MAIN_TORRENT_DETAILS, cfg)),
     m_torrentListModel(new Models::TorrentListModel()),
     m_torrentList(new TorrentListView(m_splitter, ptID_MAIN_TORRENT_LIST, m_torrentListModel)),
@@ -63,6 +62,8 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_menuItemFilters(nullptr),
     m_ipc(std::make_unique<IPC::Server>(this))
 {
+    m_console = new Console(this, wxID_ANY, m_torrentListModel);
+
     m_splitter->SetWindowStyleFlag(
         m_splitter->GetWindowStyleFlag() | wxSP_LIVE_UPDATE);
     m_splitter->SetMinimumPaneSize(10);
@@ -75,7 +76,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
 
     auto sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(m_torrentConsole, 0, wxEXPAND);
+    sizer->Add(m_console, 0, wxEXPAND);
     sizer->Add(m_splitter, 1, wxEXPAND, 0);
     sizer->SetSizeHints(this);
 
@@ -106,7 +107,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_menuItemStatusBar->SetCheckable(true);
     m_menuItemStatusBar->Check(m_cfg->Get<bool>("ui.show_status_bar").value());
 
-    if (!m_cfg->Get<bool>("ui.show_console_input").value()) { m_torrentConsole->Hide(); }
+    if (!m_cfg->Get<bool>("ui.show_console_input").value()) { m_console->Hide(); }
     if (!m_cfg->Get<bool>("ui.show_details_panel").value()) { m_splitter->Unsplit(); }
     if (!m_cfg->Get<bool>("ui.show_status_bar").value()) { m_statusBar->Hide(); }
 
@@ -315,8 +316,8 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         {
             m_cfg->Set("ui.show_console_input", m_menuItemConsoleInput->IsChecked());
 
-            if (m_menuItemConsoleInput->IsChecked()) { m_torrentConsole->Show(); }
-            else { m_torrentConsole->Hide(); }
+            if (m_menuItemConsoleInput->IsChecked()) { m_console->Show(); }
+            else { m_console->Hide(); }
 
             this->SendSizeEvent();
         }, ptID_EVT_SHOW_CONSOLE);
@@ -395,7 +396,7 @@ void MainFrame::AddFilter(wxString const& name, std::function<bool(BitTorrent::T
                 }
                 else
                 {
-                    m_torrentListModel->SetFilter(filter->second);
+                    // m_torrentListModel->SetFilter(filter->second);
                 }
             });
 

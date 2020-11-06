@@ -13,8 +13,8 @@ namespace pt::PQL {
 class  QueryParser : public antlr4::Parser {
 public:
   enum {
-    AND = 1, OR = 2, EQ = 3, CONTAINS = 4, GREATER_THAN = 5, WS = 6, INT = 7, 
-    DOUBLE = 8, STRING = 9, ID = 10
+    AND = 1, OR = 2, EQ = 3, CONTAINS = 4, GT = 5, GTE = 6, LT = 7, LTE = 8, 
+    WS = 9, INT = 10, FLOAT = 11, STRING = 12, SIZE_SUFFIX = 13, ID = 14
   };
 
   enum {
@@ -143,7 +143,10 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *EQ();
     antlr4::tree::TerminalNode *CONTAINS();
-    antlr4::tree::TerminalNode *GREATER_THAN();
+    antlr4::tree::TerminalNode *GT();
+    antlr4::tree::TerminalNode *GTE();
+    antlr4::tree::TerminalNode *LT();
+    antlr4::tree::TerminalNode *LTE();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -157,7 +160,8 @@ public:
     ValueContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *INT();
-    antlr4::tree::TerminalNode *DOUBLE();
+    antlr4::tree::TerminalNode *SIZE_SUFFIX();
+    antlr4::tree::TerminalNode *FLOAT();
     antlr4::tree::TerminalNode *STRING();
 
 

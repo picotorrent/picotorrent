@@ -5,16 +5,19 @@
 #include <wx/wx.h>
 #endif
 
+namespace pt::UI::Models { class TorrentListModel; }
+
 namespace pt::UI
 {
-    class TorrentConsole : public wxPanel
+    class Console : public wxPanel
     {
     public:
-        TorrentConsole(wxWindow* parent, wxWindowID id);
+        Console(wxWindow* parent, wxWindowID id, Models::TorrentListModel* model);
 
     private:
         void CreateFilter(wxCommandEvent&);
 
         wxTextCtrl* m_input;
+        Models::TorrentListModel* m_model;
     };
 }

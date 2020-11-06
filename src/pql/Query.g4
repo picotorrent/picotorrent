@@ -2,13 +2,22 @@ grammar Query;
 
 AND          : 'and';
 OR           :  'or';
+
+// comparison operators
 EQ           :  '=';
 CONTAINS     : '~';
-GREATER_THAN : '>';
+GT           : '>';
+GTE          : '>=';
+LT           : '<';
+LTE          : '<=';
+
 WS           : [ \t\r\n]+ -> skip ;
 INT          : '-'? [0-9]+ ;
-DOUBLE       : '-'? [0-9]+'.'[0-9]+ ;
+FLOAT        : '-'? [0-9]+'.'[0-9]+ ;
 STRING       : '"' .*? '"' ;
+
+SIZE_SUFFIX  : 'kb'|'mb'|'gb';
+
 ID           : [a-zA-Z_] [a-zA-Z_0-9.]*;
 
 filter
@@ -30,11 +39,14 @@ predicate
 oper
     : EQ
     | CONTAINS
-    | GREATER_THAN
+    | GT
+    | GTE
+    | LT
+    | LTE
     ;
 
 value
-    : INT
-    | DOUBLE
+    : INT SIZE_SUFFIX?
+    | FLOAT
     | STRING
     ;

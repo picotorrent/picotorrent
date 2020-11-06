@@ -42,9 +42,9 @@ namespace Models
 {
     class TorrentListModel;
 }
+    class Console;
     class StatusBar;
     class TaskBarIcon;
-    class TorrentConsole;
     class TorrentDetailsView;
     class TorrentListView;
 
@@ -82,7 +82,7 @@ namespace Models
 
         StatusBar* m_statusBar;
         TaskBarIcon* m_taskBarIcon;
-        TorrentConsole* m_torrentConsole;
+        Console* m_console;
         TorrentDetailsView* m_torrentDetails;
         Models::TorrentListModel* m_torrentListModel;
         TorrentListView* m_torrentList;

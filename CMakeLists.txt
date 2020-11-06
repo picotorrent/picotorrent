@@ -173,6 +173,9 @@ add_executable(
     src/picotorrent/ui/dialogs/preferenceslabelspage
     src/picotorrent/ui/dialogs/preferencesproxypage
 
+    # Filters
+    src/picotorrent/ui/filters/pqltorrentfilter
+
     # Models
     src/picotorrent/ui/models/filestoragemodel
     src/picotorrent/ui/models/peerlistmodel
@@ -183,10 +186,10 @@ add_executable(
     src/picotorrent/ui/persistence/persistenttorrentlistview
 
     # UI
+    src/picotorrent/ui/console
     src/picotorrent/ui/mainframe
     src/picotorrent/ui/statusbar
     src/picotorrent/ui/taskbaricon
-    src/picotorrent/ui/torrentconsole
     src/picotorrent/ui/torrentcontextmenu
     src/picotorrent/ui/torrentdetailsfilespanel
     src/picotorrent/ui/torrentdetailsoverviewpanel
