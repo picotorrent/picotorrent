@@ -87,7 +87,9 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     };
 
     this->SetAcceleratorTable(wxAcceleratorTable(static_cast<int>(entries.size()), entries.data()));
+#ifdef _WIN32
     this->SetIcon(wxICON(AppIcon));
+#endif
     this->SetMenuBar(this->CreateMainMenu());
     this->SetSizerAndFit(sizer);
     this->SetStatusBar(m_statusBar);
@@ -123,6 +125,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
             m_torrentListModel->AddTorrent(static_cast<BitTorrent::TorrentHandle*>(evt.GetClientData()));
         });
 
+#ifdef _WIN32
     this->Bind(ptEVT_TORRENT_FINISHED, [this](wxCommandEvent& evt)
         {
             auto torrent = static_cast<BitTorrent::TorrentHandle*>(evt.GetClientData());
@@ -130,6 +133,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
                 i18n("torrent_finished"),
                 Utils::toStdWString(torrent->Status().name));
         });
+#endif
 
     this->Bind(ptEVT_TORRENT_REMOVED, [this](pt::BitTorrent::InfoHashEvent& evt)
         {
@@ -155,6 +159,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
                 stats.totalPayloadDownloadRate,
                 stats.totalPayloadUploadRate);
 
+#ifdef _WIN32
             if (wxTaskBarButton* tbb = MSWGetTaskBarButton())
             {
                 if (stats.isDownloadingAny && stats.totalWanted > 0)
@@ -170,6 +175,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
                     tbb->SetProgressState(wxTaskBarButtonState::wxTASKBAR_BUTTON_NO_PROGRESS);
                 }
             }
+#endif
         });
 
     this->Bind(ptEVT_TORRENTS_UPDATED, [this](pt::BitTorrent::TorrentsUpdatedEvent& evt)
@@ -526,7 +532,7 @@ void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const
     {
         return;
     }
-
+#ifdef _WIN32
     for (auto torrent : torrents)
     {
         auto status = torrent->Status();
@@ -561,6 +567,7 @@ void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const
             }
         }
     }
+#endif
 }
 
 void MainFrame::CreateLabelMenuItems()
@@ -632,7 +639,9 @@ void MainFrame::OnClose(wxCloseEvent& evt)
         && m_cfg->Get<bool>("close_to_notification_area").value())
     {
         Hide();
+#ifdef _WIN32
         MSWGetTaskBarButton()->Hide();
+#endif
     }
     else
     {
@@ -706,13 +715,17 @@ void MainFrame::OnIconize(wxIconizeEvent& ev)
         && m_cfg->Get<bool>("show_in_notification_area").value()
         && m_cfg->Get<bool>("minimize_to_notification_area").value())
     {
+#ifdef _WIN32
         MSWGetTaskBarButton()->Hide();
+#endif
     }
 }
 
 void MainFrame::OnTaskBarLeftDown(wxTaskBarIconEvent&)
 {
+#ifdef _WIN32
     this->MSWGetTaskBarButton()->Show();
+#endif
     this->Restore();
     this->Raise();
     this->Show();
@@ -727,14 +740,14 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
     {
         if (dlg.WantsRestart())
         {
-            TCHAR path[MAX_PATH];
+            /*TCHAR path[MAX_PATH];
             GetModuleFileName(NULL, path, ARRAYSIZE(path));
 
             std::wstringstream proc;
             proc << path << L" --wait-for-pid=" << std::to_wstring(GetCurrentProcessId());
 
             wxExecute(proc.str(), wxEXEC_ASYNC);
-            Close(true);
+            Close(true);*/
 
             return;
         }
@@ -806,7 +819,8 @@ void MainFrame::UpdateLabels()
     std::map<int, std::tuple<std::string, std::string>> labels;
     for (auto const& label : m_cfg->GetLabels())
     {
-        labels.insert({ label.id, { label.name, label.color } });
+        labels.insert(
+            std::pair<int, std::tuple<std::string, std::string>>(label.id, { label.name, label.color }));
     }
     m_torrentListModel->UpdateLabels(labels);
 }

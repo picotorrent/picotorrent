@@ -25,7 +25,9 @@ Application::Application()
     : wxApp(),
     m_singleInstance(std::make_unique<wxSingleInstanceChecker>())
 {
+#ifdef _WIN32
     SetProcessDPIAware();
+#endif
 }
 
 Application::~Application()
@@ -119,8 +121,8 @@ bool Application::OnInit()
     }
 
     // Set up persistence manager
-    m_persistence = std::make_unique<PersistenceManager>(db);
-    wxPersistenceManager::Set(*m_persistence);
+    //m_persistence = std::make_unique<PersistenceManager>(db);
+    //wxPersistenceManager::Set(*m_persistence);
 
     auto mainFrame = new UI::MainFrame(env, db, cfg);
 
@@ -131,13 +133,15 @@ bool Application::OnInit()
 
     auto windowState = static_cast<pt::Core::Configuration::WindowState>(cfg->Get<int>("start_position").value());
 
-    switch (windowState)
+    /*switch (windowState)
     {
     case pt::Core::Configuration::WindowState::Hidden:
         // Only valid if we have a notify icon
         if (cfg->Get<bool>("show_in_notification_area").value())
         {
+#ifdef _WIN32
             mainFrame->MSWGetTaskBarButton()->Hide();
+#endif
         }
         else
         {
@@ -159,7 +163,8 @@ bool Application::OnInit()
     case pt::Core::Configuration::WindowState::Normal:
         mainFrame->Show(true);
         break;
-    }
+    }*/
+    mainFrame->Show(true);
 
     mainFrame->HandleParams(
         m_options.files,
@@ -202,8 +207,10 @@ void Application::ActivateOtherInstance()
 
 void Application::WaitForPreviousInstance(long pid)
 {
+#ifdef _WIN32
     HANDLE hProc = OpenProcess(SYNCHRONIZE, FALSE, pid);
     if (hProc == NULL) { return; }
     WaitForSingleObject(hProc, 10000);
     CloseHandle(hProc);
+#endif
 }

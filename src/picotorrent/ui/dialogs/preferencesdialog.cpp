@@ -1,6 +1,8 @@
 #include "preferencesdialog.hpp"
 
+#ifdef _WIN32
 #include <CommCtrl.h>
+#endif
 
 #include <wx/bookctrl.h>
 #include <wx/listbook.h>
@@ -151,6 +153,7 @@ void PreferencesDialog::OnOk(wxCommandEvent& evt)
 
 void PreferencesDialog::ShowRestartRequiredDialog()
 {
+#ifdef _WIN32
     std::wstring btn = i18n("restart_picotorrent");
     std::wstring main = i18n("prompt_restart");
     std::wstring title = i18n("prompt_restart_title");
@@ -177,4 +180,5 @@ void PreferencesDialog::ShowRestartRequiredDialog()
     TaskDialogIndirect(&tdf, &pnButton, &pnRadioButton, &pfVerificationFlagChecked);
 
     m_wantsRestart = (pnButton == 1000);
+#endif
 }

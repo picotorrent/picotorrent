@@ -14,12 +14,16 @@
         return init_func(v,a); \
     }
 
+#ifdef _WIN32
 #if defined(LIBPICO_API_EXPORT)
 #define LIBPICO_API_FUNCTION \
     extern "C" __declspec(dllexport)
 #else
 #define LIBPICO_API_FUNCTION \
     extern "C" __declspec(dllimport)
+#endif
+#else
+#define LIBPICO_API_FUNCTION
 #endif
 
 typedef struct libpico_config_t libpico_config_t;

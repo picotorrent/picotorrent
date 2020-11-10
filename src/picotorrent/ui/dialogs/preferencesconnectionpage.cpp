@@ -2,10 +2,6 @@
 
 #include <sstream>
 
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#include <iphlpapi.h>
-
 #include <wx/listctrl.h>
 #include <wx/tokenzr.h>
 
@@ -125,7 +121,7 @@ PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shar
             long sel = m_listenInterfaces->GetFirstSelected();
             if (sel < 0) { return; }
 
-            std::string address = m_listenInterfaces->GetItemText(sel);
+            std::string address = m_listenInterfaces->GetItemText(sel).ToStdString();
             int port = std::atoi(m_listenInterfaces->GetItemText(sel, 1));
 
             ListenInterfaceDialog dlg(this, wxID_ANY, address, port);

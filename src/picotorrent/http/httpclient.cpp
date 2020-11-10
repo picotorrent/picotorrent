@@ -4,6 +4,7 @@
 
 wxDEFINE_EVENT(ptEVT_HTTP_RESPONSE, wxCommandEvent);
 
+#ifdef _WIN32
 struct State
 {
     ~State()
@@ -21,11 +22,12 @@ struct State
     DWORD totalSize = 0;
     int statusCode = 0;
 };
-
+#endif
 using pt::Http::HttpClient;
 
 HttpClient::HttpClient()
 {
+#ifdef _WIN32
     m_session = WinHttpOpen(
         L"PicoTorrent/1.0",
         WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
@@ -47,15 +49,19 @@ HttpClient::HttpClient()
             state->callback(state->statusCode, state->response.str());
             delete state;
         });
+#endif
 }
 
 HttpClient::~HttpClient()
 {
+#ifdef _WIN32
     WinHttpCloseHandle(m_session);
+#endif
 }
 
 void HttpClient::Get(wxString const& url, std::function<void(int, std::string const&)> const& callback)
 {
+#ifdef _WIN32
     // Crack URI
     URL_COMPONENTS uc = { sizeof(URL_COMPONENTS) };
     uc.dwSchemeLength = DWORD(-1);
@@ -85,7 +91,9 @@ void HttpClient::Get(wxString const& url, std::function<void(int, std::string co
         0,
         0,
         reinterpret_cast<DWORD_PTR>(state));
+#endif
 }
+#ifdef _WIN32
 
 std::wstring HttpClient::ReadHeader(HINTERNET hRequest, DWORD dwHeader)
 {
@@ -170,3 +178,4 @@ void HttpClient::StatusCallbackProxy(HINTERNET, DWORD_PTR dwContext, DWORD dwInt
     }
     }
 }
+#endif

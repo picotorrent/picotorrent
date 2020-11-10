@@ -324,10 +324,12 @@ void Session::ReloadSettings()
     {
         if (torrent->Label() < 0) { continue; }
 
+        int labelId = torrent->Label();
+
         auto it = std::find_if(
             labels.begin(),
             labels.end(),
-            [&](auto const& lbl) { return lbl.id == torrent->Label(); });
+            [&labelId](auto const& lbl) { return lbl.id == labelId; });
 
         if (it == labels.end())
         {
