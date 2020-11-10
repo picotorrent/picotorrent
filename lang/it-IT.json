@@ -235,7 +235,7 @@
     "filter_uploading_active": "Upload attivi",
     "network_adapter": "Adattatore di rete",
     "kb_s": "KB/s",
-    "add_magnet_link_s_description": "Link Magnet o hash (ono per riga)",
+    "add_magnet_link_s_description": "Link Magnet o hash (uno per riga)",
     "label": "Etichetta",
     "version": "Versione",
     "private": "Privato",
@@ -285,5 +285,6 @@
     "scrape": "Scrape",
     "amp_none": "&Nessuno",
     "component": "Componente",
-    "commitish": "Commit"
+    "commitish": "Commit",
+    "contents": "Contenuto"
 }
