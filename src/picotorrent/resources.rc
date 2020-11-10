@@ -26,6 +26,7 @@ ICO_FUNNEL ICON "..\\..\\res\\funnel.ico"
 20200925235912_save_resume_data_interval        DBMIGRATION "..\\..\\res\\dbmigrations\\20200925235912_save_resume_data_interval.sql"
 20201015200912_insert_console_settings          DBMIGRATION "..\\..\\res\\dbmigrations\\20201015200912_insert_console_settings.sql"
 20201027213145_insert_overview_columns          DBMIGRATION "..\\..\\res\\dbmigrations\\20201027213145_insert_overview_columns.sql"
+20201107234213_setup_filters                    DBMIGRATION "..\\..\\res\\dbmigrations\\20201107234213_setup_filters.sql"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION        VER_FILE_VERSION

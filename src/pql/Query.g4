@@ -16,7 +16,7 @@ INT          : '-'? [0-9]+ ;
 FLOAT        : '-'? [0-9]+'.'[0-9]+ ;
 STRING       : '"' .*? '"' ;
 
-SIZE_SUFFIX  : 'kb'|'mb'|'gb';
+SIZE_SUFFIX  : 'kb'|'mb'|'gb' | 'kbps' | 'mbps' | 'gbps';
 
 ID           : [a-zA-Z_] [a-zA-Z_0-9.]*;
 

@@ -7,6 +7,8 @@
 
 using pt::UI::Console;
 
+wxDEFINE_EVENT(ptEVT_FILTER_CHANGED, wxCommandEvent);
+
 Console::Console(wxWindow* parent, wxWindowID id, Models::TorrentListModel* model)
     : wxPanel(parent, id),
     m_input(new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_LEFT | wxTE_PROCESS_ENTER)),
@@ -24,26 +26,42 @@ Console::Console(wxWindow* parent, wxWindowID id, Models::TorrentListModel* mode
     this->SetBackgroundColour(*wxWHITE);
     this->SetSizerAndFit(sizer);
 
-    this->Bind(wxEVT_TEXT_ENTER, &Console::CreateFilter, this);
+    this->Bind(
+        wxEVT_TEXT_ENTER,
+        [this](wxCommandEvent&)
+        {
+            CreateFilter(m_input->GetValue().ToStdString());
+        });
 }
 
-void Console::CreateFilter(wxCommandEvent&)
+void Console::SetText(std::string const& text)
 {
-    std::string input = m_input->GetValue().ToStdString();
+    m_input->SetValue(text);
+    CreateFilter(text);
+}
 
+void Console::CreateFilter(std::string const& input)
+{
     if (input.empty())
     {
         m_model->ClearFilter();
-        return;
     }
-
-    auto filter = Filters::PqlTorrentFilter::Create(input);
-
-    if (!filter)
+    else
     {
-        // TODO: log
-        return;
+        std::string err;
+        auto filter = Filters::PqlTorrentFilter::Create(input, &err);
+
+        if (!filter && !err.empty())
+        {
+            wxMessageBox(err, "Filter error", wxICON_ERROR | wxOK, GetParent());
+            return;
+        }
+
+        m_model->SetFilter(std::move(filter));
     }
 
-    m_model->SetFilter(std::move(filter));
+    wxCommandEvent evt(ptEVT_FILTER_CHANGED);
+    evt.SetString(input);
+
+    wxPostEvent(GetParent(), evt);
 }

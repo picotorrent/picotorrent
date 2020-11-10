@@ -13,7 +13,7 @@ namespace pt::UI::Filters
     class PqlTorrentFilter : public TorrentFilter
     {
     public:
-        static std::unique_ptr<TorrentFilter> Create(std::string const& input);
+        static std::unique_ptr<TorrentFilter> Create(std::string const& input, std::string* error);
 
         ~PqlTorrentFilter();
         bool Includes(BitTorrent::TorrentHandle const& torrent);

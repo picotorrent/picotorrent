@@ -29,7 +29,7 @@ public:
 
         e = nullptr;
         std::ostringstream oss;
-        oss << "line: " << line << ":" << charPositionInLine << " " << msg;
+        oss << "Syntax error - " << msg << " at " << line << ":" << charPositionInLine;
         error_msg = oss.str();
         throw antlr4::ParseCancellationException(error_msg);
     }
@@ -38,14 +38,33 @@ private:
     std::string error_msg;
 };
 
+class QueryException : public std::exception
+{
+public:
+    QueryException(std::string const& msg, size_t line, size_t pos)
+    {
+        std::ostringstream oss;
+        oss << msg << " at " << line << ":" << pos;
+        m_msg = oss.str();
+    }
+
+    virtual const char* what() const NOEXCEPT override
+    {
+        return m_msg.c_str();
+    }
+
+private:
+    std::string m_msg;
+};
+
 enum class Operator
 {
+    CONTAINS,
     LT,
     LTE,
     EQ,
     GT,
     GTE,
-    LIKE
 };
 
 template<typename TLeft, typename TRight>
@@ -60,7 +79,7 @@ bool Compare(TLeft const& lhs, TRight const& rhs, Operator oper)
     case Operator::GTE: return lhs >= rhs;
     }
 
-    throw new std::exception("unknown oper");
+    throw std::exception("Unknown operator");
 }
 
 class FilterVisitor : public pt::PQL::QueryBaseVisitor
@@ -92,17 +111,40 @@ public:
         return this->visit(ctx->expression());
     }
 
+    virtual antlrcpp::Any visitOrExpression(pt::PQL::QueryParser::OrExpressionContext* ctx) override
+    {
+        std::vector<FilterFunc> funcs;
+
+        for (auto expr : ctx->expression())
+        {
+            funcs.push_back(this->visit(expr));
+        }
+
+        return FilterFunc([funcs](TorrentStatus const& ts)
+            {
+                return std::any_of(
+                    funcs.begin(),
+                    funcs.end(),
+                    [&ts](auto const& f)
+                    {
+                        return f(ts);
+                    });
+            });
+    }
+
     virtual antlrcpp::Any visitOper(pt::PQL::QueryParser::OperContext* ctx) override
     {
-        std::string oper = ctx->getText();
-        if (oper == "<") return Operator::LT;
-        if (oper == ">") return Operator::GT;
-        if (oper == "<=") return Operator::LTE;
-        if (oper == ">=") return Operator::GTE;
-        if (oper == "=") return Operator::EQ;
-        if (oper == "~") return Operator::LIKE;
+        if (ctx->CONTAINS()) return Operator::CONTAINS;
+        if (ctx->EQ()) return Operator::EQ;
+        if (ctx->GT()) return Operator::GT;
+        if (ctx->GTE()) return Operator::GTE;
+        if (ctx->LT()) return Operator::LT;
+        if (ctx->LTE()) return Operator::LTE;
 
-        throw new std::exception("unknown operator");
+        throw QueryException(
+            "Unknown operator",
+            ctx->getStart()->getLine(),
+            ctx->getStart()->getCharPositionInLine());
     }
 
     virtual antlrcpp::Any visitOperatorPredicate(pt::PQL::QueryParser::OperatorPredicateContext* ctx) override
@@ -111,11 +153,21 @@ public:
         Operator oper = this->visit(ctx->oper());
         antlrcpp::Any value = this->visit(ctx->value());
 
+        if ((ref == "dl" || ref == "ul") && (value.is<int64_t>() || value.is<float>()))
+        {
+            float term = value.is<float>()
+                ? value.as<float>()
+                : (float)value.as<int64_t>();
+
+            if (ref == "dl") return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.downloadPayloadRate, term, oper); });
+            if (ref == "ul") return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.uploadPayloadRate, term, oper); });
+        }
+
         if (ref == "name" && value.is<std::string>())
         {
             std::string term = value;
 
-            if (oper == Operator::LIKE)
+            if (oper == Operator::CONTAINS)
             {
                 return FilterFunc(
                     [term](TorrentStatus const& ts)
@@ -142,7 +194,50 @@ public:
             return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.totalWanted, term, oper); });
         }
 
-        throw new std::exception("unknown ref");
+        if (ref == "status" && value.is<std::string>())
+        {
+            std::string term = value;
+
+            return FilterFunc(
+                [oper, term](TorrentStatus const& ts)
+                {
+                    if (term == "error" && ts.state == TorrentStatus::State::Error) return true;
+                    if (term == "downloading")
+                    {
+                        return ts.state == TorrentStatus::State::Downloading
+                            || ts.state == TorrentStatus::State::DownloadingChecking
+                            || ts.state == TorrentStatus::State::DownloadingMetadata
+                            || ts.state == TorrentStatus::State::DownloadingPaused
+                            || ts.state == TorrentStatus::State::DownloadingQueued;
+                    }
+                    if (term == "paused")
+                    {
+                        return ts.state == TorrentStatus::State::DownloadingPaused
+                            || ts.state == TorrentStatus::State::UploadingPaused;
+                    }
+                    if (term == "queued")
+                    {
+                        return ts.state == TorrentStatus::State::DownloadingQueued
+                            || ts.state == TorrentStatus::State::UploadingQueued;
+                    }
+                    if (term == "seeding")
+                    {
+                        return ts.state == TorrentStatus::State::Uploading;
+                    }
+                    if (term == "uploading")
+                    {
+                        return ts.state == TorrentStatus::State::Uploading
+                            || ts.state == TorrentStatus::State::UploadingPaused
+                            || ts.state == TorrentStatus::State::UploadingQueued;
+                    }
+                    return false;
+                });
+        }
+
+        throw QueryException(
+            "Unknown field: '" + ref + "'",
+            ctx->getStart()->getLine(),
+            ctx->getStart()->getCharPositionInLine());
     }
 
     virtual antlrcpp::Any visitPredicateExpression(pt::PQL::QueryParser::PredicateExpressionContext* ctx) override
@@ -169,9 +264,9 @@ public:
             if (auto suffix = ctx->SIZE_SUFFIX())
             {
                 std::string suffixString = suffix->getText();
-                if (suffixString == "kb") { multiplier = 1024; }
-                if (suffixString == "mb") { multiplier = 1048576; }
-                if (suffixString == "gb") { multiplier = 1073741824; }
+                if (suffixString == "kb" || suffixString == "kbps") { multiplier = 1024; }
+                if (suffixString == "mb" || suffixString == "mbps") { multiplier = 1048576; }
+                if (suffixString == "gb" || suffixString == "gbps") { multiplier = 1073741824; }
             }
 
             return std::stoll(val->getText()) * multiplier;
@@ -185,7 +280,10 @@ public:
             return text;
         }
 
-        throw new std::exception("unknown value");
+        throw QueryException(
+            "Unknown value: '" + ctx->getText() + "'",
+            ctx->getStart()->getLine(),
+            ctx->getStart()->getCharPositionInLine());
     }
 };
 
@@ -198,7 +296,7 @@ PqlTorrentFilter::~PqlTorrentFilter()
 {
 }
 
-std::unique_ptr<pt::UI::Filters::TorrentFilter> PqlTorrentFilter::Create(std::string const& input)
+std::unique_ptr<pt::UI::Filters::TorrentFilter> PqlTorrentFilter::Create(std::string const& input, std::string* error)
 {
     antlr4::ANTLRInputStream inputStream(input);
 
@@ -222,6 +320,12 @@ std::unique_ptr<pt::UI::Filters::TorrentFilter> PqlTorrentFilter::Create(std::st
     catch (antlr4::ParseCancellationException const& ex)
     {
         BOOST_LOG_TRIVIAL(error) << "Failed to parse query: " << ex.what();
+        *error = ex.what();
+    }
+    catch (QueryException const& ex)
+    {
+        BOOST_LOG_TRIVIAL(error) << "Failed to execute query: " << ex.what();
+        *error = ex.what();
     }
 
     return nullptr;

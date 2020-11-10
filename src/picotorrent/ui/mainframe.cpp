@@ -362,6 +362,14 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
             }
         });
 
+    this->Bind(
+        ptEVT_FILTER_CHANGED,
+        [this](wxCommandEvent& evt)
+        {
+            std::string filter = evt.GetString().ToStdString();
+            m_cfg->Set("current_filter", filter);
+        });
+
     // Update status bar
     m_statusBar->UpdateDhtNodesCount(m_cfg->Get<bool>("libtorrent.enable_dht").value() ? 0 : -1);
     m_statusBar->UpdateTorrentCount(m_torrentsCount);
@@ -370,6 +378,12 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     if (m_cfg->Get<bool>("show_in_notification_area").value())
     {
         m_taskBarIcon->Show();
+    }
+
+    // Set up console
+    if (auto currentFilter = m_cfg->Get<std::string>("current_filter"))
+    {
+        m_console->SetText(currentFilter.value_or(""));
     }
 }
 
