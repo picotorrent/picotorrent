@@ -288,5 +288,6 @@
     "eta_ms_format": "{0}m {1}d",
     "eta_s_format": "{0}d",
     "per_second_format": "{0}/d",
-    "contents": "Konten"
+    "contents": "Konten",
+    "tier": "Tingkat"
 }
