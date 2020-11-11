@@ -96,6 +96,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     this->SetSizerAndFit(sizer);
     this->SetStatusBar(m_statusBar);
 
+    this->CreateFilterMenuItems();
     this->CreateLabelMenuItems();
     this->UpdateLabels();
 
@@ -393,38 +394,6 @@ MainFrame::~MainFrame()
     delete m_taskBarIcon;
 }
 
-void MainFrame::AddFilter(wxString const& name, std::function<bool(BitTorrent::TorrentHandle*)> const& filter)
-{
-    if (m_menuItemFilters == nullptr)
-    {
-        m_filtersMenu = new wxMenu();
-        m_filtersMenu->AppendRadioItem(ptID_EVT_FILTERS_NONE, i18n("amp_none"));
-        m_filtersMenu->Bind(
-            wxEVT_MENU,
-            [this](wxCommandEvent& evt)
-            {
-                auto filter = m_filters.find(evt.GetId());
-                if (filter == m_filters.end())
-                {
-                    m_torrentListModel->ClearFilter();
-                }
-                else
-                {
-                    // m_torrentListModel->SetFilter(filter->second);
-                }
-            });
-
-        m_viewMenu->InsertSeparator(0);
-        m_menuItemFilters = m_viewMenu->Insert(0, wxID_ANY, i18n("amp_filter"), m_filtersMenu);
-    }
-
-    m_filters.insert({ ptID_EVT_FILTERS_USER + m_filtersMenu->GetMenuItemCount(), filter });
-
-    m_filtersMenu->AppendRadioItem(
-        ptID_EVT_FILTERS_USER + m_filtersMenu->GetMenuItemCount(),
-        name);
-}
-
 void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
 {
     if (params.empty())
@@ -597,6 +566,21 @@ void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const
     }
 }
 
+void MainFrame::CreateFilterMenuItems()
+{
+    for (int i = static_cast<int>(m_filtersMenu->GetMenuItemCount()) - 1; i >= 0; i--)
+    {
+        wxMenuItem* item = m_filtersMenu->FindItemByPosition(i);
+        if (item->GetId() <= ptID_EVT_FILTERS_USER) { continue; }
+        m_filtersMenu->Delete(item);
+    }
+
+    for (auto const& filter : m_cfg->GetFilters())
+    {
+        m_filtersMenu->Append(ptID_EVT_FILTERS_USER + filter.id, Utils::toStdWString(filter.name));
+    }
+}
+
 void MainFrame::CreateLabelMenuItems()
 {
     for (int i = static_cast<int>(m_labelsMenu->GetMenuItemCount()) - 1; i >= 0; i--)
@@ -623,6 +607,27 @@ wxMenuBar* MainFrame::CreateMainMenu()
     fileMenu->Append(ptID_EVT_EXIT, i18n("amp_exit"));
 
     m_viewMenu = new wxMenu();
+
+    m_filtersMenu = new wxMenu();
+    m_filtersMenu->Append(ptID_EVT_FILTERS_NONE, i18n("none"));
+    m_filtersMenu->Bind(
+        wxEVT_MENU,
+        [this](wxCommandEvent& evt)
+        {
+            if (evt.GetId() > ptID_EVT_FILTERS_USER)
+            {
+                int filterId = evt.GetId() - ptID_EVT_FILTERS_USER;
+                if (auto filter = m_cfg->GetFilterById(filterId))
+                {
+                    m_console->SetText(filter.value().filter);
+                }
+            }
+            else if (evt.GetId() == ptID_EVT_FILTERS_NONE)
+            {
+                m_console->SetText("");
+            }
+        });
+
     m_labelsMenu = new wxMenu();
     m_labelsMenu->AppendRadioItem(ptID_EVT_LABELS_NONE, i18n("none"));
     m_labelsMenu->Bind(
@@ -640,6 +645,8 @@ wxMenuBar* MainFrame::CreateMainMenu()
             }
         });
 
+    m_menuItemFilters = m_viewMenu->AppendSubMenu(m_filtersMenu, i18n("amp_filter"));
+    m_viewMenu->AppendSeparator();
     m_menuItemLabels = m_viewMenu->AppendSubMenu(m_labelsMenu, i18n("labels"));
     m_viewMenu->AppendSeparator();
 

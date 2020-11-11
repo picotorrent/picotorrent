@@ -3,7 +3,7 @@
 AppIcon ICON "..\\..\\res\\app.ico"
 
 // Icons
-ICO_FUNNEL ICON "..\\..\\res\\funnel.ico"
+ICO_TERMINAL ICON "..\\..\\res\\terminal.ico"
 
 // SQL migrations
 20181208115043_create_setting_table             DBMIGRATION "..\\..\\res\\dbmigrations\\20181208115043_create_setting_table.sql"

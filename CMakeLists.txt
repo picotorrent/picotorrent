@@ -285,15 +285,6 @@ set_property(TARGET PicoTorrent PROPERTY ENABLE_EXPORTS 1)
 
 # Plugins
 add_library(
-    Plugin_Filters
-    SHARED
-    src/plugins/filters/filters
-)
-
-target_include_directories(Plugin_Filters PRIVATE include)
-target_link_libraries(Plugin_Filters PRIVATE PicoTorrent)
-
-add_library(
     Plugin_Updater
     SHARED
     src/plugins/updater/updater
