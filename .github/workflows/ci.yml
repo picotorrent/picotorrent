@@ -50,6 +50,7 @@ jobs:
         with:
           name: PicoTorrent-${{ matrix.arch }}-CI-binaries
           path: |
+            build-${{ matrix.arch }}/Release/packages/PicoTorrent-*-${{ matrix.arch }}.appx
             build-${{ matrix.arch }}/Release/packages/PicoTorrent-*-${{ matrix.arch }}.exe
             build-${{ matrix.arch }}/Release/packages/PicoTorrent-*-${{ matrix.arch }}.zip
             build-${{ matrix.arch }}/Release/packages/PicoTorrent-*-${{ matrix.arch }}.symbols.zip

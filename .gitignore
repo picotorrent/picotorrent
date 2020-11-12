@@ -2,6 +2,8 @@ build-x64/
 build-x86/
 build/
 docs/build
+packaging/AppX/PicoTorrent.mapping
+packaging/AppX/PicoTorrentManifest.xml
 src/picotorrent/buildinfo.cpp
 tools
 .vscode
