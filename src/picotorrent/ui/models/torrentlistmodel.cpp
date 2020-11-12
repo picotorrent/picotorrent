@@ -490,14 +490,16 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
     }
     case Columns::Label:
     {
-        if (torrent->Label() < 0)
+        auto lbl = m_labels.find(torrent->Label());
+
+        if (torrent->Label() < 0 || lbl == m_labels.end())
         {
             variant << wxDataViewIconText("-");
             break;
         }
 
         wxIcon ic = wxNullIcon;
-        auto [name, _] = m_labels.at(torrent->Label());
+        auto [name, _] = lbl->second;
 
         if (m_labelsIcons.find(torrent->Label()) != m_labelsIcons.end())
         {
