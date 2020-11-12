@@ -65,7 +65,6 @@ typedef struct libpico_torrent_stats_t
     int32_t upload_payload_rate;
 } libpico_torrent_stats_t;
 
-typedef bool(*libpico_filter_callback_t)(libpico_torrent_t*, libpico_param_t*);
 typedef libpico_result_t(*libpico_http_callback_t)(libpico_http_response_t*, libpico_http_status_t, libpico_param_t*);
 typedef libpico_result_t(*libpico_init_t)(int, libpico_plugin_t*);
 typedef libpico_result_t(*libpico_hook_callback_t)(libpico_event_t, libpico_param_t*, libpico_param_t*);
@@ -88,7 +87,6 @@ LIBPICO_API_FUNCTION libpico_result_t libpico_http_response_body_len(libpico_htt
 
 LIBPICO_API_FUNCTION libpico_result_t libpico_i18n(const char* key, wchar_t* target, size_t* len);
 
-LIBPICO_API_FUNCTION libpico_result_t libpico_mainwnd_filter_add(libpico_mainwnd_t* wnd, libpico_filter_callback_t cb, const wchar_t* name, libpico_param_t* user);
 LIBPICO_API_FUNCTION libpico_result_t libpico_mainwnd_native_handle(libpico_mainwnd_t* wnd, void** handle);
 
 /*

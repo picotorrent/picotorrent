@@ -106,13 +106,6 @@
                     Source="$(var.PublishDirectory)\crashpad_handler.exe" />
             </Component>
 
-            <Component Id="C_Plugin_Filters.dll" Guid="88463251-e75a-4cfe-93b5-87c7170b5ebe">
-                <File Id="F_Plugin_Filters.dll"
-                    KeyPath="yes"
-                    Name="Plugin_Filters.dll"
-                    Source="$(var.PublishDirectory)\Plugin_Filters.dll" />
-            </Component>
-
             <Component Id="C_Plugin_Updater.dll" Guid="32b14933-0426-4e75-a115-56f2a9d21286">
                 <File Id="F_Plugin_Updater.dll"
                     KeyPath="yes"

@@ -24,6 +24,7 @@
 #include "../core/environment.hpp"
 #include "../core/utils.hpp"
 #include "../ipc/server.hpp"
+#include "console.hpp"
 #include "dialogs/aboutdialog.hpp"
 #include "dialogs/addmagnetlinkdialog.hpp"
 #include "dialogs/addtorrentdialog.hpp"
@@ -61,6 +62,8 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_menuItemFilters(nullptr),
     m_ipc(std::make_unique<IPC::Server>(this))
 {
+    m_console = new Console(this, wxID_ANY, m_torrentListModel);
+
     m_splitter->SetWindowStyleFlag(
         m_splitter->GetWindowStyleFlag() | wxSP_LIVE_UPDATE);
     m_splitter->SetMinimumPaneSize(10);
@@ -73,6 +76,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
 
     auto sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(m_console, 0, wxEXPAND);
     sizer->Add(m_splitter, 1, wxEXPAND, 0);
     sizer->SetSizeHints(this);
 
@@ -92,15 +96,19 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     this->SetSizerAndFit(sizer);
     this->SetStatusBar(m_statusBar);
 
+    this->CreateFilterMenuItems();
     this->CreateLabelMenuItems();
     this->UpdateLabels();
 
     // Set checked on menu items
+    m_menuItemConsoleInput->SetCheckable(true);
+    m_menuItemConsoleInput->Check(m_cfg->Get<bool>("ui.show_console_input").value());
     m_menuItemDetailsPanel->SetCheckable(true);
     m_menuItemDetailsPanel->Check(m_cfg->Get<bool>("ui.show_details_panel").value());
     m_menuItemStatusBar->SetCheckable(true);
     m_menuItemStatusBar->Check(m_cfg->Get<bool>("ui.show_status_bar").value());
 
+    if (!m_cfg->Get<bool>("ui.show_console_input").value()) { m_console->Hide(); }
     if (!m_cfg->Get<bool>("ui.show_details_panel").value()) { m_splitter->Unsplit(); }
     if (!m_cfg->Get<bool>("ui.show_status_bar").value()) { m_statusBar->Hide(); }
 
@@ -307,6 +315,18 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         wxEVT_MENU,
         [this](wxCommandEvent&)
         {
+            m_cfg->Set("ui.show_console_input", m_menuItemConsoleInput->IsChecked());
+
+            if (m_menuItemConsoleInput->IsChecked()) { m_console->Show(); }
+            else { m_console->Hide(); }
+
+            this->SendSizeEvent();
+        }, ptID_EVT_SHOW_CONSOLE);
+
+    this->Bind(
+        wxEVT_MENU,
+        [this](wxCommandEvent&)
+        {
             m_cfg->Set("ui.show_details_panel", m_menuItemDetailsPanel->IsChecked());
 
             if (m_menuItemDetailsPanel->IsChecked())
@@ -329,6 +349,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
 
             if (m_menuItemStatusBar->IsChecked()) { m_statusBar->Show(); }
             else { m_statusBar->Hide(); }
+
             this->SendSizeEvent();
         }, ptID_EVT_SHOW_STATUS_BAR);
 
@@ -342,6 +363,14 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
             }
         });
 
+    this->Bind(
+        ptEVT_FILTER_CHANGED,
+        [this](wxCommandEvent& evt)
+        {
+            std::string filter = evt.GetString().ToStdString();
+            m_cfg->Set("current_filter", filter);
+        });
+
     // Update status bar
     m_statusBar->UpdateDhtNodesCount(m_cfg->Get<bool>("libtorrent.enable_dht").value() ? 0 : -1);
     m_statusBar->UpdateTorrentCount(m_torrentsCount);
@@ -351,44 +380,18 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     {
         m_taskBarIcon->Show();
     }
+
+    // Set up console
+    if (auto currentFilter = m_cfg->Get<std::string>("current_filter"))
+    {
+        m_console->SetText(currentFilter.value_or(""));
+    }
 }
 
 MainFrame::~MainFrame()
 {
     m_taskBarIcon->Hide();
     delete m_taskBarIcon;
-}
-
-void MainFrame::AddFilter(wxString const& name, std::function<bool(BitTorrent::TorrentHandle*)> const& filter)
-{
-    if (m_menuItemFilters == nullptr)
-    {
-        m_filtersMenu = new wxMenu();
-        m_filtersMenu->AppendRadioItem(ptID_EVT_FILTERS_NONE, i18n("amp_none"));
-        m_filtersMenu->Bind(
-            wxEVT_MENU,
-            [this](wxCommandEvent& evt)
-            {
-                auto filter = m_filters.find(evt.GetId());
-                if (filter == m_filters.end())
-                {
-                    m_torrentListModel->ClearFilter();
-                }
-                else
-                {
-                    m_torrentListModel->SetFilter(filter->second);
-                }
-            });
-
-        m_viewMenu->InsertSeparator(0);
-        m_menuItemFilters = m_viewMenu->Insert(0, wxID_ANY, i18n("amp_filter"), m_filtersMenu);
-    }
-
-    m_filters.insert({ ptID_EVT_FILTERS_USER + m_filtersMenu->GetMenuItemCount(), filter });
-
-    m_filtersMenu->AppendRadioItem(
-        ptID_EVT_FILTERS_USER + m_filtersMenu->GetMenuItemCount(),
-        name);
 }
 
 void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
@@ -563,6 +566,21 @@ void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const
     }
 }
 
+void MainFrame::CreateFilterMenuItems()
+{
+    for (int i = static_cast<int>(m_filtersMenu->GetMenuItemCount()) - 1; i >= 0; i--)
+    {
+        wxMenuItem* item = m_filtersMenu->FindItemByPosition(i);
+        if (item->GetId() <= ptID_EVT_FILTERS_USER) { continue; }
+        m_filtersMenu->Delete(item);
+    }
+
+    for (auto const& filter : m_cfg->GetFilters())
+    {
+        m_filtersMenu->Append(ptID_EVT_FILTERS_USER + filter.id, Utils::toStdWString(filter.name));
+    }
+}
+
 void MainFrame::CreateLabelMenuItems()
 {
     for (int i = static_cast<int>(m_labelsMenu->GetMenuItemCount()) - 1; i >= 0; i--)
@@ -589,6 +607,27 @@ wxMenuBar* MainFrame::CreateMainMenu()
     fileMenu->Append(ptID_EVT_EXIT, i18n("amp_exit"));
 
     m_viewMenu = new wxMenu();
+
+    m_filtersMenu = new wxMenu();
+    m_filtersMenu->Append(ptID_EVT_FILTERS_NONE, i18n("none"));
+    m_filtersMenu->Bind(
+        wxEVT_MENU,
+        [this](wxCommandEvent& evt)
+        {
+            if (evt.GetId() > ptID_EVT_FILTERS_USER)
+            {
+                int filterId = evt.GetId() - ptID_EVT_FILTERS_USER;
+                if (auto filter = m_cfg->GetFilterById(filterId))
+                {
+                    m_console->SetText(filter.value().filter);
+                }
+            }
+            else if (evt.GetId() == ptID_EVT_FILTERS_NONE)
+            {
+                m_console->SetText("");
+            }
+        });
+
     m_labelsMenu = new wxMenu();
     m_labelsMenu->AppendRadioItem(ptID_EVT_LABELS_NONE, i18n("none"));
     m_labelsMenu->Bind(
@@ -606,9 +645,12 @@ wxMenuBar* MainFrame::CreateMainMenu()
             }
         });
 
+    m_menuItemFilters = m_viewMenu->AppendSubMenu(m_filtersMenu, i18n("amp_filter"));
+    m_viewMenu->AppendSeparator();
     m_menuItemLabels = m_viewMenu->AppendSubMenu(m_labelsMenu, i18n("labels"));
     m_viewMenu->AppendSeparator();
 
+    m_menuItemConsoleInput = m_viewMenu->Append(ptID_EVT_SHOW_CONSOLE, i18n("amp_console"));
     m_menuItemDetailsPanel = m_viewMenu->Append(ptID_EVT_SHOW_DETAILS, i18n("amp_details_panel"));
     m_menuItemStatusBar = m_viewMenu->Append(ptID_EVT_SHOW_STATUS_BAR, i18n("amp_status_bar"));
     m_viewMenu->AppendSeparator();

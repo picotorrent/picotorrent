@@ -5,6 +5,7 @@
 #include "../../bittorrent/torrenthandle.hpp"
 #include "../../bittorrent/torrentstatus.hpp"
 #include "../../core/utils.hpp"
+#include "../filters/torrentfilter.hpp"
 #include "../translator.hpp"
 
 using pt::BitTorrent::TorrentHandle;
@@ -30,6 +31,7 @@ void TorrentListModel::AddTorrent(BitTorrent::TorrentHandle* torrent)
 void TorrentListModel::ClearFilter()
 {
     m_filter = nullptr;
+    ApplyFilter();
 }
 
 void TorrentListModel::ClearLabelFilter()
@@ -38,9 +40,9 @@ void TorrentListModel::ClearLabelFilter()
     ApplyFilter();
 }
 
-void TorrentListModel::SetFilter(std::function<bool(BitTorrent::TorrentHandle*)> const& filter)
+void TorrentListModel::SetFilter(std::unique_ptr<Filters::TorrentFilter> filter)
 {
-    m_filter = filter;
+    m_filter = std::move(filter);
     ApplyFilter();
 }
 
@@ -612,11 +614,11 @@ void TorrentListModel::ApplyFilter(std::vector<BitTorrent::TorrentHandle*> torre
         // otherwise, check each
         if (m_filter && m_filterLabelId > 0)
         {
-            return m_filter(torrent) && torrent->Label() == m_filterLabelId;
+            return m_filter->Includes(*torrent) && torrent->Label() == m_filterLabelId;
         }
         else if (m_filter)
         {
-            return m_filter(torrent);
+            return m_filter->Includes(*torrent);
         }
         else if (m_filterLabelId > 0)
         {

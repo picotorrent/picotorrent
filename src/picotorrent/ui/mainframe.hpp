@@ -42,6 +42,7 @@ namespace Models
 {
     class TorrentListModel;
 }
+    class Console;
     class StatusBar;
     class TaskBarIcon;
     class TorrentDetailsView;
@@ -56,7 +57,6 @@ namespace Models
             std::shared_ptr<Core::Configuration> cfg);
         virtual ~MainFrame();
 
-        void AddFilter(wxString const& name, std::function<bool(BitTorrent::TorrentHandle*)> const& filter);
         void HandleParams(std::vector<std::string> const& files, std::vector<std::string> const& magnets);
 
     private:
@@ -64,6 +64,7 @@ namespace Models
 
         void AddTorrents(std::vector<libtorrent::add_torrent_params>& params);
         void CheckDiskSpace(std::vector<BitTorrent::TorrentHandle*> const& updatedTorrents);
+        void CreateFilterMenuItems();
         void CreateLabelMenuItems();
         void OnClose(wxCloseEvent&);
         void OnFileAddMagnetLink(wxCommandEvent&);
@@ -81,6 +82,7 @@ namespace Models
 
         StatusBar* m_statusBar;
         TaskBarIcon* m_taskBarIcon;
+        Console* m_console;
         TorrentDetailsView* m_torrentDetails;
         Models::TorrentListModel* m_torrentListModel;
         TorrentListView* m_torrentList;
@@ -97,9 +99,8 @@ namespace Models
         wxMenuItem* m_menuItemLabels;
         wxMenuItem* m_menuItemFilters;
         wxMenuItem* m_menuItemDetailsPanel;
+        wxMenuItem* m_menuItemConsoleInput;
         wxMenuItem* m_menuItemStatusBar;
-
-        std::map<size_t, std::function<bool(BitTorrent::TorrentHandle*)>> m_filters;
 
         std::unordered_set<Dialogs::AddTorrentDialog*> m_addDialogs;
         std::map<libtorrent::info_hash_t, BitTorrent::TorrentHandle*> m_selection;

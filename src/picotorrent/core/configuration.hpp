@@ -25,6 +25,13 @@ namespace Core
             int32_t port;
         };
 
+        struct Filter
+        {
+            int32_t id;
+            std::string name;
+            std::string filter;
+        };
+
         struct Label
         {
             Label() : id(-1), colorEnabled(false), savePathEnabled(false), applyFilterEnabled(false) {}
@@ -95,6 +102,9 @@ namespace Core
         }
 
         std::vector<DhtBootstrapNode> GetDhtBootstrapNodes();
+
+        std::vector<Filter> GetFilters();
+        std::optional<Filter> GetFilterById(int id);
 
         // Labels
         std::vector<Label> GetLabels();

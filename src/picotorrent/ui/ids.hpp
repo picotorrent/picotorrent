@@ -22,6 +22,7 @@ namespace UI
         ptID_EVT_CHECK_FOR_UPDATE,
         ptID_EVT_CREATE_TORRENT,
         ptID_EVT_EXIT,
+        ptID_EVT_SHOW_CONSOLE,
         ptID_EVT_SHOW_DETAILS,
         ptID_EVT_SHOW_STATUS_BAR,
         ptID_EVT_VIEW_PREFERENCES,

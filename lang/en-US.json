@@ -284,6 +284,7 @@
     "label_details": "Label details",
     "color": "Color",
     "apply_filter": "Apply filter",
+    "amp_console": "&Console",
     "eta_hms_format": "{0}h {1}m {2}s",
     "eta_ms_format": "{0}m {1}s",
     "eta_s_format": "{0}s",

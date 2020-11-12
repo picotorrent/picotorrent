@@ -67,6 +67,42 @@ std::vector<Configuration::DhtBootstrapNode> Configuration::GetDhtBootstrapNodes
     return result;
 }
 
+std::vector<Configuration::Filter> Configuration::GetFilters()
+{
+    std::vector<Filter> result;
+
+    auto stmt = m_db->CreateStatement("select id, name, filter from filter");
+
+    while (stmt->Read())
+    {
+        Filter f;
+        f.id = stmt->GetInt(0);
+        f.name= stmt->GetString(1);
+        f.filter = stmt->GetString(2);
+
+        result.push_back(f);
+    }
+
+    return result;
+}
+
+std::optional<Configuration::Filter> Configuration::GetFilterById(int id)
+{
+    auto stmt = m_db->CreateStatement("select id, name, filter from filter where id = $1");
+    stmt->Bind(1, id);
+
+    if (stmt->Execute())
+    {
+        Filter f;
+        f.id = stmt->GetInt(0);
+        f.name = stmt->GetString(1);
+        f.filter = stmt->GetString(2);
+        return f;
+    }
+
+    return std::nullopt;
+}
+
 std::vector<Configuration::Label> Configuration::GetLabels()
 {
     std::vector<Label> result;
