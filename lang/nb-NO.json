@@ -4,8 +4,8 @@
     "status": "Status",
     "progress": "Framdrift",
     "eta": "Forventet",
-    "dl": "↓",
-    "ul": "↑",
+    "dl": "Ned",
+    "ul": "Opp",
     "pause": "Pause",
     "resume": "Fortsett",
     "resume_force": "Fortsett (påtving)",
@@ -285,5 +285,12 @@
     "color": "Farge",
     "apply_filter": "Bruk filter",
     "restart_picotorrent": "Start PicoTorrent på ny",
-    "use_label_color_as_background_in_torrent_list": "Bruk etikettfarge som bakgrunn i torrent-liste"
+    "use_label_color_as_background_in_torrent_list": "Bruk etikettfarge som bakgrunn i torrent-liste",
+    "contents": "Innhold",
+    "tier": "Nivå",
+    "amp_console": "&Konsoll",
+    "eta_hms_format": "{0}t {1}m {2}s",
+    "eta_ms_format": "{0}m {1}s",
+    "eta_s_format": "{0}s",
+    "per_second_format": "{0}/s"
 }
