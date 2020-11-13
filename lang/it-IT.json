@@ -212,7 +212,7 @@
     "dl": "DL",
     "ul": "UL",
     "eta": "ETA",
-    "browse": "...",
+    "browse": "…",
     "build_info_format": "Branch: {0}\nSHA1: {1}",
     "proxy": "Proxy",
     "host": "Host",
