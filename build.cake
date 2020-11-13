@@ -70,7 +70,6 @@ Task("Build")
     MSBuild(OutputDirectory + File("PicoTorrent.vcxproj"), settings);
 
     // Plugins
-    MSBuild(OutputDirectory + File("Plugin_Filters.vcxproj"), settings);
     MSBuild(OutputDirectory + File("Plugin_Updater.vcxproj"), settings);
 });
 
@@ -83,7 +82,6 @@ Task("Setup-Publish-Directory")
         MakeAbsolute(BuildDirectory + File("PicoTorrent.exe")),
         MakeAbsolute(BuildDirectory + File("coredb.sqlite")),
         MakeAbsolute(BuildDirectory + File("crashpad_handler.exe")),
-        MakeAbsolute(BuildDirectory + File("Plugin_Filters.dll")),
         MakeAbsolute(BuildDirectory + File("Plugin_Updater.dll")),
     };
 

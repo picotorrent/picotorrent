@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include <loguru.hpp>
+#include <boost/log/trivial.hpp>
 #include <nlohmann/json.hpp>
 
 namespace pt
@@ -23,6 +23,13 @@ namespace Core
             int32_t id;
             std::string hostname;
             int32_t port;
+        };
+
+        struct Filter
+        {
+            int32_t id;
+            std::string name;
+            std::string filter;
         };
 
         struct Label
@@ -82,7 +89,7 @@ namespace Core
             }
             catch (nlohmann::json::exception const& ex)
             {
-                LOG_F(WARNING, "Failed to parse setting %s: %s (%s)", key.c_str(), val.c_str(), ex.what());
+                BOOST_LOG_TRIVIAL(warning) << "Failed to parse setting " << key << ": " << val << " (" << ex.what() << ")";
             }
 
             return std::nullopt;
@@ -95,6 +102,9 @@ namespace Core
         }
 
         std::vector<DhtBootstrapNode> GetDhtBootstrapNodes();
+
+        std::vector<Filter> GetFilters();
+        std::optional<Filter> GetFilterById(int id);
 
         // Labels
         std::vector<Label> GetLabels();

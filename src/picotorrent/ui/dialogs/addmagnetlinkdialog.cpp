@@ -2,8 +2,8 @@
 
 #include <regex>
 
+#include <boost/log/trivial.hpp>
 #include <libtorrent/magnet_uri.hpp>
-#include <loguru.hpp>
 #include <wx/clipbrd.h>
 #include <wx/tokenzr.h>
 
@@ -21,7 +21,7 @@ AddMagnetLinkDialog::AddMagnetLinkDialog(wxWindow* parent, wxWindowID id)
     ok->SetDefault();
 
     buttonsSizer->Add(ok);
-    buttonsSizer->Add(new wxButton(this, wxID_CANCEL), 0, wxLEFT, FromDIP(7));
+    buttonsSizer->Add(new wxButton(this, wxID_CANCEL, i18n("cancel")), 0, wxLEFT, FromDIP(7));
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
     mainSizer->AddSpacer(FromDIP(11));
@@ -85,14 +85,14 @@ std::vector<libtorrent::add_torrent_params> AddMagnetLinkDialog::GetParams()
         case 40:
             if (token.substr(0, 20) != "magnet:?xt=urn:btih:")
             {
-                LOG_F(INFO, "Prepending magnet URI to v1 info hash: %s", token.c_str());
+                BOOST_LOG_TRIVIAL(info) << "Prepending magnet URI to v1 info hash: " << token;
                 token = "magnet:?xt=urn:btih:" + token;
             }
             break;
         case 68:
             if (token.substr(0, 20) != "magnet:?xt=urn:btmh:")
             {
-                LOG_F(INFO, "Prepending magnet URI to v2 info hash: %s", token.c_str());
+                BOOST_LOG_TRIVIAL(info) << "Prepending magnet URI to v2 info hash: " << token;
                 token = "magnet:?xt=urn:btmh:" + token;
             }
             break;
@@ -103,7 +103,7 @@ std::vector<libtorrent::add_torrent_params> AddMagnetLinkDialog::GetParams()
 
         if (ec)
         {
-            LOG_F(WARNING, "Failed to parse magnet uri: %s, error: %s", token.c_str(), ec.message().c_str());
+            BOOST_LOG_TRIVIAL(warning) << "Failed to parse magnet uri: " << token << ", error: " << ec;
             continue;
         }
 

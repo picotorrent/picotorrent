@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <queue>
 
+#include <boost/log/trivial.hpp>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/entry.hpp>
@@ -17,7 +18,6 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 #include <libtorrent/write_resume_data.hpp>
-#include <loguru.hpp>
 
 #include "../core/configuration.hpp"
 #include "../core/database.hpp"
@@ -89,7 +89,7 @@ static lt::session_params getSessionParams(std::shared_ptr<pt::Core::Database> d
 
         if (ec)
         {
-            LOG_F(WARNING, "Failed to decode session state: %s", ec.message().data());
+            BOOST_LOG_TRIVIAL(warning) << "Failed to decode session state: " << ec;
         }
         else
         {
@@ -366,7 +366,7 @@ void Session::OnAlert()
 
             if (ata->error)
             {
-                LOG_F(ERROR, "Failed to add torrent to session: %s", ata->error.message().data());
+                BOOST_LOG_TRIVIAL(error) << "Failed to add torrent to session: " << ata->error;
                 continue;
             }
 
@@ -431,13 +431,13 @@ void Session::OnAlert()
 
         case lt::listen_failed_alert::alert_type:
         {
-            LOG_F(WARNING, alert->message().c_str());
+            BOOST_LOG_TRIVIAL(warning) << alert->message();
             break;
         }
 
         case lt::listen_succeeded_alert::alert_type:
         {
-            LOG_F(INFO, alert->message().c_str());
+            BOOST_LOG_TRIVIAL(info) << alert->message();
             break;
         }
 
@@ -560,7 +560,7 @@ void Session::OnAlert()
         case lt::storage_moved_failed_alert::alert_type:
         {
             lt::storage_moved_failed_alert* smfa = lt::alert_cast<lt::storage_moved_failed_alert>(alert);
-            LOG_F(ERROR, "Error when moving torrent storage: %s", smfa->error.message().c_str());
+            BOOST_LOG_TRIVIAL(error) << "Error when moving torrent storage: " << smfa->error;
             break;
         }
 
@@ -581,7 +581,7 @@ void Session::OnAlert()
 
         case lt::torrent_error_alert::alert_type:
         {
-            LOG_F(ERROR, "Torrent error: %s", alert->message().c_str());
+            BOOST_LOG_TRIVIAL(error) << "Torrent error: " << alert->message();
             break;
         }
 
@@ -686,7 +686,7 @@ void Session::OnSaveResumeDataTimer(wxTimerEvent&)
         }
     }
 
-    LOG_F(INFO, "%d torrent(s) needed to save resume data", saved);
+    BOOST_LOG_TRIVIAL(info) << saved << " torrent(s) needed to save resume data";
 }
 
 bool Session::IsSearching(lt::info_hash_t hash)
@@ -759,7 +759,7 @@ void Session::LoadTorrents()
 
             if (ec)
             {
-                LOG_F(WARNING, "Failed to decode resume data: %s", ec.message().data());
+                BOOST_LOG_TRIVIAL(warning) << "Failed to decode resume data: " << ec;
                 continue;
             }
 
@@ -767,7 +767,7 @@ void Session::LoadTorrents()
 
             if (ec)
             {
-                LOG_F(WARNING, "Failed to read resume data: %s", ec.message().data());
+                BOOST_LOG_TRIVIAL(warning) << "Failed to read resume data: " << ec;
                 continue;
             }
         }
@@ -787,7 +787,7 @@ void Session::PauseAfterRecheck(pt::BitTorrent::TorrentHandle* th)
 {
     if (m_pauseAfterRecheck.find(th->InfoHash()) != m_pauseAfterRecheck.end())
     {
-        LOG_F(WARNING, "Torrent already rechecking (%s)", th->InfoHash().v1.data());
+        BOOST_LOG_TRIVIAL(warning) << "Torrent already rechecking (" << th->InfoHash().v1.data() << ")";
         return;
     }
 
@@ -847,7 +847,7 @@ void Session::SaveTorrents()
             return !st.has_metadata;
         });
 
-    LOG_F(INFO, "Saving data for %d torrent(s)", numOutstandingResumeData + static_cast<int>(missingMeta.size()));
+    BOOST_LOG_TRIVIAL(info) << "Saving data for " << missingMeta.size() + numOutstandingResumeData << " torrent(s)";
 
     for (lt::torrent_status& st : missingMeta)
     {

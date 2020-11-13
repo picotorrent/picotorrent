@@ -17,6 +17,10 @@ if(DEFINED ENV{OPENSSL_ROOT_DIR})
     message("Using OpenSSL dir from env variable: ${OPENSSL_ROOT_DIR}")
 endif()
 
+# --------- antlr4 options
+option(WITH_STATIC_CRT "" Off)
+# -----------------------
+
 # --------- libtorrent options
 option(BUILD_SHARED_LIBS    "" off)
 option(deprecated-functions "" off)
@@ -37,11 +41,17 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(wxUSE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
 # --------------------
 
+find_package(Boost REQUIRED COMPONENTS log)
+
+# vendor libs
 add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/libtorrent)
 add_subdirectory(vendor/nlohmann-json)
 add_subdirectory(vendor/sentry-crashpad)
 add_subdirectory(vendor/wx)
+
+# pico components
+add_subdirectory(src/pql)
 
 gitversion_install()
 gitversion_showvariable(BranchName      GITVERSION_VAR_BRANCHNAME)
@@ -68,24 +78,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
-
-add_library(
-    loguru
-    STATIC
-    vendor/loguru/loguru
-)
-
-target_compile_definitions(
-    loguru
-    PRIVATE
-    -D_CRT_SECURE_NO_WARNINGS
-)
-
-target_include_directories(
-    loguru
-    INTERFACE
-    vendor/loguru
-)
 
 add_library(
     sqlite
@@ -181,6 +173,9 @@ add_executable(
     src/picotorrent/ui/dialogs/preferenceslabelspage
     src/picotorrent/ui/dialogs/preferencesproxypage
 
+    # Filters
+    src/picotorrent/ui/filters/pqltorrentfilter
+
     # Models
     src/picotorrent/ui/models/filestoragemodel
     src/picotorrent/ui/models/peerlistmodel
@@ -191,6 +186,7 @@ add_executable(
     src/picotorrent/ui/persistence/persistenttorrentlistview
 
     # UI
+    src/picotorrent/ui/console
     src/picotorrent/ui/mainframe
     src/picotorrent/ui/statusbar
     src/picotorrent/ui/taskbaricon
@@ -203,6 +199,9 @@ add_executable(
     src/picotorrent/ui/torrentfilelistview
     src/picotorrent/ui/torrentlistview
     src/picotorrent/ui/translator
+
+    # Widgets
+    src/picotorrent/ui/widgets/pieceprogressbar
 
     # Win32 specific stuff
     src/picotorrent/ui/win32/openfiledialog
@@ -247,8 +246,10 @@ target_link_libraries(
 
     PRIVATE
 
+    ${Boost_LIBRARIES}
+
     # wxWidgets
-    core base propgrid
+    wxcore wxbase wxpropgrid
 
     # Windows
     Comctl32
@@ -268,14 +269,14 @@ target_link_libraries(
     # fmt
     fmt
 
-    # loguru
-    loguru
-
     # nlohmann-json
     nlohmann_json::nlohmann_json
 
     # Rasterbar-libtorrent
     "torrent-rasterbar"
+
+    # PQL
+    PicoTorrentPQL
 
     sqlite
 )
@@ -283,15 +284,6 @@ target_link_libraries(
 set_property(TARGET PicoTorrent PROPERTY ENABLE_EXPORTS 1)
 
 # Plugins
-add_library(
-    Plugin_Filters
-    SHARED
-    src/plugins/filters/filters
-)
-
-target_include_directories(Plugin_Filters PRIVATE include)
-target_link_libraries(Plugin_Filters PRIVATE PicoTorrent)
-
 add_library(
     Plugin_Updater
     SHARED

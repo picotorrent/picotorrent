@@ -2,11 +2,11 @@
 
 #include <filesystem>
 
+#include <boost/log/trivial.hpp>
 #include <fmt/format.h>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/create_torrent.hpp>
 #include <libtorrent/torrent_info.hpp>
-#include <loguru.hpp>
 #include <wx/hyperlink.h>
 #include <wx/tokenzr.h>
 
@@ -78,7 +78,7 @@ struct StopPayload
     std::string bp;
 };
 
-CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, Session* session)
+CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, std::shared_ptr<Session> session)
     : wxDialog(parent, id, i18n("create_torrent"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     m_session(session)
 {
@@ -155,7 +155,7 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, Sessio
     buttonsSizer->AddStretchSpacer();
     buttonsSizer->Add(m_create);
     buttonsSizer->AddSpacer(FromDIP(7));
-    buttonsSizer->Add(new wxButton(this, wxID_CANCEL));
+    buttonsSizer->Add(new wxButton(this, wxID_CANCEL, i18n("cancel")));
 
     auto sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(pathSizer, 0, wxEXPAND | wxALL, FromDIP(11));
@@ -308,7 +308,7 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
 
     if (ec)
     {
-        LOG_F(ERROR, "Error when setting piece hashes: %s", ec.message().c_str());
+        BOOST_LOG_TRIVIAL(error) << "Error when setting piece hashes: " << ec;
         auto err = new wxThreadEvent(ptEVT_CREATE_TORRENT_THREAD_ERROR);
         err->SetPayload<std::string>(ec.message());
         wxQueueEvent(this, err);
@@ -323,7 +323,7 @@ void CreateTorrentDialog::GenerateTorrent(std::unique_ptr<CreateTorrentParams> p
     }
     catch (const std::exception& ex)
     {
-        LOG_F(ERROR, "Error when generating torrent: %s", ex.what());
+        BOOST_LOG_TRIVIAL(error) << "Error when generating torrent: " << ec;
         auto err = new wxThreadEvent(ptEVT_CREATE_TORRENT_THREAD_ERROR);
         err->SetPayload<std::string>(ex.what());
         wxQueueEvent(this, err);

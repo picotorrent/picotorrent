@@ -234,7 +234,7 @@ void TorrentHandle::SetSequentialDownload(bool seq)
     }
 }
 
-TorrentStatus TorrentHandle::Status()
+TorrentStatus TorrentHandle::Status() const
 {
     return *m_status.get();
 }

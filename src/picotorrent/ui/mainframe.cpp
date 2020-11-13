@@ -3,10 +3,10 @@
 #include <filesystem>
 #include <regex>
 
+#include <boost/log/trivial.hpp>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/torrent_info.hpp>
-#include <loguru.hpp>
 #include <wx/persist.h>
 #include <wx/persist/toplevel.h>
 #include <wx/sizer.h>
@@ -24,6 +24,7 @@
 #include "../core/environment.hpp"
 #include "../core/utils.hpp"
 #include "../ipc/server.hpp"
+#include "console.hpp"
 #include "dialogs/aboutdialog.hpp"
 #include "dialogs/addmagnetlinkdialog.hpp"
 #include "dialogs/addtorrentdialog.hpp"
@@ -54,13 +55,17 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_splitter(new wxSplitterWindow(this, ptID_MAIN_SPLITTER)),
     m_statusBar(new StatusBar(this)),
     m_taskBarIcon(new TaskBarIcon(this)),
-    m_torrentDetails(new TorrentDetailsView(m_splitter, ptID_MAIN_TORRENT_DETAILS)),
+    m_torrentDetails(new TorrentDetailsView(m_splitter, ptID_MAIN_TORRENT_DETAILS, cfg)),
     m_torrentListModel(new Models::TorrentListModel()),
     m_torrentList(new TorrentListView(m_splitter, ptID_MAIN_TORRENT_LIST, m_torrentListModel)),
     m_torrentsCount(0),
     m_menuItemFilters(nullptr),
     m_ipc(std::make_unique<IPC::Server>(this))
 {
+    m_console = new Console(this, wxID_ANY, m_torrentListModel);
+
+    m_splitter->SetWindowStyleFlag(
+        m_splitter->GetWindowStyleFlag() | wxSP_LIVE_UPDATE);
     m_splitter->SetMinimumPaneSize(10);
     m_splitter->SetSashGravity(0.5);
     m_splitter->SplitHorizontally(
@@ -71,6 +76,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
 
     auto sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(m_console, 0, wxEXPAND);
     sizer->Add(m_splitter, 1, wxEXPAND, 0);
     sizer->SetSizeHints(this);
 
@@ -90,15 +96,19 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     this->SetSizerAndFit(sizer);
     this->SetStatusBar(m_statusBar);
 
+    this->CreateFilterMenuItems();
     this->CreateLabelMenuItems();
     this->UpdateLabels();
 
     // Set checked on menu items
+    m_menuItemConsoleInput->SetCheckable(true);
+    m_menuItemConsoleInput->Check(m_cfg->Get<bool>("ui.show_console_input").value());
     m_menuItemDetailsPanel->SetCheckable(true);
     m_menuItemDetailsPanel->Check(m_cfg->Get<bool>("ui.show_details_panel").value());
     m_menuItemStatusBar->SetCheckable(true);
     m_menuItemStatusBar->Check(m_cfg->Get<bool>("ui.show_status_bar").value());
 
+    if (!m_cfg->Get<bool>("ui.show_console_input").value()) { m_console->Hide(); }
     if (!m_cfg->Get<bool>("ui.show_details_panel").value()) { m_splitter->Unsplit(); }
     if (!m_cfg->Get<bool>("ui.show_status_bar").value()) { m_statusBar->Hide(); }
 
@@ -305,6 +315,18 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         wxEVT_MENU,
         [this](wxCommandEvent&)
         {
+            m_cfg->Set("ui.show_console_input", m_menuItemConsoleInput->IsChecked());
+
+            if (m_menuItemConsoleInput->IsChecked()) { m_console->Show(); }
+            else { m_console->Hide(); }
+
+            this->SendSizeEvent();
+        }, ptID_EVT_SHOW_CONSOLE);
+
+    this->Bind(
+        wxEVT_MENU,
+        [this](wxCommandEvent&)
+        {
             m_cfg->Set("ui.show_details_panel", m_menuItemDetailsPanel->IsChecked());
 
             if (m_menuItemDetailsPanel->IsChecked())
@@ -327,8 +349,27 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
 
             if (m_menuItemStatusBar->IsChecked()) { m_statusBar->Show(); }
             else { m_statusBar->Hide(); }
+
             this->SendSizeEvent();
         }, ptID_EVT_SHOW_STATUS_BAR);
+
+    this->Bind(
+        ptEVT_TORRENT_METADATA_FOUND,
+        [this](pt::BitTorrent::MetadataFoundEvent& evt)
+        {
+            for (auto dlg : m_addDialogs)
+            {
+                wxPostEvent(dlg, evt);
+            }
+        });
+
+    this->Bind(
+        ptEVT_FILTER_CHANGED,
+        [this](wxCommandEvent& evt)
+        {
+            std::string filter = evt.GetString().ToStdString();
+            m_cfg->Set("current_filter", filter);
+        });
 
     // Update status bar
     m_statusBar->UpdateDhtNodesCount(m_cfg->Get<bool>("libtorrent.enable_dht").value() ? 0 : -1);
@@ -339,46 +380,18 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     {
         m_taskBarIcon->Show();
     }
+
+    // Set up console
+    if (auto currentFilter = m_cfg->Get<std::string>("current_filter"))
+    {
+        m_console->SetText(currentFilter.value_or(""));
+    }
 }
 
 MainFrame::~MainFrame()
 {
     m_taskBarIcon->Hide();
-
     delete m_taskBarIcon;
-    delete m_session;
-}
-
-void MainFrame::AddFilter(wxString const& name, std::function<bool(BitTorrent::TorrentHandle*)> const& filter)
-{
-    if (m_menuItemFilters == nullptr)
-    {
-        m_filtersMenu = new wxMenu();
-        m_filtersMenu->AppendRadioItem(ptID_EVT_FILTERS_NONE, i18n("amp_none"));
-        m_filtersMenu->Bind(
-            wxEVT_MENU,
-            [this](wxCommandEvent& evt)
-            {
-                auto filter = m_filters.find(evt.GetId());
-                if (filter == m_filters.end())
-                {
-                    m_torrentListModel->ClearFilter();
-                }
-                else
-                {
-                    m_torrentListModel->SetFilter(filter->second);
-                }
-            });
-
-        m_viewMenu->InsertSeparator(0);
-        m_menuItemFilters = m_viewMenu->Insert(0, wxID_ANY, i18n("amp_filter"), m_filtersMenu);
-    }
-
-    m_filters.insert({ ptID_EVT_FILTERS_USER + m_filtersMenu->GetMenuItemCount(), filter });
-
-    m_filtersMenu->AppendRadioItem(
-        ptID_EVT_FILTERS_USER + m_filtersMenu->GetMenuItemCount(),
-        name);
 }
 
 void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
@@ -460,25 +473,22 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         return;
     }
 
-    Dialogs::AddTorrentDialog dlg(this, wxID_ANY, params, m_db, m_cfg);
-
-    this->Bind(
-        ptEVT_TORRENT_METADATA_FOUND,
-        [&dlg](pt::BitTorrent::MetadataFoundEvent& evt)
-        {
-            dlg.MetadataFound(evt.GetData());
-        });
-
-    // search for metadata
-    m_session->AddMetadataSearch(hashes);
-
-    if (dlg.ShowModal() == wxID_OK)
+    for (auto& param : params)
     {
-        for (lt::add_torrent_params const& p : dlg.GetTorrentParams())
-        {
-            m_session->AddTorrent(p);
-        }
+        auto dlg = new Dialogs::AddTorrentDialog(this, wxID_ANY, param, m_db, m_cfg, m_session);
+        dlg->Bind(
+            wxEVT_CLOSE_WINDOW,
+            [this, dlg](wxCloseEvent& evt)
+            {
+                evt.Skip();
+                m_addDialogs.erase(dlg);
+            });
+        dlg->Show();
+
+        m_addDialogs.insert(dlg);
     }
+
+    m_session->AddMetadataSearch(hashes);
 }
 
 void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<std::string> const& magnets)
@@ -499,7 +509,7 @@ void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<
 
             if (ec)
             {
-                LOG_F(WARNING, "Failed to parse magnet uri: %s, error: %s", magnet.c_str(), ec.message().c_str());
+                BOOST_LOG_TRIVIAL(warning) << "Failed to parse magnet uri: " << magnet << ", error: " << ec;
                 continue;
             }
 
@@ -541,10 +551,10 @@ void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const
 
             if (diskSpaceAvailable < diskSpaceLimit)
             {
-                LOG_F(INFO, "Pausing torrent %s due to disk space too low (avail: %.2f, limit: %.2f)",
-                    status.infoHash.c_str(),
-                    diskSpaceAvailable,
-                    diskSpaceLimit);
+                BOOST_LOG_TRIVIAL(info) << "Pausing torrent "
+                    << status.infoHash << " due to disk space too low (avail: "
+                    << diskSpaceAvailable << ", limit: "
+                    << diskSpaceLimit << ")";
 
                 torrent->Pause();
 
@@ -553,6 +563,21 @@ void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const
                     status.name);
             }
         }
+    }
+}
+
+void MainFrame::CreateFilterMenuItems()
+{
+    for (int i = static_cast<int>(m_filtersMenu->GetMenuItemCount()) - 1; i >= 0; i--)
+    {
+        wxMenuItem* item = m_filtersMenu->FindItemByPosition(i);
+        if (item->GetId() <= ptID_EVT_FILTERS_USER) { continue; }
+        m_filtersMenu->Delete(item);
+    }
+
+    for (auto const& filter : m_cfg->GetFilters())
+    {
+        m_filtersMenu->Append(ptID_EVT_FILTERS_USER + filter.id, Utils::toStdWString(filter.name));
     }
 }
 
@@ -582,6 +607,27 @@ wxMenuBar* MainFrame::CreateMainMenu()
     fileMenu->Append(ptID_EVT_EXIT, i18n("amp_exit"));
 
     m_viewMenu = new wxMenu();
+
+    m_filtersMenu = new wxMenu();
+    m_filtersMenu->Append(ptID_EVT_FILTERS_NONE, i18n("none"));
+    m_filtersMenu->Bind(
+        wxEVT_MENU,
+        [this](wxCommandEvent& evt)
+        {
+            if (evt.GetId() > ptID_EVT_FILTERS_USER)
+            {
+                int filterId = evt.GetId() - ptID_EVT_FILTERS_USER;
+                if (auto filter = m_cfg->GetFilterById(filterId))
+                {
+                    m_console->SetText(filter.value().filter);
+                }
+            }
+            else if (evt.GetId() == ptID_EVT_FILTERS_NONE)
+            {
+                m_console->SetText("");
+            }
+        });
+
     m_labelsMenu = new wxMenu();
     m_labelsMenu->AppendRadioItem(ptID_EVT_LABELS_NONE, i18n("none"));
     m_labelsMenu->Bind(
@@ -599,9 +645,12 @@ wxMenuBar* MainFrame::CreateMainMenu()
             }
         });
 
+    m_menuItemFilters = m_viewMenu->AppendSubMenu(m_filtersMenu, i18n("amp_filter"));
+    m_viewMenu->AppendSeparator();
     m_menuItemLabels = m_viewMenu->AppendSubMenu(m_labelsMenu, i18n("labels"));
     m_viewMenu->AppendSeparator();
 
+    m_menuItemConsoleInput = m_viewMenu->Append(ptID_EVT_SHOW_CONSOLE, i18n("amp_console"));
     m_menuItemDetailsPanel = m_viewMenu->Append(ptID_EVT_SHOW_DETAILS, i18n("amp_details_panel"));
     m_menuItemStatusBar = m_viewMenu->Append(ptID_EVT_SHOW_STATUS_BAR, i18n("amp_status_bar"));
     m_viewMenu->AppendSeparator();
@@ -744,6 +793,7 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
             m_taskBarIcon->Hide();
         }
 
+        m_torrentDetails->ReloadConfiguration();
         m_torrentListModel->SetBackgroundColorEnabled(
             m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
 
@@ -763,7 +813,7 @@ void MainFrame::ParseTorrentFiles(std::vector<lt::add_torrent_params>& params, s
 
         if (ec)
         {
-            LOG_F(ERROR, "Failed to parse torrent file: %s", ec.message().c_str());
+            BOOST_LOG_TRIVIAL(error) << "Failed to parse torrent file: " << ec;
             continue;
         }
 

@@ -17,3 +17,4 @@ Rasterbar-libtorrent and wxWidgets.
    configuration
    creating-torrents
    keyboard-shortcuts
+   pql

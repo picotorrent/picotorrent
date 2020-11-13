@@ -165,20 +165,6 @@ libpico_result_t libpico_i18n(const char* key, wchar_t* target, size_t* len)
     return libpico_ok;
 }
 
-libpico_result_t libpico_mainwnd_filter_add(libpico_mainwnd_t* wnd, libpico_filter_callback_t cb, const wchar_t* name, libpico_param_t* user)
-{
-    reinterpret_cast<pt::UI::MainFrame*>(wnd)->AddFilter(
-        name,
-        [cb, user](pt::BitTorrent::TorrentHandle* torrent) -> bool
-        {
-            return cb(
-                reinterpret_cast<libpico_torrent_t*>(torrent),
-                user);
-        });
-
-    return libpico_ok;
-}
-
 libpico_result_t libpico_mainwnd_native_handle(libpico_mainwnd_t* wnd, void** handle)
 {
     *handle = reinterpret_cast<pt::UI::MainFrame*>(wnd)->GetHWND();

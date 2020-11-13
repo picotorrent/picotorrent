@@ -1,6 +1,6 @@
 #include "applicationoptionsconnection.hpp"
 
-#include <loguru.hpp>
+#include <boost/log/trivial.hpp>
 #include <nlohmann/json.hpp>
 #include <wx/taskbarbutton.h>
 
@@ -28,7 +28,7 @@ bool ApplicationOptionsConnection::OnExecute(const wxString&, const void *data, 
             }
             catch (std::exception const& e)
             {
-                LOG_F(ERROR, "Failed to parse application options JSON: %s", e.what());
+                BOOST_LOG_TRIVIAL(error) << "Failed to parse application options JSON: " << e.what();
                 return;
             }
 
