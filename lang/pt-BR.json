@@ -48,7 +48,7 @@
     "proxy_peer_connections": "Conexões proxy entre pares",
     "proxy_tracker_connections": "Conexões proxy entre rastreadores",
     "connection": "Conexão",
-    "the_transfers_path_cannot_be_empty": "O caminho de transferências não pode estar vazio.",
+    "the_transfers_path_cannot_be_empty": "O caminho de \"transferências\" não pode estar vazio.",
     "none": "Nenhum",
     "http_with_credentials": "HTTP (com credenciais)",
     "socks5_with_credentials": "SOCKS5 (com credenciais)",
@@ -218,7 +218,7 @@
     "status": "Estado",
     "eta": "Tempo Restante",
     "ul": "Upload",
-    "browse": "...",
+    "browse": "…",
     "torrent": "Torrent",
     "picotorrent_v_format": "PicoTorrent v{0}",
     "http": "HTTP",
@@ -291,5 +291,6 @@
     "eta_s_format": "{0}s",
     "per_second_format": "{0}/s",
     "tier": "Camada",
-    "contents": "Conteúdos"
+    "contents": "Conteúdos",
+    "amp_console": "&Console"
 }
