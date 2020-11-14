@@ -1,25 +1,34 @@
 ﻿using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+using PicoTorrentBootstrapper.Models;
 using System;
+using System.ComponentModel;
 
 namespace PicoTorrentBootstrapper.ViewModels
 {
-    public sealed class InstallApplyingViewModel : PropertyNotifyBase
+    public sealed class ProgressViewModel : PropertyNotifyBase
     {
         private readonly BootstrapperApplication _bootstrapper;
+        private readonly MainViewModel _mainModel;
+
         private int _cacheProgress;
         private int _executeProgress;
         private string _message;
         private int _progress;
         private int _progressPhases;
 
-        public InstallApplyingViewModel(BootstrapperApplication bootstrapper)
+        public ProgressViewModel(BootstrapperApplication bootstrapper, MainViewModel mainModel)
         {
             _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
+            _mainModel = mainModel ?? throw new ArgumentNullException(nameof(mainModel));
+
             _bootstrapper.ApplyPhaseCount += (sender, args) => _progressPhases = args.PhaseCount;
             _bootstrapper.CacheAcquireProgress += OnCacheAcquireProgress;
             _bootstrapper.CacheComplete += OnCacheComplete;
             _bootstrapper.ExecuteMsiMessage += OnExecuteMsiMessage;
             _bootstrapper.ExecuteProgress += OnExecuteProgress;
+            _bootstrapper.Progress += OnProgress;
+
+            _mainModel.PropertyChanged += OnMainModelPropertyChanged;
         }
 
         public string Message
@@ -34,12 +43,21 @@ namespace PicoTorrentBootstrapper.ViewModels
             set { _progress = value; OnPropertyChanged(nameof(Progress)); }
         }
 
+        public bool ProgressEnabled
+        {
+            get { return _mainModel.InstallState == InstallationState.Applying; }
+        }
+
         private void OnCacheAcquireProgress(object sender, CacheAcquireProgressEventArgs e)
         {
             lock (this)
             {
                 _cacheProgress = e.OverallPercentage;
                 Progress = (_cacheProgress + _executeProgress) / _progressPhases;
+
+                e.Result = _mainModel.Canceled
+                    ? Result.Cancel
+                    : Result.Ok;
             }
         }
 
@@ -56,7 +74,14 @@ namespace PicoTorrentBootstrapper.ViewModels
         {
             lock (this)
             {
-                Message = e.Message;
+                if (e.MessageType == InstallMessage.ActionStart)
+                {
+                    Message = e.Message;
+                }
+
+                e.Result = _mainModel.Canceled
+                    ? Result.Cancel
+                    : Result.Ok;
             }
         }
 
@@ -71,6 +96,28 @@ namespace PicoTorrentBootstrapper.ViewModels
                 {
                     _bootstrapper.Engine.SendEmbeddedProgress(e.ProgressPercentage, Progress);
                 }
+
+                e.Result = _mainModel.Canceled
+                    ? Result.Cancel
+                    : Result.Ok;
+            }
+        }
+
+        private void OnProgress(object sender, ProgressEventArgs e)
+        {
+            lock (this)
+            {
+                e.Result = _mainModel.Canceled
+                    ? Result.Cancel
+                    : Result.Ok;
+            }
+        }
+
+        private void OnMainModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "InstallState")
+            {
+                OnPropertyChanged("ProgressEnabled");
             }
         }
     }

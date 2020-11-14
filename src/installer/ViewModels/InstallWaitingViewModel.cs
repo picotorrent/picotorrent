@@ -8,13 +8,18 @@ namespace PicoTorrentBootstrapper.ViewModels
     {
         private readonly BootstrapperApplication _bootstrapper;
 
+        private bool _addWindowsFirewallException;
         private bool _downloadDependencies;
+        private bool _registerFileProtocolHandlers;
         private string _installLocation;
         private ICommand _changeInstallLocationCommand;
 
         public InstallWaitingViewModel(BootstrapperApplication bootstrapper)
         {
             _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
+
+            AddWindowsFirewallException = true;
+            RegisterFileProtocolHandlers = true;
             ShouldDownloadDependencies = true;
 
             if (_bootstrapper.Engine.StringVariables.Contains("InstallFolder"))
@@ -44,6 +49,28 @@ namespace PicoTorrentBootstrapper.ViewModels
                 _bootstrapper.Engine.StringVariables["InstallFolder"] = value;
                 _installLocation = value;
                 OnPropertyChanged(nameof(InstallLocation));
+            }
+        }
+
+        public bool AddWindowsFirewallException
+        {
+            get { return _addWindowsFirewallException; }
+            set
+            {
+                _bootstrapper.Engine.StringVariables["SKIP_FIREWALL_EXCEPTION"] = value ? "0" : "1";
+                _addWindowsFirewallException = value;
+                OnPropertyChanged(nameof(AddWindowsFirewallException));
+            }
+        }
+
+        public bool RegisterFileProtocolHandlers
+        {
+            get { return _registerFileProtocolHandlers; }
+            set
+            {
+                _bootstrapper.Engine.StringVariables["SKIP_ASSOCIATE_FILES"] = value ? "0" : "1";
+                _registerFileProtocolHandlers = value;
+                OnPropertyChanged(nameof(RegisterFileProtocolHandlers));
             }
         }
 

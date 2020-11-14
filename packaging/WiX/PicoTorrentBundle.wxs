@@ -80,7 +80,10 @@
             <MsiPackage Id="PicoTorrentPackage"
                         Compressed="yes"
                         SourceFile="$(var.PicoTorrentInstaller)">
-                <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]" />
+
+                <MsiProperty Name="INSTALLDIR"              Value="[InstallFolder]" />
+                <MsiProperty Name="SKIP_FIREWALL_EXCEPTION" Value="[SKIP_FIREWALL_EXCEPTION]" />
+                <MsiProperty Name="SKIP_ASSOCIATE_FILES"    Value="[SKIP_ASSOCIATE_FILES]" />
             </MsiPackage>
         </Chain>
     </Bundle>

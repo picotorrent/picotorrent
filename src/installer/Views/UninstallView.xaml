@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="PicoTorrentBootstrapper.Views.UninstallView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ContentControl Grid.Row="0" Content="{Binding UninstallView}" />
+
+        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="1" Margin="10,5,10,10">
+            <Button Padding="3" Margin="0,0,5,0">Cancel</Button>
+            <Button Padding="3" Command="{Binding InstallCommand}" IsEnabled="{Binding InstallEnabled}">Uninstall PicoTorrent</Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

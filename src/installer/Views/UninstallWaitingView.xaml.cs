@@ -3,11 +3,11 @@
 namespace PicoTorrentBootstrapper.Views
 {
     /// <summary>
-    /// Interaction logic for InstallView.xaml
+    /// Interaction logic for InstallAppliedView.xaml
     /// </summary>
-    public partial class InstallView : UserControl
+    public partial class UninstallWaitingView : UserControl
     {
-        public InstallView()
+        public UninstallWaitingView()
         {
             InitializeComponent();
         }

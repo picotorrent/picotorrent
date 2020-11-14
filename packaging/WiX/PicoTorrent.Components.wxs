@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:fw="http://schemas.microsoft.com/wix/FirewallExtension">
     <Fragment>
         <ComponentGroup Id="CG_MainApplication" Directory="INSTALLDIR">
             <Component Id="C_PicoTorrent.exe" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205">
@@ -9,87 +10,20 @@
                     Name="PicoTorrent.exe"
                     Source="$(var.PublishDirectory)\PicoTorrent.exe" />
 
-                <ProgId Id="PicoTorrent.Document" Icon="F_PicoTorrent.exe" IconIndex="0">
+                <!--ProgId Id="PicoTorrent.Document" Icon="F_PicoTorrent.exe" IconIndex="0">
                     <Extension Id="torrent">
                         <Verb Id="open" Command="Open with PicoTorrent" TargetFile="F_PicoTorrent.exe" Argument="&quot;%1&quot;" />
                         <MIME ContentType="application/x-bittorrent" Default="yes" />
                     </Extension>
-                </ProgId>
+                </ProgId-->
 
-                <!-- Register magnet: URI handler -->
-                <RegistryKey Root="HKCR" Key="magnet">
-                    <RegistryValue Type="string" Value="PicoTorent magnet link" />
-                    <RegistryValue Type="string" Name="URL Protocol" Value="" />
-
-                    <RegistryKey Key="DefaultIcon">
-                        <RegistryValue Type="string" Value="[INSTALLDIR]PicoTorrent.exe,0" />
-                    </RegistryKey>
-
-                    <RegistryKey Key="shell\open\command">
-                        <RegistryValue Type="string" Value="&quot;[INSTALLDIR]PicoTorrent.exe&quot; &quot;%1&quot;" />
-                    </RegistryKey>
-                </RegistryKey>
-
-                <RegistryKey Root="HKLM" Key="Software">
-                    <RegistryKey Key="Classes">
-                        <RegistryKey Key="Applications\PicoTorrent.exe">
-                            <RegistryKey Key="SupportedTypes">
-                                <RegistryValue Name=".torrent" Value="" Type="string" />
-                            </RegistryKey>
-
-                            <RegistryKey Key="shell\open">
-                                <RegistryValue Name="FriendlyAppName" Value="PicoTorrent" Type="string" />
-                            </RegistryKey>
-                        </RegistryKey>
-
-                        <RegistryKey Key="PicoTorrent.Document">
-                            <RegistryValue Name="FriendlyTypeName" Value="BitTorrent file" Type="string" />
-                        </RegistryKey>
-                    </RegistryKey>
-
-                    <RegistryKey Key="Microsoft\Windows\CurrentVersion\App Paths\PicoTorrent.exe">
-                        <RegistryValue Value="[#F_PicoTorrent.exe]" Type="string" />
-                    </RegistryKey>
-
-                    <RegistryKey Key="PicoTorrent">
-                        <RegistryValue Name="InstallDirectory" Value="[INSTALLDIR]" Type="string" />
-                        <RegistryValue Name="InstalledVersion" Value="$(var.Version)" Type="string" />
-
-                        <RegistryKey Key="Capabilities">
-                            <RegistryValue Name="ApplicationDescription" Value="A tiny, hackable BitTorrent client" Type="string" />
-                            <RegistryValue Name="ApplicationIcon" Value="[INSTALLDIR]PicoTorrent.exe,0" Type="string" />
-                            <RegistryValue Name="ApplicationName" Value="PicoTorrent" Type="string" />
-
-                            <RegistryKey Key="DefaultIcon">
-                                <RegistryValue Value="[INSTALLDIR]PicoTorrent.exe,0" Type="string" />
-                            </RegistryKey>
-
-                            <RegistryKey Key="FileAssociations">
-                                <RegistryValue Name=".torrent" Value="PicoTorrent.Document" Type="string" />
-                            </RegistryKey>
-
-                            <RegistryKey Key="MIMEAssociations">
-                                <RegistryValue Name="application/x-bittorrent" Value="PicoTorrent.Document" Type="string" />
-                            </RegistryKey>
-
-                            <RegistryKey Key="shell\open\command">
-                                <RegistryValue Value="&quot;[INSTALLDIR]PicoTorrent.exe&quot; &quot;%1&quot;" Type="string" />
-                            </RegistryKey>
-                        </RegistryKey>
-                    </RegistryKey>
-
-                    <RegistryKey Key="RegisteredApplications">
-                        <RegistryValue Name="PicoTorrent" Value="Software\PicoTorrent\Capabilities" Type="string" />
-                    </RegistryKey>
-                </RegistryKey>
-
-                <Shortcut Id="S_PicoTorrent"
+                <!--Shortcut Id="S_PicoTorrent"
                         Directory="ProgramMenuFolder"
                         Name="PicoTorrent"
                         WorkingDirectory="INSTALLDIR"
                         Icon="I_PicoTorrent.ico"
                         IconIndex="0"
-                        Advertise="yes" />
+                        Advertise="yes" /-->
             </Component>
 
             <Component Id="C_coredb.sqlite" Guid="8a2a5387-391b-4a72-9915-403441906b83">
@@ -111,6 +45,111 @@
                     KeyPath="yes"
                     Name="Plugin_Updater.dll"
                     Source="$(var.PublishDirectory)\Plugin_Updater.dll" />
+            </Component>
+        </ComponentGroup>
+
+        <ComponentGroup Id="CG_FirewallException" Directory="INSTALLDIR">
+            <Component Id="C_FirewallException_PicoTorrent" Guid="3971bf28-9c36-4df9-b1ef-b8ce16098593" KeyPath="yes">
+                <fw:FirewallException
+                    Id="FW_FirewallException_PicoTorrent"
+                    File="F_PicoTorrent.exe"
+                    Name="PicoTorrent: Allow TCP and UDP"
+                    Scope="any" />
+            </Component>
+        </ComponentGroup>
+
+        <ComponentGroup Id="CG_Associations" Directory="INSTALLDIR">
+            <Component Id="C_Associations" Guid="75bc84d7-6c0e-4962-a757-90c9199488dd" KeyPath="yes">
+                <RegistryKey Root="HKLM" Key="SOFTWARE">
+                    <RegistryKey Key="Classes">
+                        <!-- Register magnet link protocol -->
+                        <RegistryKey Key="magnet">
+                            <RegistryValue Type="string" Value="URL:BitTorrent magnet link" />
+
+                            <RegistryValue Type="string" Name="Content Type" Value="application/x-magnet" />
+                            <RegistryValue Type="string" Name="URL Protocol" Value="" />
+
+                            <RegistryKey Key="OpenWithProgIds">
+                                <RegistryValue Type="string" Name="PicoTorrent" Value="" />
+                            </RegistryKey>
+
+                            <RegistryKey Key="shell\open\command">
+                                <RegistryValue Type="string" Value="&quot;[INSTALLDIR]PicoTorrent.exe&quot; &quot;%1&quot;" />
+                            </RegistryKey>
+                        </RegistryKey>
+
+                        <!-- Register file type -->
+                        <RegistryKey Key=".torrent">
+                            <RegistryValue Type="string" Value="PicoTorrent" />
+                            <RegistryValue Type="string" Name="Content Type" Value="application/x-bittorrent" />
+
+                            <RegistryKey Key="OpenWithProgIds">
+                                <RegistryValue Type="string" Name="PicoTorrent-Torrent" Value="" />
+                            </RegistryKey>
+                        </RegistryKey>
+
+                        <!-- Register ProgId -->
+                        <RegistryKey Key="PicoTorrent">
+                            <RegistryValue Type="string" Value="PicoTorrent BitTorrent file" />
+
+                            <RegistryKey Key="DefaultIcon">
+                                <RegistryValue Type="string" Value="[INSTALLDIR]PicoTorrent.exe,1" />
+                            </RegistryKey>
+
+                            <RegistryKey Key="shell\open\command">
+                                <RegistryValue Type="string" Value="&quot;[INSTALLDIR]PicoTorrent.exe&quot; &quot;%1&quot;" />
+                            </RegistryKey>
+                        </RegistryKey>
+
+                        <!-- Application information -->
+                        <RegistryKey Key="Applications\PicoTorrent.exe">
+                            <RegistryKey Key="SupportedTypes">
+                                <RegistryValue Name=".torrent" Value="" Type="string" />
+                            </RegistryKey>
+
+                            <RegistryKey Key="shell\open">
+                                <RegistryValue Name="FriendlyAppName" Value="PicoTorrent" Type="string" />
+                            </RegistryKey>
+                        </RegistryKey>
+                    </RegistryKey>
+
+                    <!-- Software and capabilities -->
+                    <RegistryKey Key="PicoTorrent">
+                        <RegistryValue Name="InstallDirectory" Value="[INSTALLDIR]" Type="string" />
+
+                        <RegistryKey Key="Capabilities">
+                            <RegistryValue Name="ApplicationDescription" Value="A tiny, hackable BitTorrent client" Type="string" />
+                            <RegistryValue Name="ApplicationIcon" Value="[INSTALLDIR]PicoTorrent.exe,0" Type="string" />
+                            <RegistryValue Name="ApplicationName" Value="PicoTorrent" Type="string" />
+
+                            <RegistryKey Key="DefaultIcon">
+                                <RegistryValue Value="[INSTALLDIR]PicoTorrent.exe,0" Type="string" />
+                            </RegistryKey>
+
+                            <RegistryKey Key="FileAssociations">
+                                <RegistryValue Name=".torrent" Value="PicoTorrent" Type="string" />
+                            </RegistryKey>
+
+                            <RegistryKey Key="MIMEAssociations">
+                                <RegistryValue Name="application/x-bittorrent" Value="PicoTorrent" Type="string" />
+                            </RegistryKey>
+
+                            <RegistryKey Key="URLAssociations">
+                                <RegistryValue Type="string" Name="magnet" Value="PicoTorrent" />
+                            </RegistryKey>
+                        </RegistryKey>
+                    </RegistryKey>
+
+                    <!-- Registered applications -->
+                    <RegistryKey Key="RegisteredApplications">
+                        <RegistryValue Type="string" Name="PicoTorrent" Value="SOFTWARE\PicoTorrent\Capabilities" />
+                    </RegistryKey>
+
+                    <RegistryKey Key="Microsoft\Windows\CurrentVersion\App Paths\PicoTorrent.exe">
+                        <RegistryValue Type="string" Value="[INSTALLDIR]PicoTorrent.exe" />
+                        <RegistryValue Type="string" Name="SupportedProtocols" Value="magnet" />
+                    </RegistryKey>
+                </RegistryKey>
             </Component>
         </ComponentGroup>
     </Fragment>

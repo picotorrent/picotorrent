@@ -9,8 +9,8 @@ namespace PicoTorrentBootstrapper
     /// </summary>
     public class RelayCommand : ICommand
     {
-        private readonly Action<object> execute;
-        private readonly Predicate<object> canExecute;
+        private readonly Action<object> _execute;
+        private readonly Predicate<object> _canExecute;
 
         public RelayCommand(Action<object> execute)
             : this(execute, null)
@@ -19,8 +19,8 @@ namespace PicoTorrentBootstrapper
 
         public RelayCommand(Action<object> execute, Predicate<object> canExecute)
         {
-            this.execute = execute;
-            this.canExecute = canExecute;
+            _execute = execute;
+            _canExecute = canExecute;
         }
 
         public event EventHandler CanExecuteChanged
@@ -32,12 +32,10 @@ namespace PicoTorrentBootstrapper
         [DebuggerStepThrough]
         public bool CanExecute(object parameter)
         {
-            return this.canExecute == null ? true : this.canExecute(parameter);
+            return _canExecute == null
+                || _canExecute(parameter);
         }
 
-        public void Execute(object parameter)
-        {
-            this.execute(parameter);
-        }
+        public void Execute(object parameter) => _execute(parameter);
     }
 }

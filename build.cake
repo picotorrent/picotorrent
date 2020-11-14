@@ -11,11 +11,12 @@ var configuration = Argument("configuration", "Release");
 var platform      = Argument("platform", "x64");
 
 // Parameters
-var OutputDirectory    = Directory("./build-" + platform);
-var BuildDirectory     = OutputDirectory + Directory(configuration);
-var PackagesDirectory  = BuildDirectory + Directory("packages");
-var PublishDirectory   = BuildDirectory + Directory("publish");
-var ResourceDirectory  = Directory("./res");
+var OutputDirectory       = Directory("./build-" + platform);
+var BuildDirectory        = OutputDirectory + Directory(configuration);
+var PackagesDirectory     = BuildDirectory + Directory("packages");
+var PublishDirectory      = BuildDirectory + Directory("publish");
+var BootstrapperDirectory = Directory("./src/installer/bin") + Directory(configuration);
+var ResourceDirectory     = Directory("./res");
 
 var Version            = GitVersion();
 var Installer          = string.Format("PicoTorrent-{0}-{1}.msi", Version.SemVer, platform);
@@ -30,6 +31,7 @@ var SymbolsPackage     = string.Format("PicoTorrent-{0}-{1}.symbols.zip", Versio
 Task("Clean")
     .Does(() =>
 {
+    CleanDirectory(BootstrapperDirectory);
     CleanDirectory(BuildDirectory);
 });
 
@@ -130,13 +132,16 @@ Task("Build-Installer")
             { "ResourceDirectory", ResourceDirectory },
             { "Version", Version.MajorMinorPatch }
         },
-        Extensions = new [] { "WixUtilExtension" },
+        Extensions = new [] { "WixFirewallExtension", "WixUtilExtension" },
         OutputDirectory = BuildDirectory
     });
 
     WiXLight(objFiles, new LightSettings
     {
-        Extensions = new [] { "WixUtilExtension" },
+        ArgumentCustomization = args =>
+            args.Append("-sice:ICE38")
+                .Append("-sice:ICE91"),
+        Extensions = new [] { "WixFirewallExtension", "WixUtilExtension" },
         OutputFile = PackagesDirectory + File(Installer)
     });
 });

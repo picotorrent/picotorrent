@@ -56,15 +56,27 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Views\UninstallWaitingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\UninstallAppliedView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\InstallAppliedView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\UninstallView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\InstallWaitingView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\InstallApplyingView.xaml">
+    <Page Include="Views\ProgressView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -76,23 +88,32 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Models\DetectionState.cs" />
     <Compile Include="Models\InstallationState.cs" />
     <Compile Include="PropertyNotifyBase.cs" />
     <Compile Include="RelayCommand.cs" />
-    <Compile Include="ViewModels\InstallApplyingViewModel.cs" />
+    <Compile Include="ViewModels\ProgressViewModel.cs" />
     <Compile Include="ViewModels\InstallViewModel.cs" />
     <Compile Include="ViewModels\InstallWaitingViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\UninstallViewModel.cs" />
+    <Compile Include="Views\UninstallWaitingView.xaml.cs">
+      <DependentUpon>UninstallWaitingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\UninstallAppliedView.xaml.cs">
+      <DependentUpon>UninstallAppliedView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\InstallAppliedView.xaml.cs">
       <DependentUpon>InstallAppliedView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\UninstallView.xaml.cs">
+      <DependentUpon>UninstallView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InstallWaitingView.xaml.cs">
       <DependentUpon>InstallWaitingView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InstallApplyingView.xaml.cs">
-      <DependentUpon>InstallApplyingView.xaml</DependentUpon>
+    <Compile Include="Views\ProgressView.xaml.cs">
+      <DependentUpon>ProgressView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InstallView.xaml.cs">
       <DependentUpon>InstallView.xaml</DependentUpon>
@@ -132,6 +153,5 @@
   <ItemGroup>
     <Resource Include="Resources\logo.png" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

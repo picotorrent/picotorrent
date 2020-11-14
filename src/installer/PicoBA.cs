@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
@@ -15,21 +16,31 @@ namespace PicoTorrentBootstrapper
 
         protected override void Run()
         {
-            Dispatcher = Dispatcher.CurrentDispatcher;
-            View = new MainView();
+            try
+            {
+                Dispatcher = Dispatcher.CurrentDispatcher;
+                View = new MainView();
+                View.Closed += (sender, e) => Dispatcher.InvokeShutdown();
+                View.Loaded += (sender, e) => Engine.CloseSplashScreen();
 
-            Engine.Log(LogLevel.Verbose, "Launching PicoTorrent bootstrapper");
+                Engine.Log(LogLevel.Verbose, "Launching PicoTorrent bootstrapper");
 
-            var viewModel = new MainViewModel(this, new WindowInteropHelper(View).EnsureHandle());
-            View.Closed += (sender, e) => Dispatcher.InvokeShutdown();
-            View.DataContext = viewModel;
-            View.Show();
+                var viewModel = new MainViewModel(this, View);
+                View.Closed += (sender, e) => Dispatcher.InvokeShutdown();
+                View.DataContext = viewModel;
+                View.Show();
 
-            Engine.Detect();
+                Engine.Detect();
 
-            Dispatcher.Run();
+                Dispatcher.Run();
 
-            Engine.Quit(viewModel.Result);
+                Engine.Quit(viewModel.Result);
+            }
+            catch (Exception e)
+            {
+                Engine.Log(LogLevel.Error, $"Failed to run bootstrapper: {e}");
+                throw;
+            }
         }
     }
 }
