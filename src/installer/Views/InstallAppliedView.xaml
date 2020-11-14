@@ -4,8 +4,31 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="300">
     <Grid>
-        <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center">Installation successful!</TextBlock>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,10,0">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock TextAlignment="Center" BaselineOffset="89">Installation successful!</TextBlock>
+                    <TextBlock Foreground="Red">&#x1F496;</TextBlock>
+                </StackPanel>
+                <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap">
+                    Reach our awesome community through Discord or GitHub by following the buttons below!
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="10">
+                <TextBlock>
+                    <Hyperlink NavigateUri="https://discord.gg/tV3dFrv" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
+                        <Image Source="../Resources/discord.png" Width="48" Margin="5" />
+                    </Hyperlink>
+                </TextBlock>
+                <TextBlock>
+                    <Hyperlink NavigateUri="https://github.com/picotorrent/picotorrent" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
+                        <Image Source="../Resources/github.png" Width="48" Margin="5" />
+                    </Hyperlink>
+                </TextBlock>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </UserControl>

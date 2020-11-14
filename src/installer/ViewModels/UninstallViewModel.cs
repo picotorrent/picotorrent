@@ -4,6 +4,7 @@ using PicoTorrentBootstrapper.Views;
 using System;
 using System.ComponentModel;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace PicoTorrentBootstrapper.ViewModels
 {
@@ -11,6 +12,8 @@ namespace PicoTorrentBootstrapper.ViewModels
     {
         private readonly BootstrapperApplication _bootstrapper;
         private readonly MainViewModel _mainModel;
+
+        private ICommand _uninstallCommand;
 
         public UninstallViewModel(BootstrapperApplication bootstrapper, MainViewModel mainModel)
         {
@@ -20,6 +23,35 @@ namespace PicoTorrentBootstrapper.ViewModels
 
             ProgressModel = new ProgressViewModel(bootstrapper, mainModel);
         }
+
+        public ICommand CancelCommand => _mainModel.CancelCommand;
+
+        public bool CancelEnabled => _mainModel.CancelCommand.CanExecute(this);
+
+        public ICommand CloseCommand => _mainModel.CloseCommand;
+
+        public bool CloseEnabled => _mainModel.InstallState != InstallationState.Applying;
+
+        public ICommand UninstallCommand
+        {
+            get
+            {
+                if (_uninstallCommand == null)
+                {
+                    _uninstallCommand = new RelayCommand(
+                        param => { _mainModel.Plan(LaunchAction.Uninstall); },
+                        param => _mainModel.InstallState == InstallationState.Waiting);
+                }
+
+                return _uninstallCommand;
+            }
+        }
+
+        public bool UninstallEnabled => UninstallCommand.CanExecute(this);
+
+        public bool UninstallVisible =>
+            _mainModel.InstallState == InstallationState.Waiting
+            || _mainModel.InstallState == InstallationState.Applying;
 
         public ProgressViewModel ProgressModel { get; private set; }
 
@@ -54,7 +86,11 @@ namespace PicoTorrentBootstrapper.ViewModels
             if (e.PropertyName == "DetectState"
                 || e.PropertyName == "InstallState")
             {
+                OnPropertyChanged(nameof(CancelEnabled));
+                OnPropertyChanged(nameof(CloseEnabled));
+                OnPropertyChanged(nameof(UninstallEnabled));
                 OnPropertyChanged(nameof(UninstallView));
+                OnPropertyChanged(nameof(UninstallVisible));
             }
         }
     }

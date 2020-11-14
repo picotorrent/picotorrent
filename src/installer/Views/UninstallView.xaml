@@ -4,7 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="300">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -15,8 +19,26 @@
         <ContentControl Grid.Row="0" Content="{Binding UninstallView}" />
 
         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="1" Margin="10,5,10,10">
-            <Button Padding="3" Margin="0,0,5,0">Cancel</Button>
-            <Button Padding="3" Command="{Binding InstallCommand}" IsEnabled="{Binding InstallEnabled}">Uninstall PicoTorrent</Button>
+            <Button Padding="3"
+                    Margin="0,0,5,0"
+                    Command="{Binding CancelCommand}"
+                    Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                Cancel
+            </Button>
+
+            <Button Padding="3"
+                    Margin="0,0,5,0"
+                    Command="{Binding CloseCommand}"
+                    Visibility="{Binding CloseEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                Close
+            </Button>
+
+            <Button Padding="3"
+                    Command="{Binding UninstallCommand}"
+                    IsEnabled="{Binding UninstallEnabled}"
+                    Visibility="{Binding UninstallVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                Uninstall PicoTorrent
+            </Button>
         </StackPanel>
     </Grid>
 </UserControl>

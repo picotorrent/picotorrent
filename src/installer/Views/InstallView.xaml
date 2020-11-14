@@ -29,30 +29,30 @@
 
             <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal" Margin="10,5,10,10">
                 <Button Padding="3"
-                    Margin="0,0,5,0"
-                    Command="{Binding CancelCommand}"
-                    Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        Margin="0,0,5,0"
+                        Command="{Binding CancelCommand}"
+                        Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                     Cancel
                 </Button>
 
                 <Button Padding="3"
-                    Margin="0,0,5,0"
-                    Command="{Binding CloseCommand}"
-                    Visibility="{Binding CloseEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        Margin="0,0,5,0"
+                        Command="{Binding CloseCommand}"
+                        Visibility="{Binding CloseEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                     Close
                 </Button>
 
                 <Button Padding="3"
-                    Command="{Binding InstallCommand}"
-                    IsEnabled="{Binding InstallEnabled}"
-                    Visibility="{Binding InstallVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        Margin="0,0,5,0"
+                        Command="{Binding InstallCommand}"
+                        IsEnabled="{Binding InstallEnabled}"
+                        Visibility="{Binding InstallVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                     Install PicoTorrent
                 </Button>
 
                 <Button Padding="3"
-                    Margin="5,0,0,0"
-                    Command="{Binding LaunchCommand}"
-                    Visibility="{Binding LaunchEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        Command="{Binding LaunchCommand}"
+                        Visibility="{Binding LaunchEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                     Launch PicoTorrent
                 </Button>
             </StackPanel>
