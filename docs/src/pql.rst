@@ -8,7 +8,7 @@ The query language (called PQL) is somewhat based on SQL but is designed to
 make querying torrents easy.
 
 For example, to query all torrents larger than 1GB, the following query can
-be used;
+be used:
 
 .. code-block:: sql
 
@@ -40,9 +40,9 @@ These are the fields available to query.
 
 - :code:`name` (*string*) - the name of the torrent.
 - :code:`progress` (*number*) - the current progress.
-- :code:`size` (*number*) - the *total wanted* size - eg. total size excluding skipped files.
+- :code:`size` (*number*) - the *total wanted* size - e.g. total size excluding skipped files.
 - :code:`status` (*string*) - the current status. Possible values are :code:`error`,
-  :code:`downloading`, :code:`paused`, :code:`queued`, :code:`seeding`, :code:`uploading`
+  :code:`downloading`, :code:`paused`, :code:`queued`, :code:`seeding`, :code:`uploading`.
 
 
 Comparison operators
