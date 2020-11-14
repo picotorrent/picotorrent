@@ -10,20 +10,13 @@
                     Name="PicoTorrent.exe"
                     Source="$(var.PublishDirectory)\PicoTorrent.exe" />
 
-                <!--ProgId Id="PicoTorrent.Document" Icon="F_PicoTorrent.exe" IconIndex="0">
-                    <Extension Id="torrent">
-                        <Verb Id="open" Command="Open with PicoTorrent" TargetFile="F_PicoTorrent.exe" Argument="&quot;%1&quot;" />
-                        <MIME ContentType="application/x-bittorrent" Default="yes" />
-                    </Extension>
-                </ProgId-->
-
-                <!--Shortcut Id="S_PicoTorrent"
-                        Directory="ProgramMenuFolder"
-                        Name="PicoTorrent"
-                        WorkingDirectory="INSTALLDIR"
-                        Icon="I_PicoTorrent.ico"
-                        IconIndex="0"
-                        Advertise="yes" /-->
+                <Shortcut Id="S_PicoTorrent"
+                    Directory="ProgramMenuFolder"
+                    Name="PicoTorrent"
+                    WorkingDirectory="INSTALLDIR"
+                    Icon="I_PicoTorrent.ico"
+                    IconIndex="0"
+                    Advertise="yes" />
             </Component>
 
             <Component Id="C_coredb.sqlite" Guid="8a2a5387-391b-4a72-9915-403441906b83">
