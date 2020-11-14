@@ -59,7 +59,7 @@
     "proxy_peer_connections": "Käytä latausyhteyksille",
     "proxy_tracker_connections": "Käytä seurantapalvelimille",
     "connection": "Yhteys",
-    "the_transfers_path_cannot_be_empty": "Polku ei voi olla tyhjä",
+    "the_transfers_path_cannot_be_empty": "Polku ei voi olla tyhjä.",
     "none": "Ei käytössä",
     "http_with_credentials": "HTTP (käyttäjätunnuksilla)",
     "socks5_with_credentials": "SOCKS5 (käyttäjätunnuksilla)",

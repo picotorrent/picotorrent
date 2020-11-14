@@ -230,7 +230,7 @@
     "url_seeds_input_per_line": "URL seeds (één per regel)",
     "amp_help": "&Help",
     "torrent": "Torrent",
-    "browse": "...",
+    "browse": "…",
     "picotorrent_v_format": "PicoTorrent v{0}",
     "build_info_format": "Branch: {0}\nSHA1: {1}",
     "downloads": "Downloads",
@@ -289,5 +289,6 @@
     "eta_hms_format": "{0}u {1}m {2}s",
     "eta_ms_format": "{0}m {1}s",
     "eta_s_format": "{0}s",
-    "per_second_format": "{0}/s"
+    "per_second_format": "{0}/s",
+    "contents": "Inhoud"
 }

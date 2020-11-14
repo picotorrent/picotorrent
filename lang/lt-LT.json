@@ -74,7 +74,7 @@
     "dl_limit_help": "(KB/s, 0 – neriboti)",
     "ul_limit": "Riboti skleidimo greitį",
     "ul_limit_help": "(KB/s, 0 – neriboti)",
-    "max_connections": "Riboti užmezgamų ryšių kiekį ",
+    "max_connections": "Riboti užmezgamų ryšių kiekį",
     "max_connections_help": "(-1: neriboti)",
     "max_uploads": "Riboti skleidinių kiekį",
     "max_uploads_help": "(-1: neriboti)",
@@ -212,5 +212,6 @@
     "dl_s_ul_s": "Ats.: {0}/s, Išs.: {1}/s",
     "amp_details_panel": "&Išsamios informacijos polangis",
     "downloaded_size": "Parsiųsta",
-    "options": "Sąranka"
+    "options": "Sąranka",
+    "browse": "…"
 }
