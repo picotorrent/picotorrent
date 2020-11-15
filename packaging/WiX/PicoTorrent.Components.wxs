@@ -39,6 +39,12 @@
                     Name="Plugin_Updater.dll"
                     Source="$(var.PublishDirectory)\Plugin_Updater.dll" />
             </Component>
+
+            <Component Id="C_Registry" Guid="e0744554-572b-449a-9365-a8cc260239a9">
+                <RegistryKey Root="HKLM" Key="SOFTWARE\PicoTorrent">
+                    <RegistryValue Name="InstallDirectory" Value="[INSTALLDIR]" Type="string" />
+                </RegistryKey>
+            </Component>
         </ComponentGroup>
 
         <ComponentGroup Id="CG_FirewallException" Directory="INSTALLDIR">
@@ -77,7 +83,7 @@
                             <RegistryValue Type="string" Name="Content Type" Value="application/x-bittorrent" />
 
                             <RegistryKey Key="OpenWithProgIds">
-                                <RegistryValue Type="string" Name="PicoTorrent-Torrent" Value="" />
+                                <RegistryValue Type="string" Name="PicoTorrent" Value="" />
                             </RegistryKey>
                         </RegistryKey>
 
@@ -86,7 +92,7 @@
                             <RegistryValue Type="string" Value="PicoTorrent BitTorrent file" />
 
                             <RegistryKey Key="DefaultIcon">
-                                <RegistryValue Type="string" Value="[INSTALLDIR]PicoTorrent.exe,1" />
+                                <RegistryValue Type="string" Value="[INSTALLDIR]PicoTorrent.exe,0" />
                             </RegistryKey>
 
                             <RegistryKey Key="shell\open\command">
@@ -108,8 +114,6 @@
 
                     <!-- Software and capabilities -->
                     <RegistryKey Key="PicoTorrent">
-                        <RegistryValue Name="InstallDirectory" Value="[INSTALLDIR]" Type="string" />
-
                         <RegistryKey Key="Capabilities">
                             <RegistryValue Name="ApplicationDescription" Value="A tiny, hackable BitTorrent client" Type="string" />
                             <RegistryValue Name="ApplicationIcon" Value="[INSTALLDIR]PicoTorrent.exe,0" Type="string" />
@@ -127,7 +131,7 @@
                                 <RegistryValue Name="application/x-bittorrent" Value="PicoTorrent" Type="string" />
                             </RegistryKey>
 
-                            <RegistryKey Key="URLAssociations">
+                            <RegistryKey Key="UrlAssociations">
                                 <RegistryValue Type="string" Name="magnet" Value="PicoTorrent" />
                             </RegistryKey>
                         </RegistryKey>
