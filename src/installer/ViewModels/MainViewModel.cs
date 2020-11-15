@@ -100,15 +100,11 @@ namespace PicoTorrentBootstrapper.ViewModels
                 switch (DetectState)
                 {
                     case DetectionState.Absent:
-                        if (_installView == null)
-                        {
-                            _installView = new InstallView { DataContext = InstallModel };
-                        }
-
-                        return _installView;
+                        return new InstallView { DataContext = InstallModel };
 
                     case DetectionState.Newer:
                         break;
+
                     case DetectionState.Present:
                         return new UninstallView { DataContext = UninstallModel };
                 }
