@@ -38,19 +38,32 @@
             UpgradeCode="$(var.UpgradeCode)"
             Version="$(var.Version)">
 
+        <Variable Name="InstallFolder" Value="$(var.InstallFolder)"/>
+        <Variable Name="LaunchTarget" Value="[InstallFolder]PicoTorrent.exe"/>
+
         <util:ProductSearch Id="VCRedistProductSearch"
                             Result="version"
                             Variable="VCREDISTVERSION_SEARCH"
                             UpgradeCode="$(var.VCRedistUpgradeCode)" />
+
+        <!-- Search for previous InstallFolder-->
+        <util:RegistrySearch Id="PreviousInstallFolderSearch"
+                             Root="HKLM"
+                             Key="SOFTWARE\PicoTorrent"
+                             Value="InstallDirectory"
+                             Variable="PreviousInstallFolder"
+                             Win64="yes" />
+
+        <util:DirectorySearch Path="[PreviousInstallFolder]"
+                              Variable="InstallFolder"
+                              After="PreviousInstallFolderSearch"
+                              Condition="PreviousInstallFolder" />
 
         <BootstrapperApplicationRef Id="ManagedBootstrapperApplicationHost">
             <Payload SourceFile="../../src/installer/bin/Release/BootstrapperCore.config"/>
             <Payload SourceFile="../../src/installer/bin/Release/PicoTorrentBootstrapper.dll"/>
             <Payload SourceFile="../../src/installer/bin/Release/Microsoft.Deployment.WindowsInstaller.dll"/>
         </BootstrapperApplicationRef>
-
-        <Variable Name="InstallFolder" Value="$(var.InstallFolder)"/>
-        <Variable Name="LaunchTarget" Value="[InstallFolder]\PicoTorrent.exe"/>
 
         <Chain>
             <PackageGroupRef Id="NetFx45Redist" />

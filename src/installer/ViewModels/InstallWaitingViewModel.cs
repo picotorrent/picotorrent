@@ -80,6 +80,14 @@ namespace PicoTorrentBootstrapper.ViewModels
             set { _downloadDependencies = value; OnPropertyChanged(nameof(ShouldDownloadDependencies)); }
         }
 
+        public void Refresh()
+        {
+            if (_bootstrapper.Engine.StringVariables.Contains("InstallFolder"))
+            {
+                InstallLocation = _bootstrapper.Engine.FormatString(_bootstrapper.Engine.StringVariables["InstallFolder"]).TrimEnd('\\');
+            }
+        }
+
         private void ChangeInstallLocation()
         {
             var dlg = new System.Windows.Forms.FolderBrowserDialog

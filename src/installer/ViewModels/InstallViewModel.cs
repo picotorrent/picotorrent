@@ -14,6 +14,7 @@ namespace PicoTorrentBootstrapper.ViewModels
         private readonly BootstrapperApplication _bootstrapper;
         private readonly MainViewModel _mainModel;
 
+        private bool _isUpgrade;
         private ICommand _installCommand;
         private ICommand _launchCommand;
 
@@ -27,6 +28,7 @@ namespace PicoTorrentBootstrapper.ViewModels
 
             InstallWaitingModel = new InstallWaitingViewModel(bootstrapper);
             ProgressModel = new ProgressViewModel(bootstrapper, mainModel);
+            IsUpgrade = false;
         }
 
         public InstallWaitingViewModel InstallWaitingModel { get; private set; }
@@ -77,6 +79,12 @@ namespace PicoTorrentBootstrapper.ViewModels
             _mainModel.InstallState == InstallationState.Waiting
             || _mainModel.InstallState == InstallationState.Applying;
 
+        public bool IsUpgrade
+        {
+            get { return _isUpgrade; }
+            set { _isUpgrade = value; OnPropertyChanged(nameof(IsUpgrade)); }
+        }
+
         public bool LaunchEnabled => LaunchCommand.CanExecute(this);
 
         public Control InstallView
@@ -103,6 +111,11 @@ namespace PicoTorrentBootstrapper.ViewModels
 
                 return null;
             }
+        }
+
+        public void Refresh()
+        {
+            InstallWaitingModel.Refresh();
         }
 
         private void LaunchApplication()

@@ -1,4 +1,5 @@
-﻿using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+﻿using Microsoft.Deployment.WindowsInstaller;
+using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
 using PicoTorrentBootstrapper.Models;
 using PicoTorrentBootstrapper.Views;
 using System;
@@ -18,9 +19,9 @@ namespace PicoTorrentBootstrapper.ViewModels
         private InstallationState _installState;
 
         private bool _canceled;
+        private bool _downgrade;
         private ICommand _cancelCommand;
         private ICommand _closeCommand;
-        private InstallView _installView;
 
         public MainViewModel(BootstrapperApplication ba, Window mainWindow)
         {
@@ -30,6 +31,8 @@ namespace PicoTorrentBootstrapper.ViewModels
             _bootstrapper.ApplyComplete += OnApplyComplete;
             _bootstrapper.DetectBegin += OnDetectBegin;
             _bootstrapper.DetectComplete += OnDetectComplete;
+            _bootstrapper.DetectRelatedBundle += OnDetectRelatedBundle;
+            _bootstrapper.DetectRelatedMsiPackage += OnDetectRelatedMsiPackage;
             _bootstrapper.PlanComplete += OnPlanComplete;
 
             WindowHandle = new WindowInteropHelper(_mainWindow).EnsureHandle();
@@ -103,7 +106,7 @@ namespace PicoTorrentBootstrapper.ViewModels
                         return new InstallView { DataContext = InstallModel };
 
                     case DetectionState.Newer:
-                        break;
+                        return new NewerView { DataContext = new NewerViewModel(this) };
 
                     case DetectionState.Present:
                         return new UninstallView { DataContext = UninstallModel };
@@ -214,6 +217,11 @@ namespace PicoTorrentBootstrapper.ViewModels
             }
             else if (e.Status >= 0)
             {
+                if (_downgrade)
+                {
+                    DetectState = DetectionState.Newer;
+                }
+
                 if (_bootstrapper.Command.Display != Display.Full)
                 {
                     Plan(_bootstrapper.Command.Action);
@@ -227,6 +235,46 @@ namespace PicoTorrentBootstrapper.ViewModels
             // Force all commands to reevaluate CanExecute.
             // InvalidateRequerySuggested must be run on the UI thread.
             PicoBA.Dispatcher.Invoke(new Action(CommandManager.InvalidateRequerySuggested));
+
+            InstallModel.Refresh();
+        }
+
+        private void OnDetectRelatedBundle(object sender, DetectRelatedBundleEventArgs e)
+        {
+            if (e.Operation == RelatedOperation.Downgrade)
+            {
+                _downgrade = true;
+            }
+        }
+
+        private void OnDetectRelatedMsiPackage(object sender, DetectRelatedMsiPackageEventArgs e)
+        {
+            if (e.PackageId == "PicoTorrentPackage"
+                && e.Operation == RelatedOperation.MajorUpgrade)
+            {
+                var existingProduct = new ProductInstallation(e.ProductCode);
+
+                if (!existingProduct.IsInstalled)
+                {
+                    _bootstrapper.Engine.Log(LogLevel.Standard, $"Product not installed ({e.ProductCode})");
+                    return;
+                }
+
+                try
+                {
+                    var firewallFeature = existingProduct.GetFeatureState("F_Firewall");
+                    var associationFeature = existingProduct.GetFeatureState("F_Handlers");
+
+                    InstallModel.InstallWaitingModel.AddWindowsFirewallException = firewallFeature == Microsoft.Deployment.WindowsInstaller.InstallState.Local;
+                    InstallModel.InstallWaitingModel.RegisterFileProtocolHandlers = associationFeature == Microsoft.Deployment.WindowsInstaller.InstallState.Local;
+                }
+                catch (ArgumentException argException)
+                {
+                    _bootstrapper.Engine.Log(LogLevel.Error, $"Failed to get previous feature state: {argException}");
+                }
+
+                InstallModel.IsUpgrade = true;
+            }
         }
 
         private void OnPlanComplete(object sender, PlanCompleteEventArgs e)

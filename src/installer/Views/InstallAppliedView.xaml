@@ -9,7 +9,7 @@
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,10,0">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <TextBlock TextAlignment="Center" BaselineOffset="89">Installation successful!</TextBlock>
+                    <TextBlock TextAlignment="Center">Installation successful!</TextBlock>
                     <TextBlock Foreground="Red">&#x1F496;</TextBlock>
                 </StackPanel>
                 <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap">
