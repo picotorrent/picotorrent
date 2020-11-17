@@ -5,6 +5,7 @@
 <?if $(var.Platform) = "x64" ?>
     <?define InstallFolder = "[ProgramFiles64Folder]PicoTorrent" ?>
     <?define UpgradeCode = "58903cac-fb00-4335-8149-0e1177cc8cba" ?>
+    <?define Win64 = "yes" ?>
 
     <?define VCRedistDescription = "Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.27.29016" ?>
     <?define VCRedistHash = "75f1aee6dccf3d6e6ac49926563737005b93ba13" ?>
@@ -16,6 +17,7 @@
 <?else ?>
     <?define InstallFolder = "[ProgramFilesFolder]PicoTorrent" ?>
     <?define UpgradeCode = "08b52a3a-63eb-47c0-8a75-1df052a99042" ?>
+    <?define Win64 = "no" ?>
 
     <?define FindVCRedistKey = "Software\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" ?>
     <?define VCRedistDescription = "Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.27.29016" ?>
@@ -39,7 +41,8 @@
             Version="$(var.Version)">
 
         <Variable Name="InstallFolder" Value="$(var.InstallFolder)"/>
-        <Variable Name="LaunchTarget" Value="[InstallFolder]PicoTorrent.exe"/>
+        <Variable Name="LaunchTarget" Value="[InstallFolder]\PicoTorrent.exe"/>
+        <Variable Name="INSTALL_VCREDIST" Value="1" />
 
         <util:ProductSearch Id="VCRedistProductSearch"
                             Result="version"
@@ -52,7 +55,7 @@
                              Key="SOFTWARE\PicoTorrent"
                              Value="InstallDirectory"
                              Variable="PreviousInstallFolder"
-                             Win64="yes" />
+                             Win64="$(var.Win64)" />
 
         <util:DirectorySearch Path="[PreviousInstallFolder]"
                               Variable="InstallFolder"
@@ -75,6 +78,7 @@
                         DetectCondition="VCREDISTVERSION_SEARCH &gt;= v$(var.VCRedistVersion)"
                         DownloadUrl="$(var.VCRedistUrl)"
                         InstallCommand="/install /quiet /norestart"
+                        InstallCondition="INSTALL_VCREDIST = 1"
                         RepairCommand="/repair /quiet /norestart"
                         UninstallCommand="/uninstall /quiet /norestart"
                         PerMachine="yes"

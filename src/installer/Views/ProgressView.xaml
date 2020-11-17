@@ -4,19 +4,22 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="300">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Margin="10,5" Orientation="Horizontal" Grid.Row="1">
-            <TextBlock FontWeight="Bold" Margin="0,0,5,0">Status</TextBlock>
-            <TextBlock Text="{Binding Message}" TextTrimming="CharacterEllipsis"></TextBlock>
-        </StackPanel>
-        <ProgressBar Grid.Row="2" Margin="10,0,10,10" Height="20" Value="{Binding Progress}"></ProgressBar>
+        <Grid Grid.Row="0" Margin="10,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" FontWeight="Bold" Margin="0,0,5,0">Status</TextBlock>
+            <TextBlock Grid.Column="1" Text="{Binding Message}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"></TextBlock>
+        </Grid>
+        <ProgressBar Grid.Row="1" Margin="10,0,10,10" Height="20" Value="{Binding Progress}"></ProgressBar>
     </Grid>
 </UserControl>

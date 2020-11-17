@@ -7,13 +7,12 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="1*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="Auto" />
@@ -41,7 +40,7 @@
                     <CheckBox Margin="5" VerticalContentAlignment="Center" IsChecked="{Binding ShouldDownloadDependencies}">Download missing dependencies</CheckBox>
 
                     <TextBlock Grid.Column="1" FontSize="11" Margin="5" VerticalAlignment="Center">
-                        <Hyperlink NavigateUri="https://docs.picotorrent.org/en/master/installing.html#download-missing-dependencies">What's this?</Hyperlink>
+                        <Hyperlink NavigateUri="https://docs.picotorrent.org/en/master/installing.html#download-missing-dependencies" RequestNavigate="Hyperlink_RequestNavigate">What's this?</Hyperlink>
                     </TextBlock>
                 </Grid>
             </StackPanel>

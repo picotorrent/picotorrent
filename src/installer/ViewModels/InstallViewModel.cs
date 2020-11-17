@@ -126,6 +126,7 @@ namespace PicoTorrentBootstrapper.ViewModels
             _bootstrapper.Engine.Log(LogLevel.Standard, $"Launching target: {formatted}");
 
             PicoBA.View.Close();
+
             Process.Start(formatted);
         }
 

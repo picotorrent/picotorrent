@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Navigation;
 
@@ -18,7 +17,7 @@ namespace PicoTorrentBootstrapper.Views
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             var link = sender as Hyperlink;
-            Process.Start(link.NavigateUri.ToString());
+            PicoBA.LaunchProcess(link.NavigateUri.ToString());
         }
     }
 }

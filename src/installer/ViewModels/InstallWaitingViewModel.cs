@@ -22,10 +22,7 @@ namespace PicoTorrentBootstrapper.ViewModels
             RegisterFileProtocolHandlers = true;
             ShouldDownloadDependencies = true;
 
-            if (_bootstrapper.Engine.StringVariables.Contains("InstallFolder"))
-            {
-                _installLocation = _bootstrapper.Engine.FormatString(_bootstrapper.Engine.StringVariables["InstallFolder"]);
-            }
+            Refresh();
         }
 
         public ICommand ChangeInstallLocationCommand
@@ -77,7 +74,12 @@ namespace PicoTorrentBootstrapper.ViewModels
         public bool ShouldDownloadDependencies
         {
             get { return _downloadDependencies; }
-            set { _downloadDependencies = value; OnPropertyChanged(nameof(ShouldDownloadDependencies)); }
+            set
+            {
+                _bootstrapper.Engine.StringVariables["INSTALL_VCREDIST"] = value ? "1" : "0";
+                _downloadDependencies = value;
+                OnPropertyChanged(nameof(ShouldDownloadDependencies));
+            }
         }
 
         public void Refresh()

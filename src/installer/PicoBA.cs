@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
@@ -13,6 +15,25 @@ namespace PicoTorrentBootstrapper
         public static Dispatcher Dispatcher { get; private set; }
 
         public static Window View { get; private set; }
+
+        public static void LaunchProcess(string fileName)
+        {
+            var preCursor = View.Cursor;
+            View.Cursor = Cursors.Wait;
+
+            try
+            {
+                var proc = new Process();
+                proc.StartInfo.FileName = fileName;
+                proc.StartInfo.UseShellExecute = true;
+                proc.StartInfo.Verb = "open";
+                proc.Start();
+            }
+            finally
+            {
+                View.Cursor = preCursor;
+            }
+        }
 
         protected override void Run()
         {
