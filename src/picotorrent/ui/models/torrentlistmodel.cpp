@@ -277,7 +277,15 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
     }
 
     auto const& hash = m_filtered.at(row);
-    BitTorrent::TorrentHandle* torrent = m_torrents.at(hash);
+    auto findTorrent = m_torrents.find(hash);
+
+    if (findTorrent == m_torrents.end())
+    {
+        BOOST_LOG_TRIVIAL(warning) << "Could not find torrent by hash";
+        return;
+    }
+
+    BitTorrent::TorrentHandle* torrent = findTorrent->second;
     BitTorrent::TorrentStatus  status = torrent->Status();
 
     switch (col)
