@@ -270,6 +270,12 @@ unsigned int TorrentListModel::GetCount() const
 
 void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t col) const
 {
+    if (row >= m_filtered.size())
+    {
+        BOOST_LOG_TRIVIAL(warning) << "Row out of range (" << row << ", size: " << m_filtered.size() << ")";
+        return;
+    }
+
     auto const& hash = m_filtered.at(row);
     BitTorrent::TorrentHandle* torrent = m_torrents.at(hash);
     BitTorrent::TorrentStatus  status = torrent->Status();
