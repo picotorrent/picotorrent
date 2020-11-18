@@ -525,10 +525,11 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
 
         wxIcon ic = wxNullIcon;
         auto [name, _] = lbl->second;
+        auto labelIcon = m_labelsIcons.find(torrent->Label());
 
-        if (m_labelsIcons.find(torrent->Label()) != m_labelsIcons.end())
+        if (labelIcon != m_labelsIcons.end())
         {
-            ic = m_labelsIcons.at(torrent->Label());
+            ic = labelIcon->second;
         }
 
         variant << wxDataViewIconText(
