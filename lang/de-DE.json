@@ -47,7 +47,7 @@
     "proxy_tracker_connections": "Proxy-Trackerverbindungen",
     "connection": "Verbindung",
     "the_transfers_path_cannot_be_empty": "Der Speicherpfad für Übertragungen darf nicht leer sein.",
-    "none": "Keiner",
+    "none": "Keine",
     "http_with_credentials": "HTTP (mit Anmeldedaten)",
     "socks5_with_credentials": "SOCKS5 (mit Anmeldedaten)",
     "invalid_listen_port": "Ungültiger Listen-Port, muss zwischen 1024 und 65535 sein.",
@@ -161,7 +161,7 @@
     "info_hash": "Infohash",
     "fails": "Fehlschläge",
     "verified": "Verifziert",
-    "force_recheck": "Üperprüfung erzwingen",
+    "force_recheck": "Überprüfung erzwingen",
     "availability": "Verfügbarkeit",
     "total_active": "Insgesamt aktiv",
     "active_downloads": "Aktive Downloads",
@@ -291,5 +291,6 @@
     "eta_ms_format": "{0}min {1}s",
     "eta_s_format": "{0}s",
     "per_second_format": "{0}/s",
-    "eta_hms_format": "{0}h {1}m {2}s"
+    "eta_hms_format": "{0}h {1}m {2}s",
+    "amp_console": "&Konsole"
 }
