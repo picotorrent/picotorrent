@@ -1,5 +1,6 @@
 #include "torrentlistmodel.hpp"
 
+#include <boost/log/trivial.hpp>
 #include <fmt/format.h>
 
 #include "../../bittorrent/torrenthandle.hpp"
@@ -101,8 +102,18 @@ int TorrentListModel::Compare(const wxDataViewItem& item1, const wxDataViewItem&
     auto const& hash1 = m_filtered.at(GetRow(item1));
     auto const& hash2 = m_filtered.at(GetRow(item2));
 
-    auto const& lhs = m_torrents.at(hash1)->Status();
-    auto const& rhs = m_torrents.at(hash2)->Status();
+    auto const& lfind = m_torrents.find(hash1);
+    auto const& rfind = m_torrents.find(hash2);
+
+    if (lfind == m_torrents.end()
+        || rfind == m_torrents.end())
+    {
+        BOOST_LOG_TRIVIAL(warning) << "Invalid compare";
+        return 0;
+    }
+
+    auto const& lhs = lfind->second->Status();
+    auto const& rhs = rfind->second->Status();
 
     auto hashSort = [](bool ascending, TorrentStatus const& l, TorrentStatus const& r) -> int
     {
