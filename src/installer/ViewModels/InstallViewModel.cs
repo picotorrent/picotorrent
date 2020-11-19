@@ -26,10 +26,13 @@ namespace PicoTorrentBootstrapper.ViewModels
             _mainModel = mainModel ?? throw new ArgumentNullException(nameof(mainModel));
             _mainModel.PropertyChanged += OnMainModelPropertyChanged;
 
+            InstallFailedModel = new InstallFailedViewModel(bootstrapper);
             InstallWaitingModel = new InstallWaitingViewModel(bootstrapper);
             ProgressModel = new ProgressViewModel(bootstrapper, mainModel);
             IsUpgrade = false;
         }
+
+        public InstallFailedViewModel InstallFailedModel { get; private set; }
 
         public InstallWaitingViewModel InstallWaitingModel { get; private set; }
 
@@ -100,7 +103,7 @@ namespace PicoTorrentBootstrapper.ViewModels
                     case InstallationState.Detecting:
                         break;
                     case InstallationState.Failed:
-                        break;
+                        return new InstallFailedView { DataContext = InstallFailedModel };
                     case InstallationState.Initializing:
                         break;
                     case InstallationState.Planning:

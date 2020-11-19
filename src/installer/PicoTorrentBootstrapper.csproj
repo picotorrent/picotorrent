@@ -56,6 +56,10 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Views\InstallFailedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\NewerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -96,12 +100,16 @@
     <Compile Include="Models\InstallationState.cs" />
     <Compile Include="PropertyNotifyBase.cs" />
     <Compile Include="RelayCommand.cs" />
+    <Compile Include="ViewModels\InstallFailedViewModel.cs" />
     <Compile Include="ViewModels\NewerViewModel.cs" />
     <Compile Include="ViewModels\ProgressViewModel.cs" />
     <Compile Include="ViewModels\InstallViewModel.cs" />
     <Compile Include="ViewModels\InstallWaitingViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\UninstallViewModel.cs" />
+    <Compile Include="Views\InstallFailedView.xaml.cs">
+      <DependentUpon>InstallFailedView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\NewerView.xaml.cs">
       <DependentUpon>NewerView.xaml</DependentUpon>
     </Compile>
