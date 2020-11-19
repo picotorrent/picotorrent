@@ -1,5 +1,6 @@
 #include "torrentlistmodel.hpp"
 
+#include <boost/log/trivial.hpp>
 #include <fmt/format.h>
 
 #include "../../bittorrent/torrenthandle.hpp"
@@ -101,8 +102,18 @@ int TorrentListModel::Compare(const wxDataViewItem& item1, const wxDataViewItem&
     auto const& hash1 = m_filtered.at(GetRow(item1));
     auto const& hash2 = m_filtered.at(GetRow(item2));
 
-    auto const& lhs = m_torrents.at(hash1)->Status();
-    auto const& rhs = m_torrents.at(hash2)->Status();
+    auto const& lfind = m_torrents.find(hash1);
+    auto const& rfind = m_torrents.find(hash2);
+
+    if (lfind == m_torrents.end()
+        || rfind == m_torrents.end())
+    {
+        BOOST_LOG_TRIVIAL(warning) << "Invalid compare";
+        return 0;
+    }
+
+    auto const& lhs = lfind->second->Status();
+    auto const& rhs = rfind->second->Status();
 
     auto hashSort = [](bool ascending, TorrentStatus const& l, TorrentStatus const& r) -> int
     {
@@ -259,8 +270,22 @@ unsigned int TorrentListModel::GetCount() const
 
 void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t col) const
 {
+    if (row >= m_filtered.size())
+    {
+        BOOST_LOG_TRIVIAL(warning) << "Row out of range (" << row << ", size: " << m_filtered.size() << ")";
+        return;
+    }
+
     auto const& hash = m_filtered.at(row);
-    BitTorrent::TorrentHandle* torrent = m_torrents.at(hash);
+    auto findTorrent = m_torrents.find(hash);
+
+    if (findTorrent == m_torrents.end())
+    {
+        BOOST_LOG_TRIVIAL(warning) << "Could not find torrent by hash";
+        return;
+    }
+
+    BitTorrent::TorrentHandle* torrent = findTorrent->second;
     BitTorrent::TorrentStatus  status = torrent->Status();
 
     switch (col)
@@ -490,18 +515,21 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
     }
     case Columns::Label:
     {
-        if (torrent->Label() < 0)
+        auto lbl = m_labels.find(torrent->Label());
+
+        if (torrent->Label() < 0 || lbl == m_labels.end())
         {
             variant << wxDataViewIconText("-");
             break;
         }
 
         wxIcon ic = wxNullIcon;
-        auto [name, _] = m_labels.at(torrent->Label());
+        auto [name, _] = lbl->second;
+        auto labelIcon = m_labelsIcons.find(torrent->Label());
 
-        if (m_labelsIcons.find(torrent->Label()) != m_labelsIcons.end())
+        if (labelIcon != m_labelsIcons.end())
         {
-            ic = m_labelsIcons.at(torrent->Label());
+            ic = labelIcon->second;
         }
 
         variant << wxDataViewIconText(
