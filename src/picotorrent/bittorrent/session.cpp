@@ -121,8 +121,15 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
         outfaces << "," << li.address;
     }
 
-    settings.set_str(lt::settings_pack::dht_bootstrap_nodes, dhtNodes.str().substr(1));
-    settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
+    if (dhtNodes.str().size() > 0)
+    {
+        settings.set_str(lt::settings_pack::dht_bootstrap_nodes, dhtNodes.str().substr(1));
+    }
+
+    if (ifaces.str().size() > 0)
+    {
+        settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
+    }
 
     if (outfaces.str().size() > 0)
     {
