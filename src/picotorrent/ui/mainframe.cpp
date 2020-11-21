@@ -396,6 +396,33 @@ MainFrame::~MainFrame()
 
 void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
 {
+    bool didRemove = false;
+
+    for (auto it = params.begin(); it != params.end();)
+    {
+        lt::info_hash_t ih;
+        if (it->ti) { ih = it->ti->info_hashes(); }
+        else { ih = it->info_hashes; }
+
+        if (m_session->HasTorrent(ih))
+        {
+            it = params.erase(it);
+            didRemove = true;
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    if (didRemove)
+    {
+        auto err = i18n("some_torrents_already_in_session");
+        if (params.empty()) err = i18n("all_torrents_already_in_session");
+
+        wxMessageBox(err, "PicoTorrent", wxOK, this);
+    }
+
     if (params.empty())
     {
         return;
