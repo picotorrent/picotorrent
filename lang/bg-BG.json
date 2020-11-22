@@ -281,5 +281,7 @@
     "eta_hms_format": "{0} ч {1} м {2} с",
     "eta_ms_format": "{0} м {1} с",
     "eta_s_format": "{0} с",
-    "per_second_format": "{0}/с"
+    "per_second_format": "{0}/с",
+    "some_torrents_already_in_session": "Някои от торентите са вече добавени и ще бъдат пропуснати",
+    "all_torrents_already_in_session": "Всички торенти са вече добавени и ще бъдат пропуснати"
 }
