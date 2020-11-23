@@ -33,7 +33,12 @@ bool ApplicationOptionsConnection::OnExecute(const wxString&, const void *data, 
             }
 
             m_frame->MSWGetTaskBarButton()->Show();
-            m_frame->Restore();
+
+            if (m_frame->IsIconized())
+            {
+                m_frame->Restore();
+            }
+
             m_frame->Raise();
             m_frame->Show();
             m_frame->HandleParams(j["files"], j["magnet_links"]);

@@ -782,7 +782,12 @@ void MainFrame::OnIconize(wxIconizeEvent& ev)
 void MainFrame::OnTaskBarLeftDown(wxTaskBarIconEvent&)
 {
     this->MSWGetTaskBarButton()->Show();
-    this->Restore();
+
+    if (this->IsIconized())
+    {
+        this->Restore();
+    }
+
     this->Raise();
     this->Show();
     this->SendSizeEvent();
