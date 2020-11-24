@@ -20,7 +20,7 @@ Primitive types
 
 Compound types
 ^^^^^^^^^^^^^^
-- :code:`size` - consists of a :code:`number` folowed by zero or one of the `Units of size`_. See `Examples`_ section.
+- :code:`size` - consists of a :code:`number` followed by zero or one of the `Units of size`_. See `Examples`_ section.
 - :code:`speed` - consists of a :code:`number` and one of the `Units of speed`_. See `Examples`_ section.
 
 
@@ -50,7 +50,7 @@ The units are used unquoted and are case insensitive.
 
 Units of Size
 ^^^^^^^^^^^^^^
-Used in conjuction with the `size` field.
+Used in conjunction with the `size` field.
 
 - :code:`byte` - the default unit of size if not other unit provided;
 - :code:`kb` - Kilobytes;
@@ -59,7 +59,7 @@ Used in conjuction with the `size` field.
 
 Units of Speed
 ^^^^^^^^^^^^^^
-Used in conjecnction with `dl` and `ul` fields.
+Used in conjunction with `dl` and `ul` fields.
 
 - :code:`bps` - the default unit of speed if not other unit provided;
 - :code:`kbps` - Kilobyte per second;
@@ -69,7 +69,7 @@ Used in conjecnction with `dl` and `ul` fields.
 
 Operators
 ---------
-PQL supports a handfull of operators to make filtering flexible.
+PQL supports a handful of operators to make filtering flexible.
 
 Logical Operators
 ^^^^^^^^^^^^^^^^^
