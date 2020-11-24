@@ -93,12 +93,12 @@ In PQL you can use 6 comparison operators:
 Examples
 --------
 
-- Example of :code:`size` type with number equal to *5* and *size unit* equal to *kb*.
+- Example of :code:`size` type with `number` equal to *5* and *size unit* equal to *kb*.
   ::
 
     5kb
 
-- Example of :code:`speed` type with number equal to *10* and *speed unit* equal to *kbps*.
+- Example of :code:`speed` type with `number` equal to *10* and *speed unit* equal to *kbps*.
   ::
 
     10kpbs
