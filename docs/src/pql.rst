@@ -21,7 +21,7 @@ Types
 
 PQL supports two scalar primitive types:
 
-- :code:`integer` is a positive number of the set ℕ = {0, 1, 2, ...};
+- :code:`number` is a positive whole or float number;
 - :code:`string` is a doublequoted series of Unicode characters.
 
 
@@ -31,8 +31,8 @@ Fields
 These are the fields available to query:
 
 - :code:`name` (string) - the name of the torrent as seen in the UI;
-- :code:`progress` (integer) - the current progress in percents;
-- :code:`size` (integer) - the *total wanted* size - e.g. total size excluding skipped files. Folowed by one of the Units_;
+- :code:`progress` (number) - the current progress in percents;
+- :code:`size` (number) - the *total wanted* size - e.g. total size excluding skipped files. Folowed by one of the Units_;
 - :code:`status` (string) - the torrent current status. The possible values are:
 
   - :code:`downloading`;
