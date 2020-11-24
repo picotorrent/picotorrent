@@ -34,8 +34,10 @@ These are the fields available to query:
 - :code:`dl` (SPEED type) - the current downloading speed;
 - :code:`name` (STRING type) - the name of the torrent as seen in the UI;
 - :code:`progress` (NUMBER type) - the current progress in percents;
-- :code:`size` (SIZE type) - the *total wanted* size - e.g. total size excluding skipped files;
-- :code:`status` (`STRING` type) - the torrent current status. The possible values are:
+- :code:`size` (SIZE type) - the *total wanted* size - e.g. total size
+  excluding skipped files;
+- :code:`status` (`STRING` type) - the torrent current status.
+  This field accepts the following string values:
 
   - :code:`downloading`;
   - :code:`error`;
@@ -49,9 +51,11 @@ These are the fields available to query:
 
 Units
 -----
-PQL use the JEDEC Standard 100B.01 prefixes for its units of size and speed.
-The units are used unquoted and are case insensitive.
+PQL use the JEDEC Standard 100B.01 prefixes for its units of `size`_ and `speed`_.
+The units are used unquoted and are case insensitive. They can be separated
+with an optional white space from the numeric value.
 
+.. _`size`:
 .. _`size unit`:
 
 Units of Size
@@ -63,6 +67,7 @@ Used in conjunction with the `size` field.
 - :code:`mb` - Megabytes;
 - :code:`gb` - Gigabytes.
 
+.. _`speed`:
 .. _`speed unit`:
 
 Units of Speed
@@ -103,12 +108,14 @@ Examples
 
 .. _`type examples`:
 
-- Example of :code:`SIZE` type with :code:`NUMBER` value equal to *5* and *size unit* equal to *kb*.
+- Example of :code:`SIZE` type with :code:`NUMBER` value equal to *5*
+  and *size unit* equal to *kb*.
   ::
 
     5kb
 
-- Example of :code:`SPEED` type :code:`NUMBER` value equal to *10* and *speed unit* equal to *kbps*.
+- Example of :code:`SPEED` type :code:`NUMBER` value equal to *10*
+  and *speed unit* equal to *kbps*.
   ::
 
     10kpbs
