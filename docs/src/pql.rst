@@ -6,22 +6,24 @@ possible to filter the torrent list view in order to quickly show relevant
 information.
 
 The query language is somewhat based on SQL but is designed to make querying
-torrents easy. The building blocks of the language are the `Types`_, `Fields`_,
-`Units`_ and `Operators`_.
+torrents easy. The building blocks of PQL are `Types`_, `Fields`_, `Units`_
+and `Operators`_.
+
 
 Types
 -----
 PQL supports two primitive and two compound types:
 
-Primitive types
+Primitive Types
 ^^^^^^^^^^^^^^^
 - :code:`NUMBER` is a positive whole or float number;
 - :code:`STRING` is a doublequoted series of Unicode characters.
 
-Compound types
+Compound Types
 ^^^^^^^^^^^^^^
-- :code:`SIZE` - consists of a :code:`NUMBER` type value followed by zero or one `unit of size`_. See `size type example`_.
-- :code:`SPEED` - consists of a :code:`NUMBER` type value followed by zero or one `unit of speed`_. See `speed type example`_.
+- :code:`SIZE` - consists of a :code:`NUMBER` type value followed by zero or one `size unit`_. See `size type example`_.
+- :code:`SPEED` - consists of a :code:`NUMBER` type value followed by zero or one `speed unit`_. See `speed type example`_.
+
 
 Fields
 ------
@@ -48,7 +50,7 @@ Units
 PQL use the JEDEC Standard 100B.01 prefixes for its units of size and speed.
 The units are used unquoted and are case insensitive.
 
-.. _`unit of size`:
+.. _`size unit`:
 
 Units of Size
 ^^^^^^^^^^^^^^
@@ -59,7 +61,7 @@ Used in conjunction with the `size` field.
 - :code:`mb` - Megabytes;
 - :code:`gb` - Gigabytes.
 
-.. _`unit of speed`:
+.. _`speed unit`:
 
 Units of Speed
 ^^^^^^^^^^^^^^
@@ -99,14 +101,14 @@ Examples
 
 .. _`size type example`:
 
-- Example of :code:`size` type with *number* equal to *5* and *size unit* equal to *kb*.
+- Example of :code:`SIZE` type with :code:`NUMBER` value equal to *5* and *size unit* equal to *kb*.
   ::
 
     5kb
 
 .. _`speed type example`:
 
-- Example of :code:`speed` type with *number* equal to *10* and *speed unit* equal to *kbps*.
+- Example of :code:`SPEED` type :code:`NUMBER` value equal to *10* and *speed unit* equal to *kbps*.
   ::
 
     10kpbs
