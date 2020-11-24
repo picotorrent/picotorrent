@@ -44,16 +44,16 @@ These are the fields available to query:
   - :code:`paused`;
   - :code:`queued` - either for downloading or uploading;
   - :code:`seeding`;
-  - :code:`uploading`.
+  - :code:`uploading`;
 
-- :code:`ul` (SPEED type) - the current uploading speed;
+- :code:`ul` (SPEED type) - the current uploading speed.
 
 
 Units
 -----
 PQL use the JEDEC Standard 100B.01 prefixes for its units of `size`_ and `speed`_.
 The units are used unquoted and are case insensitive. They can be separated
-with an optional white space from the numeric value.
+with an optional white space from the preceding numeric value.
 
 .. _`size`:
 .. _`size unit`:
@@ -63,7 +63,7 @@ Units of Size
 Used in conjunction with the `size` field and together form
 :code:`SIZE` type.
 
-- :code:`byte` - the default unit of size if not other unit provided;
+- :code:`byte` - default unit of size if not other provided;
 - :code:`kb` - Kilobytes;
 - :code:`mb` - Megabytes;
 - :code:`gb` - Gigabytes.
@@ -76,10 +76,10 @@ Units of Speed
 Used in conjunction with `dl` and `ul` fields and together form
 :code:`SPEED` type.
 
-- :code:`bps` - the default unit of speed if not other unit provided;
-- :code:`kbps` - Kilobyte per second;
-- :code:`mbps` - megabyte per second;
-- :code:`gbps` - Gigabyte per second.
+- :code:`bps` - bytes per second, default unit of speed if not other provided;
+- :code:`kbps` - Kilobytes per second;
+- :code:`mbps` - megabytes per second;
+- :code:`gbps` - Gigabytes per second.
 
 
 Operators
@@ -97,11 +97,11 @@ Comparison Operators
 ^^^^^^^^^^^^^^^^^^^^
 In PQL you can use 6 comparison operators:
 
-- :code:`<` - less than.
-- :code:`<=` - less than or equal to.
-- :code:`>` - greater than.
-- :code:`>=` - greater than or equal to.
-- :code:`=` - equal.
+- :code:`<` - less than;
+- :code:`<=` - less than or equal to;
+- :code:`>` - greater than;
+- :code:`>=` - greater than or equal to;
+- :code:`=` - equal;
 - :code:`~` - like. Case insensitive string matching.
 
 
