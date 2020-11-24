@@ -36,7 +36,7 @@ These are the fields available to query:
 - :code:`progress` (NUMBER type) - the current progress in percents;
 - :code:`size` (SIZE type) - the *total wanted* size - e.g. total size
   excluding skipped files;
-- :code:`status` (`STRING` type) - the torrent current status.
+- :code:`status` (STRING type) - the torrent current status.
   This field accepts the following string values:
 
   - :code:`downloading`;
