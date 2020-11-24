@@ -292,5 +292,7 @@
     "per_second_format": "{0}/s",
     "amp_console": "&Console",
     "contents": "Détails",
-    "tier": "Palier"
+    "tier": "Palier",
+    "some_torrents_already_in_session": "Certains torrents existent déjà et ne seront pas ajoutés",
+    "all_torrents_already_in_session": "Tous les torrents existent déjà et ne seront pas ajoutés"
 }
