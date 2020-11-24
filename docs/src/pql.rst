@@ -72,13 +72,24 @@ There are two logical operators:
 Units
 -----
 
-PQL uses the JEDEC Standard 100B.01 prefixes for its units. The units are used
-unquoted and are case insensitive.
+PQL use the JEDEC Standard 100B.01 prefixes for its units of size and speed.
+The units are used unquoted and are case insensitive.
 
-- :code:`byte` - the default unit if not other unit provided;
-- :code:`KB` - kilobyte also used as `kb`;
-- :code:`MB` - megabyte also used as `mb`;
-- :code:`GB` - gigabyte also used as `gb`.
+Units of Size
+^^^^^^^^^^^^^^
+
+- :code:`byte` - the default unit of size if not other unit provided;
+- :code:`kb` - Kilobytes;
+- :code:`mb` - Megabytes;
+- :code:`gb` - Gigabytes.
+
+Units of Speed
+^^^^^^^^^^^^^^
+
+- :code:`bps` - the default unit of speed if not other unit provided;
+- :code:`kbps` - Kilobyte per second;
+- :code:`mbps` - megabyte per second;
+- :code:`gbps` - Gigabyte per second.
 
 
 Examples
