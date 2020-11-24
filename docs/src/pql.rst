@@ -60,7 +60,8 @@ with an optional white space from the numeric value.
 
 Units of Size
 ^^^^^^^^^^^^^^
-Used in conjunction with the `size` field.
+Used in conjunction with the `size` field and together form
+:code:`SIZE` type.
 
 - :code:`byte` - the default unit of size if not other unit provided;
 - :code:`kb` - Kilobytes;
@@ -72,7 +73,8 @@ Used in conjunction with the `size` field.
 
 Units of Speed
 ^^^^^^^^^^^^^^
-Used in conjunction with `dl` and `ul` fields.
+Used in conjunction with `dl` and `ul` fields and together form
+:code:`SPEED` type.
 
 - :code:`bps` - the default unit of speed if not other unit provided;
 - :code:`kbps` - Kilobyte per second;
