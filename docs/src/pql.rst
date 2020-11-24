@@ -15,25 +15,23 @@ PQL supports two primitive and two compound types:
 
 Primitive types
 ^^^^^^^^^^^^^^^
-- :code:`number` is a positive whole or float number;
-- :code:`string` is a doublequoted series of Unicode characters.
+- :code:`NUMBER` is a positive whole or float number;
+- :code:`STRING` is a doublequoted series of Unicode characters.
 
 Compound types
 ^^^^^^^^^^^^^^
-- :code:`size` - consists of a :code:`number` followed by zero or one of the `Units of size`_. See `Examples`_ section.
-- :code:`speed` - consists of a :code:`number` and one of the `Units of speed`_. See `Examples`_ section.
-
+- :code:`SIZE` - consists of a :code:`NUMBER` type value followed by zero or one `unit of size`_. See `size type example`_.
+- :code:`SPEED` - consists of a :code:`NUMBER` type value followed by zero or one `unit of speed`_. See `speed type example`_.
 
 Fields
 ------
 These are the fields available to query:
 
-- :code:`name` (`string` type) - the name of the torrent as seen in the UI;
-- :code:`progress` (`number` type) - the current progress in percents;
-- :code:`size` (`size` type) - the *total wanted* size - e.g. total size excluding skipped files;
-- :code:`dl` (`speed` type) - the current download speed;
-- :code:`ul` (`speed` type) - the current upload speed;
-- :code:`status` (string) - the torrent current status. The possible values are:
+- :code:`dl` (SPEED type) - the current download speed;
+- :code:`name` (STRING type) - the name of the torrent as seen in the UI;
+- :code:`progress` (NUMBER type) - the current progress in percents;
+- :code:`size` (SIZE type) - the *total wanted* size - e.g. total size excluding skipped files;
+- :code:`status` (`STRING` type) - the torrent current status. The possible values are:
 
   - :code:`downloading`;
   - :code:`error`;
@@ -42,11 +40,15 @@ These are the fields available to query:
   - :code:`seeding`;
   - :code:`uploading`.
 
+- :code:`ul` (SPEED type) - the current upload speed;
+
 
 Units
 -----
 PQL use the JEDEC Standard 100B.01 prefixes for its units of size and speed.
 The units are used unquoted and are case insensitive.
+
+.. _`unit of size`:
 
 Units of Size
 ^^^^^^^^^^^^^^
@@ -56,6 +58,8 @@ Used in conjunction with the `size` field.
 - :code:`kb` - Kilobytes;
 - :code:`mb` - Megabytes;
 - :code:`gb` - Gigabytes.
+
+.. _`unit of speed`:
 
 Units of Speed
 ^^^^^^^^^^^^^^
@@ -93,10 +97,14 @@ In PQL you can use 6 comparison operators:
 Examples
 --------
 
+.. _`size type example`:
+
 - Example of :code:`size` type with *number* equal to *5* and *size unit* equal to *kb*.
   ::
 
     5kb
+
+.. _`speed type example`:
 
 - Example of :code:`speed` type with *number* equal to *10* and *speed unit* equal to *kbps*.
   ::
