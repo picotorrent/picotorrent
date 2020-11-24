@@ -97,7 +97,7 @@ Units of Speed
 Examples
 --------
 
-- Torrents larger than 1GB.
+- Torrents *larger than 1GB*.
   ::
 
     size > 1gb
@@ -112,27 +112,27 @@ Examples
 
     name ~ "1080p" or name ~ "720p"
 
-- Torrents downloaded at 90% or more.
+- Torrents *downloaded at least to 90%*.
   ::
 
     progress >= 90
 
-- Torrents larger than 1GB that are currently downloading.
+- Torrents *larger than 1GB* that are *currently downloading*.
   ::
 
     size > 1gb and status = "downloading"
 
-- Torrents that are currently queued.
+- Torrents that are currently *queued*.
   ::
 
     status = "queued"
 
-- Torrents that are downloading with more than 10 mbps.
+- Torrents that are *downloading* with *more than 10 mbps*.
   ::
 
     dl > 10mpbs
 
-- Torrents that are uploading with more than 5 mbps.
+- Torrents that are *uploading* with *more than 5 mbps*.
   ::
 
     ul > 5mpbs
