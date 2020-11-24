@@ -32,7 +32,9 @@ These are the fields available to query:
 
 - :code:`name` (string) - the name of the torrent as seen in the UI;
 - :code:`progress` (number) - the current progress in percents;
-- :code:`size` (number) - the *total wanted* size - e.g. total size excluding skipped files. Folowed by one of the Units_;
+- :code:`size` (number) - the *total wanted* size - e.g. total size excluding skipped files. Folowed by zero or one of the `Units of Size`_;
+- :code:`dl` (number) - the current download speed. Folowed by zero or one of the `Units of Speed`_;
+- :code:`ul` (number) - the current upload speed. Folowed by zero or one of the `Units of Speed`_;
 - :code:`status` (string) - the torrent current status. The possible values are:
 
   - :code:`downloading`;
@@ -124,3 +126,13 @@ Examples
   ::
 
     status = "queued"
+
+- Torrents that are downloading with more than 10 mbps.
+  ::
+
+    dl > 10mpbs
+
+- Torrents that are uploading with more than 5 mbps.
+  ::
+
+    ul > 5mpbs
