@@ -80,6 +80,8 @@ The units are used unquoted and are case insensitive.
 Units of Size
 ^^^^^^^^^^^^^^
 
+Used in conjuction with the `size` field.
+
 - :code:`byte` - the default unit of size if not other unit provided;
 - :code:`kb` - Kilobytes;
 - :code:`mb` - Megabytes;
@@ -87,6 +89,8 @@ Units of Size
 
 Units of Speed
 ^^^^^^^^^^^^^^
+
+Used in conjecnction with `dl` and `ul` fields.
 
 - :code:`bps` - the default unit of speed if not other unit provided;
 - :code:`kbps` - Kilobyte per second;
