@@ -21,15 +21,17 @@ Primitive Types
 
 Compound Types
 ^^^^^^^^^^^^^^
-- :code:`SIZE` - consists of a :code:`NUMBER` type value followed by zero or one `size unit`_. See `size type example`_.
-- :code:`SPEED` - consists of a :code:`NUMBER` type value followed by zero or one `speed unit`_. See `speed type example`_.
+- :code:`SIZE` - consists of a :code:`NUMBER` type value followed by zero or
+  one `size unit`_. See `type examples`_;
+- :code:`SPEED` - consists of a :code:`NUMBER` type value followed by zero or
+  one `speed unit`_. See `type examples`_.
 
 
 Fields
 ------
 These are the fields available to query:
 
-- :code:`dl` (SPEED type) - the current download speed;
+- :code:`dl` (SPEED type) - the current downloading speed;
 - :code:`name` (STRING type) - the name of the torrent as seen in the UI;
 - :code:`progress` (NUMBER type) - the current progress in percents;
 - :code:`size` (SIZE type) - the *total wanted* size - e.g. total size excluding skipped files;
@@ -42,7 +44,7 @@ These are the fields available to query:
   - :code:`seeding`;
   - :code:`uploading`.
 
-- :code:`ul` (SPEED type) - the current upload speed;
+- :code:`ul` (SPEED type) - the current uploading speed;
 
 
 Units
@@ -99,14 +101,12 @@ In PQL you can use 6 comparison operators:
 Examples
 --------
 
-.. _`size type example`:
+.. _`type examples`:
 
 - Example of :code:`SIZE` type with :code:`NUMBER` value equal to *5* and *size unit* equal to *kb*.
   ::
 
     5kb
-
-.. _`speed type example`:
 
 - Example of :code:`SPEED` type :code:`NUMBER` value equal to *10* and *speed unit* equal to *kbps*.
   ::
