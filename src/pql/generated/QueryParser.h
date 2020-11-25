@@ -14,8 +14,8 @@ class  QueryParser : public antlr4::Parser {
 public:
   enum {
     AND = 1, OR = 2, EQ = 3, CONTAINS = 4, GT = 5, GTE = 6, LT = 7, LTE = 8, 
-    WS = 9, TYPE_INT = 10, TYPE_FLOAT = 11, TYPE_STRING = 12, UNIT_SIZE = 13, 
-    UNIT_SPEED = 14, ID = 15
+    WS = 9, INT = 10, FLOAT = 11, STRING = 12, UNIT_SIZE = 13, UNIT_SPEED = 14, 
+    ID = 15
   };
 
   enum {
@@ -160,12 +160,12 @@ public:
   public:
     ValueContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *TYPE_INT();
+    antlr4::tree::TerminalNode *INT();
     antlr4::tree::TerminalNode *WS();
     antlr4::tree::TerminalNode *UNIT_SIZE();
     antlr4::tree::TerminalNode *UNIT_SPEED();
-    antlr4::tree::TerminalNode *TYPE_FLOAT();
-    antlr4::tree::TerminalNode *TYPE_STRING();
+    antlr4::tree::TerminalNode *FLOAT();
+    antlr4::tree::TerminalNode *STRING();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

@@ -61,8 +61,8 @@ atn::ATN QueryLexer::_atn;
 std::vector<uint16_t> QueryLexer::_serializedATN;
 
 std::vector<std::string> QueryLexer::_ruleNames = {
-  "AND", "OR", "EQ", "CONTAINS", "GT", "GTE", "LT", "LTE", "WS", "TYPE_INT", 
-  "TYPE_FLOAT", "TYPE_STRING", "UNIT_SIZE", "UNIT_SPEED", "ID"
+  "AND", "OR", "EQ", "CONTAINS", "GT", "GTE", "LT", "LTE", "WS", "INT", 
+  "FLOAT", "STRING", "UNIT_SIZE", "UNIT_SPEED", "ID"
 };
 
 std::vector<std::string> QueryLexer::_channelNames = {
@@ -78,8 +78,8 @@ std::vector<std::string> QueryLexer::_literalNames = {
 };
 
 std::vector<std::string> QueryLexer::_symbolicNames = {
-  "", "AND", "OR", "EQ", "CONTAINS", "GT", "GTE", "LT", "LTE", "WS", "TYPE_INT", 
-  "TYPE_FLOAT", "TYPE_STRING", "UNIT_SIZE", "UNIT_SPEED", "ID"
+  "", "AND", "OR", "EQ", "CONTAINS", "GT", "GTE", "LT", "LTE", "WS", "INT", 
+  "FLOAT", "STRING", "UNIT_SIZE", "UNIT_SPEED", "ID"
 };
 
 dfa::Vocabulary QueryLexer::_vocabulary(_literalNames, _symbolicNames);

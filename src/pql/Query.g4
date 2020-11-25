@@ -12,9 +12,9 @@ LT          : '<';
 LTE         : '<=';
 
 WS          : [ \t\r\n]+ -> skip;
-TYPE_INT    : '-'? [0-9]+ ;
-TYPE_FLOAT  : '-'? [0-9]+'.'[0-9]+;
-TYPE_STRING : '"' .*? '"';
+INT         : '-'? [0-9]+ ;
+FLOAT       : '-'? [0-9]+'.'[0-9]+;
+STRING      : '"' .*? '"';
 
 UNIT_SIZE   : 'kb' | 'mb' | 'gb';
 UNIT_SPEED  : 'kbps' | 'mbps' | 'gbps';
@@ -47,9 +47,9 @@ oper
     ;
 
 value
-    : TYPE_INT WS? UNIT_SIZE?
-    | TYPE_INT WS? UNIT_SPEED?
-    | TYPE_FLOAT WS? UNIT_SIZE?
-    | TYPE_FLOAT WS? UNIT_SPEED?
-    | TYPE_STRING
+    : INT WS? UNIT_SIZE?
+    | INT WS? UNIT_SPEED?
+    | FLOAT WS? UNIT_SIZE?
+    | FLOAT WS? UNIT_SPEED?
+    | STRING
     ;
