@@ -1,24 +1,25 @@
 grammar Query;
 
-AND          : 'and';
-OR           :  'or';
+AND         : 'and';
+OR          : 'or';
 
 // comparison operators
-EQ           :  '=';
-CONTAINS     : '~';
-GT           : '>';
-GTE          : '>=';
-LT           : '<';
-LTE          : '<=';
+EQ          : '=';
+CONTAINS    : '~';
+GT          : '>';
+GTE         : '>=';
+LT          : '<';
+LTE         : '<=';
 
-WS           : [ \t\r\n]+ -> skip ;
-INT          : '-'? [0-9]+ ;
-FLOAT        : '-'? [0-9]+'.'[0-9]+ ;
-STRING       : '"' .*? '"' ;
+WS          : [ \t\r\n]+ -> skip;
+TYPE_INT    : '-'? [0-9]+ ;
+TYPE_FLOAT  : '-'? [0-9]+'.'[0-9]+;
+TYPE_STRING : '"' .*? '"';
 
-SIZE_SUFFIX  : 'kb'|'mb'|'gb' | 'kbps' | 'mbps' | 'gbps';
+UNIT_SIZE   : 'kb' | 'mb' | 'gb';
+UNIT_SPEED  : 'kbps' | 'mbps' | 'gbps';
 
-ID           : [a-zA-Z_] [a-zA-Z_0-9.]*;
+ID          : [a-zA-Z]+;
 
 filter
     : expression
@@ -46,7 +47,9 @@ oper
     ;
 
 value
-    : INT SIZE_SUFFIX?
-    | FLOAT
-    | STRING
+    : TYPE_INT WS? UNIT_SIZE?
+    | TYPE_INT WS? UNIT_SPEED?
+    | TYPE_FLOAT WS? UNIT_SIZE?
+    | TYPE_FLOAT WS? UNIT_SPEED?
+    | TYPE_STRING
     ;
