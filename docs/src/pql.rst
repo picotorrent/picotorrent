@@ -16,8 +16,8 @@ PQL supports two primitive and two compound types:
 
 Primitive Types
 ^^^^^^^^^^^^^^^
-- :code:`NUMBER` is a positive whole or float number;
-- :code:`STRING` is a doublequoted series of Unicode characters.
+- :code:`NUMBER` - signed integer or floating-point number;
+- :code:`STRING` - doublequoted series of Unicode characters.
 
 Compound Types
 ^^^^^^^^^^^^^^
