@@ -14,8 +14,8 @@ class  QueryLexer : public antlr4::Lexer {
 public:
   enum {
     AND = 1, OR = 2, EQ = 3, CONTAINS = 4, GT = 5, GTE = 6, LT = 7, LTE = 8, 
-    WS = 9, TYPE_INT = 10, TYPE_FLOAT = 11, TYPE_STRING = 12, UNIT_SIZE = 13, 
-    UNIT_SPEED = 14, ID = 15
+    WS = 9, INT = 10, FLOAT = 11, STRING = 12, UNIT_SIZE = 13, UNIT_SPEED = 14, 
+    ID = 15
   };
 
   explicit QueryLexer(antlr4::CharStream *input);

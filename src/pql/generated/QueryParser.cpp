@@ -453,8 +453,8 @@ QueryParser::ValueContext::ValueContext(ParserRuleContext *parent, size_t invoki
   : ParserRuleContext(parent, invokingState) {
 }
 
-tree::TerminalNode* QueryParser::ValueContext::TYPE_INT() {
-  return getToken(QueryParser::TYPE_INT, 0);
+tree::TerminalNode* QueryParser::ValueContext::INT() {
+  return getToken(QueryParser::INT, 0);
 }
 
 tree::TerminalNode* QueryParser::ValueContext::WS() {
@@ -469,12 +469,12 @@ tree::TerminalNode* QueryParser::ValueContext::UNIT_SPEED() {
   return getToken(QueryParser::UNIT_SPEED, 0);
 }
 
-tree::TerminalNode* QueryParser::ValueContext::TYPE_FLOAT() {
-  return getToken(QueryParser::TYPE_FLOAT, 0);
+tree::TerminalNode* QueryParser::ValueContext::FLOAT() {
+  return getToken(QueryParser::FLOAT, 0);
 }
 
-tree::TerminalNode* QueryParser::ValueContext::TYPE_STRING() {
-  return getToken(QueryParser::TYPE_STRING, 0);
+tree::TerminalNode* QueryParser::ValueContext::STRING() {
+  return getToken(QueryParser::STRING, 0);
 }
 
 
@@ -508,7 +508,7 @@ QueryParser::ValueContext* QueryParser::value() {
     case 1: {
       enterOuterAlt(_localctx, 1);
       setState(36);
-      match(QueryParser::TYPE_INT);
+      match(QueryParser::INT);
       setState(38);
       _errHandler->sync(this);
 
@@ -541,7 +541,7 @@ QueryParser::ValueContext* QueryParser::value() {
     case 2: {
       enterOuterAlt(_localctx, 2);
       setState(43);
-      match(QueryParser::TYPE_INT);
+      match(QueryParser::INT);
       setState(45);
       _errHandler->sync(this);
 
@@ -574,7 +574,7 @@ QueryParser::ValueContext* QueryParser::value() {
     case 3: {
       enterOuterAlt(_localctx, 3);
       setState(50);
-      match(QueryParser::TYPE_FLOAT);
+      match(QueryParser::FLOAT);
       setState(52);
       _errHandler->sync(this);
 
@@ -607,7 +607,7 @@ QueryParser::ValueContext* QueryParser::value() {
     case 4: {
       enterOuterAlt(_localctx, 4);
       setState(57);
-      match(QueryParser::TYPE_FLOAT);
+      match(QueryParser::FLOAT);
       setState(59);
       _errHandler->sync(this);
 
@@ -640,7 +640,7 @@ QueryParser::ValueContext* QueryParser::value() {
     case 5: {
       enterOuterAlt(_localctx, 5);
       setState(64);
-      match(QueryParser::TYPE_STRING);
+      match(QueryParser::STRING);
       break;
     }
 
@@ -696,8 +696,8 @@ std::vector<std::string> QueryParser::_literalNames = {
 };
 
 std::vector<std::string> QueryParser::_symbolicNames = {
-  "", "AND", "OR", "EQ", "CONTAINS", "GT", "GTE", "LT", "LTE", "WS", "TYPE_INT", 
-  "TYPE_FLOAT", "TYPE_STRING", "UNIT_SIZE", "UNIT_SPEED", "ID"
+  "", "AND", "OR", "EQ", "CONTAINS", "GT", "GTE", "LT", "LTE", "WS", "INT", 
+  "FLOAT", "STRING", "UNIT_SIZE", "UNIT_SPEED", "ID"
 };
 
 dfa::Vocabulary QueryParser::_vocabulary(_literalNames, _symbolicNames);
