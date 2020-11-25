@@ -14,6 +14,16 @@ using pt::BitTorrent::TorrentHandle;
 using pt::BitTorrent::TorrentStatus;
 using pt::UI::Filters::PqlTorrentFilter;
 
+static std::map<std::string, std::function<bool(antlrcpp::Any const&)>> FieldValidators =
+{
+    { "dl",       [](antlrcpp::Any const& v) { return v.is<int64_t>() || v.is<float>(); } },
+    { "ul",       [](antlrcpp::Any const& v) { return v.is<int64_t>() || v.is<float>(); } },
+    { "progress", [](antlrcpp::Any const& v) { return v.is<int64_t>() || v.is<float>(); } },
+    { "size",     [](antlrcpp::Any const& v) { return v.is<int64_t>() || v.is<float>(); } },
+    { "name",     [](antlrcpp::Any const& v) { return v.is<std::string>(); } },
+    { "status",   [](antlrcpp::Any const& v) { return v.is<std::string>(); } },
+};
+
 typedef std::function<bool(TorrentStatus const&)> FilterFunc;
 
 class ExceptionErrorListener : public antlr4::BaseErrorListener
@@ -153,17 +163,35 @@ public:
         Operator oper = this->visit(ctx->oper());
         antlrcpp::Any value = this->visit(ctx->value());
 
-        if ((ref == "dl" || ref == "ul") && (value.is<int64_t>() || value.is<float>()))
+        auto field = FieldValidators.find(ref);
+
+        if (field == FieldValidators.end())
+        {
+            throw QueryException(
+                "Unknown field: '" + ref + "'",
+                ctx->reference()->getStart()->getLine(),
+                ctx->reference()->getStart()->getCharPositionInLine());
+        }
+
+        if (!field->second(value))
+        {
+            throw QueryException(
+                "Invalid data type for field '" + ref + "'",
+                ctx->value()->getStart()->getLine(),
+                ctx->value()->getStart()->getCharPositionInLine());
+        }
+
+        if (ref == "dl" || ref == "ul")
         {
             float term = value.is<float>()
                 ? value.as<float>()
-                : (float)value.as<int64_t>();
+                : static_cast<float>(value.as<int64_t>());
 
             if (ref == "dl") return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.downloadPayloadRate, term, oper); });
             if (ref == "ul") return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.uploadPayloadRate, term, oper); });
         }
 
-        if (ref == "name" && value.is<std::string>())
+        if (ref == "name")
         {
             std::string term = value;
 
@@ -179,22 +207,25 @@ public:
             return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.name, term, oper); });
         }
 
-        if (ref == "progress" && (value.is<int64_t>() || value.is<float>()))
+        if (ref == "progress")
         {
             float term = value.is<float>()
                 ? value.as<float>()
-                : (float)value.as<int64_t>();
+                : static_cast<float>(value.as<int64_t>());
 
             return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.progress * 100, term, oper); });
         }
 
-        if (ref == "size" && value.is<int64_t>())
+        if (ref == "size")
         {
-            int64_t term = value;
+            float term = value.is<float>()
+                ? value.as<float>()
+                : static_cast<float>(value.as<int64_t>());
+
             return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.totalWanted, term, oper); });
         }
 
-        if (ref == "status" && value.is<std::string>())
+        if (ref == "status")
         {
             std::string term = value;
 
@@ -252,23 +283,23 @@ public:
 
     virtual antlrcpp::Any visitValue(pt::PQL::QueryParser::ValueContext* ctx) override
     {
+        long long multiplier = 1;
+
+        if (auto suffix = ctx->SIZE_SUFFIX())
+        {
+            std::string suffixString = suffix->getText();
+            if (suffixString == "kb" || suffixString == "kbps") { multiplier = 1024; }
+            if (suffixString == "mb" || suffixString == "mbps") { multiplier = 1048576; }
+            if (suffixString == "gb" || suffixString == "gbps") { multiplier = 1073741824; }
+        }
+
         if (auto val = ctx->FLOAT())
         {
-            return std::stof(val->getText());
+            return std::stof(val->getText()) * multiplier;
         }
 
         if (auto val = ctx->INT())
         {
-            long long multiplier = 1;
-
-            if (auto suffix = ctx->SIZE_SUFFIX())
-            {
-                std::string suffixString = suffix->getText();
-                if (suffixString == "kb" || suffixString == "kbps") { multiplier = 1024; }
-                if (suffixString == "mb" || suffixString == "mbps") { multiplier = 1048576; }
-                if (suffixString == "gb" || suffixString == "gbps") { multiplier = 1073741824; }
-            }
-
             return std::stoll(val->getText()) * multiplier;
         }
 
