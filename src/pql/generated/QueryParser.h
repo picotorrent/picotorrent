@@ -1,5 +1,5 @@
 
-// Generated from .\Query.g4 by ANTLR 4.8
+// Generated from .\Query.g4 by ANTLR 4.9
 
 #pragma once
 
@@ -14,7 +14,8 @@ class  QueryParser : public antlr4::Parser {
 public:
   enum {
     AND = 1, OR = 2, EQ = 3, CONTAINS = 4, GT = 5, GTE = 6, LT = 7, LTE = 8, 
-    WS = 9, INT = 10, FLOAT = 11, STRING = 12, SIZE_SUFFIX = 13, ID = 14
+    WS = 9, TYPE_INT = 10, TYPE_FLOAT = 11, TYPE_STRING = 12, UNIT_SIZE = 13, 
+    UNIT_SPEED = 14, ID = 15
   };
 
   enum {
@@ -22,7 +23,7 @@ public:
     RuleOper = 4, RuleValue = 5
   };
 
-  QueryParser(antlr4::TokenStream *input);
+  explicit QueryParser(antlr4::TokenStream *input);
   ~QueryParser();
 
   virtual std::string getGrammarFileName() const override;
@@ -159,10 +160,12 @@ public:
   public:
     ValueContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *INT();
-    antlr4::tree::TerminalNode *SIZE_SUFFIX();
-    antlr4::tree::TerminalNode *FLOAT();
-    antlr4::tree::TerminalNode *STRING();
+    antlr4::tree::TerminalNode *TYPE_INT();
+    antlr4::tree::TerminalNode *WS();
+    antlr4::tree::TerminalNode *UNIT_SIZE();
+    antlr4::tree::TerminalNode *UNIT_SPEED();
+    antlr4::tree::TerminalNode *TYPE_FLOAT();
+    antlr4::tree::TerminalNode *TYPE_STRING();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
