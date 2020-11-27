@@ -63,7 +63,7 @@ Units of Size
 Used in conjunction with the `size` field and together form
 :code:`SIZE` type.
 
-- :code:`byte` - default unit of size if not other provided;
+- :code:`b` - bytes, default unit of size if not other provided;
 - :code:`kb` - Kilobytes;
 - :code:`mb` - Megabytes;
 - :code:`gb` - Gigabytes.
