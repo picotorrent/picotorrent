@@ -290,5 +290,7 @@
     "per_second_format": "{0}/d",
     "contents": "Konten",
     "tier": "Tingkat",
-    "amp_console": "&Konsol"
+    "amp_console": "&Konsol",
+    "some_torrents_already_in_session": "Beberapa torrent sudah ditambahkan dan akan dilewati",
+    "all_torrents_already_in_session": "Semua torrent sudah ditambahkan dan akan dilewati"
 }
