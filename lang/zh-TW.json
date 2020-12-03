@@ -1,1 +1,24 @@
-{}
+{
+    "name": "名稱",
+    "progress": "進度",
+    "remove": "刪除",
+    "size": "大小",
+    "status": "狀態",
+    "eta": "剩餘時間",
+    "dl": "下載速度",
+    "ul": "上傳速度",
+    "torrent_finished": "完成下載",
+    "pause": "暫停",
+    "resume": "繼續",
+    "resume_force": "繼續(強迫)",
+    "move": "移動",
+    "remove_torrent": "刪除種子",
+    "remove_torrent_and_files": "刪除種子和檔案",
+    "copy_info_hash": "複製雜湊信息",
+    "amp_file": "&檔案",
+    "amp_add_torrent": "&添加種子",
+    "amp_exit": "&退出",
+    "amp_view": "&查看",
+    "amp_extensions": "&擴充",
+    "open_in_explorer": "在檔案總管中打開"
+}

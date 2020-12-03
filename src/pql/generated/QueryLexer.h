@@ -1,5 +1,5 @@
 
-// Generated from .\Query.g4 by ANTLR 4.8
+// Generated from .\Query.g4 by ANTLR 4.9
 
 #pragma once
 
@@ -14,10 +14,11 @@ class  QueryLexer : public antlr4::Lexer {
 public:
   enum {
     AND = 1, OR = 2, EQ = 3, CONTAINS = 4, GT = 5, GTE = 6, LT = 7, LTE = 8, 
-    WS = 9, INT = 10, FLOAT = 11, STRING = 12, SIZE_SUFFIX = 13, ID = 14
+    WS = 9, INT = 10, FLOAT = 11, STRING = 12, UNIT_SIZE = 13, UNIT_SPEED = 14, 
+    ID = 15
   };
 
-  QueryLexer(antlr4::CharStream *input);
+  explicit QueryLexer(antlr4::CharStream *input);
   ~QueryLexer();
 
   virtual std::string getGrammarFileName() const override;
