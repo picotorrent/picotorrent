@@ -113,7 +113,7 @@ std::wstring Translator::Translate(std::string const& key)
     auto lang = m_languages.find(m_selectedLocale);
 
     // Didn't find our selected language, try with 'en' instead
-    if (lang == m_languages.end()) { lang = m_languages.find("en"); }
+    if (lang == m_languages.end()) { lang = m_languages.find("en-US"); }
 
     // Didn't find 'en', return the key
     if (lang == m_languages.end()) { return Utils::toStdWString(key); }
