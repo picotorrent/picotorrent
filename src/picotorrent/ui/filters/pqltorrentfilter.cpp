@@ -1,5 +1,7 @@
 #include "pqltorrentfilter.hpp"
 
+#include <optional>
+
 #include <boost/log/trivial.hpp>
 
 #include <antlr4-runtime.h>
@@ -14,14 +16,23 @@ using pt::BitTorrent::TorrentHandle;
 using pt::BitTorrent::TorrentStatus;
 using pt::UI::Filters::PqlTorrentFilter;
 
-static std::map<std::string, std::function<bool(antlrcpp::Any const&)>> FieldValidators =
+struct Value
 {
-    { "dl",       [](antlrcpp::Any const& v) { return v.is<int64_t>() || v.is<float>(); } },
-    { "ul",       [](antlrcpp::Any const& v) { return v.is<int64_t>() || v.is<float>(); } },
-    { "progress", [](antlrcpp::Any const& v) { return v.is<int64_t>() || v.is<float>(); } },
-    { "size",     [](antlrcpp::Any const& v) { return v.is<int64_t>() || v.is<float>(); } },
-    { "name",     [](antlrcpp::Any const& v) { return v.is<std::string>(); } },
-    { "status",   [](antlrcpp::Any const& v) { return v.is<std::string>(); } },
+    std::optional<int64_t> value_int;
+    std::optional<float> value_float;
+    std::optional<std::string> value_string;
+    std::optional<std::string> suffix_size;
+    std::optional<std::string> suffix_speed;
+};
+
+static std::map<std::string, std::function<bool(Value const&)>> FieldValidators =
+{
+    { "dl",       [](Value const& v) { return v.value_int.has_value() || v.value_float.has_value(); } },
+    { "ul",       [](Value const& v) { return v.value_int.has_value() || v.value_float.has_value(); } },
+    { "progress", [](Value const& v) { return v.value_int.has_value() || v.value_float.has_value(); } },
+    { "size",     [](Value const& v) { return v.value_int.has_value() || v.value_float.has_value(); } },
+    { "name",     [](Value const& v) { return v.value_string.has_value(); } },
+    { "status",   [](Value const& v) { return v.value_string.has_value(); } },
 };
 
 typedef std::function<bool(TorrentStatus const&)> FilterFunc;
@@ -161,7 +172,7 @@ public:
     {
         std::string ref = this->visit(ctx->reference());
         Operator oper = this->visit(ctx->oper());
-        antlrcpp::Any value = this->visit(ctx->value());
+        Value value = this->visit(ctx->value());
 
         auto field = FieldValidators.find(ref);
 
@@ -183,9 +194,17 @@ public:
 
         if (ref == "dl" || ref == "ul")
         {
-            float term = value.is<float>()
-                ? value.as<float>()
-                : static_cast<float>(value.as<int64_t>());
+            float term = value.value_float.has_value()
+                ? value.value_float.value()
+                : static_cast<float>(value.value_int.value());
+
+            if (value.suffix_speed.has_value())
+            {
+                std::string suffix = value.suffix_size.value();
+                if (suffix == "kbps") { term *= 1024; }
+                if (suffix == "mbps") { term *= 1048576; }
+                if (suffix == "gbps") { term *= 1073741824; }
+            }
 
             if (ref == "dl") return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.downloadPayloadRate, term, oper); });
             if (ref == "ul") return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.uploadPayloadRate, term, oper); });
@@ -193,7 +212,7 @@ public:
 
         if (ref == "name")
         {
-            std::string term = value;
+            std::string term = value.value_string.value();
 
             if (oper == Operator::CONTAINS)
             {
@@ -209,25 +228,33 @@ public:
 
         if (ref == "progress")
         {
-            float term = value.is<float>()
-                ? value.as<float>()
-                : static_cast<float>(value.as<int64_t>());
+            float term = value.value_float.has_value()
+                ? value.value_float.value()
+                : static_cast<float>(value.value_int.value());
 
             return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.progress * 100, term, oper); });
         }
 
         if (ref == "size")
         {
-            float term = value.is<float>()
-                ? value.as<float>()
-                : static_cast<float>(value.as<int64_t>());
+            float term = value.value_float.has_value()
+                ? value.value_float.value()
+                : static_cast<float>(value.value_int.value());
+
+            if (value.suffix_size.has_value())
+            {
+                std::string suffix = value.suffix_size.value();
+                if (suffix == "kb") { term *= 1024; }
+                if (suffix == "mb") { term *= 1048576; }
+                if (suffix == "gb") { term *= 1073741824; }
+            }
 
             return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.totalWanted, term, oper); });
         }
 
         if (ref == "status")
         {
-            std::string term = value;
+            std::string term = value.value_string.value();
 
             return FilterFunc(
                 [oper, term](TorrentStatus const& ts)
@@ -283,38 +310,48 @@ public:
 
     virtual antlrcpp::Any visitValue(pt::PQL::QueryParser::ValueContext* ctx) override
     {
-        long long multiplier = 1;
+        Value val;
 
-        if (auto suffix = ctx->SIZE_SUFFIX())
+        if (auto suffix = ctx->UNIT_SIZE())
         {
-            std::string suffixString = suffix->getText();
-            if (suffixString == "kb" || suffixString == "kbps") { multiplier = 1024; }
-            if (suffixString == "mb" || suffixString == "mbps") { multiplier = 1048576; }
-            if (suffixString == "gb" || suffixString == "gbps") { multiplier = 1073741824; }
+            val.suffix_size = suffix->getText();
         }
 
-        if (auto val = ctx->FLOAT())
+        if (auto suffix = ctx->UNIT_SPEED())
         {
-            return std::stof(val->getText()) * multiplier;
+            val.suffix_speed = suffix->getText();
         }
 
-        if (auto val = ctx->INT())
+        if (auto value = ctx->FLOAT())
         {
-            return std::stoll(val->getText()) * multiplier;
+            val.value_float = std::stof(value->getText());
         }
 
-        if (auto val = ctx->STRING())
+        if (auto value = ctx->INT())
         {
-            std::string text = val->getText();
+            std::string t = value->getText();
+            val.value_int = std::stoll(t);
+        }
+
+        if (auto value = ctx->STRING())
+        {
+            std::string text = value->getText();
             if (text.size() > 0 && text[0] == '\"') { text = text.substr(1); }
             if (text.size() > 0 && text[text.size() - 1] == '\"') { text = text.substr(0, text.size() - 1); }
-            return text;
+            val.value_string = text;
         }
 
-        throw QueryException(
-            "Unknown value: '" + ctx->getText() + "'",
-            ctx->getStart()->getLine(),
-            ctx->getStart()->getCharPositionInLine());
+        if (!val.value_float.has_value()
+            && !val.value_int.has_value()
+            && !val.value_string.has_value())
+        {
+            throw QueryException(
+                "Unknown value: '" + ctx->getText() + "'",
+                ctx->getStart()->getLine(),
+                ctx->getStart()->getCharPositionInLine());
+        }
+
+        return val;
     }
 };
 
