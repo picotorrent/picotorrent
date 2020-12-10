@@ -294,5 +294,6 @@
     "eta_s_format": "{0}s",
     "per_second_format": "{0}/s",
     "some_torrents_already_in_session": "Algunos de los torrents ya han sido añadidos y se omitirán",
-    "all_torrents_already_in_session": "Todos los torrents ya han sido añadidos y se omitirán"
+    "all_torrents_already_in_session": "Todos los torrents ya han sido añadidos y se omitirán",
+    "leeches": "Sanguijuelas"
 }
