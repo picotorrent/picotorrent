@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Package
+    xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+    xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+    xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
+
+    <Identity Name="NullReferenceExceptionAB.PicoTorrent"
+        ProcessorArchitecture="%{Platform}"
+        Publisher="%{Publisher}"
+        Version="%{Version}" />
+
+    <Properties>
+        <DisplayName>PicoTorrent</DisplayName>
+        <PublisherDisplayName>NullReferenceException AB</PublisherDisplayName>
+        <Description>A tiny BitTorrent client with low memory usage and high performance.</Description>
+        <Logo>logo150.png</Logo>
+    </Properties>
+
+    <Resources>
+        <Resource Language="en-us" />
+    </Resources>
+
+    <Dependencies>
+        <TargetDeviceFamily
+            Name="Windows.Desktop"
+            MinVersion="10.0.14257.0"
+            MaxVersionTested="10.0.14257.0" />
+    </Dependencies>
+
+    <Capabilities>
+        <rescap:Capability Name="runFullTrust"/>
+    </Capabilities>
+
+    <Applications>
+        <Application
+            Id="PicoTorrentApp"
+            Executable="PicoTorrent.exe"
+            EntryPoint="Windows.FullTrustApplication">
+
+            <Extensions>
+                <uap:Extension Category="windows.fileTypeAssociation">
+                    <uap:FileTypeAssociation Name="torrent">
+                        <uap:DisplayName>PicoTorrent metadata file</uap:DisplayName>
+                        <uap:Logo>logo150.png</uap:Logo>
+                        <uap:SupportedFileTypes>
+                            <uap:FileType>.torrent</uap:FileType>
+                        </uap:SupportedFileTypes>
+                    </uap:FileTypeAssociation>
+                </uap:Extension>
+
+                <uap:Extension Category="windows.protocol">
+                    <uap:Protocol Name="magnet">
+                        <uap:Logo>logo150.png</uap:Logo>
+                        <uap:DisplayName>PicoTorrent magnet link</uap:DisplayName>
+                    </uap:Protocol>
+                </uap:Extension>
+            </Extensions>
+
+            <uap:VisualElements
+                BackgroundColor="white"
+                DisplayName="PicoTorrent"
+                Square150x150Logo="logo150.png"
+                Square44x44Logo="logo44.png"
+                Description="A tiny BitTorrent client with low memory usage and high performance." />
+        </Application>
+    </Applications>
+</Package>
