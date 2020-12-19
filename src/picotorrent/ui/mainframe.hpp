@@ -71,6 +71,7 @@ namespace Models
         void OnFileAddTorrent(wxCommandEvent&);
         void OnFileCreateTorrent(wxCommandEvent&);
         void OnHelpAbout(wxCommandEvent&);
+        void OnViewHelp(wxCommandEvent&);
         void OnIconize(wxIconizeEvent&);
         void OnTaskBarLeftDown(wxTaskBarIconEvent&);
         void OnViewPreferences(wxCommandEvent&);
