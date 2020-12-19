@@ -295,5 +295,6 @@
     "tier": "Palier",
     "some_torrents_already_in_session": "Certains torrents existent déjà et ne seront pas ajoutés",
     "all_torrents_already_in_session": "Tous les torrents existent déjà et ne seront pas ajoutés",
-    "leeches": "Clients"
+    "leeches": "Clients",
+    "view_help": "Afficher l'aide"
 }
