@@ -214,5 +214,6 @@
     "contents": "Contents",
     "tier": "Tier",
     "some_torrents_already_in_session": "Some of the torrents are already added and will be skipped",
-    "all_torrents_already_in_session": "All torrents are already added and will be skipped"
+    "all_torrents_already_in_session": "All torrents are already added and will be skipped",
+    "connections": "Connections"
 }

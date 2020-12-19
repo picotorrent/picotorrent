@@ -92,6 +92,10 @@ PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared
     m_activeSeedsLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
     m_activeSeedsLimit->SetValue(std::to_string(m_cfg->Get<int>("libtorrent.active_seeds").value()));
 
+    m_connectionsLimit = new wxTextCtrl(limitsSizer->GetStaticBox(), wxID_ANY);
+    m_connectionsLimit->SetValidator(wxTextValidator(wxFILTER_DIGITS));
+    m_connectionsLimit->SetValue(std::to_string(m_cfg->Get<int>("libtorrent.connections_limit").value()));
+
     activeLimitsGrid->AddGrowableCol(0, 1);
     activeLimitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, i18n("total_active")));
     activeLimitsGrid->Add(m_activeLimit, 0, wxALIGN_RIGHT);
@@ -99,6 +103,8 @@ PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared
     activeLimitsGrid->Add(m_activeDownloadsLimit, 0, wxALIGN_RIGHT);
     activeLimitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, i18n("active_seeds")));
     activeLimitsGrid->Add(m_activeSeedsLimit, 0, wxALIGN_RIGHT);
+    activeLimitsGrid->Add(new wxStaticText(limitsSizer->GetStaticBox(), wxID_ANY, i18n("connections")));
+    activeLimitsGrid->Add(m_connectionsLimit, 0, wxALIGN_RIGHT);
 
     limitsSizer->Add(transferLimitsGrid, 0, wxEXPAND | wxALL, 5);
     limitsSizer->Add(new wxStaticLine(limitsSizer->GetStaticBox(), wxID_ANY), 0, wxEXPAND | wxALL, 5);
@@ -157,9 +163,13 @@ void PreferencesDownloadsPage::Save()
     long activeSeeds = 0;
     m_activeSeedsLimit->GetValue().ToLong(&activeSeeds);
 
+    long connectionsLimit = 0;
+    m_connectionsLimit->GetValue().ToLong(&connectionsLimit);
+
     m_cfg->Set("libtorrent.active_limit", static_cast<int>(activeLimit));
     m_cfg->Set("libtorrent.active_downloads", static_cast<int>(activeDownloads));
     m_cfg->Set("libtorrent.active_seeds", static_cast<int>(activeSeeds));
+    m_cfg->Set("libtorrent.connections_limit", static_cast<int>(connectionsLimit));
 }
 
 bool PreferencesDownloadsPage::IsValid()
