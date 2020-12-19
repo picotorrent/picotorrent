@@ -27,7 +27,8 @@ TorrentFileListView::TorrentFileListView(wxWindow* parent, wxWindowID id)
         i18n("progress"),
         FileStorageModel::Columns::Progress,
         wxDATAVIEW_CELL_INERT,
-        FromDIP(80));
+        FromDIP(80),
+        wxALIGN_LEFT);
 
     AppendTextColumn(
         i18n("priority"),

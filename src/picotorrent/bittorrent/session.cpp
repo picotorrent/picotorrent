@@ -121,8 +121,15 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
         outfaces << "," << li.address;
     }
 
-    settings.set_str(lt::settings_pack::dht_bootstrap_nodes, dhtNodes.str().substr(1));
-    settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
+    if (dhtNodes.str().size() > 0)
+    {
+        settings.set_str(lt::settings_pack::dht_bootstrap_nodes, dhtNodes.str().substr(1));
+    }
+
+    if (ifaces.str().size() > 0)
+    {
+        settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
+    }
 
     if (outfaces.str().size() > 0)
     {
@@ -270,6 +277,18 @@ void Session::AddMetadataSearch(std::vector<libtorrent::info_hash_t> const& hash
 
     for (lt::info_hash_t const& hash : hashes)
     {
+        if (m_torrents.find(hash) != m_torrents.end())
+        {
+            BOOST_LOG_TRIVIAL(warning) << "Cannot search for torrent - already in session";
+            continue;
+        }
+
+        if (IsSearching(hash))
+        {
+            BOOST_LOG_TRIVIAL(warning) << "Already searching for info hash '" << str(hash) << "'";
+            continue;
+        }
+
         lt::add_torrent_params params;
         params.flags &= ~lt::torrent_flags::auto_managed;
         params.flags &= ~lt::torrent_flags::need_save_resume;
@@ -302,6 +321,21 @@ void Session::AddTorrent(lt::add_torrent_params const& params)
     }
 
     m_session->async_add_torrent(params);
+}
+
+bool Session::HasTorrent(lt::info_hash_t const& hash)
+{
+    if (m_torrents.find(hash) != m_torrents.end())
+    {
+        return true;
+    }
+
+    if (IsSearching(hash))
+    {
+        return true;
+    }
+
+    return false;
 }
 
 void Session::RemoveTorrent(pt::BitTorrent::TorrentHandle* torrent, lt::remove_flags_t flags)

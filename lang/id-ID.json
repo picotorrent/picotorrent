@@ -37,7 +37,7 @@
     "choose_save_path": "Pilih lokasi penyimpanan",
     "torrent": "Torrent",
     "save_path": "Lokasi penyimpanan",
-    "browse": "...",
+    "browse": "…",
     "add_torrent_s": "Tambah torrent",
     "storage": "Penyimpanan",
     "about_picotorrent": "Tentang PicoTorrent",
@@ -62,7 +62,7 @@
     "proxy_peer_connections": "Proksi koneksi rekan",
     "proxy_tracker_connections": "Proksi koneksi pelacak",
     "connection": "Koneksi",
-    "the_transfers_path_cannot_be_empty": "Lokasi transfer tidak boleh kosong.",
+    "the_transfers_path_cannot_be_empty": "Lokasi \"transfer\" tidak boleh kosong.",
     "none": "Tidak ada",
     "http": "HTTP",
     "http_with_credentials": "HTTP (dengan kredensial)",
@@ -289,5 +289,8 @@
     "eta_s_format": "{0}d",
     "per_second_format": "{0}/d",
     "contents": "Konten",
-    "tier": "Tingkat"
+    "tier": "Tingkat",
+    "amp_console": "&Konsol",
+    "some_torrents_already_in_session": "Beberapa torrent sudah ditambahkan dan akan dilewati",
+    "all_torrents_already_in_session": "Semua torrent sudah ditambahkan dan akan dilewati"
 }

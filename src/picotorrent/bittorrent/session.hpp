@@ -83,6 +83,7 @@ namespace BitTorrent
 
         void AddMetadataSearch(std::vector<libtorrent::info_hash_t> const& hashes);
         void AddTorrent(libtorrent::add_torrent_params const& params);
+        bool HasTorrent(libtorrent::info_hash_t const& hash);
         void ReloadSettings();
         void RemoveTorrent(TorrentHandle* handle, libtorrent::remove_flags_t flags = {});
 
