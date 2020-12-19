@@ -2,6 +2,8 @@ build-x64/
 build-x86/
 build/
 docs/build
+src/installer/bin
+src/installer/obj
 src/picotorrent/buildinfo.cpp
 tools
 .vscode

@@ -47,6 +47,20 @@
                  Level="1">
 
             <ComponentGroupRef Id="CG_MainApplication" />
+
+            <Feature Id="F_Firewall"
+                     Absent="allow"
+                     Level="1">
+                <Condition Level="0">SKIP_FIREWALL_EXCEPTION = 1</Condition>
+                <ComponentGroupRef Id="CG_FirewallException" />
+            </Feature>
+
+            <Feature Id="F_Handlers"
+                     Absent="allow"
+                     Level="1">
+                <Condition Level="0">SKIP_ASSOCIATE_FILES = 1</Condition>
+                <ComponentGroupRef Id="CG_Associations" />
+            </Feature>
         </Feature>
 
         <Property Id="ARPPRODUCTICON" Value="I_PicoTorrent.ico" />
