@@ -88,6 +88,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
         wxAcceleratorEntry(wxACCEL_CTRL,   int('O'),   ptID_KEY_ADD_TORRENT),
         wxAcceleratorEntry(wxACCEL_NORMAL, WXK_DELETE, ptID_KEY_DELETE),
         wxAcceleratorEntry(wxACCEL_SHIFT,  WXK_DELETE, ptID_KEY_DELETE_FILES),
+        wxAcceleratorEntry(wxACCEL_NORMAL, WXK_F1,     ptID_KEY_VIEW_HELP),
     };
 
     this->SetAcceleratorTable(wxAcceleratorTable(static_cast<int>(entries.size()), entries.data()));
@@ -248,11 +249,13 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     this->Bind(wxEVT_MENU, &MainFrame::OnFileCreateTorrent, this, ptID_EVT_CREATE_TORRENT);
     this->Bind(wxEVT_MENU, [this](wxCommandEvent&) { this->Close(true); }, ptID_EVT_EXIT);
     this->Bind(wxEVT_MENU, &MainFrame::OnViewPreferences, this, ptID_EVT_VIEW_PREFERENCES);
+    this->Bind(wxEVT_MENU, &MainFrame::OnViewHelp, this, ptID_EVT_VIEW_HELP);
     this->Bind(wxEVT_MENU, &MainFrame::OnHelpAbout, this, ptID_EVT_ABOUT);
 
     // Keyboard shortcuts
     this->Bind(wxEVT_MENU, &MainFrame::OnFileAddTorrent, this, ptID_KEY_ADD_TORRENT);
     this->Bind(wxEVT_MENU, &MainFrame::OnFileAddMagnetLink, this, ptID_KEY_ADD_MAGNET_LINK);
+    this->Bind(wxEVT_MENU, &MainFrame::OnViewHelp, this, ptID_KEY_VIEW_HELP);
 
     this->Bind(
         wxEVT_MENU,
@@ -684,6 +687,7 @@ wxMenuBar* MainFrame::CreateMainMenu()
     m_viewMenu->Append(ptID_EVT_VIEW_PREFERENCES, i18n("amp_preferences"));
 
     auto helpMenu = new wxMenu();
+    helpMenu->Append(ptID_EVT_VIEW_HELP, i18n("view_help"));
     helpMenu->Append(ptID_EVT_ABOUT, i18n("amp_about"));
 
     auto mainMenu = new wxMenuBar();
@@ -761,6 +765,11 @@ void MainFrame::OnFileCreateTorrent(wxCommandEvent&)
         {
             dlg->Destroy();
         });
+}
+
+void MainFrame::OnViewHelp(wxCommandEvent&)
+{
+    wxLaunchDefaultBrowser("https://docs.picotorrent.org");
 }
 
 void MainFrame::OnHelpAbout(wxCommandEvent&)

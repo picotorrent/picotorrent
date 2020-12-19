@@ -148,6 +148,7 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
     settings.set_int(lt::settings_pack::active_lsd_limit, cfg->Get<int>("libtorrent.active_lsd_limit").value());
     settings.set_int(lt::settings_pack::active_seeds, cfg->Get<int>("libtorrent.active_seeds").value());
     settings.set_int(lt::settings_pack::active_tracker_limit, cfg->Get<int>("libtorrent.active_tracker_limit").value());
+    settings.set_int(lt::settings_pack::connections_limit, cfg->Get<int>("libtorrent.connections_limit").value());
 
     // Tracker things
     settings.set_bool(lt::settings_pack::announce_to_all_tiers, cfg->Get<bool>("libtorrent.announce_to_all_tiers").value());

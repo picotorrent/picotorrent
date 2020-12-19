@@ -42,6 +42,7 @@ namespace Dialogs
         wxTextCtrl* m_activeLimit;
         wxTextCtrl* m_activeDownloadsLimit;
         wxTextCtrl* m_activeSeedsLimit;
+        wxTextCtrl* m_connectionsLimit;
     };
 }
 }
