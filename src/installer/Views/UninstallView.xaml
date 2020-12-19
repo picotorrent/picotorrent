@@ -20,24 +20,28 @@
 
         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="1" Margin="10,5,10,10">
             <Button Padding="3"
-                    Margin="0,0,5,0"
+                    Margin="5,0,0,0"
                     Command="{Binding CancelCommand}"
+                    MinWidth="60"
                     Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                 Cancel
             </Button>
 
             <Button Padding="3"
-                    Margin="0,0,5,0"
+                    Margin="5,0,0,0"
                     Command="{Binding CloseCommand}"
+                    MinWidth="60"
                     Visibility="{Binding CloseEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                 Close
             </Button>
 
             <Button Padding="3"
+                    Margin="5,0,0,0"
                     Command="{Binding UninstallCommand}"
                     IsEnabled="{Binding UninstallEnabled}"
+                    MinWidth="60"
                     Visibility="{Binding UninstallVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                Uninstall PicoTorrent
+                Uninstall
             </Button>
         </StackPanel>
     </Grid>

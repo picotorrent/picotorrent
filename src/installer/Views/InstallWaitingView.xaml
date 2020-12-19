@@ -27,7 +27,7 @@
             <Button Grid.Row="1" Grid.Column="1" Margin="5,5,10,5" Padding="2,0" Command="{Binding ChangeInstallLocationCommand}">Browse...</Button>
         </Grid>
 
-        <Expander Grid.Row="2" Margin="5" Header="Options">
+        <Expander Grid.Row="2" Margin="8,0,8,0" Header="Options">
             <StackPanel>
                 <CheckBox Margin="5" IsChecked="{Binding RegisterFileProtocolHandlers}">Add file type and protocol associations</CheckBox>
                 <CheckBox Margin="5" IsChecked="{Binding AddWindowsFirewallException}">Add Windows Firewall exception</CheckBox>

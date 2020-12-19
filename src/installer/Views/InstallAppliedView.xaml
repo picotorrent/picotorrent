@@ -10,7 +10,7 @@
             <StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <TextBlock TextAlignment="Center" FontWeight="Bold">Installation successful!</TextBlock>
-                    <TextBlock Foreground="Red" FontWeight="Bold">&#x1F496;</TextBlock>
+                    <TextBlock Foreground="Red" FontWeight="Bold" Margin="2,0,0,0">&#x1F496;</TextBlock>
                 </StackPanel>
                 <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap">
                     Reach our awesome community through Discord or GitHub by following the buttons below!
@@ -20,12 +20,20 @@
             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="10">
                 <TextBlock>
                     <Hyperlink NavigateUri="https://discord.gg/tV3dFrv" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
-                        <Image Source="../Resources/discord.png" Width="48" Margin="5" />
+                        <Ellipse Width="48" Height="48" Margin="5">
+                            <Ellipse.Fill>
+                                <ImageBrush ImageSource="../Resources/discord.png" />
+                            </Ellipse.Fill>
+                        </Ellipse>
                     </Hyperlink>
                 </TextBlock>
                 <TextBlock>
                     <Hyperlink NavigateUri="https://github.com/picotorrent/picotorrent" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
-                        <Image Source="../Resources/github.png" Width="48" Margin="5" />
+                        <Ellipse Width="48" Height="48" Margin="5">
+                            <Ellipse.Fill>
+                                <ImageBrush ImageSource="../Resources/github.png" />
+                            </Ellipse.Fill>
+                        </Ellipse>
                     </Hyperlink>
                 </TextBlock>
             </StackPanel>

@@ -24,12 +24,20 @@
             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="10">
                 <TextBlock>
                     <Hyperlink NavigateUri="https://discord.gg/tV3dFrv" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
-                        <Image Source="../Resources/discord.png" Width="48" Margin="5" />
+                        <Ellipse Width="48" Height="48" Margin="5">
+                            <Ellipse.Fill>
+                                <ImageBrush ImageSource="../Resources/discord.png" />
+                            </Ellipse.Fill>
+                        </Ellipse>
                     </Hyperlink>
                 </TextBlock>
                 <TextBlock>
                     <Hyperlink NavigateUri="https://github.com/picotorrent/picotorrent" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
-                        <Image Source="../Resources/github.png" Width="48" Margin="5" />
+                        <Ellipse Width="48" Height="48" Margin="5">
+                            <Ellipse.Fill>
+                                <ImageBrush ImageSource="../Resources/github.png" />
+                            </Ellipse.Fill>
+                        </Ellipse>
                     </Hyperlink>
                 </TextBlock>
             </StackPanel>
