@@ -61,6 +61,7 @@ namespace Dialogs
             ptID_FILE_LIST,
             ptID_SEQUENTIAL_DOWNLOAD,
             ptID_START_TORRENT,
+            ptID_SEED_MODE,
             ptID_TRACKERS_ADD,
             ptID_TRACKERS_REMOVE,
             ptID_OK,
@@ -100,6 +101,7 @@ namespace Dialogs
         wxDataViewCtrl* m_filesView;
         wxCheckBox* m_sequentialDownload;
         wxCheckBox* m_startTorrent;
+        wxCheckBox* m_seedMode;
         wxListView* m_peers;
         wxListView* m_trackers;
         wxButton* m_addTracker;

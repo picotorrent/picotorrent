@@ -54,6 +54,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torr
     m_torrentLabel = new wxBitmapComboBox(optionsSizer->GetStaticBox(), ptID_LABEL_COMBO, "", wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_READONLY);
     m_sequentialDownload = new wxCheckBox(optionsSizer->GetStaticBox(), ptID_SEQUENTIAL_DOWNLOAD, i18n("sequential_download"));
     m_startTorrent = new wxCheckBox(optionsSizer->GetStaticBox(), ptID_START_TORRENT, i18n("start_torrent"));
+    m_seedMode = new wxCheckBox(optionsSizer->GetStaticBox(), ptID_SEED_MODE, i18n("seed_mode"));
 
     auto optionsGrid = new wxFlexGridSizer(2, FromDIP(7), FromDIP(10));
     optionsGrid->AddGrowableCol(1, 1);
@@ -63,6 +64,7 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torr
     auto flagsGrid = new wxFlexGridSizer(2, FromDIP(7), FromDIP(10));
     flagsGrid->Add(m_sequentialDownload, 1, wxALL);
     flagsGrid->Add(m_startTorrent, 1, wxALL);
+    flagsGrid->Add(m_seedMode, 1, wxALL);
 
     optionsGrid->AddSpacer(1);
     optionsGrid->Add(flagsGrid, 1, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, FromDIP(3));
@@ -292,6 +294,15 @@ AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torr
         },
         ptID_START_TORRENT);
 
+    this->Bind(
+        wxEVT_CHECKBOX,
+        [this](wxCommandEvent&)
+        {
+            if (m_seedMode->IsChecked()) { m_params.flags |= lt::torrent_flags::seed_mode; }
+            else { m_params.flags &= ~lt::torrent_flags::seed_mode; }
+        },
+        ptID_SEED_MODE);
+
     this->Bind(wxEVT_BUTTON, &AddTorrentDialog::OnAddTracker, this, ptID_TRACKERS_ADD);
     this->Bind(wxEVT_BUTTON, &AddTorrentDialog::OnRemoveTracker, this, ptID_TRACKERS_REMOVE);
     this->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &AddTorrentDialog::ShowFileContextMenu, this, ptID_FILE_LIST);
@@ -420,6 +431,9 @@ void AddTorrentDialog::Load()
         && (m_params.flags & lt::torrent_flags::auto_managed) != lt::torrent_flags::auto_managed;
 
     m_startTorrent->SetValue(!isPaused);
+
+    m_seedMode->SetValue(
+        (m_params.flags & lt::torrent_flags::seed_mode) == lt::torrent_flags::seed_mode);
 
     if (m_params.ti)
     {
