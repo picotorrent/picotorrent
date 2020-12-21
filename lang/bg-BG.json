@@ -283,5 +283,7 @@
     "eta_s_format": "{0} с",
     "per_second_format": "{0}/с",
     "some_torrents_already_in_session": "Някои от торентите са вече добавени и ще бъдат пропуснати",
-    "all_torrents_already_in_session": "Всички торенти са вече добавени и ще бъдат пропуснати"
+    "all_torrents_already_in_session": "Всички торенти са вече добавени и ще бъдат пропуснати",
+    "view_help": "&Помощ",
+    "connections": "Връзки"
 }

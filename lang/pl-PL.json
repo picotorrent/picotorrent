@@ -204,5 +204,8 @@
     "d_of_d": "{0} (z {1})",
     "dht_disabled": "DHT: Wyłączono",
     "dl_s_ul_s": "Pobieranie: {0}/s, Wysyłanie: {1}/s",
-    "options": "Opcje"
+    "options": "Opcje",
+    "amp_filter": "&Filtr",
+    "queue_position": "#",
+    "status": "Status"
 }
