@@ -50,7 +50,7 @@
     "prompt_for_save_path": "Klausti paskirties vietos",
     "listen_interface": "Tinklo sąsaja",
     "address": "Adresas",
-    "port": "Prevadas",
+    "port": "Prievadas",
     "proxy": "Įgaliotasis serveris",
     "type": "Tipas",
     "host": "Serveris",
@@ -213,5 +213,7 @@
     "amp_details_panel": "&Išsamios informacijos polangis",
     "downloaded_size": "Parsiųsta",
     "options": "Sąranka",
-    "browse": "…"
+    "browse": "…",
+    "socks4": "SOCKS4",
+    "socks5": "SOCKS5"
 }
