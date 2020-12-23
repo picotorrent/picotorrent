@@ -295,5 +295,8 @@
     "amp_console": "&Konsole",
     "some_torrents_already_in_session": "Einige torrents wurden bereits hinzugefügen und werden übersprungen",
     "all_torrents_already_in_session": "Alle torrents wurden bereits hinzugefügt und werden übersprungen",
-    "leeches": "Leeches"
+    "leeches": "Leeches",
+    "view_help": "&Hilfe anzeigen",
+    "connections": "Verbindungen",
+    "seed_mode": "Seed modus"
 }
