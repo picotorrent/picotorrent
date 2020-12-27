@@ -15,6 +15,7 @@ Rasterbar-libtorrent and wxWidgets.
    :maxdepth: 1
 
    configuration
+   ipfilter
    creating-torrents
    keyboard-shortcuts
    pql
