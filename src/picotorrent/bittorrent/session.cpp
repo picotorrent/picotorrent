@@ -215,7 +215,7 @@ bool ParseIPv4Address(std::string const& input, lt::address& output)
         size_t off = 0;
         size_t pos = input.find_first_of('.');
 
-        for (int i = 0; i < bytes.size(); i++)
+        for (size_t i = 0; i < bytes.size(); i++)
         {
             bytes[i] = (unsigned char)std::stoi(input.substr(off, pos - off));
 
