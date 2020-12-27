@@ -1,6 +1,6 @@
 #include "applicationoptionsconnection.hpp"
 
-#include <loguru.hpp>
+#include <boost/log/trivial.hpp>
 #include <nlohmann/json.hpp>
 #include <wx/taskbarbutton.h>
 
@@ -14,7 +14,7 @@ ApplicationOptionsConnection::ApplicationOptionsConnection(pt::UI::MainFrame* fr
 {
 }
 
-bool ApplicationOptionsConnection::OnExecute(const wxString& topic, const void *data, size_t size, wxIPCFormat format)
+bool ApplicationOptionsConnection::OnExecute(const wxString&, const void *data, size_t size, wxIPCFormat format)
 {
     std::string textData = GetTextFromData(data, size, format);
 
@@ -28,12 +28,17 @@ bool ApplicationOptionsConnection::OnExecute(const wxString& topic, const void *
             }
             catch (std::exception const& e)
             {
-                LOG_F(ERROR, "Failed to parse application options JSON: %s", e.what());
+                BOOST_LOG_TRIVIAL(error) << "Failed to parse application options JSON: " << e.what();
                 return;
             }
 
             m_frame->MSWGetTaskBarButton()->Show();
-            m_frame->Restore();
+
+            if (m_frame->IsIconized())
+            {
+                m_frame->Restore();
+            }
+
             m_frame->Raise();
             m_frame->Show();
             m_frame->HandleParams(j["files"], j["magnet_links"]);

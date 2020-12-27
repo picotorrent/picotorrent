@@ -1,6 +1,6 @@
 #include "translator.hpp"
 
-#include <loguru.hpp>
+#include <boost/log/trivial.hpp>
 #include <nlohmann/json.hpp>
 #include <sqlite3.h>
 
@@ -29,13 +29,13 @@ void Translator::LoadDatabase(std::filesystem::path const& filePath)
 {
     std::string convertedPath = Utils::toStdString(filePath.wstring());
 
-    LOG_F(INFO, "Loading translations from %s", convertedPath.c_str());
+    BOOST_LOG_TRIVIAL(info) << "Loading translations from " << convertedPath;
 
     sqlite3* db = nullptr;
 
     if (sqlite3_open(convertedPath.c_str(), &db) != SQLITE_OK)
     {
-        LOG_F(ERROR, "Failed to load translations database");
+        BOOST_LOG_TRIVIAL(error) << "Failed to load translations database";
         return;
     }
 
@@ -49,7 +49,7 @@ void Translator::LoadDatabase(std::filesystem::path const& filePath)
     sqlite3_close(db);
 }
 
-int Translator::LoadDatabaseCallback(void* user, int count, char** data, char** columns)
+int Translator::LoadDatabaseCallback(void* user, int, char** data, char**)
 {
     Translator* tr = static_cast<Translator*>(user);
 
@@ -76,7 +76,7 @@ int Translator::LoadDatabaseCallback(void* user, int count, char** data, char** 
         }
         else
         {
-            LOG_F(ERROR, "GetLocaleInfoEx returned %d for %s", res, l.locale.c_str());
+            BOOST_LOG_TRIVIAL(error) << "GetLocaleInfoEx returned " << res << " for " << l.locale;
         }
 
         tr->m_languages.insert({ loc, l });
@@ -113,15 +113,31 @@ std::wstring Translator::Translate(std::string const& key)
     auto lang = m_languages.find(m_selectedLocale);
 
     // Didn't find our selected language, try with 'en' instead
-    if (lang == m_languages.end()) { lang = m_languages.find("en"); }
+    if (lang == m_languages.end()) { lang = m_languages.find("en-US"); }
 
     // Didn't find 'en', return the key
-    if (lang == m_languages.end()) { return Utils::toStdWString(key); }
+    if (lang == m_languages.end())
+    {
+        return Utils::toStdWString(key);
+    }
 
     auto translation = lang->second.translations.find(key);
 
     if (translation == lang->second.translations.end())
     {
+        auto en = lang = m_languages.find("en-US");
+        if (en == m_languages.end())
+        {
+            return Utils::toStdWString(key);
+        }
+
+        auto enTranslation = en->second.translations.find(key);
+
+        if (enTranslation != en->second.translations.end())
+        {
+            return enTranslation->second;
+        }
+
         return Utils::toStdWString(key);
     }
 
@@ -145,7 +161,7 @@ void Translator::SetLocale(std::string const& locale)
 
         if (m_languages.find(tmpLocale) != m_languages.end())
         {
-            LOG_F(INFO, "Adjusting locale from %s to %s in order to match available language", locale.c_str(), tmpLocale.c_str());
+            BOOST_LOG_TRIVIAL(info) << "Adjusting locale from " << locale << " to " << tmpLocale << " in order to match available language";
             m_selectedLocale = tmpLocale;
         }
         else
@@ -157,7 +173,7 @@ void Translator::SetLocale(std::string const& locale)
                     && lang.first.substr(0, tmpLocale.size()) == tmpLocale)
                 {
                     // we found a match on language with a different culture... use it
-                    LOG_F(INFO, "Adjusting locale from %s to %s after substring matching", locale.c_str(), lang.first.c_str());
+                    BOOST_LOG_TRIVIAL(info) << "Adjusting locale from " << locale << " to " << lang.first << " after substring matching";
                     m_selectedLocale = lang.first;
                 }
             }

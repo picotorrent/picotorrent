@@ -1,10 +1,12 @@
 #include "torrentlistmodel.hpp"
 
+#include <boost/log/trivial.hpp>
 #include <fmt/format.h>
 
 #include "../../bittorrent/torrenthandle.hpp"
 #include "../../bittorrent/torrentstatus.hpp"
 #include "../../core/utils.hpp"
+#include "../filters/torrentfilter.hpp"
 #include "../translator.hpp"
 
 using pt::BitTorrent::TorrentHandle;
@@ -30,6 +32,7 @@ void TorrentListModel::AddTorrent(BitTorrent::TorrentHandle* torrent)
 void TorrentListModel::ClearFilter()
 {
     m_filter = nullptr;
+    ApplyFilter();
 }
 
 void TorrentListModel::ClearLabelFilter()
@@ -38,9 +41,9 @@ void TorrentListModel::ClearLabelFilter()
     ApplyFilter();
 }
 
-void TorrentListModel::SetFilter(std::function<bool(BitTorrent::TorrentHandle*)> const& filter)
+void TorrentListModel::SetFilter(std::unique_ptr<Filters::TorrentFilter> filter)
 {
-    m_filter = filter;
+    m_filter = std::move(filter);
     ApplyFilter();
 }
 
@@ -99,8 +102,18 @@ int TorrentListModel::Compare(const wxDataViewItem& item1, const wxDataViewItem&
     auto const& hash1 = m_filtered.at(GetRow(item1));
     auto const& hash2 = m_filtered.at(GetRow(item2));
 
-    auto const& lhs = m_torrents.at(hash1)->Status();
-    auto const& rhs = m_torrents.at(hash2)->Status();
+    auto const& lfind = m_torrents.find(hash1);
+    auto const& rfind = m_torrents.find(hash2);
+
+    if (lfind == m_torrents.end()
+        || rfind == m_torrents.end())
+    {
+        BOOST_LOG_TRIVIAL(warning) << "Invalid compare";
+        return 0;
+    }
+
+    auto const& lhs = lfind->second->Status();
+    auto const& rhs = rfind->second->Status();
 
     auto hashSort = [](bool ascending, TorrentStatus const& l, TorrentStatus const& r) -> int
     {
@@ -245,7 +258,7 @@ bool TorrentListModel::GetAttrByRow(unsigned int row, unsigned int col, wxDataVi
     return false;
 }
 
-wxString TorrentListModel::GetColumnType(unsigned int column) const
+wxString TorrentListModel::GetColumnType(unsigned int) const
 {
     return "string";
 }
@@ -257,8 +270,22 @@ unsigned int TorrentListModel::GetCount() const
 
 void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t col) const
 {
+    if (row >= m_filtered.size())
+    {
+        BOOST_LOG_TRIVIAL(warning) << "Row out of range (" << row << ", size: " << m_filtered.size() << ")";
+        return;
+    }
+
     auto const& hash = m_filtered.at(row);
-    BitTorrent::TorrentHandle* torrent = m_torrents.at(hash);
+    auto findTorrent = m_torrents.find(hash);
+
+    if (findTorrent == m_torrents.end())
+    {
+        BOOST_LOG_TRIVIAL(warning) << "Could not find torrent by hash";
+        return;
+    }
+
+    BitTorrent::TorrentHandle* torrent = findTorrent->second;
     BitTorrent::TorrentStatus  status = torrent->Status();
 
     switch (col)
@@ -377,16 +404,16 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
         {
             if (min_left.count() <= 0)
             {
-                variant = fmt::format("{0}s", sec_left.count());
+                variant = fmt::format(i18n("eta_s_format"), sec_left.count());
                 break;
             }
 
-            variant = fmt::format("{0}m {1}s", min_left.count(), sec_left.count());
+            variant = fmt::format(i18n("eta_ms_format"), min_left.count(), sec_left.count());
             break;
         }
 
         variant = fmt::format(
-            "{0}h {1}m {2}s",
+            i18n("eta_hms_format"),
             hours_left.count(),
             min_left.count(),
             sec_left.count());
@@ -402,7 +429,9 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = fmt::format(L"{0}/s", Utils::toHumanFileSize(status.downloadPayloadRate));
+        variant = fmt::format(
+            i18n("per_second_format"),
+            Utils::toHumanFileSize(status.downloadPayloadRate));
 
         break;
     }
@@ -415,7 +444,9 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = fmt::format(L"{0}/s", Utils::toHumanFileSize(status.uploadPayloadRate));
+        variant = fmt::format(
+            i18n("per_second_format"),
+            Utils::toHumanFileSize(status.uploadPayloadRate));
 
         break;
     }
@@ -484,18 +515,21 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
     }
     case Columns::Label:
     {
-        if (torrent->Label() < 0)
+        auto lbl = m_labels.find(torrent->Label());
+
+        if (torrent->Label() < 0 || lbl == m_labels.end())
         {
             variant << wxDataViewIconText("-");
             break;
         }
 
         wxIcon ic = wxNullIcon;
-        auto [name, _] = m_labels.at(torrent->Label());
+        auto [name, _] = lbl->second;
+        auto labelIcon = m_labelsIcons.find(torrent->Label());
 
-        if (m_labelsIcons.find(torrent->Label()) != m_labelsIcons.end())
+        if (labelIcon != m_labelsIcons.end())
         {
-            ic = m_labelsIcons.at(torrent->Label());
+            ic = labelIcon->second;
         }
 
         variant << wxDataViewIconText(
@@ -608,11 +642,11 @@ void TorrentListModel::ApplyFilter(std::vector<BitTorrent::TorrentHandle*> torre
         // otherwise, check each
         if (m_filter && m_filterLabelId > 0)
         {
-            return m_filter(torrent) && torrent->Label() == m_filterLabelId;
+            return m_filter->Includes(*torrent) && torrent->Label() == m_filterLabelId;
         }
         else if (m_filter)
         {
-            return m_filter(torrent);
+            return m_filter->Includes(*torrent);
         }
         else if (m_filterLabelId > 0)
         {

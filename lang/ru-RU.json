@@ -37,7 +37,7 @@
     "choose_save_path": "Выберите путь сохранения",
     "torrent": "Торрент",
     "save_path": "Путь сохранения",
-    "browse": "...",
+    "browse": "…",
     "add_torrent_s": "Добавить торрент(ы)",
     "storage": "Файлы",
     "about_picotorrent": "О PicoTorrent",
@@ -96,10 +96,10 @@
     "next_announce": "След. анонс",
     "scrape": "Scrape-запрос",
     "picotorrent_v_available": "PicoTorrent {0} доступен",
-    "no_update_available": "Нет доступных обновлений.",
+    "no_update_available": "Нет доступных обновлений",
     "show_on_github": "Открыть на GitHub",
     "new_version_available": "Доступна новая версия PicoTorrent.",
-    "ignore_update": "Игнорировать это обновление.",
+    "ignore_update": "Игнорировать это обновление",
     "confirm_remove_description": "Это действие удалит все скачанные файлы для этого торрента.",
     "confirm_remove": "Подтвердить удаление",
     "do_not_ask_again": "Больше не спрашивать",
@@ -283,5 +283,10 @@
     "labels": "Ярлыки",
     "label_details": "Детали ярлыка",
     "color": "Цвет",
-    "apply_filter": "Применить фильтр"
+    "apply_filter": "Применить фильтр",
+    "eta_hms_format": "{0}ч {1}м {2}с",
+    "eta_ms_format": "{0}м {1}с",
+    "eta_s_format": "{0}с",
+    "per_second_format": "{0}/с",
+    "contents": "Содержание"
 }

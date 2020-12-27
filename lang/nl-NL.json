@@ -9,7 +9,7 @@
     "move": "Verplaatsen",
     "remove": "Verwijderen",
     "remove_torrent": "Verwijder torrent",
-    "remove_torrent_and_files": "Verwijder torrent en zijn bestanden",
+    "remove_torrent_and_files": "Verwijder torrent en bestanden",
     "copy_info_hash": "Kopieer info hash",
     "open_in_explorer": "Open in Verkenner",
     "amp_file": "&Bestand",
@@ -230,7 +230,7 @@
     "url_seeds_input_per_line": "URL seeds (één per regel)",
     "amp_help": "&Help",
     "torrent": "Torrent",
-    "browse": "...",
+    "browse": "…",
     "picotorrent_v_format": "PicoTorrent v{0}",
     "build_info_format": "Branch: {0}\nSHA1: {1}",
     "downloads": "Downloads",
@@ -285,5 +285,10 @@
     "add_to_session": "Toevoegen aan sessie",
     "status_hashing_piece": "Hashing stuk {0} van {1}",
     "i2p": "I2P",
-    "state_error_details": "Fout: {0} ({1})"
+    "state_error_details": "Fout: {0} ({1})",
+    "eta_hms_format": "{0}u {1}m {2}s",
+    "eta_ms_format": "{0}m {1}s",
+    "eta_s_format": "{0}s",
+    "per_second_format": "{0}/s",
+    "contents": "Inhoud"
 }

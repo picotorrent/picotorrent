@@ -3,7 +3,8 @@
 #include <fmt/format.h>
 #include <libtorrent/peer_info.hpp>
 
-#include "../../core//utils.hpp"
+#include "../../core/utils.hpp"
+#include "../translator.hpp"
 
 namespace lt = libtorrent;
 using pt::UI::Models::PeerListModel;
@@ -71,7 +72,7 @@ unsigned int PeerListModel::GetColumnCount() const
     return Column::_Max;
 }
 
-wxString PeerListModel::GetColumnType(unsigned int col) const
+wxString PeerListModel::GetColumnType(unsigned int) const
 {
     return "string";
 }
@@ -183,7 +184,9 @@ void PeerListModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned
         }
         else
         {
-            variant = fmt::format(L"{0}/s", Utils::toHumanFileSize(peer.payload_down_speed));
+            variant = fmt::format(
+                i18n("per_second_format"),
+                Utils::toHumanFileSize(peer.payload_down_speed));
         }
 
         break;
@@ -196,7 +199,9 @@ void PeerListModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned
         }
         else
         {
-            variant = fmt::format(L"{0}/s", Utils::toHumanFileSize(peer.payload_up_speed));
+            variant = fmt::format(
+                i18n("per_second_format"),
+                Utils::toHumanFileSize(peer.payload_up_speed));
         }
 
         break;
@@ -209,7 +214,7 @@ void PeerListModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned
     }
 }
 
-bool PeerListModel::SetValueByRow(const wxVariant &variant, unsigned row, unsigned col)
+bool PeerListModel::SetValueByRow(const wxVariant&, unsigned int, unsigned int)
 {
     return false;
 }

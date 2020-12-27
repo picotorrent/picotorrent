@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <queue>
 
+#include <boost/log/trivial.hpp>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/entry.hpp>
@@ -17,7 +18,6 @@
 #include <libtorrent/torrent_info.hpp>
 #include <libtorrent/torrent_status.hpp>
 #include <libtorrent/write_resume_data.hpp>
-#include <loguru.hpp>
 #include <wx/sstream.h>
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
@@ -83,7 +83,7 @@ static lt::session_params getSessionParams(std::shared_ptr<pt::Core::Database> d
 
         if (ec)
         {
-            LOG_F(WARNING, "Failed to decode session state: %s", ec.message().data());
+            BOOST_LOG_TRIVIAL(warning) << "Failed to decode session state: " << ec;
         }
         else
         {
@@ -115,8 +115,15 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
         outfaces << "," << li.address;
     }
 
-    settings.set_str(lt::settings_pack::dht_bootstrap_nodes, dhtNodes.str().substr(1));
-    settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
+    if (dhtNodes.str().size() > 0)
+    {
+        settings.set_str(lt::settings_pack::dht_bootstrap_nodes, dhtNodes.str().substr(1));
+    }
+
+    if (ifaces.str().size() > 0)
+    {
+        settings.set_str(lt::settings_pack::listen_interfaces, ifaces.str().substr(1));
+    }
 
     if (outfaces.str().size() > 0)
     {
@@ -135,6 +142,7 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
     settings.set_int(lt::settings_pack::active_lsd_limit, cfg->Get<int>("libtorrent.active_lsd_limit").value());
     settings.set_int(lt::settings_pack::active_seeds, cfg->Get<int>("libtorrent.active_seeds").value());
     settings.set_int(lt::settings_pack::active_tracker_limit, cfg->Get<int>("libtorrent.active_tracker_limit").value());
+    settings.set_int(lt::settings_pack::connections_limit, cfg->Get<int>("libtorrent.connections_limit").value());
 
     // Tracker things
     settings.set_bool(lt::settings_pack::announce_to_all_tiers, cfg->Get<bool>("libtorrent.announce_to_all_tiers").value());
@@ -334,6 +342,18 @@ void Session::AddMetadataSearch(std::vector<libtorrent::info_hash_t> const& hash
 
     for (lt::info_hash_t const& hash : hashes)
     {
+        if (m_torrents.find(hash) != m_torrents.end())
+        {
+            BOOST_LOG_TRIVIAL(warning) << "Cannot search for torrent - already in session";
+            continue;
+        }
+
+        if (IsSearching(hash))
+        {
+            BOOST_LOG_TRIVIAL(warning) << "Already searching for info hash '" << str(hash) << "'";
+            continue;
+        }
+
         lt::add_torrent_params params;
         params.flags &= ~lt::torrent_flags::auto_managed;
         params.flags &= ~lt::torrent_flags::need_save_resume;
@@ -366,6 +386,21 @@ void Session::AddTorrent(lt::add_torrent_params const& params)
     }
 
     m_session->async_add_torrent(params);
+}
+
+bool Session::HasTorrent(lt::info_hash_t const& hash)
+{
+    if (m_torrents.find(hash) != m_torrents.end())
+    {
+        return true;
+    }
+
+    if (IsSearching(hash))
+    {
+        return true;
+    }
+
+    return false;
 }
 
 void Session::RemoveTorrent(pt::BitTorrent::TorrentHandle* torrent, lt::remove_flags_t flags)
@@ -432,7 +467,7 @@ void Session::OnAlert()
 
             if (ata->error)
             {
-                LOG_F(ERROR, "Failed to add torrent to session: %s", ata->error.message().data());
+                BOOST_LOG_TRIVIAL(error) << "Failed to add torrent to session: " << ata->error;
                 continue;
             }
 
@@ -497,13 +532,13 @@ void Session::OnAlert()
 
         case lt::listen_failed_alert::alert_type:
         {
-            LOG_F(WARNING, alert->message().c_str());
+            BOOST_LOG_TRIVIAL(warning) << alert->message();
             break;
         }
 
         case lt::listen_succeeded_alert::alert_type:
         {
-            LOG_F(INFO, alert->message().c_str());
+            BOOST_LOG_TRIVIAL(info) << alert->message();
             break;
         }
 
@@ -626,7 +661,7 @@ void Session::OnAlert()
         case lt::storage_moved_failed_alert::alert_type:
         {
             lt::storage_moved_failed_alert* smfa = lt::alert_cast<lt::storage_moved_failed_alert>(alert);
-            LOG_F(ERROR, "Error when moving torrent storage: %s", smfa->error.message().c_str());
+            BOOST_LOG_TRIVIAL(error) << "Error when moving torrent storage: " << smfa->error;
             break;
         }
 
@@ -647,7 +682,7 @@ void Session::OnAlert()
 
         case lt::torrent_error_alert::alert_type:
         {
-            LOG_F(ERROR, "Torrent error: %s", alert->message().c_str());
+            BOOST_LOG_TRIVIAL(error) << "Torrent error: " << alert->message();
             break;
         }
 
@@ -752,12 +787,13 @@ void Session::OnSaveResumeDataTimer(wxTimerEvent&)
         }
     }
 
-    LOG_F(INFO, "%d torrent(s) needed to save resume data", saved);
+    BOOST_LOG_TRIVIAL(info) << saved << " torrent(s) needed to save resume data";
 }
 
 bool Session::IsSearching(lt::info_hash_t hash)
 {
-    return IsSearching(hash, lt::info_hash_t());
+    lt::info_hash_t t;
+    return IsSearching(hash, t);
 }
 
 bool Session::IsSearching(lt::info_hash_t hash, lt::info_hash_t& result)
@@ -886,7 +922,7 @@ void Session::LoadTorrents()
 
             if (ec)
             {
-                LOG_F(WARNING, "Failed to decode resume data: %s", ec.message().data());
+                BOOST_LOG_TRIVIAL(warning) << "Failed to decode resume data: " << ec;
                 continue;
             }
 
@@ -894,7 +930,7 @@ void Session::LoadTorrents()
 
             if (ec)
             {
-                LOG_F(WARNING, "Failed to read resume data: %s", ec.message().data());
+                BOOST_LOG_TRIVIAL(warning) << "Failed to read resume data: " << ec;
                 continue;
             }
         }
@@ -914,7 +950,7 @@ void Session::PauseAfterRecheck(pt::BitTorrent::TorrentHandle* th)
 {
     if (m_pauseAfterRecheck.find(th->InfoHash()) != m_pauseAfterRecheck.end())
     {
-        LOG_F(WARNING, "Torrent already rechecking (%s)", th->InfoHash().v1.data());
+        BOOST_LOG_TRIVIAL(warning) << "Torrent already rechecking (" << th->InfoHash().v1.data() << ")";
         return;
     }
 
@@ -974,7 +1010,7 @@ void Session::SaveTorrents()
             return !st.has_metadata;
         });
 
-    LOG_F(INFO, "Saving data for %d torrent(s)", numOutstandingResumeData + static_cast<int>(missingMeta.size()));
+    BOOST_LOG_TRIVIAL(info) << "Saving data for " << missingMeta.size() + numOutstandingResumeData << " torrent(s)";
 
     for (lt::torrent_status& st : missingMeta)
     {
@@ -994,8 +1030,8 @@ void Session::SaveTorrents()
 
     while (numOutstandingResumeData > 0)
     {
-        lt::alert const* a = m_session->wait_for_alert(lt::seconds(10));
-        if (a == nullptr) { continue; }
+        lt::alert const* tmp = m_session->wait_for_alert(lt::seconds(10));
+        if (tmp == nullptr) { continue; }
 
         std::vector<lt::alert*> alerts;
         m_session->pop_alerts(&alerts);

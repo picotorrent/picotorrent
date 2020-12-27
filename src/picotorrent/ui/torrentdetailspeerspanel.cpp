@@ -22,10 +22,10 @@ TorrentDetailsPeersPanel::TorrentDetailsPeersPanel(wxWindow* parent, wxWindowID 
     m_peersView->AppendTextColumn(i18n("flags"), PeerListModel::Column::Flags, wxDATAVIEW_CELL_INERT, FromDIP(80));
     m_peersView->AppendTextColumn(i18n("dl"), PeerListModel::Column::DownloadRate, wxDATAVIEW_CELL_INERT, FromDIP(80), wxALIGN_RIGHT);
     m_peersView->AppendTextColumn(i18n("ul"), PeerListModel::Column::UploadRate, wxDATAVIEW_CELL_INERT, FromDIP(80), wxALIGN_RIGHT);
-    m_peersView->AppendProgressColumn(i18n("progress"), PeerListModel::Column::Progress, wxDATAVIEW_CELL_INERT, FromDIP(100));
+    m_peersView->AppendProgressColumn(i18n("progress"), PeerListModel::Column::Progress, wxDATAVIEW_CELL_INERT, FromDIP(100), wxALIGN_LEFT);
 
     // Ugly hack to prevent the last "real" column from stretching.
-    m_peersView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0));
+    m_peersView->AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), PeerListModel::Column::_Max, 0));
 
     m_peersView->AssociateModel(m_peersModel);
     m_peersModel->DecRef();

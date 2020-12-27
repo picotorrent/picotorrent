@@ -23,6 +23,11 @@ struct NetworkAdapter
     wxString ipv6;
 };
 
+struct Item
+{
+    int id = -1;
+};
+
 using pt::UI::Dialogs::PreferencesConnectionPage;
 
 PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg)
@@ -102,7 +107,7 @@ PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shar
         int row = m_listenInterfaces->GetItemCount();
         m_listenInterfaces->InsertItem(row, li.address);
         m_listenInterfaces->SetItem(row, 1, std::to_string(li.port));
-        m_listenInterfaces->SetItemPtrData(row, li.id);
+        m_listenInterfaces->SetItemPtrData(row, reinterpret_cast<wxUIntPtr>(new Item { li.id }));
     }
 
     addInterface->Bind(
@@ -116,7 +121,7 @@ PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shar
                 int row = m_listenInterfaces->GetItemCount();
                 m_listenInterfaces->InsertItem(row, dlg.GetAddress());
                 m_listenInterfaces->SetItem(row, 1, std::to_string(dlg.GetPort()));
-                m_listenInterfaces->SetItemPtrData(row, -1);
+                m_listenInterfaces->SetItemPtrData(row, reinterpret_cast<wxUIntPtr>(new Item()));
             }
         });
 
@@ -134,7 +139,6 @@ PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shar
 
             if (dlg.ShowModal() == wxID_OK)
             {
-                int row = m_listenInterfaces->GetItemCount();
                 m_listenInterfaces->SetItem(sel, 0, dlg.GetAddress());
                 m_listenInterfaces->SetItem(sel, 1, std::to_string(dlg.GetPort()));
             }
@@ -147,7 +151,7 @@ PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shar
             long sel = m_listenInterfaces->GetFirstSelected();
             if (sel < 0) { return; }
 
-            int id = m_listenInterfaces->GetItemData(sel);
+            int id = reinterpret_cast<Item*>(m_listenInterfaces->GetItemData(sel))->id;
             m_listenInterfaces->DeleteItem(sel);
 
             if (id > 0)
@@ -172,7 +176,7 @@ void PreferencesConnectionPage::Save(bool* restartRequired)
     {
         Core::Configuration::ListenInterface li;
         li.address = m_listenInterfaces->GetItemText(i, 0);
-        li.id = m_listenInterfaces->GetItemData(i);
+        li.id = reinterpret_cast<Item*>(m_listenInterfaces->GetItemData(i))->id;
         li.port = std::atoi(m_listenInterfaces->GetItemText(i, 1));
 
         m_cfg->UpsertListenInterface(li);

@@ -27,7 +27,8 @@ TorrentFileListView::TorrentFileListView(wxWindow* parent, wxWindowID id)
         i18n("progress"),
         FileStorageModel::Columns::Progress,
         wxDATAVIEW_CELL_INERT,
-        FromDIP(80));
+        FromDIP(80),
+        wxALIGN_LEFT);
 
     AppendTextColumn(
         i18n("priority"),
@@ -36,7 +37,7 @@ TorrentFileListView::TorrentFileListView(wxWindow* parent, wxWindowID id)
         FromDIP(120));
 
     // Ugly hack to prevent the last "real" column from stretching.
-    AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), -1, 0));
+    AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), FileStorageModel::Columns::_Max, 0));
 
     nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
 }

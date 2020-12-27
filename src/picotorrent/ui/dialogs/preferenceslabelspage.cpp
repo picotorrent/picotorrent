@@ -79,7 +79,7 @@ PreferencesLabelsPage::PreferencesLabelsPage(wxWindow* parent, std::shared_ptr<C
     for (auto const& label : m_cfg->GetLabels())
     {
         int row = m_labelsList->GetItemCount();
-        m_labelsList->InsertItem(row, label.name);
+        m_labelsList->InsertItem(row, Utils::toStdWString(label.name));
         m_labelsList->SetItemPtrData(row, reinterpret_cast<wxUIntPtr>(new Configuration::Label(label)));
     }
 
@@ -241,7 +241,7 @@ void PreferencesLabelsPage::Save()
         m_cfg->UpsertLabel(*lbl);
     }
 
-    for (int i = 0; i < m_removedLabels.size(); i++)
+    for (size_t i = 0; i < m_removedLabels.size(); i++)
     {
         m_cfg->DeleteLabel(m_removedLabels.at(i));
     }

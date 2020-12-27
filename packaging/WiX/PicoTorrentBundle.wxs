@@ -1,27 +1,32 @@
 <?xml version="1.0"?>
 
+<?define VCRedistVersion = "14.27.29016.0" ?>
+
 <?if $(var.Platform) = "x64" ?>
     <?define InstallFolder = "[ProgramFiles64Folder]PicoTorrent" ?>
     <?define UpgradeCode = "58903cac-fb00-4335-8149-0e1177cc8cba" ?>
+    <?define Win64 = "yes" ?>
 
-    <?define FindVCRedistKey = "Software\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" ?>
     <?define VCRedistDescription = "Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.27.29016" ?>
     <?define VCRedistHash = "75f1aee6dccf3d6e6ac49926563737005b93ba13" ?>
-    <?define VCRedistName = "VC_redist.x64.exe" ?>
+    <?define VCRedistId = "VC_redist.x64.exe" ?>
+    <?define VCRedistName = "VC_redist.x64-$(var.VCRedistVersion).exe" ?>
     <?define VCRedistSize = "15001520" ?>
+    <?define VCRedistUpgradeCode = "36F68A90-239C-34DF-B58C-64B30153CE35" ?>
     <?define VCRedistUrl = "https://download.visualstudio.microsoft.com/download/pr/fd5d2eea-32b8-4814-b55e-28c83dd72d9c/952A0C6CB4A3DD14C3666EF05BB1982C5FF7F87B7103C2BA896354F00651E358/VC_redist.x64.exe" ?>
-    <?define VCRedistVersion = "14.27.29016.0" ?>
 <?else ?>
     <?define InstallFolder = "[ProgramFilesFolder]PicoTorrent" ?>
     <?define UpgradeCode = "08b52a3a-63eb-47c0-8a75-1df052a99042" ?>
+    <?define Win64 = "no" ?>
 
     <?define FindVCRedistKey = "Software\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" ?>
     <?define VCRedistDescription = "Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.27.29016" ?>
     <?define VCRedistHash = "b38b7fc28c5e2ef157f93297036202911d2fc2bf" ?>
-    <?define VCRedistName = "VC_redist.x86.exe" ?>
+    <?define VCRedistId = "VC_redist.x86.exe" ?>
+    <?define VCRedistName = "VC_redist.x86-$(var.VCRedistVersion).exe" ?>
     <?define VCRedistSize = "14427696" ?>
+    <?define VCRedistUpgradeCode = "65E5BD06-6392-3027-8C26-853107D3CF1A" ?>
     <?define VCRedistUrl = "https://download.visualstudio.microsoft.com/download/pr/9fe82b83-f3a1-43f5-8f25-ebe24529854c/B4D433E2F66B30B478C0D080CCD5217CA2A963C16E90CAF10B1E0592B7D8D519/VC_redist.x86.exe" ?>
-    <?define VCRedistVersion = "14.27.29016.0" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
@@ -35,27 +40,47 @@
             UpgradeCode="$(var.UpgradeCode)"
             Version="$(var.Version)">
 
-        <!-- Search for the C++ redistributable -->
-        <util:RegistrySearch Id="FindVCRedist"
-                             Root="HKLM"
-                             Key="$(var.FindVCRedistKey)"
-                             Value="Version"
-                             Variable="VCREDISTVERSION" />
+        <Variable Name="InstallFolder" Value="$(var.InstallFolder)"/>
+        <Variable Name="LaunchTarget" Value="[InstallFolder]\PicoTorrent.exe"/>
+        <Variable Name="INSTALL_VCREDIST" Value="1" />
 
-        <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
-            <bal:WixStandardBootstrapperApplication LicenseFile="LICENSE.rtf"
-                                                    LogoFile="res/app.png" />
+        <util:ProductSearch Id="VCRedistProductSearch"
+                            Result="version"
+                            Variable="VCREDISTVERSION_SEARCH"
+                            UpgradeCode="$(var.VCRedistUpgradeCode)" />
+
+        <!-- Search for previous InstallFolder-->
+        <util:RegistrySearch Id="PreviousInstallFolderSearch"
+                             Root="HKLM"
+                             Key="SOFTWARE\PicoTorrent"
+                             Value="InstallDirectory"
+                             Variable="PreviousInstallFolder"
+                             Win64="$(var.Win64)" />
+
+        <util:DirectorySearch Path="[PreviousInstallFolder]"
+                              Variable="InstallFolder"
+                              After="PreviousInstallFolderSearch"
+                              Condition="PreviousInstallFolder" />
+
+        <BootstrapperApplicationRef Id="ManagedBootstrapperApplicationHost">
+            <Payload SourceFile="../../src/installer/bin/Release/BootstrapperCore.config"/>
+            <Payload SourceFile="../../src/installer/bin/Release/PicoTorrentBootstrapper.dll"/>
+            <Payload SourceFile="../../src/installer/bin/Release/Microsoft.Deployment.WindowsInstaller.dll"/>
         </BootstrapperApplicationRef>
 
-        <Variable Name="InstallFolder" Type="string" Value="$(var.InstallFolder)"/>
-        <Variable Name="LaunchTarget" Value="[InstallFolder]\PicoTorrent.exe"/>
-
         <Chain>
-            <ExePackage Name="$(var.VCRedistName)"
+            <PackageGroupRef Id="NetFx45Redist" />
+
+            <ExePackage Id="$(var.VCRedistId)"
+                        Name="$(var.VCRedistName)"
+                        Cache="no"
                         Compressed="no"
-                        DetectCondition="VCREDISTVERSION &gt;= v14.27.29016"
+                        DetectCondition="VCREDISTVERSION_SEARCH &gt;= v$(var.VCRedistVersion)"
                         DownloadUrl="$(var.VCRedistUrl)"
-                        InstallCommand="/quiet /norestart"
+                        InstallCommand="/install /quiet /norestart"
+                        InstallCondition="INSTALL_VCREDIST = 1"
+                        RepairCommand="/repair /quiet /norestart"
+                        UninstallCommand="/uninstall /quiet /norestart"
                         PerMachine="yes"
                         Permanent="yes"
                         Vital="yes">
@@ -72,7 +97,10 @@
             <MsiPackage Id="PicoTorrentPackage"
                         Compressed="yes"
                         SourceFile="$(var.PicoTorrentInstaller)">
-                <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]" />
+
+                <MsiProperty Name="INSTALLDIR"              Value="[InstallFolder]" />
+                <MsiProperty Name="SKIP_FIREWALL_EXCEPTION" Value="[SKIP_FIREWALL_EXCEPTION]" />
+                <MsiProperty Name="SKIP_ASSOCIATE_FILES"    Value="[SKIP_ASSOCIATE_FILES]" />
             </MsiPackage>
         </Chain>
     </Bundle>

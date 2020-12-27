@@ -16,12 +16,14 @@ namespace UI
         ptID_MAIN_TORRENT_DETAILS,
         ptID_MAIN_TORRENT_LIST,
 
+        ptID_EVT_VIEW_HELP,
         ptID_EVT_ABOUT,
         ptID_EVT_ADD_TORRENT,
         ptID_EVT_ADD_MAGNET_LINK,
         ptID_EVT_CHECK_FOR_UPDATE,
         ptID_EVT_CREATE_TORRENT,
         ptID_EVT_EXIT,
+        ptID_EVT_SHOW_CONSOLE,
         ptID_EVT_SHOW_DETAILS,
         ptID_EVT_SHOW_STATUS_BAR,
         ptID_EVT_VIEW_PREFERENCES,
@@ -31,6 +33,7 @@ namespace UI
         ptID_KEY_DELETE_FILES,
         ptID_KEY_ADD_TORRENT,
         ptID_KEY_ADD_MAGNET_LINK,
+        ptID_KEY_VIEW_HELP,
 
         ptID_EVT_FILTERS_NONE,
         ptID_EVT_FILTERS_USER,

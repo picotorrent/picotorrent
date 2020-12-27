@@ -6,22 +6,25 @@
 #endif
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include <libtorrent/info_hash.hpp>
 #include <wx/dataview.h>
 
-namespace pt
-{
-namespace BitTorrent
+namespace pt::BitTorrent
 {
     class TorrentHandle;
     struct TorrentStatus;
 }
-namespace UI
+
+namespace pt::UI::Filters
 {
-namespace Models
+    class TorrentFilter;
+}
+
+namespace pt::UI::Models
 {
     class TorrentListModel : public wxDataViewIndexListModel
     {
@@ -59,7 +62,7 @@ namespace Models
 
         void ClearFilter();
         void ClearLabelFilter();
-        void SetFilter(std::function<bool(BitTorrent::TorrentHandle*)> const& filter);
+        void SetFilter(std::unique_ptr<Filters::TorrentFilter> filter);
         void SetLabelFilter(int labelId);
 
         int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending) const wxOVERRIDE;
@@ -74,7 +77,7 @@ namespace Models
 
         void GetValueByRow(wxVariant& variant, unsigned row, unsigned col) const wxOVERRIDE;
 
-        bool SetValueByRow(const wxVariant& variant, uint32_t row, uint32_t col) wxOVERRIDE { return false; }
+        bool SetValueByRow(const wxVariant&, uint32_t, uint32_t) wxOVERRIDE { return false; }
 
         void UpdateLabels(std::map<int, std::tuple<std::string, std::string>> const& labels);
 
@@ -84,13 +87,11 @@ namespace Models
 
         bool m_backgroundColorEnabled;
         int m_filterLabelId;
-        std::function<bool(BitTorrent::TorrentHandle*)> m_filter;
+        std::unique_ptr<Filters::TorrentFilter> m_filter;
         std::vector<libtorrent::info_hash_t> m_filtered;
         std::map<int, std::tuple<std::string, std::string>> m_labels;
         std::map<int, wxColor> m_labelsColors;
         std::map<int, wxIcon> m_labelsIcons;
         std::map<libtorrent::info_hash_t, BitTorrent::TorrentHandle*> m_torrents;
     };
-}
-}
 }

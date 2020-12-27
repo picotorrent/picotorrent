@@ -35,7 +35,7 @@ namespace BitTorrent
         bool IsValid();
         void ReplaceTrackers(std::vector<libtorrent::announce_entry> const& trackers);
         void ScrapeTracker(int trackerIndex);
-        TorrentStatus Status();
+        TorrentStatus Status() const;
         std::vector<libtorrent::announce_entry> Trackers() const;
 
         void ForceReannounce();

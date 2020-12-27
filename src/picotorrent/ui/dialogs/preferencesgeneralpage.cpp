@@ -2,7 +2,7 @@
 
 #include <strsafe.h>
 
-#include <loguru.hpp>
+#include <boost/log/trivial.hpp>
 
 #include "../clientdata.hpp"
 #include "../../core/configuration.hpp"
@@ -44,7 +44,7 @@ struct AutoRunKey
 
         if (res != ERROR_SUCCESS)
         {
-            LOG_F(WARNING, "PicoTorrent could not be registered to run at start-up. Error: %d", GetLastError());
+            BOOST_LOG_TRIVIAL(warning) << "PicoTorrent could not be registered to run at start-up. Error: " << GetLastError();
         }
     }
 

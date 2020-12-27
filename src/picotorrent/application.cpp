@@ -1,6 +1,6 @@
 #include "application.hpp"
 
-#include <loguru.hpp>
+#include <boost/log/trivial.hpp>
 #include <nlohmann/json.hpp>
 #include <wx/cmdline.h>
 #include <wx/ipc.h>
@@ -108,7 +108,7 @@ bool Application::OnInit()
         if (filename.size() < 6) { continue; }
         if (filename.substr(0, 6) != "Plugin") { continue; }
 
-        LOG_F(INFO, "Loading plugin from %s", p.path().string().c_str());
+        BOOST_LOG_TRIVIAL(info) << "Loading plugin from " << p.path();
 
         auto plugin = API::IPlugin::Load(p, env.get(), cfg.get());
 
@@ -204,6 +204,6 @@ void Application::WaitForPreviousInstance(long pid)
 {
     HANDLE hProc = OpenProcess(SYNCHRONIZE, FALSE, pid);
     if (hProc == NULL) { return; }
-    DWORD res = WaitForSingleObject(hProc, 10000);
+    WaitForSingleObject(hProc, 10000);
     CloseHandle(hProc);
 }

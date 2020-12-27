@@ -1,9 +1,6 @@
 [submodule "vendor/libtorrent"]
 	path = vendor/libtorrent
 	url = https://github.com/arvidn/libtorrent
-[submodule "vendor/loguru"]
-	path = vendor/loguru
-	url = https://github.com/emilk/loguru
 [submodule "vendor/wx"]
 	path = vendor/wx
 	url = https://github.com/wxWidgets/wxWidgets
@@ -20,3 +17,6 @@
 [submodule "vendor/sentry-crashpad"]
 	path = vendor/sentry-crashpad
 	url = https://github.com/picotorrent/sentry-crashpad
+[submodule "vendor/antlr4"]
+	path = vendor/antlr4
+	url = https://github.com/antlr/antlr4
