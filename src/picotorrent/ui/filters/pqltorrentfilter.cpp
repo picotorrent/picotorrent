@@ -200,7 +200,7 @@ public:
 
             if (value.suffix_speed.has_value())
             {
-                std::string suffix = value.suffix_size.value();
+                std::string suffix = value.suffix_speed.value();
                 if (suffix == "kbps") { term *= 1024; }
                 if (suffix == "mbps") { term *= 1048576; }
                 if (suffix == "gbps") { term *= 1073741824; }
