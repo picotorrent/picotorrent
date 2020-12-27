@@ -7,6 +7,7 @@
 
 #include <memory>
 
+class wxDirPickerCtrl;
 class wxListView;
 
 namespace pt
@@ -39,6 +40,10 @@ namespace Dialogs
         wxCheckBox* m_enableDht;
         wxCheckBox* m_enableLsd;
         wxCheckBox* m_enablePex;
+
+        wxCheckBox* m_enableFilter;
+        wxTextCtrl* m_filterPath;
+        wxButton* m_filterBrowse;
 
         std::shared_ptr<Core::Configuration> m_cfg;
         std::vector<int> m_removedListenInterfaces;
