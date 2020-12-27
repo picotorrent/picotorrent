@@ -280,7 +280,7 @@
     "restore_defaults": "Rétablir les paramètres par défaut",
     "documentation": "Documentation",
     "restore_defaults_description": "Cela restaurera la plupart des paramètres à leur valeur par défaut. Êtes-vous sûr(e) ?",
-    "labels": "Étiquettes (&e)",
+    "labels": "Étiquettes",
     "label_details": "Détails de l'étiquette",
     "color": "Couleur",
     "apply_filter": "Appliquer filtre",

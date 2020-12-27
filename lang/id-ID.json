@@ -292,5 +292,7 @@
     "tier": "Tingkat",
     "amp_console": "&Konsol",
     "some_torrents_already_in_session": "Beberapa torrent sudah ditambahkan dan akan dilewati",
-    "all_torrents_already_in_session": "Semua torrent sudah ditambahkan dan akan dilewati"
+    "all_torrents_already_in_session": "Semua torrent sudah ditambahkan dan akan dilewati",
+    "view_help": "Lihat &Bantuan",
+    "connections": "Koneksi"
 }
