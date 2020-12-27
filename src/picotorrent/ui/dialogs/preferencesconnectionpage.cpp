@@ -87,8 +87,41 @@ PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shar
     privacySizer->Add(privacyGrid, 1, wxEXPAND | wxALL, 5);
 
     wxStaticBoxSizer* filterSizer = new wxStaticBoxSizer(wxHORIZONTAL, this, i18n("ip_filter"));
-    filterSizer->Add(new wxCheckBox(filterSizer->GetStaticBox(), wxID_ANY, wxEmptyString), 0, wxALIGN_CENTER_VERTICAL | wxALL, FromDIP(5));
-    filterSizer->Add(new wxDirPickerCtrl(filterSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDirSelectorPromptStr, wxDefaultPosition, wxDefaultSize, wxDIRP_DEFAULT_STYLE | wxDIRP_SMALL), 1, wxEXPAND | wxALL, FromDIP(5));
+    m_enableFilter = new wxCheckBox(filterSizer->GetStaticBox(), wxID_ANY, wxEmptyString);
+    m_enableFilter->SetValue(m_cfg->Get<bool>("ipfilter.enabled").value());
+
+    m_filterPath = new wxTextCtrl(filterSizer->GetStaticBox(), wxID_ANY, m_cfg->Get<std::string>("ipfilter.file_path").value_or(""));
+    m_filterPath->Enable(m_cfg->Get<bool>("ipfilter.enabled").value());
+    m_filterBrowse = new wxButton(filterSizer->GetStaticBox(), wxID_ANY, i18n("browse"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    m_filterBrowse->Enable(m_cfg->Get<bool>("ipfilter.enabled").value());
+
+    auto filterInputSizer = new wxBoxSizer(wxHORIZONTAL);
+    filterInputSizer->Add(m_filterPath, 1, wxEXPAND | wxRIGHT, FromDIP(2));
+    filterInputSizer->Add(m_filterBrowse, 0);
+
+    filterSizer->Add(m_enableFilter, 0, wxALIGN_CENTER_VERTICAL | wxALL, FromDIP(5));
+    filterSizer->Add(filterInputSizer, 1, wxEXPAND | wxALL, FromDIP(5));
+
+    m_enableFilter->Bind(
+        wxEVT_CHECKBOX,
+        [this](wxCommandEvent&)
+        {
+            m_filterPath->Enable(m_enableFilter->GetValue());
+            m_filterBrowse->Enable(m_enableFilter->GetValue());
+        });
+
+    m_filterBrowse->Bind(
+        wxEVT_BUTTON,
+        [this](wxCommandEvent&)
+        {
+            wxFileDialog ofd(this, i18n("select_ip_filter_file"), "", "", i18n("file_filter_all_files"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+            if (ofd.ShowModal() != wxID_OK)
+            {
+                return;
+            }
+
+            m_filterPath->SetValue(ofd.GetPath());
+        });
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(listenSizer, 0, wxEXPAND);
@@ -193,6 +226,14 @@ void PreferencesConnectionPage::Save(bool* restartRequired)
     m_cfg->Set("libtorrent.enable_dht", m_enableDht->GetValue());
     m_cfg->Set("libtorrent.enable_lsd", m_enableLsd->GetValue());
     m_cfg->Set("libtorrent.enable_pex", m_enablePex->GetValue());
+
+    if (m_enableFilter->GetValue() != m_cfg->Get<bool>("ipfilter.enabled"))
+    {
+        *restartRequired = true;
+    }
+
+    m_cfg->Set("ipfilter.enabled", m_enableFilter->GetValue());
+    m_cfg->Set("ipfilter.file_path", Utils::toStdString(m_filterPath->GetValue().ToStdWstring()));
 }
 
 bool PreferencesConnectionPage::IsValid()

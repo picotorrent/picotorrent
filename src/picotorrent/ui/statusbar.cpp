@@ -12,13 +12,14 @@ StatusBar::StatusBar(wxWindow* parent)
 {
     int widths[] =
     {
-        FromDIP(120),
-        FromDIP(120),
+        -1,
+        -1,
+        -1,
         -1
     };
 
-    SetFieldsCount(3);
-    SetStatusWidths(3, widths);
+    SetFieldsCount(4);
+    SetStatusWidths(4, widths);
 }
 
 void StatusBar::UpdateDhtNodesCount(int64_t nodes)
@@ -41,4 +42,16 @@ void StatusBar::UpdateTorrentCount(int64_t torrents)
 void StatusBar::UpdateTransferRates(int64_t downSpeed, int64_t upSpeed)
 {
     SetStatusText(fmt::format(i18n("dl_s_ul_s"), Utils::toHumanFileSize(downSpeed), Utils::toHumanFileSize(upSpeed)), 2);
+}
+
+void StatusBar::UpdateIPFilterStatus(bool enabled)
+{
+    if (enabled)
+    {
+        SetStatusText(i18n("ip_filter_enabled"), 3);
+    }
+    else
+    {
+        SetStatusText(i18n("ip_filter_disabled"), 3);
+    }
 }

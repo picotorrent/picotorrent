@@ -234,7 +234,7 @@ bool ParseIPv4Address(std::string const& input, lt::address& output)
     }
     catch (std::exception const& ex)
     {
-        LOG_F(ERROR, "Failed to parse IPv4 address from string %s: %s", input.c_str(), ex.what());
+        BOOST_LOG_TRIVIAL(error) << "Failed to parse IPv4 address from string " << input << ": " << ex.what();
     }
 
     return false;
@@ -256,7 +256,7 @@ Session::Session(wxEvtHandler* parent, std::shared_ptr<pt::Core::Database> db, s
 
         if (filePath.value().size() > 0)
         {
-            LOG_F(INFO, "Blocking all connections and dispatching thread to build IP filter");
+            BOOST_LOG_TRIVIAL(info) << "Blocking all connections and dispatching thread to build IP filter";
 
             ipf.add_rule(
                 boost::asio::ip::make_address_v4("0.0.0.0"),
@@ -312,9 +312,9 @@ Session::Session(wxEvtHandler* parent, std::shared_ptr<pt::Core::Database> db, s
     this->Bind(ptEVT_IPFILTER_UPDATED,
         [this](wxThreadEvent& evt)
         {
-            lt::ip_filter& ipf = evt.GetPayload<lt::ip_filter>();
+            lt::ip_filter ipf = evt.GetPayload<lt::ip_filter>();
             m_session->set_ip_filter(ipf);
-            LOG_F(INFO, "IP filter applied");
+            BOOST_LOG_TRIVIAL(info) << "IP filter applied";
         });
 
     this->Bind(wxEVT_TIMER, &Session::OnSaveResumeDataTimer, this, ptID_TIMER_RESUME_DATA);
@@ -833,7 +833,7 @@ void Session::LoadIPFilter(std::string const& path)
     // not to use any instances etc. Only communicate with the class
     // through wxPostEvent
 
-    LOG_F(INFO, "Loading IP filter from %s", path.c_str());
+    BOOST_LOG_TRIVIAL(info) << "Loading IP filter from " << path.c_str();
 
     wxFileInputStream fileStream(path);
     wxZipInputStream zipStream(fileStream);
@@ -849,7 +849,7 @@ void Session::LoadIPFilter(std::string const& path)
         wxStringOutputStream out;
         zipStream.Read(out);
 
-        std::string& c = out.GetString().ToStdString();
+        std::string c = out.GetString().ToStdString();
 
         std::stringstream ss(c);
         std::string line;
@@ -881,8 +881,9 @@ void Session::LoadIPFilter(std::string const& path)
     }
 
     auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(end - begin).count();
 
-    LOG_F(INFO, "Loaded %d IP filter rule(s) in %f seconds", rules, std::chrono::duration_cast<std::chrono::duration<double>>(end - begin).count());
+    BOOST_LOG_TRIVIAL(info) << "Loaded " << rules << " IP filter rule(s) in " << duration << " seconds";
 
     auto evt = new wxThreadEvent(ptEVT_IPFILTER_UPDATED);
     evt->SetPayload(ipf);

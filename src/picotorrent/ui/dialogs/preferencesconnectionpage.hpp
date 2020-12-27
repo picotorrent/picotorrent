@@ -42,7 +42,8 @@ namespace Dialogs
         wxCheckBox* m_enablePex;
 
         wxCheckBox* m_enableFilter;
-        wxDirPickerCtrl* m_filterPath;
+        wxTextCtrl* m_filterPath;
+        wxButton* m_filterBrowse;
 
         std::shared_ptr<Core::Configuration> m_cfg;
         std::vector<int> m_removedListenInterfaces;
