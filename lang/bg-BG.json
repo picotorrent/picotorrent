@@ -291,5 +291,10 @@
     "proxy_tracker_connections": "Връзките към сървър минават през посредник",
     "trackers": "Сървъри",
     "add_tracker": "Добавяне на сървър",
-    "trackers_input_per_line": "Сървъри (по един на ред)"
+    "trackers_input_per_line": "Сървъри (по един на ред)",
+    "select_ip_filter_file": "Избиране на файл с филтри",
+    "ip_filter_enabled": "Ф по IP: ✔️",
+    "ip_filter_disabled": "Ф по IP: ❌",
+    "ip_filter": "Филтриране по адрес на IP",
+    "file_filter_all_files": "Всички файлове (*.*)|*.*"
 }
