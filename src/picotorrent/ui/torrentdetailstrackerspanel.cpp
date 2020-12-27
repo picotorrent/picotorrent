@@ -188,7 +188,10 @@ void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
                     return ae.tier == item->tier && ae.url == item->key;
                 });
 
-            if (selectedTracker == originalTrackers.end())
+            if ((evt.GetId() == ptID_CONTEXT_MENU_COPY_URL
+                || evt.GetId() == ptID_CONTEXT_MENU_FORCE_REANNOUNCE
+                || evt.GetId() == ptID_CONTEXT_MENU_SCRAPE)
+                && selectedTracker == originalTrackers.end())
             {
                 BOOST_LOG_TRIVIAL(warning) << "Could not find selected tracker in torrent trackers: " << item->key;
                 return;

@@ -53,7 +53,7 @@ void TrackerListModel::Update(BitTorrent::TorrentHandle* torrent)
     if (m_dht == nullptr)
     {
         m_dht = std::make_shared<ListItem>();
-        m_dht->key = L"DHT";
+        m_dht->key = "DHT";
         m_dht->tier = -1;
 
         m_items.insert(
@@ -66,7 +66,7 @@ void TrackerListModel::Update(BitTorrent::TorrentHandle* torrent)
     if (m_lsd == nullptr)
     {
         m_lsd = std::make_shared<ListItem>();
-        m_lsd->key = L"LSD";
+        m_lsd->key = "LSD";
         m_lsd->tier = -1;
 
         m_items.insert(
@@ -79,7 +79,7 @@ void TrackerListModel::Update(BitTorrent::TorrentHandle* torrent)
     if (m_pex == nullptr)
     {
         m_pex = std::make_shared<ListItem>();
-        m_pex->key = L"PeX";
+        m_pex->key = "PeX";
         m_pex->tier = -1;
 
         m_items.insert(
@@ -144,7 +144,7 @@ void TrackerListModel::Update(BitTorrent::TorrentHandle* torrent)
                 trackers.end(),
                 [tierIterator, trackerIterator](lt::announce_entry const& ae)
                 {
-                    return Utils::toStdWString(ae.url) == (*trackerIterator)->key
+                    return ae.url == (*trackerIterator)->key
                         && ae.tier == (*tierIterator)->tier;
                 });
 
@@ -191,7 +191,7 @@ void TrackerListModel::Update(BitTorrent::TorrentHandle* torrent)
         if (tierIter == m_items.end())
         {
             auto newTier = std::make_shared<ListItem>();
-            newTier->key = fmt::format(i18n("tier_n"), iter->tier);
+            newTier->key = Utils::toStdString(fmt::format(i18n("tier_n"), iter->tier));
             newTier->tier = iter->tier;
 
             m_items.push_back(newTier);
@@ -217,13 +217,13 @@ void TrackerListModel::Update(BitTorrent::TorrentHandle* torrent)
             [iter](auto const& itm)
             {
                 return itm->tier == iter->tier
-                    && itm->key == Utils::toStdWString(iter->url);
+                    && itm->key == iter->url;
             });
 
         if (trackerIter == (*tierIter)->children.end())
         {
             auto newTracker = std::make_shared<ListItem>();
-            newTracker->key = Utils::toStdWString(iter->url);
+            newTracker->key = iter->url;
             newTracker->parent = (*tierIter);
             newTracker->tier = iter->tier;
 
@@ -301,7 +301,7 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
     {
     case Column::Url:
     {
-        variant = li->key;
+        variant = Utils::toStdWString(li->key);
         break;
     }
     case Column::Status:
