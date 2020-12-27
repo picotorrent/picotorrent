@@ -527,7 +527,13 @@ void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<
 
     if (!files.empty())
     {
-        ParseTorrentFiles(params, files);
+        std::vector<std::wstring> converted;
+        for (auto const& file : files)
+        {
+            converted.push_back(Utils::toStdWString(file));
+        }
+
+        ParseTorrentFiles(params, converted);
     }
 
     if (!magnets.empty())
@@ -743,7 +749,7 @@ void MainFrame::OnFileAddTorrent(wxCommandEvent&)
     ofd.SetTitle(i18n("add_torrent_s"));
     ofd.Show(this);
 
-    std::vector<std::string> files;
+    std::vector<std::wstring> files;
     ofd.GetFiles(files);
 
     if (files.empty())
@@ -843,18 +849,25 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
     }
 }
 
-void MainFrame::ParseTorrentFiles(std::vector<lt::add_torrent_params>& params, std::vector<std::string> const& paths)
+void MainFrame::ParseTorrentFiles(std::vector<lt::add_torrent_params>& params, std::vector<std::wstring> const& paths)
 {
-    for (std::string const& path : paths)
+    for (std::wstring const& path : paths)
     {
         lt::error_code ec;
         lt::add_torrent_params param;
 
-        param.ti = std::make_shared<lt::torrent_info>(path, ec);
+        std::ifstream in(path, std::ios::binary);
+        std::stringstream ss;
+        ss << in.rdbuf();
+
+        param.ti = std::make_shared<lt::torrent_info>(
+            ss.str().data(),
+            static_cast<int>(ss.str().size()),
+            ec);
 
         if (ec)
         {
-            BOOST_LOG_TRIVIAL(error) << "Failed to parse torrent file: " << ec;
+            BOOST_LOG_TRIVIAL(error) << "Failed to parse torrent file: " << ec.message();
             continue;
         }
 
