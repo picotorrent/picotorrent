@@ -217,5 +217,10 @@
     "all_torrents_already_in_session": "All torrents are already added and will be skipped",
     "seed_mode": "Seed mode",
     "connections": "Connections",
-    "view_help": "View &Help"
+    "view_help": "View &Help",
+    "ip_filter": "IP filter",
+    "select_ip_filter_file": "Select IP filter file",
+    "file_filter_all_files": "All files (*.*)|*.*",
+    "ip_filter_enabled": "IP filter: ✔️",
+    "ip_filter_disabled": "IP filter: ❌"
 }

@@ -377,6 +377,7 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     // Update status bar
     m_statusBar->UpdateDhtNodesCount(m_cfg->Get<bool>("libtorrent.enable_dht").value() ? 0 : -1);
     m_statusBar->UpdateTorrentCount(m_torrentsCount);
+    m_statusBar->UpdateIPFilterStatus(m_cfg->Get<bool>("ipfilter.enabled").value());
 
     // Show taskbar icon
     if (m_cfg->Get<bool>("show_in_notification_area").value())
