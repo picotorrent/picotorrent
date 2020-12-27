@@ -296,7 +296,7 @@
     "some_torrents_already_in_session": "Certains torrents existent déjà et ne seront pas ajoutés",
     "all_torrents_already_in_session": "Tous les torrents existent déjà et ne seront pas ajoutés",
     "leeches": "Clients",
-    "view_help": "Afficher l'aide",
+    "view_help": "&Afficher l'aide",
     "connections": "Connexions",
     "seed_mode": "Ignorer la vérification des données"
 }
