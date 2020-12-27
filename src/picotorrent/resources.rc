@@ -1,6 +1,7 @@
 #include "version.h"
 
 AppIcon ICON "..\\..\\res\\app.ico"
+FileIcon ICON "..\\..\\res\\file.ico"
 
 // Icons
 ICO_TERMINAL ICON "..\\..\\res\\terminal.ico"
