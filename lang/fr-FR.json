@@ -296,7 +296,12 @@
     "some_torrents_already_in_session": "Certains torrents existent déjà et ne seront pas ajoutés",
     "all_torrents_already_in_session": "Tous les torrents existent déjà et ne seront pas ajoutés",
     "leeches": "Clients",
-    "view_help": "Afficher l'aide",
+    "view_help": "&Afficher l'aide",
     "connections": "Connexions",
-    "seed_mode": "Ignorer la vérification des données"
+    "seed_mode": "Ignorer la vérification des données",
+    "ip_filter": "Filtrage IP",
+    "ip_filter_enabled": "Filtrage IP : ✔️",
+    "ip_filter_disabled": "Filtrage IP : ❌",
+    "select_ip_filter_file": "Sélectionner le fichier de filtre IP",
+    "file_filter_all_files": "Tous les fichiers (*.*)|*.*"
 }
