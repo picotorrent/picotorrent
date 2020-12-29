@@ -35,7 +35,7 @@ OpenFileDialog::~OpenFileDialog()
     m_wrappedDialog->Release();
 }
 
-void OpenFileDialog::GetFiles(std::vector<std::string>& files)
+void OpenFileDialog::GetFiles(std::vector<std::wstring>& files)
 {
     IShellItemArray* results = nullptr;
 
@@ -60,8 +60,7 @@ void OpenFileDialog::GetFiles(std::vector<std::string>& files)
         if (SUCCEEDED(item->GetDisplayName(SIGDN_FILESYSPATH, &path))
             && path != nullptr)
         {
-            files.push_back(
-                Utils::toStdString(path));
+            files.push_back(path);
             CoTaskMemFree(path);
         }
 

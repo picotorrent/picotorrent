@@ -24,7 +24,7 @@ namespace pt::UI::Win32
         OpenFileDialog();
         ~OpenFileDialog();
 
-        void GetFiles(std::vector<std::string>& files);
+        void GetFiles(std::vector<std::wstring>& files);
 
         void SetFileTypes(std::vector<std::tuple<std::wstring, std::wstring>> const& types);
         void SetOption(Option opt);
