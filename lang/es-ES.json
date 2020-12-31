@@ -266,7 +266,7 @@
     "status_hashing_piece": "Pieza hash {0} de {1}",
     "commitish": "Consolidado",
     "queue_position": "#",
-    "skip_add_torrent_dialog": "Omitir cuadro de dialogo \"Agregar torrent\"",
+    "skip_add_torrent_dialog": "Omitir cuadro de diálogo \"Agregar torrent\"",
     "added_on": "Añadido el",
     "completed_on": "Completado el",
     "force_reannounce": "Forzar recomunicación",
