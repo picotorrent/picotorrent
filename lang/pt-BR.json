@@ -298,5 +298,10 @@
     "leeches": "Leeches",
     "view_help": "Ver &ajuda",
     "seed_mode": "Modo compartilhador",
-    "connections": "Conexões"
+    "connections": "Conexões",
+    "file_filter_all_files": "Todos os Arquivos (*.*)|*.*",
+    "ip_filter_enabled": "Filtro de IP: ✔️",
+    "ip_filter_disabled": "Filtro de IP: ❌",
+    "ip_filter": "Filtro de IP",
+    "select_ip_filter_file": "Selecione um arquivo de filtro de IP"
 }
