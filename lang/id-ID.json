@@ -294,5 +294,10 @@
     "some_torrents_already_in_session": "Beberapa torrent sudah ditambahkan dan akan dilewati",
     "all_torrents_already_in_session": "Semua torrent sudah ditambahkan dan akan dilewati",
     "view_help": "Lihat &Bantuan",
-    "connections": "Koneksi"
+    "connections": "Koneksi",
+    "ip_filter": "Filter IP",
+    "select_ip_filter_file": "Pilih berkas filter IP",
+    "file_filter_all_files": "Semua berkas (*.*)|*.*",
+    "ip_filter_enabled": "Filter IP: ✔️",
+    "ip_filter_disabled": "Filter IP: ❌"
 }
