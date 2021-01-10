@@ -52,18 +52,21 @@ void Translator::LoadDatabase(std::filesystem::path const& filePath)
 int Translator::LoadDatabaseCallback(void* user, int, char** data, char**)
 {
     Translator* tr = static_cast<Translator*>(user);
-#ifdef _WIN32
+
     std::string loc = data[0];
     std::string key = data[1];
     std::wstring val = Utils::toStdWString(data[2]);
+
+#ifdef _WIN32
     TCHAR localeNameBuffer[1024];
+#endif
 
     if (tr->m_languages.find(loc) == tr->m_languages.end())
     {
         Language l;
         l.locale = loc;
 
-
+#ifdef _WIN32
         int res = GetLocaleInfoEx(
             Utils::toStdWString(l.locale).c_str(),
             LOCALE_SLOCALIZEDLANGUAGENAME,
@@ -78,12 +81,13 @@ int Translator::LoadDatabaseCallback(void* user, int, char** data, char**)
         {
             BOOST_LOG_TRIVIAL(error) << "GetLocaleInfoEx returned " << res << " for " << l.locale;
         }
+#endif
 
         tr->m_languages.insert({ loc, l });
     }
 
     tr->m_languages.at(loc).translations.insert({ key, val });
-#endif
+
     return SQLITE_OK;
 }
 

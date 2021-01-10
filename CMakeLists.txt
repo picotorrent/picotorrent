@@ -130,7 +130,7 @@ target_link_libraries(
 
 add_executable(
     PicoTorrent
-    #WIN32
+    #MACOSX_BUNDLE
 
     src/picotorrent/application
     src/picotorrent/buildinfo
@@ -308,5 +308,5 @@ set_property(TARGET PicoTorrent PROPERTY ENABLE_EXPORTS 1)
 # Generate coredb
 add_custom_command(
     TARGET PicoTorrent POST_BUILD
-    COMMAND PicoTorrent-coredb "${CMAKE_SOURCE_DIR}/lang" $<TARGET_FILE_DIR:PicoTorrent>
+    COMMAND PicoTorrent-coredb "${CMAKE_SOURCE_DIR}/lang" "${CMAKE_SOURCE_DIR}/res/dbmigrations" $<TARGET_FILE_DIR:PicoTorrent>
 )

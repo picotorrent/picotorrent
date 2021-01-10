@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
+#else
+#include <mach-o/dyld.h>
 #endif
 
 #pragma warning(push)
@@ -67,11 +69,15 @@ fs::path Environment::GetApplicationPath()
     TCHAR path[MAX_PATH];
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
     PathRemoveFileSpec(path);
-#else
-    fs::path path;
-#endif
-
     return path;
+#else
+    char path[1024];
+    uint32_t size = sizeof(path);
+    _NSGetExecutablePath(path, &size);
+    char buf[PATH_MAX];
+    char* rp = realpath(path, buf);
+    return fs::path(rp).parent_path();
+#endif
 }
 
 std::string Environment::GetCrashpadReportUrl()

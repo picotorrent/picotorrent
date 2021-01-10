@@ -202,6 +202,22 @@ bool Database::Migrate()
 
     std::vector<Migration> migrations;
 
+    sqlite3* cdb;
+    sqlite3_open(m_env->GetCoreDbFilePath().c_str(), &cdb);
+    sqlite3_exec(
+        cdb,
+        "SELECT id, content FROM migrations ORDER BY id ASC",
+        [](void* user, int, char** data, char**)
+        {
+            std::vector<Migration>* m = static_cast<std::vector<Migration>*>(user);
+            m->push_back({ data[0], data[1] });
+            return 0;
+        },
+        &migrations,
+        nullptr);
+
+    //m_env->GetCoreDbFilePath()
+
 #ifdef _WIN32
     EnumResourceNames(
         NULL,

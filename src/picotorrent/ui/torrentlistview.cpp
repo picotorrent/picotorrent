@@ -192,6 +192,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, Models::Torren
         InsertColumn(GetColumnCount(), cmd.column);
     }
 
+#ifdef _WIN32
     if (!wxPersistenceManager::Get().RegisterAndRestore(this))
     {
         for (auto const& cmd : m_columns)
@@ -199,6 +200,7 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, Models::Torren
             cmd.column->SetHidden(cmd.hidden);
         }
     }
+#endif
 
     // insert the "fake" column last, always
     AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), TorrentListModel::Columns::_Max, 0, wxALIGN_CENTER, 0));
