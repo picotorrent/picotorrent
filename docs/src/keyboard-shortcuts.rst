@@ -3,9 +3,13 @@ Keyboard Shortcuts
 
 PicoTorrent has a few keyboard shortcuts which simplifies various tasks.
 
-- :kbd:`Control+O`. Open torrent file.
-- :kbd:`Control+U`. Add magnet links.
-- :kbd:`Control+A`. Select all torrents.
-- :kbd:`Delete`. Removes the selected torrents while keeping the downloaded
-  data.
-- :kbd:`Shift+Delete`. Removes the selected torrents and the downloaded data.
+=================== =========================================================
+Shortcut            Action
+=================== =========================================================
+:kbd:`F1`           Open online help
+:kbd:`Ctrl+O`       Add torrent
+:kbd:`Ctrl+U`       Add magnet links
+:kbd:`Ctrl+A`       Select all listed torrents
+:kbd:`Del`          Remove selected torrents while keeping the downloaded data
+:kbd:`Shift+Del`    Remove selected torrents and the downloaded data
+=================== =========================================================
