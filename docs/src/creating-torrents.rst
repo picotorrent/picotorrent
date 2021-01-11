@@ -1,4 +1,4 @@
-Creating torrents
+Creating Torrents
 =================
 
 PicoTorrent has a simple dialog for creating torrents. You can create single-

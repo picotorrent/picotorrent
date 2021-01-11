@@ -1,4 +1,4 @@
-Keyboard shortcuts
+Keyboard Shortcuts
 ==================
 
 PicoTorrent has a few keyboard shortcuts which simplifies various tasks.

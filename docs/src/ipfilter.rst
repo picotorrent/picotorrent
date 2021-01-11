@@ -1,4 +1,4 @@
-IP filtering
+IP Filtering
 ============
 
 PicoTorrent supports eMule Security IP filters. To enable IP filtering you
