@@ -30,7 +30,7 @@
     "unknown_size": "حجم مجهول",
     "choose_save_path": "حدد مكان الحفظ",
     "torrent": "بذرة",
-    "save_path": "حفظ المكان",
+    "save_path": "مكان الحفظ",
     "add_torrent_s": "إضافة بذور",
     "storage": "التخزين",
     "picotorrent_v_format": "بيكوتورنت ن{0}",
@@ -292,5 +292,14 @@
     "per_second_format": "{0}/ث",
     "trackers": "الملحقات",
     "show_picotorrent_in_notification_area": "أظهر بيكوتورنت في منطقة التنبيهات",
-    "restore_defaults_description": "هذا سوف يرجع أكثر الاعدادات لقيمها الافتراضية, هل أنت متأكد من هذا؟"
+    "restore_defaults_description": "هذا سوف يرجع أكثر الاعدادات لقيمها الافتراضية, هل أنت متأكد من هذا؟",
+    "view_help": "مشاهدة و مساعدة",
+    "connections": "الإتصالات",
+    "seed_mode": "وضع المشاركة",
+    "select_ip_filter_file": "اختر ملف فلترة عناوين الIP",
+    "file_filter_all_files": "جميع الملفات (*.*)|*.*",
+    "ip_filter_enabled": "فلتر الIP: ✔️",
+    "ip_filter_disabled": "فلتر الIP: ❌",
+    "ip_filter": "فلتر الIP",
+    "leeches": "المتطفلون"
 }
