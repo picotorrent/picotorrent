@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
+#elif __linux__ 
+#include <unistd.h>
 #else
 #include <mach-o/dyld.h>
 #endif
@@ -70,6 +72,14 @@ fs::path Environment::GetApplicationPath()
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
     PathRemoveFileSpec(path);
     return path;
+#elif __linux__
+    const size_t bufSize = PATH_MAX + 1;
+    char buf[PATH_MAX];
+    char dirNameBuffer[bufSize];
+    const char *linkName = "/proc/self/exe";
+    const int ret = int(readlink(linkName, dirNameBuffer, bufSize - 1));
+    char* rp = realpath(dirNameBuffer, buf);
+    return fs::path(rp).parent_path();
 #else
     char path[1024];
     uint32_t size = sizeof(path);
