@@ -17,7 +17,7 @@ PQL supports two primitive and two compound types:
 Primitive Types
 ^^^^^^^^^^^^^^^
 - :code:`NUMBER` - signed integer or floating-point number;
-- :code:`STRING` - doublequoted series of Unicode characters.
+- :code:`STRING` - string of Unicode characters enclosed within quotation marks.
 
 Compound Types
 ^^^^^^^^^^^^^^
@@ -63,7 +63,7 @@ Units of Size
 Used in conjunction with the `size` field and together form
 :code:`SIZE` type.
 
-- :code:`b` - bytes, default unit of size if not other provided;
+- :code:`b` - bytes, default unit of size if none other provided;
 - :code:`kb` - Kilobytes;
 - :code:`mb` - Megabytes;
 - :code:`gb` - Gigabytes.
@@ -76,7 +76,7 @@ Units of Speed
 Used in conjunction with `dl` and `ul` fields and together form
 :code:`SPEED` type.
 
-- :code:`bps` - bytes per second, default unit of speed if not other provided;
+- :code:`bps` - bytes per second, default unit of speed if none other provided;
 - :code:`kbps` - Kilobytes per second;
 - :code:`mbps` - megabytes per second;
 - :code:`gbps` - Gigabytes per second.
