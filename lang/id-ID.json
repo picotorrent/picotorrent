@@ -299,5 +299,6 @@
     "select_ip_filter_file": "Pilih berkas filter IP",
     "file_filter_all_files": "Semua berkas (*.*)|*.*",
     "ip_filter_enabled": "Filter IP: ✔️",
-    "ip_filter_disabled": "Filter IP: ❌"
+    "ip_filter_disabled": "Filter IP: ❌",
+    "seed_mode": "Mode berbagi"
 }
