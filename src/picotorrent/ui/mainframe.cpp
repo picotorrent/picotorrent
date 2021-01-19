@@ -1,6 +1,7 @@
 #include "mainframe.hpp"
 
 #include <filesystem>
+#include <fstream>
 #include <regex>
 
 #include <boost/log/trivial.hpp>
@@ -13,6 +14,7 @@
 #include <wx/splitter.h>
 #include <wx/taskbarbutton.h>
 
+#include "../applicationoptions.hpp"
 #include "../bittorrent/addparams.hpp"
 #include "../bittorrent/session.hpp"
 #include "../bittorrent/sessionstatistics.hpp"
@@ -46,11 +48,12 @@ using pt::UI::MainFrame;
 
 const char* WindowTitle = "PicoTorrent";
 
-MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Core::Database> db, std::shared_ptr<Core::Configuration> cfg)
+MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Core::Database> db, std::shared_ptr<Core::Configuration> cfg, pt::CommandLineOptions const& options)
     : wxFrame(nullptr, wxID_ANY, WindowTitle, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, "MainFrame"),
     m_env(env),
     m_db(db),
     m_cfg(cfg),
+    m_options(options),
     m_session(new BitTorrent::Session(this, db, cfg, env)),
     m_splitter(new wxSplitterWindow(this, ptID_MAIN_SPLITTER)),
     m_statusBar(new StatusBar(this)),
@@ -444,7 +447,14 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         auto our = new BitTorrent::AddParams();
 
         p.flags |= lt::torrent_flags::duplicate_is_error;
-        p.save_path = m_cfg->Get<std::string>("default_save_path").value();
+        if (!m_options.save_path.empty())
+        {
+            p.save_path = m_options.save_path;
+        }
+        else
+        {
+            p.save_path = m_cfg->Get<std::string>("default_save_path").value();
+        }
         p.userdata = lt::client_data_t(our);
 
         // If we have a param with an info hash and no torrent info,
@@ -494,7 +504,7 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         }
     }
 
-    if (m_cfg->Get<bool>("skip_add_torrent_dialog").value())
+    if (m_cfg->Get<bool>("skip_add_torrent_dialog").value() || m_options.silent)
     {
         for (lt::add_torrent_params& p : params)
         {
@@ -522,14 +532,15 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
     m_session->AddMetadataSearch(hashes);
 }
 
-void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<std::string> const& magnets)
+void MainFrame::HandleParams(pt::CommandLineOptions const& options)
 {
     std::vector<lt::add_torrent_params> params;
 
-    if (!files.empty())
+    m_options = options;
+    if (!m_options.files.empty())
     {
         std::vector<std::wstring> converted;
-        for (auto const& file : files)
+        for (auto const& file : m_options.files)
         {
             converted.push_back(Utils::toStdWString(file));
         }
@@ -537,9 +548,9 @@ void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<
         ParseTorrentFiles(params, converted);
     }
 
-    if (!magnets.empty())
+    if (!m_options.magnets.empty())
     {
-        for (std::string const& magnet : magnets)
+        for (std::string const& magnet : m_options.magnets)
         {
             lt::error_code ec;
             lt::add_torrent_params tp = lt::parse_magnet_uri(magnet, ec);

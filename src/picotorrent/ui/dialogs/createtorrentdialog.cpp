@@ -1,6 +1,7 @@
 #include "createtorrentdialog.hpp"
 
 #include <filesystem>
+#include <fstream>
 
 #include <boost/log/trivial.hpp>
 #include <fmt/format.h>
