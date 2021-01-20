@@ -401,7 +401,7 @@ MainFrame::~MainFrame()
     delete m_taskBarIcon;
 }
 
-void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
+void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params, bool use_commandline_options)
 {
     bool didRemove = false;
 
@@ -447,7 +447,7 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         auto our = new BitTorrent::AddParams();
 
         p.flags |= lt::torrent_flags::duplicate_is_error;
-        if (!m_options.save_path.empty())
+        if ((m_options.save_path.empty() == false) && (use_commandline_options == true))
         {
             p.save_path = m_options.save_path;
         }
@@ -504,7 +504,7 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         }
     }
 
-    if (m_cfg->Get<bool>("skip_add_torrent_dialog").value() || m_options.silent)
+    if (m_cfg->Get<bool>("skip_add_torrent_dialog").value() || (m_options.silent && use_commandline_options))
     {
         for (lt::add_torrent_params& p : params)
         {
@@ -565,7 +565,7 @@ void MainFrame::HandleParams(pt::CommandLineOptions const& options)
         }
     }
 
-    AddTorrents(params);
+    AddTorrents(params, true);
 }
 
 void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const& torrents)
@@ -744,7 +744,7 @@ void MainFrame::OnFileAddMagnetLink(wxCommandEvent&)
     if (dlg.ShowModal() == wxID_OK)
     {
         auto params = dlg.GetParams();
-        this->AddTorrents(params);
+        this->AddTorrents(params, false);
     }
 }
 
@@ -771,7 +771,7 @@ void MainFrame::OnFileAddTorrent(wxCommandEvent&)
 
     std::vector<lt::add_torrent_params> params;
     this->ParseTorrentFiles(params, files);
-    this->AddTorrents(params);
+    this->AddTorrents(params, false);
 }
 
 void MainFrame::OnFileCreateTorrent(wxCommandEvent&)

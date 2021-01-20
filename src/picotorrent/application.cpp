@@ -48,7 +48,7 @@ bool Application::OnCmdLineParsed(wxCmdLineParser& parser)
 
     m_options.silent = parser.Found("silent");
 
-    if (parser.Found("save_path", &save_path))
+    if (parser.Found("save-path", &save_path))
     {
         m_options.save_path = Utils::toStdString(save_path.ToStdWstring());
     }
@@ -182,7 +182,7 @@ void Application::OnInitCmdLine(wxCmdLineParser& parser)
     {
         { wxCMD_LINE_OPTION, NULL, "wait-for-pid",  NULL,   wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
         { wxCMD_LINE_SWITCH, NULL, "silent",        NULL,   wxCMD_LINE_VAL_NONE ,  wxCMD_LINE_PARAM_OPTIONAL },
-        { wxCMD_LINE_OPTION, NULL, "save_path",     NULL,   wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL },
+        { wxCMD_LINE_OPTION, NULL, "save-path",     NULL,   wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL },
         { wxCMD_LINE_PARAM,  NULL, NULL,           "params",wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_PARAM_MULTIPLE },
         { wxCMD_LINE_NONE }
     };

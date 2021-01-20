@@ -66,7 +66,7 @@ namespace Models
     private:
         wxMenuBar* CreateMainMenu();
 
-        void AddTorrents(std::vector<libtorrent::add_torrent_params>& params);
+        void AddTorrents(std::vector<libtorrent::add_torrent_params>& params, bool use_commandline_options);
         void CheckDiskSpace(std::vector<BitTorrent::TorrentHandle*> const& updatedTorrents);
         void CreateFilterMenuItems();
         void CreateLabelMenuItems();
