@@ -424,10 +424,13 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params, bool us
 
     if (didRemove)
     {
-        auto err = i18n("some_torrents_already_in_session");
-        if (params.empty()) err = i18n("all_torrents_already_in_session");
+        if (!m_options.silent || !use_commandline_options)
+        {
+            auto err = i18n("some_torrents_already_in_session");
+            if (params.empty()) err = i18n("all_torrents_already_in_session");
 
-        wxMessageBox(err, "PicoTorrent", wxOK, this);
+            wxMessageBox(err, "PicoTorrent", wxOK, this);
+        }
     }
 
     if (params.empty())
@@ -447,7 +450,7 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params, bool us
         auto our = new BitTorrent::AddParams();
 
         p.flags |= lt::torrent_flags::duplicate_is_error;
-        if ((m_options.save_path.empty() == false) && (use_commandline_options == true))
+        if (!m_options.save_path.empty() && use_commandline_options)
         {
             p.save_path = m_options.save_path;
         }
