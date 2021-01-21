@@ -41,7 +41,7 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(wxUSE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
 # --------------------
 
-find_package(Boost REQUIRED COMPONENTS log)
+find_package(Boost REQUIRED COMPONENTS date_time log regex system)
 
 # vendor libs
 add_subdirectory(vendor/fmt)
@@ -124,6 +124,31 @@ target_link_libraries(
     PicoTorrent-coredb
     PRIVATE
     nlohmann_json::nlohmann_json
+    sqlite
+)
+
+add_executable(
+    PicoTorrentServer
+    src/server/main
+    src/server/http/http_listener
+    src/server/http/http_session
+)
+
+target_link_libraries(
+    PicoTorrentServer
+    PRIVATE
+
+    Boost::date_time
+    Boost::log
+    Boost::regex
+    Boost::system
+
+    # nlohmann-json
+    nlohmann_json::nlohmann_json
+
+    # Rasterbar-libtorrent
+    "torrent-rasterbar"
+
     sqlite
 )
 
