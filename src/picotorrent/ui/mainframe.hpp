@@ -12,6 +12,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include "../applicationoptions.hpp"
+
 class wxSplitterWindow;
 class wxTaskBarIconEvent;
 
@@ -54,15 +56,17 @@ namespace Models
         MainFrame(
             std::shared_ptr<Core::Environment> env,
             std::shared_ptr<Core::Database> db,
-            std::shared_ptr<Core::Configuration> cfg);
+            std::shared_ptr<Core::Configuration> cfg,
+            pt::CommandLineOptions const& options);
+
         virtual ~MainFrame();
 
-        void HandleParams(std::vector<std::string> const& files, std::vector<std::string> const& magnets);
+        void HandleParams(pt::CommandLineOptions const& options);
 
     private:
         wxMenuBar* CreateMainMenu();
 
-        void AddTorrents(std::vector<libtorrent::add_torrent_params>& params);
+        void AddTorrents(std::vector<libtorrent::add_torrent_params>& params, bool use_commandline_options);
         void CheckDiskSpace(std::vector<BitTorrent::TorrentHandle*> const& updatedTorrents);
         void CreateFilterMenuItems();
         void CreateLabelMenuItems();
@@ -93,6 +97,7 @@ namespace Models
         std::shared_ptr<Core::Database> m_db;
         std::shared_ptr<Core::Configuration> m_cfg;
         std::unique_ptr<IPC::Server> m_ipc;
+        pt::CommandLineOptions m_options;
 
         wxMenu* m_viewMenu;
         wxMenu* m_filtersMenu;

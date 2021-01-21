@@ -6,6 +6,8 @@
 #include <memory>
 #include <vector>
 
+#include "applicationoptions.hpp"
+
 class wxSingleInstanceChecker;
 
 namespace pt
@@ -28,18 +30,10 @@ namespace API
         virtual void OnInitCmdLine(wxCmdLineParser&) wxOVERRIDE;
 
     private:
-        struct Options
-        {
-            Options() : pid(-1) {}
-            long pid;
-            std::vector<std::string> files;
-            std::vector<std::string> magnets;
-        };
-
         void ActivateOtherInstance();
         void WaitForPreviousInstance(long pid);
 
-        Options m_options;
+        pt::CommandLineOptions m_options;
         std::vector<API::IPlugin*> m_plugins;
         std::unique_ptr<PersistenceManager> m_persistence;
         std::unique_ptr<wxSingleInstanceChecker> m_singleInstance;

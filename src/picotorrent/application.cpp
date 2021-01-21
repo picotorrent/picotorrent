@@ -39,9 +39,18 @@ Application::~Application()
 bool Application::OnCmdLineParsed(wxCmdLineParser& parser)
 {
     long waitForPid = -1;
+    wxString save_path = "";
+
     if (parser.Found("wait-for-pid", &waitForPid))
     {
         m_options.pid = waitForPid;
+    }
+
+    m_options.silent = parser.Found("silent");
+
+    if (parser.Found("save-path", &save_path))
+    {
+        m_options.save_path = Utils::toStdString(save_path.ToStdWstring());
     }
 
     for (size_t i = 0; i < parser.GetParamCount(); i++)
@@ -80,6 +89,7 @@ bool Application::OnInit()
     pt::CrashpadInitializer::Initialize(env);
 
     auto db = std::make_shared<pt::Core::Database>(env);
+
 
     if (!db->Migrate())
     {
@@ -122,7 +132,7 @@ bool Application::OnInit()
     m_persistence = std::make_unique<PersistenceManager>(db);
     wxPersistenceManager::Set(*m_persistence);
 
-    auto mainFrame = new UI::MainFrame(env, db, cfg);
+    auto mainFrame = new UI::MainFrame(env, db, cfg, m_options);
 
     std::for_each(
         m_plugins.begin(),
@@ -161,9 +171,7 @@ bool Application::OnInit()
         break;
     }
 
-    mainFrame->HandleParams(
-        m_options.files,
-        m_options.magnets);
+    mainFrame->HandleParams(m_options);
 
     return true;
 }
@@ -172,8 +180,10 @@ void Application::OnInitCmdLine(wxCmdLineParser& parser)
 {
     static const wxCmdLineEntryDesc cmdLineDesc[] =
     {
-        { wxCMD_LINE_OPTION, NULL, "wait-for-pid", NULL,     wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
-        { wxCMD_LINE_PARAM,  NULL, NULL,           "params", wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_PARAM_MULTIPLE },
+        { wxCMD_LINE_OPTION, NULL, "wait-for-pid",  NULL,   wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
+        { wxCMD_LINE_SWITCH, NULL, "silent",        NULL,   wxCMD_LINE_VAL_NONE ,  wxCMD_LINE_PARAM_OPTIONAL },
+        { wxCMD_LINE_OPTION, NULL, "save-path",     NULL,   wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL },
+        { wxCMD_LINE_PARAM,  NULL, NULL,           "params",wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_PARAM_MULTIPLE },
         { wxCMD_LINE_NONE }
     };
 
@@ -186,6 +196,8 @@ void Application::ActivateOtherInstance()
     json j;
     j["files"] = m_options.files;
     j["magnet_links"] = m_options.magnets;
+    j["silent"] = m_options.silent;
+    j["save_path"] = m_options.save_path;
 
     wxClient client;
     auto conn = client.MakeConnection(
