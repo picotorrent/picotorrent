@@ -5,7 +5,11 @@
 #include <nlohmann/json.hpp>
 #include <sqlite3.h>
 
+#include "commands/torrents_add.hpp"
 #include "http/http_listener.hpp"
+#include "session_manager.hpp"
+
+using pt::commands::torrents_add_command;
 
 int main(int argc, char* argv[])
 {
@@ -23,18 +27,16 @@ int main(int argc, char* argv[])
             io.stop();
         });
 
-    nlohmann::json j;
-    j["foo"] = "bar";
-
-    libtorrent::session session;
+    auto session = pt::session_manager::load(io, db);
 
     auto http = std::make_shared<pt::http::http_listener>(
         io,
         boost::asio::ip::tcp::endpoint{ boost::asio::ip::make_address("0.0.0.0"), 6545 },
         db,
-        nullptr,
+        session,
         nullptr);
 
+    http->commands().insert({ "torrents.add", std::make_shared<torrents_add_command>(nullptr) });
     http->run();
 
     io.run();

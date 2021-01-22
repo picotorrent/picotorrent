@@ -10,6 +10,11 @@ namespace pt
     class session_manager;
 }
 
+namespace pt::commands
+{
+    class command;
+}
+
 namespace pt::http
 {
     class http_listener : public std::enable_shared_from_this<http_listener>
@@ -22,6 +27,7 @@ namespace pt::http
             std::shared_ptr<session_manager> const& session_manager,
             std::shared_ptr<std::string const> const& doc_root);
 
+        std::map<std::string, std::shared_ptr<pt::commands::command>>& commands();
         void run();
 
     private:
@@ -33,5 +39,6 @@ namespace pt::http
         sqlite3* m_db;
         std::shared_ptr<session_manager> m_session_manager;
         std::shared_ptr<std::string const> m_doc_root;
+        std::shared_ptr<std::map<std::string, std::shared_ptr<pt::commands::command>>> m_commands;
     };
 }

@@ -24,6 +24,7 @@
 #include "../core/environment.hpp"
 #include "../core/utils.hpp"
 #include "../ipc/server.hpp"
+#include "../serverprocess.hpp"
 #include "console.hpp"
 #include "dialogs/aboutdialog.hpp"
 #include "dialogs/addmagnetlinkdialog.hpp"
@@ -62,6 +63,8 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     m_menuItemFilters(nullptr),
     m_ipc(std::make_unique<IPC::Server>(this))
 {
+    m_server = std::make_unique<ServerProcess>();
+
     m_console = new Console(this, wxID_ANY, m_torrentListModel);
 
     m_splitter->SetWindowStyleFlag(
@@ -432,6 +435,13 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         return;
     }
 
+    nlohmann::json j;
+    j["foo"] = "bar";
+
+    m_server->RPC("torrents.add", j);
+
+    return;/*
+
     std::vector<lt::info_hash_t> hashes;
 
     // Set up default values for all params
@@ -519,7 +529,7 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params)
         m_addDialogs.insert(dlg);
     }
 
-    m_session->AddMetadataSearch(hashes);
+    m_session->AddMetadataSearch(hashes);*/
 }
 
 void MainFrame::HandleParams(std::vector<std::string> const& files, std::vector<std::string> const& magnets)

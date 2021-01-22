@@ -3,20 +3,24 @@
 #include <boost/log/trivial.hpp>
 #include <nlohmann/json.hpp>
 
+#include "../commands/command.hpp"
 #include "mime_type.hpp"
 #include "path_cat.hpp"
 #include "websocket_session.hpp"
 
 using json = nlohmann::json;
+using pt::http::http_session;
 
 http_session::http_session(
     boost::asio::ip::tcp::socket&& socket,
     sqlite3* db,
-    std::shared_ptr<session_manager> const& session_manager,
+    std::shared_ptr<pt::session_manager> const& session_manager,
+    std::shared_ptr<std::map<std::string, std::shared_ptr<pt::commands::command>>> const& commands,
     std::shared_ptr<std::string const> const& doc_root)
     : stream_(std::move(socket))
     , m_db(db)
     , m_session_manager(session_manager)
+    , m_commands(commands)
     , doc_root_(doc_root)
     , queue_(*this)
 {
@@ -132,20 +136,34 @@ void http_session::on_read(boost::beast::error_code ec, std::size_t bytes_transf
         return res;
     };
 
-    if (req.target().substr(0, 5) == "/api/")
+    if (req.target() == "/api/jsonrpc"
+        && req.method() == http::verb::post)
     {
-        std::string cmd = req.target().substr(5).to_string();
-        BOOST_LOG_TRIVIAL(debug) << "Running RPC command '" << cmd << "'";
-
         json j;
 
-        if (req.method() == http::verb::post)
+        try
         {
             j = json::parse(req.body());
         }
+        catch (std::exception const& e)
+        {
+            BOOST_LOG_TRIVIAL(error) << "Failed to parse JSON: " << e.what();
+        }
 
-        auto res = m_commands.at(cmd)->execute(j);
-        queue_(command_response(res.dump()));
+        std::string method = j["method"];
+
+        if (m_commands->find(method) == m_commands->end())
+        {
+            BOOST_LOG_TRIVIAL(error) << "Unknown command: " << method;
+            queue_(not_found(method));
+        }
+        else
+        {
+            BOOST_LOG_TRIVIAL(debug) << "Running JSONRPC command '" << method << "'";
+
+            json response = m_commands->at(method)->execute(j);
+            queue_(command_response(response.dump()));
+        }
     }
     else if(doc_root_ == nullptr)
     {

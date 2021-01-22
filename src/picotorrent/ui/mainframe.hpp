@@ -19,6 +19,7 @@ namespace pt::UI::Dialogs { class AddTorrentDialog; }
 
 namespace pt
 {
+    class ServerProcess;
     class UpdateChecker;
 
 namespace BitTorrent
@@ -93,6 +94,7 @@ namespace Models
         std::shared_ptr<Core::Database> m_db;
         std::shared_ptr<Core::Configuration> m_cfg;
         std::unique_ptr<IPC::Server> m_ipc;
+        std::unique_ptr<ServerProcess> m_server;
 
         wxMenu* m_viewMenu;
         wxMenu* m_filtersMenu;

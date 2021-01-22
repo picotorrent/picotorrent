@@ -130,8 +130,14 @@ target_link_libraries(
 add_executable(
     PicoTorrentServer
     src/server/main
+    src/server/session_manager
+
+    # RPC commands
+    src/server/commands/torrents_add
+
     src/server/http/http_listener
     src/server/http/http_session
+    src/server/http/websocket_session
 )
 
 target_link_libraries(
@@ -158,10 +164,12 @@ add_executable(
 
     src/picotorrent/application
     src/picotorrent/buildinfo
+    src/picotorrent/clientwebsocket
     src/picotorrent/crashpadinitializer
     src/picotorrent/main
     src/picotorrent/persistencemanager
     src/picotorrent/resources.rc
+    src/picotorrent/serverprocess
 
     # API
     src/picotorrent/api/libpico

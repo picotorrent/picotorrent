@@ -3,6 +3,8 @@
 #include <boost/beast.hpp>
 #include <boost/log/trivial.hpp>
 
+#include "http_session.hpp"
+
 using pt::http::http_listener;
 
 http_listener::http_listener(
@@ -16,11 +18,17 @@ http_listener::http_listener(
     , m_db(db)
     , m_session_manager(session_manager)
     , m_doc_root(doc_root)
+    , m_commands(std::make_shared<std::map<std::string, std::shared_ptr<pt::commands::command>>>())
 {
     m_acceptor.open(endpoint.protocol());
     m_acceptor.set_option(boost::asio::socket_base::reuse_address(true));
     m_acceptor.bind(endpoint);
     m_acceptor.listen(boost::asio::socket_base::max_listen_connections);
+}
+
+std::map<std::string, std::shared_ptr<pt::commands::command>>& http_listener::commands()
+{
+    return *m_commands;
 }
 
 void http_listener::run()
@@ -51,11 +59,12 @@ void http_listener::on_accept(boost::system::error_code ec, boost::asio::ip::tcp
     {
         BOOST_LOG_TRIVIAL(debug) << "Incoming HTTP client from " << socket.remote_endpoint();
 
-        /*std::make_shared<http_session>(
+        std::make_shared<http_session>(
             std::move(socket),
             m_db,
             m_session_manager,
-            m_doc_root)->run();*/
+            m_commands,
+            m_doc_root)->run();
     }
 
     do_accept();
