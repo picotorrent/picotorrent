@@ -23,7 +23,7 @@ using pt::Application;
 
 Application::Application()
     : wxApp(),
-    m_singleInstance(std::make_unique<wxSingleInstanceChecker>())
+    m_singleInstance(std::make_unique<wxSingleInstanceChecker>("584c8e47-d8a5-4e52-9165-c0650a85723a"))
 {
     SetProcessDPIAware();
 }
