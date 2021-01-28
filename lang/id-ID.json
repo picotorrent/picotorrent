@@ -278,7 +278,7 @@
     "cancel": "Batal",
     "restore_defaults": "Kembalikan ke bawaan",
     "documentation": "Dokumentasi",
-    "restore_defaults_description": "Ini akan mengembalikan pengaturan ke nilai bawaannya. Apakah anda yakin?",
+    "restore_defaults_description": "Ini akan mengembalikan pengaturan ke nilai bawaannya. Apakah Anda yakin?",
     "use_label_color_as_background_in_torrent_list": "Gunakan warna label sebagai warna latar di dalam daftar torrent",
     "labels": "Label",
     "label_details": "Detail label",
