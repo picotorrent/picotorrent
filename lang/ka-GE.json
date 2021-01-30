@@ -137,5 +137,12 @@
     "top": "თავში",
     "bottom": "ბოლოში",
     "remove_tracker_s": "ტრეკერ(ებ)ის წაშლა",
-    "add_tracker": "ტრეკერის დამატება"
+    "add_tracker": "ტრეკერის დამატება",
+    "low": "დაბალი",
+    "http": "HTTP",
+    "socks4": "SOCKS4",
+    "socks5": "SOCKS5",
+    "ip": "IP",
+    "queue_position": "#",
+    "browse": "…"
 }
