@@ -34,7 +34,7 @@
     "unknown_size": "Nieznany rozmiar",
     "choose_save_path": "Wybierz ścieżkę zapisu",
     "save_path": "Ścieżka zapisu",
-    "browse": "Wyszukaj",
+    "browse": "…",
     "add_torrent_s": "Dodaj torrent(y)",
     "storage": "Dostępne miejsce",
     "about_picotorrent": "O PicoTorrent",
@@ -209,5 +209,16 @@
     "queue_position": "#",
     "status": "Status",
     "documentation": "Dokumentacja",
-    "color": "Kolor"
+    "color": "Kolor",
+    "leeches": "Leeches",
+    "port": "Port",
+    "proxy": "Pośrednik (eng. proxy)",
+    "host": "Host",
+    "http": "HTTP",
+    "socks4": "SOCKS4",
+    "socks5": "SOCKS5",
+    "ip": "IP",
+    "scrape": "Zeskrob",
+    "state_error_details": "Błąd: {0} ({1})",
+    "restart_picotorrent": "Zrestartuj PicoTorrent"
 }
