@@ -403,6 +403,20 @@ bool Session::HasTorrent(lt::info_hash_t const& hash)
     return false;
 }
 
+void Session::RemoveMetadataSearch(std::vector<lt::info_hash_t> const& hashes)
+{
+    for (auto const& hash : hashes)
+    {
+        lt::info_hash_t res;
+        if (IsSearching(hash, res))
+        {
+            m_session->remove_torrent(
+                m_metadataSearches.at(res),
+                lt::session::delete_files);
+        }
+    }
+}
+
 void Session::RemoveTorrent(pt::BitTorrent::TorrentHandle* torrent, lt::remove_flags_t flags)
 {
     m_session->remove_torrent(torrent->WrappedHandle(), flags);
