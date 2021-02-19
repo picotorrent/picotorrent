@@ -156,6 +156,13 @@ int TorrentListModel::Compare(const wxDataViewItem& item1, const wxDataViewItem&
         if (lhs.totalWantedRemaining == rhs.totalWantedRemaining) { return hashSort(ascending, lhs, rhs); }
         break;
     }
+    case Columns::Status:
+    {
+        if (lhs.state < rhs.state) { return ascending ? -1 : 1; }
+        if (lhs.state > rhs.state) { return ascending ? 1 : -1; }
+        if (lhs.state == rhs.state) { return hashSort(ascending, lhs, rhs); }
+        break;
+    }
     case Columns::Progress:
     {
         if (lhs.progress < rhs.progress) { return ascending ? -1 : 1; }
