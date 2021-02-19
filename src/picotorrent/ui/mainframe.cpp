@@ -522,10 +522,11 @@ void MainFrame::AddTorrents(std::vector<lt::add_torrent_params>& params, bool us
         auto dlg = new Dialogs::AddTorrentDialog(this, wxID_ANY, param, m_db, m_cfg, m_session);
         dlg->Bind(
             wxEVT_CLOSE_WINDOW,
-            [this, dlg](wxCloseEvent& evt)
+            [this, dlg, hashes](wxCloseEvent& evt)
             {
                 evt.Skip();
                 m_addDialogs.erase(dlg);
+                m_session->RemoveMetadataSearch(hashes);
             });
         dlg->Show();
 
