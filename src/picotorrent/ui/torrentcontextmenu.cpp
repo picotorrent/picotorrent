@@ -81,19 +81,32 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<Core::C
     {
         AppendSeparator();
         wxMenu* labelsMenu = new wxMenu();
-        wxMenuItem* noneItem = labelsMenu->AppendRadioItem(ptID_LABELS_NONE, i18n("none"));
 
-        if (selectedTorrents.size() == 1 && selectedTorrents.at(0)->Label() < 0)
+        if (selectedTorrents.size() == 1)
         {
-            noneItem->Check(true);
+            wxMenuItem* noneItem = labelsMenu->AppendRadioItem(ptID_LABELS_NONE, i18n("none"));
+
+            if (selectedTorrents.at(0)->Label() < 0)
+            {
+                noneItem->Check(true);
+            }
+        }
+        else
+        {
+            labelsMenu->Append(ptID_LABELS_NONE, i18n("none"));
         }
 
         for (auto const& label : labels)
         {
-            labelsMenu->AppendRadioItem(ptID_LABELS_USER + label.id, Utils::toStdWString(label.name))
-                ->Check(
-                    selectedTorrents.size() == 1
-                    && selectedTorrents.at(0)->Label() == label.id);
+            if (selectedTorrents.size() == 1)
+            {
+                labelsMenu->AppendRadioItem(ptID_LABELS_USER + label.id, Utils::toStdWString(label.name))
+                    ->Check(selectedTorrents.at(0)->Label() == label.id);
+            }
+            else
+            {
+                labelsMenu->Append(ptID_LABELS_USER + label.id, Utils::toStdWString(label.name));
+            }
 
             m_labels.insert({ label.id, label.name });
         }
