@@ -300,10 +300,11 @@ std::unique_ptr<TorrentStatus> TorrentHandle::Update(lt::torrent_status const& t
     }
 
     float ratio = 0;
+    auto ti = ts.torrent_file.lock();
 
-    if (ts.all_time_download > 0)
+    if (ti && ts.all_time_upload > 0)
     {
-        ratio = static_cast<float>(ts.all_time_upload) / static_cast<float>(ts.all_time_download);
+        ratio = static_cast<float>(ts.all_time_upload) / static_cast<float>(ti->total_size());
     }
 
     std::string error;
@@ -314,7 +315,6 @@ std::unique_ptr<TorrentStatus> TorrentHandle::Update(lt::torrent_status const& t
         error = ts.errc.message();
 
         // If we have an error in a file, get file info
-        auto ti = ts.torrent_file.lock();
 
         if (ts.error_file >= lt::file_index_t{ 0 } && ti)
         {
