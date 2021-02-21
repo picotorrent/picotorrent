@@ -292,5 +292,16 @@
     "eta_hms_format": "{0}t {1}m {2}s",
     "eta_ms_format": "{0}m {1}s",
     "eta_s_format": "{0}s",
-    "per_second_format": "{0}/s"
+    "per_second_format": "{0}/s",
+    "view_help": "Vis &hjelp",
+    "connections": "Tilkoblinger",
+    "seed_mode": "Delingsmodus",
+    "some_torrents_already_in_session": "Hopper over torrentene som allerede er lagt til",
+    "ip_filter": "IP-filter",
+    "select_ip_filter_file": "Velg IP-filterfil",
+    "file_filter_all_files": "Alle filer (*.*)|*.*",
+    "ip_filter_enabled": "IP-filter: ✔️",
+    "ip_filter_disabled": "IP-filter: ❌",
+    "leeches": "Hentere",
+    "all_torrents_already_in_session": "Hopper over alle torrentene, siden de er lagt til allerede"
 }
