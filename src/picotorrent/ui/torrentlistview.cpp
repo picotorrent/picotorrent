@@ -203,7 +203,68 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, Models::Torren
     // insert the "fake" column last, always
     AppendColumn(new wxDataViewColumn(wxEmptyString, new wxDataViewTextRenderer(), TorrentListModel::Columns::_Max, 0, wxALIGN_CENTER, 0));
 
+    // Keyboard accelerators
+    std::vector<wxAcceleratorEntry> entries =
+    {
+        wxAcceleratorEntry(wxACCEL_CTRL,   int('A'),   ptID_KEY_SELECT_ALL),
+        wxAcceleratorEntry(wxACCEL_NORMAL, WXK_DELETE, ptID_KEY_DELETE),
+        wxAcceleratorEntry(wxACCEL_SHIFT,  WXK_DELETE, ptID_KEY_DELETE_FILES),
+    };
+
+    this->SetAcceleratorTable(wxAcceleratorTable(static_cast<int>(entries.size()), entries.data()));
+
     this->Bind(wxEVT_DATAVIEW_COLUMN_HEADER_RIGHT_CLICK, &TorrentListView::ShowHeaderContextMenu, this);
+
+    this->Bind(
+        wxEVT_MENU,
+        [&](wxCommandEvent&)
+        {
+            wxDataViewItemArray items;
+            this->GetSelections(items);
+
+            if (items.IsEmpty()) { return; }
+
+            for (wxDataViewItem& item : items)
+            {
+                m_model->GetTorrentFromItem(item)->Remove();
+            }
+        },
+        ptID_KEY_DELETE);
+
+    this->Bind(
+        wxEVT_MENU,
+        [&](wxCommandEvent&)
+        {
+            wxDataViewItemArray items;
+            this->GetSelections(items);
+
+            if (items.IsEmpty()) { return; }
+
+            if (wxMessageBox(
+                i18n("confirm_remove_description"),
+                i18n("confirm_remove"),
+                wxOK | wxCANCEL | wxICON_INFORMATION,
+                m_parent) != wxOK) {
+                return;
+            }
+
+            for (wxDataViewItem& item : items)
+            {
+                m_model->GetTorrentFromItem(item)->RemoveFiles();
+            }
+        },
+        ptID_KEY_DELETE_FILES);
+
+    this->Bind(
+        wxEVT_MENU,
+        [&](wxCommandEvent&)
+        {
+            this->SelectAll();
+            wxPostEvent(
+                GetParent(),
+                wxCommandEvent(wxEVT_DATAVIEW_SELECTION_CHANGED, this->GetId()));
+        },
+        ptID_KEY_SELECT_ALL);
 }
 
 TorrentListView::~TorrentListView()
