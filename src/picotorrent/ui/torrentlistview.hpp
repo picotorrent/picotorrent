@@ -24,6 +24,13 @@ namespace Models
         virtual ~TorrentListView();
 
     private:
+        enum
+        {
+            ptID_KEY_SELECT_ALL = wxID_HIGHEST,
+            ptID_KEY_DELETE,
+            ptID_KEY_DELETE_FILES,
+        };
+
         void ShowHeaderContextMenu(wxCommandEvent&);
 
         struct ColumnMetadata

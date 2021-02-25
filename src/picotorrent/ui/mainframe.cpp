@@ -86,11 +86,8 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     // Keyboard accelerators
     std::vector<wxAcceleratorEntry> entries =
     {
-        wxAcceleratorEntry(wxACCEL_CTRL,   int('A'),   ptID_KEY_SELECT_ALL),
         wxAcceleratorEntry(wxACCEL_CTRL,   int('U'),   ptID_KEY_ADD_MAGNET_LINK),
         wxAcceleratorEntry(wxACCEL_CTRL,   int('O'),   ptID_KEY_ADD_TORRENT),
-        wxAcceleratorEntry(wxACCEL_NORMAL, WXK_DELETE, ptID_KEY_DELETE),
-        wxAcceleratorEntry(wxACCEL_SHIFT,  WXK_DELETE, ptID_KEY_DELETE_FILES),
         wxAcceleratorEntry(wxACCEL_NORMAL, WXK_F1,     ptID_KEY_VIEW_HELP),
     };
 
@@ -259,57 +256,6 @@ MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Cor
     this->Bind(wxEVT_MENU, &MainFrame::OnFileAddTorrent, this, ptID_KEY_ADD_TORRENT);
     this->Bind(wxEVT_MENU, &MainFrame::OnFileAddMagnetLink, this, ptID_KEY_ADD_MAGNET_LINK);
     this->Bind(wxEVT_MENU, &MainFrame::OnViewHelp, this, ptID_KEY_VIEW_HELP);
-
-    this->Bind(
-        wxEVT_MENU,
-        [&](wxCommandEvent&)
-        {
-            wxDataViewItemArray items;
-            m_torrentList->GetSelections(items);
-
-            if (items.IsEmpty()) { return; }
-
-            for (wxDataViewItem& item : items)
-            {
-                m_torrentListModel->GetTorrentFromItem(item)->Remove();
-            }
-        },
-        ptID_KEY_DELETE);
-
-    this->Bind(
-        wxEVT_MENU,
-        [&](wxCommandEvent&)
-        {
-            wxDataViewItemArray items;
-            m_torrentList->GetSelections(items);
-
-            if (items.IsEmpty()) { return; }
-
-            if (wxMessageBox(
-                i18n("confirm_remove_description"),
-                i18n("confirm_remove"),
-                wxOK | wxCANCEL | wxICON_INFORMATION,
-                m_parent) != wxOK) {
-                return;
-            }
-
-            for (wxDataViewItem& item : items)
-            {
-                m_torrentListModel->GetTorrentFromItem(item)->RemoveFiles();
-            }
-        },
-        ptID_KEY_DELETE_FILES);
-
-    this->Bind(
-        wxEVT_MENU,
-        [&](wxCommandEvent&)
-        {
-            m_torrentList->SelectAll();
-            wxPostEvent(
-                this,
-                wxCommandEvent(wxEVT_DATAVIEW_SELECTION_CHANGED, ptID_MAIN_TORRENT_LIST));
-        },
-        ptID_KEY_SELECT_ALL);
 
     m_taskBarIcon->Bind(wxEVT_MENU, &MainFrame::OnFileAddTorrent, this, ptID_EVT_ADD_TORRENT);
     m_taskBarIcon->Bind(wxEVT_MENU, &MainFrame::OnFileAddMagnetLink, this, ptID_EVT_ADD_MAGNET_LINK);
