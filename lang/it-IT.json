@@ -301,6 +301,6 @@
     "status_adding_files": "Aggiungi file allo storage",
     "amp_console": "&Console",
     "tier": "Livello",
-    "some_torrents_already_in_session": "Alcuni torrent sono già stati aggiunti e verranno ignorati",
-    "all_torrents_already_in_session": "Tutti i torrent sono già stati aggiunti e verranno ignorati"
+    "some_torrents_already_in_session": "Salta i torrent che sono già stati aggiunti…",
+    "all_torrents_already_in_session": "Non aggiungere torrent, poiché sono già stati aggiunti tutti…"
 }
