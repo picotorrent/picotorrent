@@ -300,6 +300,6 @@
     "ip_filter_enabled": "Фільтр IP-адрес: ✔️",
     "ip_filter_disabled": "Фільтр IP-адрес: ❌",
     "leeches": "Лічі",
-    "some_torrents_already_in_session": "Один або декілька торрентів пропущено, оскільки вони були додані раніше",
-    "all_torrents_already_in_session": "Усі торренти пропущено, оскільки вони були додані раніше"
+    "some_torrents_already_in_session": "Один або декілька торрентів пропущено, оскільки вони були додані раніше…",
+    "all_torrents_already_in_session": "Усі торренти пропущено, оскільки вони були додані раніше…"
 }
