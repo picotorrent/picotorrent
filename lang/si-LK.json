@@ -1,0 +1,15 @@
+{
+    "queue_position": "#",
+    "size": "ප්‍රමාණය",
+    "color": "වර්ණය",
+    "apply_filter": "පෙරහන යොදන්න",
+    "connections": "සම්බන්ධතා",
+    "ip_filter_disabled": "අ.ජා. කෙ. පෙරහන: ❌",
+    "ip_filter_enabled": "අ.ජා. කෙ. පෙරහන: ✔️",
+    "ip_filter": "අ.ජා. කෙ. පෙරහන",
+    "file_filter_all_files": "සියලුම ගොනු (*.*)|*.*",
+    "select_ip_filter_file": "අ.ජා. කෙ. පෙරහන් ගොනුවක් තෝරන්න",
+    "name": "නම",
+    "status": "තත්වය",
+    "contents": "අන්තර්ගතය"
+}
