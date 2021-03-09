@@ -293,7 +293,7 @@
     "amp_console": "&Konsolė",
     "eta_ms_format": "{0}m {1}s",
     "eta_s_format": "{0}s",
-    "some_torrents_already_in_session": "Kai kurie torentai jau pridėti ir bus praleisti",
-    "all_torrents_already_in_session": "Visi torentai jau pridėti ir bus praleisti",
+    "some_torrents_already_in_session": "Kai kurie torentai jau pridėti ir bus praleisti…",
+    "all_torrents_already_in_session": "Visi torentai jau pridėti ir bus praleisti…",
     "eta_hms_format": "{0}v {1}m {2}s"
 }

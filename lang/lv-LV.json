@@ -86,7 +86,7 @@
     "no_update_available": "Atjauninājumi nav pieejami",
     "show_on_github": "Parādīt iekš GitHub",
     "new_version_available": "Jaunāka PicoTorrent versija ir pieejama.",
-    "ignore_update": "Ignorēt šo atjauninājumu.",
+    "ignore_update": "Ignorēt šo atjauninājumu",
     "confirm_remove_description": "Tiks noņemti visi lejupielādētie faili šim torrentam.",
     "confirm_remove": "Apstiprināt noņemšanu",
     "do_not_ask_again": "Neprasīt vēlreiz",
