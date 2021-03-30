@@ -29,7 +29,7 @@ To successfully build PicoTorrent, you need the following libraries and
 applications installed,
 
  * [CMake (>= v3.14)](https://cmake.org/download/).
- * [Visual Studio 2019 Build Tools](https://visualstudio.microsoft.com/downloads/) (or regular Visual Studio 2019 with the C++ toolset).
+ * [Visual Studio 2019 Build Tools](https://visualstudio.microsoft.com/downloads/) (or regular Visual Studio 2019) with the C++ toolset.
  * [OpenSSL v1.1.1](https://slproweb.com/products/Win32OpenSSL.html) (*not*
    the light version) for the architecture you plan on building. Both Win32
    and Win64 can be installed side by side.
