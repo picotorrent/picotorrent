@@ -127,7 +127,7 @@ void PeerListModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned
             flags << "S ";
         }
 
-        if (peer.flags & lt::peer_info::local_connection)
+        if (!(peer.flags & lt::peer_info::outgoing_connection))
         {
             flags << "I ";
         }
