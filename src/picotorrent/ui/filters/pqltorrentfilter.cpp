@@ -372,7 +372,7 @@ public:
     }
 };
 
-PqlTorrentFilter::PqlTorrentFilter(std::function<bool(BitTorrent::TorrentStatus const&)> const& filter)
+PqlTorrentFilter::PqlTorrentFilter(std::function<bool(pt::BitTorrent::TorrentStatus const&)> const& filter)
     : m_filter(filter)
 {
 }
@@ -416,7 +416,7 @@ std::unique_ptr<pt::UI::Filters::TorrentFilter> PqlTorrentFilter::Create(std::st
     return nullptr;
 }
 
-bool PqlTorrentFilter::Includes(BitTorrent::TorrentHandle const& torrent)
+bool PqlTorrentFilter::Includes(pt::BitTorrent::TorrentHandle const& torrent)
 {
     TorrentStatus ts = torrent.Status();
     return m_filter(ts);

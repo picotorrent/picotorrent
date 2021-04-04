@@ -76,7 +76,7 @@ IPlugin::~IPlugin()
 {
 }
 
-IPlugin* IPlugin::Load(fs::path const& p, Core::Environment* env, Core::Configuration* cfg)
+IPlugin* IPlugin::Load(fs::path const& p, pt::Core::Environment* env, pt::Core::Configuration* cfg)
 {
     return new Plugin(
         LoadLibrary(p.wstring().c_str()),

@@ -23,7 +23,7 @@ TorrentListModel::~TorrentListModel()
 {
 }
 
-void TorrentListModel::AddTorrent(BitTorrent::TorrentHandle* torrent)
+void TorrentListModel::AddTorrent(pt::BitTorrent::TorrentHandle* torrent)
 {
     m_torrents.insert({ torrent->InfoHash(), torrent });
     ApplyFilter();
@@ -41,7 +41,7 @@ void TorrentListModel::ClearLabelFilter()
     ApplyFilter();
 }
 
-void TorrentListModel::SetFilter(std::unique_ptr<Filters::TorrentFilter> filter)
+void TorrentListModel::SetFilter(std::unique_ptr<pt::UI::Filters::TorrentFilter> filter)
 {
     m_filter = std::move(filter);
     ApplyFilter();
@@ -640,7 +640,7 @@ void TorrentListModel::ApplyFilter()
     ApplyFilter(filter);
 }
 
-void TorrentListModel::ApplyFilter(std::vector<BitTorrent::TorrentHandle*> torrents)
+void TorrentListModel::ApplyFilter(std::vector<pt::BitTorrent::TorrentHandle*> torrents)
 {
     const std::function<bool(TorrentHandle*)> show = [this](TorrentHandle* torrent)
     {

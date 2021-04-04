@@ -35,7 +35,7 @@ TorrentDetailsPeersPanel::TorrentDetailsPeersPanel(wxWindow* parent, wxWindowID 
     this->SetSizerAndFit(mainSizer);
 }
 
-void TorrentDetailsPeersPanel::Refresh(BitTorrent::TorrentHandle* torrent)
+void TorrentDetailsPeersPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent)
 {
     if (!torrent->IsValid())
     {

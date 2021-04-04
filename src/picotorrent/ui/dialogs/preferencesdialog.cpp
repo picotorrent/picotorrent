@@ -21,7 +21,7 @@
 
 using pt::UI::Dialogs::PreferencesDialog;
 
-PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg)
+PreferencesDialog::PreferencesDialog(wxWindow* parent, std::shared_ptr<pt::Core::Configuration> cfg)
     : wxDialog(parent, wxID_ANY, i18n("preferences"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     m_book(new wxSimplebook(this, wxID_ANY)),
     m_general(new PreferencesGeneralPage(m_book, cfg)),
