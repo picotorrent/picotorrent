@@ -203,5 +203,9 @@
     "dht_disabled": "DHT: 禁用",
     "dl_s_ul_s": "下载速度: {0}/秒, 上传速度: {0}/秒",
     "amp_details_panel": "详情面板(&D)",
-    "options": "选项"
+    "options": "选项",
+    "queue_position": "#",
+    "last_activity_just_now": "刚刚",
+    "mode_hybrid": "v1 + v2 混合模式",
+    "browse": "…"
 }
