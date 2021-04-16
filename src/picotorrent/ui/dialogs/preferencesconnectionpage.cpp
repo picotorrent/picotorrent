@@ -166,7 +166,7 @@ PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shar
             if (sel < 0) { return; }
 
             std::string address = m_listenInterfaces->GetItemText(sel);
-            int port = std::atoi(m_listenInterfaces->GetItemText(sel, 1));
+            int port = std::atoi(m_listenInterfaces->GetItemText(sel, 1).c_str());
 
             ListenInterfaceDialog dlg(this, wxID_ANY, address, port);
 
@@ -210,7 +210,7 @@ void PreferencesConnectionPage::Save(bool* restartRequired)
         Core::Configuration::ListenInterface li;
         li.address = m_listenInterfaces->GetItemText(i, 0);
         li.id = reinterpret_cast<Item*>(m_listenInterfaces->GetItemData(i))->id;
-        li.port = std::atoi(m_listenInterfaces->GetItemText(i, 1));
+        li.port = std::atoi(m_listenInterfaces->GetItemText(i, 1).c_str());
 
         m_cfg->UpsertListenInterface(li);
     }

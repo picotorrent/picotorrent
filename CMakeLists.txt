@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 cmake_policy(SET CMP0092 NEW) # don't add /W3 as default
+cmake_policy(SET CMP0115 OLD) # Source file extensions must be explicit.
+
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
 
 project("PicoTorrent")
 
@@ -7,51 +10,30 @@ include(cmake/Git.cmake)
 include(cmake/GitVersion.cmake)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-set(Boost_USE_STATIC_LIBS ON)
-set(OPENSSL_USE_STATIC_LIBS TRUE)
-
-if(DEFINED ENV{OPENSSL_ROOT_DIR})
-    set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
-    message("Using OpenSSL dir from env variable: ${OPENSSL_ROOT_DIR}")
-endif()
 
 # --------- antlr4 options
 option(WITH_STATIC_CRT "" Off)
 # -----------------------
 
-# --------- libtorrent options
-option(BUILD_SHARED_LIBS    "" off)
-option(deprecated-functions "" off)
-
-# uncomment here when webtorrent support is usable
-# option(webtorrent           "" ON)
-
-# deep inside libtorrent we need to turn off a nlohmann-json dependency
-option(NO_EXAMPLES          "" ON)
-
-# ----------------------------
-
-# --------- nlohmann-json options
-set(JSON_BuildTests OFF CACHE INTERNAL "")
-# ---------
-
 # --------- wx options
-set(wxUSE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
+set(wxBUILD_SHARED        OFF   CACHE BOOL   "" FORCE)
+set(wxBUILD_COMPATIBILITY "3.1" CACHE STRING "" FORCE)
+set(wxUSE_EXCEPTIONS      OFF   CACHE BOOL   "" FORCE)
 # --------------------
 
-find_package(Boost REQUIRED COMPONENTS log)
-
 # vendor libs
-add_subdirectory(vendor/fmt)
-add_subdirectory(vendor/libtorrent)
-add_subdirectory(vendor/nlohmann-json)
 add_subdirectory(vendor/sentry-crashpad)
 add_subdirectory(vendor/wx)
 
 # pico components
 add_subdirectory(src/pql)
+
+# vcpkg packages
+find_package(Boost                      REQUIRED COMPONENTS log)
+find_package(fmt                 CONFIG REQUIRED)
+find_package(LibtorrentRasterbar CONFIG REQUIRED)
+find_package(nlohmann_json       CONFIG REQUIRED)
+find_package(unofficial-sqlite3  CONFIG REQUIRED)
 
 gitversion_install()
 gitversion_showvariable(BranchName      GITVERSION_VAR_BRANCHNAME)
@@ -63,10 +45,7 @@ gitversion_showvariable(SemVer          GITVERSION_VAR_SEMVER)
 gitversion_showvariable(ShortSha        GITVERSION_VAR_SHORTSHA)
 
 # Get git commitish from dependencies
-git_abbreviated_hash(${CMAKE_SOURCE_DIR}/vendor/fmt           PICO_FMT_GIT_COMMITISH)
-git_abbreviated_hash(${CMAKE_SOURCE_DIR}/vendor/libtorrent    PICO_LIBTORRENT_GIT_COMMITISH)
-git_abbreviated_hash(${CMAKE_SOURCE_DIR}/vendor/nlohmann-json PICO_NLOHMANN_JSON_GIT_COMMITISH)
-git_abbreviated_hash(${CMAKE_SOURCE_DIR}/vendor/wx            PICO_WX_GIT_COMMITISH)
+git_abbreviated_hash(${CMAKE_SOURCE_DIR}/vendor/wx PICO_WX_GIT_COMMITISH)
 
 # Generate buildinfo file
 configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp" @ONLY)
@@ -78,18 +57,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
-
-add_library(
-    sqlite
-    STATIC
-    src/sqlite/sqlite3
-)
-
-target_include_directories(
-    sqlite
-    INTERFACE
-    src/sqlite
-)
 
 add_executable(
     PicoTorrent-coredb
@@ -124,7 +91,7 @@ target_link_libraries(
     PicoTorrent-coredb
     PRIVATE
     nlohmann_json::nlohmann_json
-    sqlite
+    unofficial::sqlite3::sqlite3
 )
 
 add_executable(
@@ -226,9 +193,6 @@ target_compile_definitions(
     -DPICO_VERSION_MINOR=${GITVERSION_VAR_VERSION_MINOR}
     -DPICO_VERSION_PATCH=${GITVERSION_VAR_VERSION_PATCH}
 
-    -DPICO_FMT_GIT_COMMITISH=${PICO_FMT_GIT_COMMITISH}
-    -DPICO_LIBTORRENT_GIT_COMMITISH=${PICO_LIBTORRENT_GIT_COMMITISH}
-    -DPICO_NLOHMANN_JSON_GIT_COMMITISH=${PICO_NLOHMANN_JSON_GIT_COMMITISH}
     -DPICO_WX_GIT_COMMITISH=${PICO_WX_GIT_COMMITISH}
 )
 
@@ -246,7 +210,9 @@ target_link_libraries(
 
     PRIVATE
 
-    ${Boost_LIBRARIES}
+    # boost
+    Boost::boost
+    Boost::log
 
     # wxWidgets
     wxcore wxbase wxpropgrid
@@ -267,18 +233,18 @@ target_link_libraries(
     mini_chromium
 
     # fmt
-    fmt
+    fmt::fmt
 
     # nlohmann-json
     nlohmann_json::nlohmann_json
 
     # Rasterbar-libtorrent
-    "torrent-rasterbar"
+    LibtorrentRasterbar::torrent-rasterbar
 
     # PQL
     PicoTorrentPQL
 
-    sqlite
+    unofficial::sqlite3::sqlite3
 )
 
 set_property(TARGET PicoTorrent PROPERTY ENABLE_EXPORTS 1)

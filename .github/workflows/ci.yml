@@ -23,24 +23,19 @@ jobs:
           git fetch --prune --unshallow
           git submodule update --init --recursive
 
-      - name: Install dependencies
-        run: |
-          if ('${{ matrix.arch }}' -eq 'x64') {
-            choco install openssl --no-progress
-          } elseif ('${{ matrix.arch }}' -eq 'x86') {
-            choco install openssl --no-progress --x86
-          }
+      - name: Setup vcpkg
+        run: .\vendor\vcpkg\bootstrap-vcpkg.bat
 
-          dotnet tool restore
-
-      - name: Set environment variables
+      - name: Install vcpkg ports
         run: |
-          echo "BOOST_ROOT=$env:BOOST_ROOT_1_72_0" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          if ('${{ matrix.arch }}' -eq 'x64') {
-            echo "OPENSSL_ROOT_DIR=$env:ProgramFiles\OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          } elseif ('${{ matrix.arch }}' -eq 'x86') {
-            echo "OPENSSL_ROOT_DIR=${env:ProgramFiles(x86)}\OpenSSL-Win32" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          }
+          .\vendor\vcpkg\vcpkg.exe install boost-log:${{ matrix.arch }}-windows-static-md
+          .\vendor\vcpkg\vcpkg.exe install fmt:${{ matrix.arch }}-windows-static-md
+          .\vendor\vcpkg\vcpkg.exe install libtorrent:${{ matrix.arch }}-windows-static-md
+          .\vendor\vcpkg\vcpkg.exe install nlohmann-json:${{ matrix.arch }}-windows-static-md
+          .\vendor\vcpkg\vcpkg.exe install sqlite3:${{ matrix.arch }}-windows-static-md
+
+      - name: Restore .NET tools
+        run: dotnet tool restore
 
       - name: Build
         run: dotnet cake --platform=${{ matrix.arch }} --target=Publish

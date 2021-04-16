@@ -52,11 +52,11 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
 
     lv->InsertItem(lv->GetItemCount(), "fmt");
     lv->SetItem(lv->GetItemCount() - 1, 1, fmtVersion.str());
-    lv->SetItem(lv->GetItemCount() - 1, 2, BOOST_STRINGIZE(PICO_FMT_GIT_COMMITISH));
+    lv->SetItem(lv->GetItemCount() - 1, 2, "-");
 
     lv->InsertItem(lv->GetItemCount(), "nlohmann-json");
     lv->SetItem(lv->GetItemCount() - 1, 1, nljson.str());
-    lv->SetItem(lv->GetItemCount() - 1, 2, BOOST_STRINGIZE(PICO_NLOHMANN_JSON_GIT_COMMITISH));
+    lv->SetItem(lv->GetItemCount() - 1, 2, "-");
 
     lv->InsertItem(lv->GetItemCount(), OPENSSL_VERSION_TEXT);
     lv->SetItem(lv->GetItemCount() - 1, 1, "-");
@@ -68,7 +68,7 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
 
     lv->InsertItem(lv->GetItemCount(), "Rasterbar-libtorrent");
     lv->SetItem(lv->GetItemCount() - 1, 1, LIBTORRENT_VERSION);
-    lv->SetItem(lv->GetItemCount() - 1, 2, BOOST_STRINGIZE(PICO_LIBTORRENT_GIT_COMMITISH));
+    lv->SetItem(lv->GetItemCount() - 1, 2, "-");
 
     lv->InsertItem(lv->GetItemCount(), "SQLite");
     lv->SetItem(lv->GetItemCount() - 1, 1, SQLITE_VERSION);

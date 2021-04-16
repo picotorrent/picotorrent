@@ -45,7 +45,11 @@ Task("Generate-Project")
         OutputPath = OutputDirectory,
         Generator = "Visual Studio 16 2019",
         Platform = platform == "x86" ? "Win32" : "x64",
-        Toolset = "v142"
+        Toolset = "v142",
+        Options = new []
+        {
+            "-DVCPKG_TARGET_TRIPLET=x64-windows-static-md"
+        }
     });
 });
 
