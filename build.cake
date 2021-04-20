@@ -9,6 +9,7 @@
 var target        = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 var platform      = Argument("platform", "x64");
+var vcpkgTriplet  = Argument("vcpkg-triplet", "x64-windows-static-md");
 
 // Parameters
 var OutputDirectory       = Directory("./build-" + platform);
@@ -48,7 +49,7 @@ Task("Generate-Project")
         Toolset = "v142",
         Options = new []
         {
-            "-DVCPKG_TARGET_TRIPLET=x64-windows-static-md"
+            $"-DVCPKG_TARGET_TRIPLET={vcpkgTriplet}"
         }
     });
 });

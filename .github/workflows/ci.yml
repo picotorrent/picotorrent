@@ -23,22 +23,11 @@ jobs:
           git fetch --prune --unshallow
           git submodule update --init --recursive
 
-      - name: Setup vcpkg
-        run: .\vendor\vcpkg\bootstrap-vcpkg.bat
-
-      - name: Install vcpkg ports
-        run: |
-          .\vendor\vcpkg\vcpkg.exe install boost-log:${{ matrix.arch }}-windows-static-md
-          .\vendor\vcpkg\vcpkg.exe install fmt:${{ matrix.arch }}-windows-static-md
-          .\vendor\vcpkg\vcpkg.exe install libtorrent:${{ matrix.arch }}-windows-static-md
-          .\vendor\vcpkg\vcpkg.exe install nlohmann-json:${{ matrix.arch }}-windows-static-md
-          .\vendor\vcpkg\vcpkg.exe install sqlite3:${{ matrix.arch }}-windows-static-md
-
       - name: Restore .NET tools
         run: dotnet tool restore
 
       - name: Build
-        run: dotnet cake --platform=${{ matrix.arch }} --target=Publish
+        run: dotnet cake --platform=${{ matrix.arch }} --target=Publish --vcpkg-triplet=${{ matrix.arch }}-windows-static-md-rel
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2

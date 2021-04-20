@@ -13,4 +13,4 @@
 	url = https://github.com/antlr/antlr4
 [submodule "vendor/vcpkg"]
 	path = vendor/vcpkg
-	url = https://github.com/picotorrent/vcpkg
+	url = https://github.com/microsoft/vcpkg
