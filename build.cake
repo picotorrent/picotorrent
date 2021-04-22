@@ -49,6 +49,13 @@ Task("Generate-Project")
         Toolset = "v142",
         Options = new []
         {
+            $"-DGITVERSION_VAR_BRANCHNAME={Version.BranchName}",
+            $"-DGITVERSION_VAR_SEMVER={Version.SemVer}",
+            $"-DGITVERSION_VAR_SHORTSHA={Version.Sha.Substring(0,7)}",
+            $"-DGITVERSION_VAR_VERSION_MAJOR={Version.Major}",
+            $"-DGITVERSION_VAR_VERSION_MINOR={Version.Minor}",
+            $"-DGITVERSION_VAR_VERSION_PATCH={Version.Patch}",
+            $"-DGITVERSION_VAR_VERSION={Version.MajorMinorPatch}",
             $"-DVCPKG_TARGET_TRIPLET={vcpkgTriplet}"
         }
     });

@@ -76,13 +76,13 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
 
     lv->InsertItem(lv->GetItemCount(), "wxWidgets");
     lv->SetItem(lv->GetItemCount() - 1, 1, wxVERSION_NUM_DOT_STRING_T);
-    lv->SetItem(lv->GetItemCount() - 1, 2, BOOST_STRINGIZE(PICO_WX_GIT_COMMITISH));
+    lv->SetItem(lv->GetItemCount() - 1, 2, "-");
 
     auto desc = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
     desc->AppendText(i18n("picotorrent_description"));
 
     auto footerSizer = new wxBoxSizer(wxHORIZONTAL);
-    footerSizer->Add(new wxStaticText(this, wxID_ANY, "© 2015-2020"));
+    footerSizer->Add(new wxStaticText(this, wxID_ANY, "ï¿½ 2015-2020"));
     footerSizer->AddStretchSpacer();
     footerSizer->Add(new wxHyperlinkCtrl(this, wxID_ANY, "https://picotorrent.org", "https://picotorrent.org?app"));
 

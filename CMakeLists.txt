@@ -8,9 +8,6 @@ set(CMAKE_TOOLCHAIN_FILE   ${CMAKE_CURRENT_SOURCE_DIR}/vendor/vcpkg/scripts/buil
 
 project("PicoTorrent")
 
-include(cmake/Git.cmake)
-include(cmake/GitVersion.cmake)
-
 set(CMAKE_CXX_STANDARD 17)
 
 # --------- antlr4 options
@@ -36,18 +33,6 @@ find_package(fmt                 CONFIG REQUIRED)
 find_package(LibtorrentRasterbar CONFIG REQUIRED)
 find_package(nlohmann_json       CONFIG REQUIRED)
 find_package(unofficial-sqlite3  CONFIG REQUIRED)
-
-gitversion_install()
-gitversion_showvariable(BranchName      GITVERSION_VAR_BRANCHNAME)
-gitversion_showvariable(MajorMinorPatch GITVERSION_VAR_VERSION)
-gitversion_showvariable(Major           GITVERSION_VAR_VERSION_MAJOR)
-gitversion_showvariable(Minor           GITVERSION_VAR_VERSION_MINOR)
-gitversion_showvariable(Patch           GITVERSION_VAR_VERSION_PATCH)
-gitversion_showvariable(SemVer          GITVERSION_VAR_SEMVER)
-gitversion_showvariable(ShortSha        GITVERSION_VAR_SHORTSHA)
-
-# Get git commitish from dependencies
-git_abbreviated_hash(${CMAKE_SOURCE_DIR}/vendor/wx PICO_WX_GIT_COMMITISH)
 
 # Generate buildinfo file
 configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp" @ONLY)
