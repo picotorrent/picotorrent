@@ -23,27 +23,11 @@ jobs:
           git fetch --prune --unshallow
           git submodule update --init --recursive
 
-      - name: Install dependencies
-        run: |
-          if ('${{ matrix.arch }}' -eq 'x64') {
-            choco install openssl --no-progress
-          } elseif ('${{ matrix.arch }}' -eq 'x86') {
-            choco install openssl --no-progress --x86
-          }
-
-          dotnet tool restore
-
-      - name: Set environment variables
-        run: |
-          echo "BOOST_ROOT=$env:BOOST_ROOT_1_72_0" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          if ('${{ matrix.arch }}' -eq 'x64') {
-            echo "OPENSSL_ROOT_DIR=$env:ProgramFiles\OpenSSL-Win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          } elseif ('${{ matrix.arch }}' -eq 'x86') {
-            echo "OPENSSL_ROOT_DIR=${env:ProgramFiles(x86)}\OpenSSL-Win32" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          }
+      - name: Restore .NET tools
+        run: dotnet tool restore
 
       - name: Build
-        run: dotnet cake --platform=${{ matrix.arch }} --target=Publish
+        run: dotnet cake --platform=${{ matrix.arch }} --target=Publish --vcpkg-triplet=${{ matrix.arch }}-windows-static-md-rel
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2

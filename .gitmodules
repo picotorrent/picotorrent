@@ -1,16 +1,7 @@
-[submodule "vendor/libtorrent"]
-	path = vendor/libtorrent
-	url = https://github.com/arvidn/libtorrent
 [submodule "vendor/wx"]
 	path = vendor/wx
 	url = https://github.com/wxWidgets/wxWidgets
 [submodule "vendor/duktape"]
-[submodule "vendor/fmt"]
-	path = vendor/fmt
-	url = https://github.com/fmtlib/fmt
-[submodule "vendor/nlohmann-json"]
-	path = vendor/nlohmann-json
-	url = https://github.com/nlohmann/json
 [submodule "vendor/crashpad"]
 	path = vendor/crashpad
 	url = https://github.com/picotorrent/crashpad
@@ -20,3 +11,6 @@
 [submodule "vendor/antlr4"]
 	path = vendor/antlr4
 	url = https://github.com/antlr/antlr4
+[submodule "vendor/vcpkg"]
+	path = vendor/vcpkg
+	url = https://github.com/microsoft/vcpkg

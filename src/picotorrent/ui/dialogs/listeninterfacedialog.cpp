@@ -108,7 +108,7 @@ std::string ListenInterfaceDialog::GetAddress()
 
 int ListenInterfaceDialog::GetPort()
 {
-    return std::atoi(m_port->GetValue());
+    return std::atoi(m_port->GetValue().c_str());
 }
 
 void ListenInterfaceDialog::LoadAdapters()

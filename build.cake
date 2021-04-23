@@ -9,6 +9,7 @@
 var target        = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 var platform      = Argument("platform", "x64");
+var vcpkgTriplet  = Argument("vcpkg-triplet", "x64-windows-static-md");
 
 // Parameters
 var OutputDirectory       = Directory("./build-" + platform);
@@ -45,7 +46,18 @@ Task("Generate-Project")
         OutputPath = OutputDirectory,
         Generator = "Visual Studio 16 2019",
         Platform = platform == "x86" ? "Win32" : "x64",
-        Toolset = "v142"
+        Toolset = "v142",
+        Options = new []
+        {
+            $"-DGITVERSION_VAR_BRANCHNAME={Version.BranchName}",
+            $"-DGITVERSION_VAR_SEMVER={Version.SemVer}",
+            $"-DGITVERSION_VAR_SHORTSHA={Version.Sha.Substring(0,7)}",
+            $"-DGITVERSION_VAR_VERSION_MAJOR={Version.Major}",
+            $"-DGITVERSION_VAR_VERSION_MINOR={Version.Minor}",
+            $"-DGITVERSION_VAR_VERSION_PATCH={Version.Patch}",
+            $"-DGITVERSION_VAR_VERSION={Version.MajorMinorPatch}",
+            $"-DVCPKG_TARGET_TRIPLET={vcpkgTriplet}"
+        }
     });
 });
 

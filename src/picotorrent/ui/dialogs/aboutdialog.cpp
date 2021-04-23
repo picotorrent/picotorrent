@@ -52,11 +52,11 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
 
     lv->InsertItem(lv->GetItemCount(), "fmt");
     lv->SetItem(lv->GetItemCount() - 1, 1, fmtVersion.str());
-    lv->SetItem(lv->GetItemCount() - 1, 2, BOOST_STRINGIZE(PICO_FMT_GIT_COMMITISH));
+    lv->SetItem(lv->GetItemCount() - 1, 2, "-");
 
     lv->InsertItem(lv->GetItemCount(), "nlohmann-json");
     lv->SetItem(lv->GetItemCount() - 1, 1, nljson.str());
-    lv->SetItem(lv->GetItemCount() - 1, 2, BOOST_STRINGIZE(PICO_NLOHMANN_JSON_GIT_COMMITISH));
+    lv->SetItem(lv->GetItemCount() - 1, 2, "-");
 
     lv->InsertItem(lv->GetItemCount(), OPENSSL_VERSION_TEXT);
     lv->SetItem(lv->GetItemCount() - 1, 1, "-");
@@ -68,7 +68,7 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
 
     lv->InsertItem(lv->GetItemCount(), "Rasterbar-libtorrent");
     lv->SetItem(lv->GetItemCount() - 1, 1, LIBTORRENT_VERSION);
-    lv->SetItem(lv->GetItemCount() - 1, 2, BOOST_STRINGIZE(PICO_LIBTORRENT_GIT_COMMITISH));
+    lv->SetItem(lv->GetItemCount() - 1, 2, "-");
 
     lv->InsertItem(lv->GetItemCount(), "SQLite");
     lv->SetItem(lv->GetItemCount() - 1, 1, SQLITE_VERSION);
@@ -76,13 +76,13 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
 
     lv->InsertItem(lv->GetItemCount(), "wxWidgets");
     lv->SetItem(lv->GetItemCount() - 1, 1, wxVERSION_NUM_DOT_STRING_T);
-    lv->SetItem(lv->GetItemCount() - 1, 2, BOOST_STRINGIZE(PICO_WX_GIT_COMMITISH));
+    lv->SetItem(lv->GetItemCount() - 1, 2, "-");
 
     auto desc = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
     desc->AppendText(i18n("picotorrent_description"));
 
     auto footerSizer = new wxBoxSizer(wxHORIZONTAL);
-    footerSizer->Add(new wxStaticText(this, wxID_ANY, "© 2015-2020"));
+    footerSizer->Add(new wxStaticText(this, wxID_ANY, "ï¿½ 2015-2020"));
     footerSizer->AddStretchSpacer();
     footerSizer->Add(new wxHyperlinkCtrl(this, wxID_ANY, "https://picotorrent.org", "https://picotorrent.org?app"));
 
