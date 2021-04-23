@@ -207,5 +207,18 @@
     "queue_position": "#",
     "last_activity_just_now": "刚刚",
     "mode_hybrid": "v1 + v2 混合模式",
-    "browse": "…"
+    "browse": "…",
+    "state_error_details": "错误： {0} ({1})",
+    "dht_num_nodes": "DHT: {0} 节点",
+    "pause_on_low_disk_space": "当磁盘空间不足时暂停",
+    "amp_status_bar": "&状态栏",
+    "amp_filter": "&筛选",
+    "size_remaining": "大小 （剩余）",
+    "pause_on_low_disk_space_alert": "Torrent 已暂停（磁盘空间不足）",
+    "network_adapter": "网络适配器",
+    "add_magnet_link_s_description": "磁力链接或 info hash （每行一个）",
+    "version": "版本",
+    "private": "私有",
+    "label": "标签",
+    "restart_picotorrent": "重启 PicoTorrent"
 }
