@@ -48,6 +48,8 @@ using pt::UI::MainFrame;
 
 const char* WindowTitle = "PicoTorrent";
 
+#define LABEL_ICON_SIZE 16
+
 MainFrame::MainFrame(std::shared_ptr<Core::Environment> env, std::shared_ptr<Core::Database> db, std::shared_ptr<Core::Configuration> cfg, pt::CommandLineOptions const& options)
     : wxFrame(nullptr, wxID_ANY, WindowTitle, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, "MainFrame"),
     m_env(env),
@@ -862,9 +864,11 @@ void MainFrame::ShowTorrentContextMenu(wxCommandEvent&)
 void MainFrame::UpdateLabels()
 {
     std::map<int, std::tuple<std::string, std::string>> labels;
+
     for (auto const& label : m_cfg->GetLabels())
     {
         labels.insert({ label.id, { label.name, label.color } });
     }
-    m_torrentListModel->UpdateLabels(labels);
+
+    m_torrentListModel->UpdateLabels(labels, FromDIP(LABEL_ICON_SIZE));
 }

@@ -79,7 +79,7 @@ namespace pt::UI::Models
 
         bool SetValueByRow(const wxVariant&, uint32_t, uint32_t) wxOVERRIDE { return false; }
 
-        void UpdateLabels(std::map<int, std::tuple<std::string, std::string>> const& labels);
+        void UpdateLabels(std::map<int, std::tuple<std::string, std::string>> const& labels, int size);
 
     private:
         void ApplyFilter();
