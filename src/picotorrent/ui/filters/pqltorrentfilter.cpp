@@ -33,6 +33,7 @@ static std::map<std::string, std::function<bool(Value const&)>> FieldValidators 
     { "size",     [](Value const& v) { return v.value_int.has_value() || v.value_float.has_value(); } },
     { "name",     [](Value const& v) { return v.value_string.has_value(); } },
     { "status",   [](Value const& v) { return v.value_string.has_value(); } },
+    { "label",    [](Value const& v) { return v.value_string.has_value(); } },
 };
 
 typedef std::function<bool(TorrentStatus const&)> FilterFunc;
@@ -290,6 +291,22 @@ public:
                     }
                     return false;
                 });
+        }
+
+        if (ref == "label")
+        {
+            std::string term = value.value_string.value();
+
+            if (oper == Operator::CONTAINS)
+            {
+                return FilterFunc(
+                    [term](TorrentStatus const& ts)
+                    {
+                        return ts.labelName.find(term) != std::string::npos;
+                    });
+            }
+
+            return FilterFunc([oper, term](TorrentStatus const& ts) { return Compare(ts.labelName, term, oper); });
         }
 
         throw QueryException(

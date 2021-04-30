@@ -547,7 +547,7 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
     }
 }
 
-void TorrentListModel::UpdateLabels(std::map<int, std::tuple<std::string, std::string>> const& labels)
+void TorrentListModel::UpdateLabels(std::map<int, std::tuple<std::string, std::string>> const& labels, int size)
 {
     std::vector<BitTorrent::TorrentHandle*> torrents;
 
@@ -600,7 +600,7 @@ void TorrentListModel::UpdateLabels(std::map<int, std::tuple<std::string, std::s
 
         m_labelsColors.insert({ id, wxColor(color) });
 
-        wxBitmap bmp(24, 24);
+        wxBitmap bmp(size, size);
 
         {
             wxMemoryDC dc;

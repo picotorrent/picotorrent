@@ -260,16 +260,15 @@ void TorrentHandle::BuildStatus(libtorrent::torrent_status const& ts)
     m_status = Update(ts);
 }
 
-void TorrentHandle::SetLabel(int id, std::string const& name)
+void TorrentHandle::SetLabel(int id, std::string const& name, bool muted)
 {
     m_labelId = id;
     m_labelName = name;
-    m_session->UpdateTorrentLabel(this);
-}
 
-void TorrentHandle::SetLabelMuted(int id)
-{
-    m_labelId = id;
+    if (!muted)
+    {
+        m_session->UpdateTorrentLabel(this);
+    }
 }
 
 std::unique_ptr<TorrentStatus> TorrentHandle::Update(lt::torrent_status const& ts)

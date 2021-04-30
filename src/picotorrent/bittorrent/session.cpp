@@ -499,7 +499,7 @@ void Session::OnAlert()
             TorrentHandle* handle = new TorrentHandle(this, ata->handle);
 
             AddParams* add = ata->params.userdata.get<AddParams>();
-            if (add && add->labelId > 0) { handle->SetLabelMuted(add->labelId); }
+            if (add && add->labelId > 0) { handle->SetLabel(add->labelId, add->labelName, true); }
 
             m_torrents.insert({ ata->handle.info_hashes(), handle });
 
@@ -906,9 +906,10 @@ void Session::LoadIPFilter(std::string const& path)
 
 void Session::LoadTorrents()
 {
-    auto stmt = m_db->CreateStatement("SELECT t.info_hash, tmu.magnet_uri, trd.resume_data, tmu.save_path, IFNULL(t.label_id, -1) FROM torrent t\n"
+    auto stmt = m_db->CreateStatement("SELECT t.info_hash, tmu.magnet_uri, trd.resume_data, tmu.save_path, IFNULL(t.label_id, -1), lbl.name AS label_name FROM torrent t\n"
         "LEFT JOIN torrent_magnet_uri  tmu ON t.info_hash = tmu.info_hash\n"
         "LEFT JOIN torrent_resume_data trd ON t.info_hash = trd.info_hash\n"
+        "LEFT JOIN label lbl ON t.label_id = t.label_id\n"
         "ORDER BY t.queue_position ASC");
 
     while (stmt->Read())
@@ -917,6 +918,7 @@ void Session::LoadTorrents()
         std::string magnet_uri = stmt->GetString(1);
         std::string save_path = stmt->GetString(3);
         int label_id = stmt->GetInt(4);
+        std::string label_name = stmt->GetString(5);
 
         std::vector<char> resume_data;
         stmt->GetBlob(2, resume_data);
@@ -955,6 +957,7 @@ void Session::LoadTorrents()
         if (label_id > 0)
         {
             params.userdata.get<AddParams>()->labelId = label_id;
+            params.userdata.get<AddParams>()->labelName = label_name;
         }
 
         m_session->async_add_torrent(params);
