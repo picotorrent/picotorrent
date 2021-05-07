@@ -9,7 +9,7 @@
 
 using pt::UI::Dialogs::PreferencesDownloadsPage;
 
-PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg)
+PreferencesDownloadsPage::PreferencesDownloadsPage(wxWindow* parent, std::shared_ptr<pt::Core::Configuration> cfg)
     : wxPanel(parent, wxID_ANY),
     m_cfg(cfg)
 {

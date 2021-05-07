@@ -82,7 +82,7 @@ TorrentDetailsTrackersPanel::TorrentDetailsTrackersPanel(wxWindow* parent, wxWin
     this->Bind(wxEVT_COMMAND_DATAVIEW_ITEM_CONTEXT_MENU, &TorrentDetailsTrackersPanel::ShowTrackerContextMenu, this);
 }
 
-void TorrentDetailsTrackersPanel::Refresh(BitTorrent::TorrentHandle* torrent)
+void TorrentDetailsTrackersPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent)
 {
     if (!torrent->IsValid())
     {

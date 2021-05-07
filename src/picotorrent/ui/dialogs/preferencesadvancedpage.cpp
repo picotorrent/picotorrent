@@ -54,7 +54,7 @@ static std::map<std::string, std::map<std::string, Property>> properties =
     }
 };
 
-PreferencesAdvancedPage::PreferencesAdvancedPage(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg)
+PreferencesAdvancedPage::PreferencesAdvancedPage(wxWindow* parent, std::shared_ptr<pt::Core::Configuration> cfg)
     : wxPanel(parent),
     m_cfg(cfg)
 {

@@ -23,7 +23,7 @@
 
 using pt::UI::Dialogs::AddTorrentDialog;
 
-AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torrent_params& params, std::shared_ptr<Core::Database> db, std::shared_ptr<Core::Configuration> cfg, std::shared_ptr<BitTorrent::Session> session)
+AddTorrentDialog::AddTorrentDialog(wxWindow* parent, wxWindowID id, lt::add_torrent_params& params, std::shared_ptr<pt::Core::Database> db, std::shared_ptr<pt::Core::Configuration> cfg, std::shared_ptr<pt::BitTorrent::Session> session)
     : wxDialog(parent, id, GetTorrentDisplayName(params), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     m_params(params),
     m_db(db),

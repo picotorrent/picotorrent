@@ -9,7 +9,7 @@ using pt::UI::Console;
 
 wxDEFINE_EVENT(ptEVT_FILTER_CHANGED, wxCommandEvent);
 
-Console::Console(wxWindow* parent, wxWindowID id, Models::TorrentListModel* model)
+Console::Console(wxWindow* parent, wxWindowID id, pt::UI::Models::TorrentListModel* model)
     : wxPanel(parent, id),
     m_input(new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_LEFT | wxTE_PROCESS_ENTER)),
     m_model(model)

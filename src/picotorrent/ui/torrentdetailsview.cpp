@@ -12,7 +12,7 @@
 
 using pt::UI::TorrentDetailsView;
 
-TorrentDetailsView::TorrentDetailsView(wxWindow* parent, wxWindowID id, std::shared_ptr<Core::Configuration> cfg)
+TorrentDetailsView::TorrentDetailsView(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Core::Configuration> cfg)
     : wxNotebook(parent, id),
     m_cfg(cfg),
     m_overview(new TorrentDetailsOverviewPanel(this, wxID_ANY)),
@@ -31,7 +31,7 @@ TorrentDetailsView::~TorrentDetailsView()
 {
 }
 
-void TorrentDetailsView::Refresh(std::map<lt::info_hash_t, BitTorrent::TorrentHandle*> const& torrents)
+void TorrentDetailsView::Refresh(std::map<lt::info_hash_t, pt::BitTorrent::TorrentHandle*> const& torrents)
 {
     if (torrents.size() != 1)
     {

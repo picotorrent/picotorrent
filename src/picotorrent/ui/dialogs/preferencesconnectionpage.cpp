@@ -30,7 +30,7 @@ struct Item
 
 using pt::UI::Dialogs::PreferencesConnectionPage;
 
-PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg)
+PreferencesConnectionPage::PreferencesConnectionPage(wxWindow* parent, std::shared_ptr<pt::Core::Configuration> cfg)
     : wxPanel(parent, wxID_ANY),
     m_parent(parent),
     m_cfg(cfg)

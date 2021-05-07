@@ -10,7 +10,7 @@
 using pt::UI::TorrentListView;
 using pt::UI::Models::TorrentListModel;
 
-TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, Models::TorrentListModel* model)
+TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, pt::UI::Models::TorrentListModel* model)
     : wxDataViewCtrl(parent, id, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE, wxDefaultValidator, "TorrentListView"),
     m_model(model)
 {

@@ -8,7 +8,7 @@
 using json = nlohmann::json;
 using pt::PersistenceManager;
 
-PersistenceManager::PersistenceManager(std::shared_ptr<Core::Database> db)
+PersistenceManager::PersistenceManager(std::shared_ptr<pt::Core::Database> db)
     : m_db(db)
 {
 }

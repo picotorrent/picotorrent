@@ -13,7 +13,7 @@
 namespace fs = std::filesystem;
 using pt::UI::TorrentContextMenu;
 
-TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg, std::vector<BitTorrent::TorrentHandle*> const& selectedTorrents)
+TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<pt::Core::Configuration> cfg, std::vector<pt::BitTorrent::TorrentHandle*> const& selectedTorrents)
     : wxMenu(),
     m_parent(parent)
 {

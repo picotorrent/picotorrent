@@ -151,7 +151,7 @@ TorrentDetailsOverviewPanel::TorrentDetailsOverviewPanel(wxWindow* parent, wxWin
     this->SetScrollRate(5, 5);
 }
 
-void TorrentDetailsOverviewPanel::Refresh(BitTorrent::TorrentHandle* torrent)
+void TorrentDetailsOverviewPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent)
 {
     auto status = torrent->Status();
 

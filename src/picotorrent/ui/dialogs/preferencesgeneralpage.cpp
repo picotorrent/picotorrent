@@ -81,7 +81,7 @@ private:
 using pt::Core::Configuration;
 using pt::UI::Dialogs::PreferencesGeneralPage;
 
-PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr<Core::Configuration> cfg)
+PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr<pt::Core::Configuration> cfg)
     : wxPanel(parent),
     m_cfg(cfg)
 {

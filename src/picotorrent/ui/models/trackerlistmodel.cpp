@@ -48,7 +48,7 @@ void TrackerListModel::ResetTrackers()
     this->Cleared();
 }
 
-void TrackerListModel::Update(BitTorrent::TorrentHandle* torrent)
+void TrackerListModel::Update(pt::BitTorrent::TorrentHandle* torrent)
 {
     if (m_dht == nullptr)
     {

@@ -34,7 +34,7 @@ TorrentDetailsFilesPanel::TorrentDetailsFilesPanel(wxWindow* parent, wxWindowID 
     this->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &TorrentDetailsFilesPanel::ShowFileContextMenu, this, wxID_ANY);
 }
 
-void TorrentDetailsFilesPanel::Refresh(BitTorrent::TorrentHandle* torrent)
+void TorrentDetailsFilesPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent)
 {
     if (!torrent->IsValid())
     {

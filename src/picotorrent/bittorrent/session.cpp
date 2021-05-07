@@ -1126,7 +1126,7 @@ void Session::UpdateMetadataHandle(lt::info_hash_t hash, lt::torrent_handle hand
     }
 }
 
-void Session::UpdateTorrentLabel(TorrentHandle* torrent)
+void Session::UpdateTorrentLabel(pt::BitTorrent::TorrentHandle* torrent)
 {
     int labelId = torrent->Label();
 
