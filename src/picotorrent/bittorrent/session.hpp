@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <thread>
+#include <unordered_set>
 
 #include <libtorrent/fwd.hpp>
 #include <libtorrent/info_hash.hpp>
@@ -121,6 +122,7 @@ namespace BitTorrent
 
         std::map<libtorrent::info_hash_t, TorrentHandle*> m_pauseAfterRecheck;
         std::map<libtorrent::info_hash_t, TorrentHandle*> m_torrents;
+        std::unordered_set<libtorrent::info_hash_t> m_metadataRemoving;
         std::map<libtorrent::info_hash_t, libtorrent::torrent_handle> m_metadataSearches;
     };
 }

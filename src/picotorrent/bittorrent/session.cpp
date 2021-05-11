@@ -378,11 +378,13 @@ void Session::AddTorrent(lt::add_torrent_params const& params)
     // that search and add this one instead.
 
     lt::info_hash_t res;
-    if (IsSearching(params.info_hashes, res))
+    if (IsSearching(params.info_hashes, res)
+        && m_metadataRemoving.count(res) == 0)
     {
         m_session->remove_torrent(
             m_metadataSearches.at(res),
             lt::session::delete_files);
+        m_metadataRemoving.insert(res);
     }
 
     m_session->async_add_torrent(params);
@@ -408,11 +410,13 @@ void Session::RemoveMetadataSearch(std::vector<lt::info_hash_t> const& hashes)
     for (auto const& hash : hashes)
     {
         lt::info_hash_t res;
-        if (IsSearching(hash, res))
+        if (IsSearching(hash, res)
+            && m_metadataRemoving.count(res) == 0)
         {
             m_session->remove_torrent(
                 m_metadataSearches.at(res),
                 lt::session::delete_files);
+            m_metadataRemoving.insert(res);
         }
     }
 }
@@ -561,7 +565,9 @@ void Session::OnAlert()
             lt::metadata_received_alert* mra = lt::alert_cast<lt::metadata_received_alert>(alert);
             lt::info_hash_t infoHash = mra->handle.info_hashes();
 
-            if (IsSearching(infoHash))
+            lt::info_hash_t res;
+            if (IsSearching(infoHash, res)
+                && m_metadataRemoving.count(res) == 0)
             {
                 // Create a non-const copy of the torrent_info
 
@@ -574,6 +580,7 @@ void Session::OnAlert()
                 wxPostEvent(m_parent, evt);
 
                 m_session->remove_torrent(mra->handle, lt::session::delete_files);
+                m_metadataRemoving.insert(res);
             }
             else
             {
@@ -745,10 +752,13 @@ void Session::OnAlert()
         case lt::torrent_removed_alert::alert_type:
         {
             lt::torrent_removed_alert* tra = lt::alert_cast<lt::torrent_removed_alert>(alert);
+            lt::info_hash_t res;
 
-            if (IsSearching(tra->info_hashes))
+            if (IsSearching(tra->info_hashes, res)
+                && m_metadataRemoving.count(res) > 0)
             {
                 RemoveMetadataHandle(tra->info_hashes);
+                m_metadataRemoving.erase(res);
                 break;
             }
 
@@ -1098,7 +1108,7 @@ void Session::RemoveMetadataHandle(lt::info_hash_t hash)
     lt::info_hash_t v1(hash.v1);
     lt::info_hash_t v2(hash.v2);
 
-    for (auto it : m_metadataSearches)
+    for (auto& it : m_metadataSearches)
     {
         if (it.first == hash
             || it.first == v1
