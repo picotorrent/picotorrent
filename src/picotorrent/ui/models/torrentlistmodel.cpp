@@ -124,9 +124,10 @@ int TorrentListModel::Compare(const wxDataViewItem& item1, const wxDataViewItem&
 
     auto nameSort = [&hashSort](bool ascending, TorrentStatus const& l, TorrentStatus const& r) -> int
     {
-        if (l.name < r.name) { return ascending ? -1 : 1; }
-        if (l.name > r.name) { return ascending ? 1 : -1; }
-        return hashSort(ascending, l, l);
+        auto compvalue = _strcmpi(l.name.c_str(),r.name.c_str());
+        if (compvalue < 0) { return ascending ? -1 : 1; }
+        else if (compvalue == 0) { return hashSort(ascending, l, l); }
+        else{ return ascending ? 1 : -1; }
     };
 
     switch (column)
