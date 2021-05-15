@@ -126,6 +126,7 @@ add_executable(
     src/picotorrent/ui/dialogs/preferencesgeneralpage
     src/picotorrent/ui/dialogs/preferenceslabelspage
     src/picotorrent/ui/dialogs/preferencesproxypage
+    src/picotorrent/ui/dialogs/textoutputdialog
 
     # Filters
     src/picotorrent/ui/filters/pqltorrentfilter

@@ -1,16 +1,21 @@
 #include "torrentcontextmenu.hpp"
 
 #include <filesystem>
+#include <fstream>
 
+#include <libtorrent/create_torrent.hpp>
+#include <libtorrent/magnet_uri.hpp>
 #include <wx/clipbrd.h>
 
 #include "../bittorrent/torrenthandle.hpp"
 #include "../bittorrent/torrentstatus.hpp"
 #include "../core/configuration.hpp"
 #include "../core/utils.hpp"
+#include "dialogs/textoutputdialog.hpp"
 #include "translator.hpp"
 
 namespace fs = std::filesystem;
+using pt::UI::Dialogs::TextOutputDialog;
 using pt::UI::TorrentContextMenu;
 
 TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<pt::Core::Configuration> cfg, std::vector<pt::BitTorrent::TorrentHandle*> const& selectedTorrents)
@@ -27,6 +32,10 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<pt::Cor
     wxMenu* removeMenu = new wxMenu();
     removeMenu->Append(ptID_REMOVE, i18n("remove_torrent"));
     removeMenu->Append(ptID_REMOVE_FILES, i18n("remove_torrent_and_files"));
+
+    wxMenu* exportMenu = new wxMenu();
+    exportMenu->Append(ptID_EXPORT_MAGNET_LINK, i18n("magnet_link_s"));
+    exportMenu->Append(ptID_EXPORT_TORRENT_FILE, i18n("torrent_file_s"));
 
     bool allPaused = std::all_of(
         selectedTorrents.begin(),
@@ -115,6 +124,7 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<pt::Cor
     }
 
     AppendSeparator();
+    AppendSubMenu(exportMenu, i18n("export"));
     Append(ptID_MOVE, i18n("move"));
     AppendSubMenu(removeMenu, i18n("remove"));
     AppendSeparator();
@@ -138,6 +148,55 @@ TorrentContextMenu::TorrentContextMenu(wxWindow* parent, std::shared_ptr<pt::Cor
         wxEVT_MENU,
         [&](wxCommandEvent&) { for (auto t : selectedTorrents) { t->Pause(); } },
         TorrentContextMenu::ptID_PAUSE);
+
+    Bind(
+        wxEVT_MENU,
+        [&](wxCommandEvent&)
+        {
+            std::stringstream ss;
+
+            for (auto torrent : selectedTorrents)
+            {
+                ss << lt::make_magnet_uri(torrent->WrappedHandle()) << "\n";
+            }
+
+            TextOutputDialog dlg(m_parent, wxID_ANY, i18n("magnet_link_s"), i18n("exported_magnet_link_s"));
+            dlg.SetOutputText(ss.str());
+            dlg.ShowModal();
+        },
+        TorrentContextMenu::ptID_EXPORT_MAGNET_LINK);
+
+    Bind(
+        wxEVT_MENU,
+        [&](wxCommandEvent&)
+        {
+            wxDirDialog dlg(
+                m_parent,
+                i18n("select_destination"),
+                wxEmptyString,
+                wxDD_DIR_MUST_EXIST);
+
+            if (dlg.ShowModal() != wxID_OK)
+            {
+                return;
+            }
+
+            fs::path outputDir = Utils::toStdString(dlg.GetPath().ToStdWstring());
+
+            for (auto torrent : selectedTorrents)
+            {
+                if (auto tf = torrent->WrappedHandle().torrent_file_with_hashes())
+                {
+                    lt::create_torrent ct(*tf.get());
+                    lt::entry e = ct.generate();
+
+                    std::string fileName = tf->name() + ".torrent";
+                    std::ofstream out(outputDir / fileName, std::ios::binary);
+                    lt::bencode(std::ostreambuf_iterator<char>(out), e);
+                }
+            }
+        },
+        TorrentContextMenu::ptID_EXPORT_TORRENT_FILE);
 
     Bind(
         wxEVT_MENU,
