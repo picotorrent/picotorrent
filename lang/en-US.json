@@ -222,5 +222,6 @@
     "select_ip_filter_file": "Select IP filter file",
     "file_filter_all_files": "All files (*.*)|*.*",
     "ip_filter_enabled": "IP filter: ✔️",
-    "ip_filter_disabled": "IP filter: ❌"
+    "ip_filter_disabled": "IP filter: ❌",
+    "copyright_text": "© 2015-2021"
 }

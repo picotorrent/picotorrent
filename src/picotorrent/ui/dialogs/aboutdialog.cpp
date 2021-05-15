@@ -82,7 +82,7 @@ AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
     desc->AppendText(i18n("picotorrent_description"));
 
     auto footerSizer = new wxBoxSizer(wxHORIZONTAL);
-    footerSizer->Add(new wxStaticText(this, wxID_ANY, "� 2015-2020"));
+    footerSizer->Add(new wxStaticText(this, wxID_ANY, i18n("copyright_text")));
     footerSizer->AddStretchSpacer();
     footerSizer->Add(new wxHyperlinkCtrl(this, wxID_ANY, "https://picotorrent.org", "https://picotorrent.org?app"));
 
