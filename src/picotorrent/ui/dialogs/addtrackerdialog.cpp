@@ -79,3 +79,8 @@ std::string AddTrackerDialog::GetUrl()
 {
     return m_url->GetValue().ToStdString();
 }
+
+void AddTrackerDialog::SetTier(int tier)
+{
+    m_tier->SetValue(std::to_string(tier));
+}
