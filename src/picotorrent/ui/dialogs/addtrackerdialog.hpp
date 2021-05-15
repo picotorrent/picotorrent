@@ -19,6 +19,7 @@ namespace Dialogs
 
         int GetTier();
         std::string GetUrl();
+        void SetTier(int tier);
 
     private:
         wxTextCtrl* m_url;

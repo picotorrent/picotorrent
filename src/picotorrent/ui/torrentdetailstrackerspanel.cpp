@@ -128,22 +128,23 @@ void TorrentDetailsTrackersPanel::ShowTrackerContextMenu(wxDataViewEvent& evt)
             wxEVT_MENU,
             [this](wxCommandEvent const&)
             {
+                auto trackers = m_torrent->Trackers();
+                auto maxTier = std::max_element(
+                    trackers.begin(),
+                    trackers.end(),
+                    [](lt::announce_entry const& lhs, lt::announce_entry const& rhs)
+                    { return lhs.tier < rhs.tier; });
+
                 Dialogs::AddTrackerDialog addDialog(this, wxID_ANY);
+                addDialog.SetTier(maxTier != trackers.end() ? maxTier->tier + 1 : 0);
                 
                 if (addDialog.ShowModal() == wxID_OK
                     && addDialog.GetUrl().size() > 0)
                 {
-                    // Get max tier
-                    auto trackers = m_torrent->Trackers();
-                    auto maxTier = std::max_element(
-                        trackers.begin(),
-                        trackers.end(),
-                        [](lt::announce_entry const& lhs, lt::announce_entry const& rhs)
-                        { return lhs.tier < rhs.tier; });
-
                     lt::announce_entry ae;
-                    ae.tier = maxTier != trackers.end() ? maxTier->tier + 1 : 0;
+                    ae.tier = addDialog.GetTier();
                     ae.url = addDialog.GetUrl();
+
                     m_torrent->AddTracker(ae);
                     m_trackersModel->Update(m_torrent);
                 }
