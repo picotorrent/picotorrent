@@ -303,5 +303,6 @@
     "ip_filter_enabled": "Filtrage IP : ✔️",
     "ip_filter_disabled": "Filtrage IP : ❌",
     "select_ip_filter_file": "Sélectionner le fichier de filtre IP",
-    "file_filter_all_files": "Tous les fichiers (*.*)|*.*"
+    "file_filter_all_files": "Tous les fichiers (*.*)|*.*",
+    "copyright_text": "©2015-2021"
 }
