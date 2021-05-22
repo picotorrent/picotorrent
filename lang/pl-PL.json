@@ -82,7 +82,7 @@
     "trackers": "Tracker",
     "url": "URL",
     "next_announce": "Następne zapytanie",
-    "picotorrent_v_available": "PicoTorrent %s dostępne.",
+    "picotorrent_v_available": "Dostępna aktualizacja do PicoTorrent %s",
     "no_update_available": "Żadne aktualizacje nie są dostępne",
     "show_on_github": "Pokaż na githubie",
     "new_version_available": "Nowsza wersja PicoTorrent jest dostępna.",
