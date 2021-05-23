@@ -274,7 +274,7 @@
     "add_to_session": "Dodaj do sesji",
     "no_such_file_or_directory": "Nie ma takiego pliku albo katalogu",
     "cancel": "Anuluj",
-    "restore_defaults": "Przywróc domyślne",
+    "restore_defaults": "Przywróć domyślne",
     "restore_defaults_description": "Przywróci większość ustawień do ich standardowych wartości. Jesteś pewien?",
     "use_label_color_as_background_in_torrent_list": "Użyj koloru etykiety jako tła dla listy torrentów",
     "labels": "Etykiety",
@@ -290,5 +290,6 @@
     "select_ip_filter_file": "Wybierz plik filtra IP",
     "file_filter_all_files": "Wszystkie pliki (*.*)|*.*",
     "ip_filter_enabled": "Filtr IP: ✔️",
-    "ip_filter_disabled": "Filtr IP: ❌"
+    "ip_filter_disabled": "Filtr IP: ❌",
+    "dht_num_nodes": "DHT: {0} węzły"
 }
