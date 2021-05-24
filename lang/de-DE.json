@@ -31,7 +31,7 @@
     "add_torrent_s": "Torrent(s) hinzufügen",
     "storage": "Speicher",
     "about_picotorrent": "Über PicoTorrent",
-    "picotorrent_description": "Mit Liebe unter Verwendung von Boost, Rasterbar-libtorrent, OpenSSL und wxWidgets entwickelt.",
+    "picotorrent_description": "Gebaut mit Boost, Rasterbar-libtorrent, OpenSSL, wxWidgets und 💗",
     "github_link": "<a href=\"https://github.com/picotorrent/picotorrent\">PicoTorrent auf GitHub</a>",
     "transfers": "Übertragungen",
     "path": "Pfad",
