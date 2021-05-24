@@ -33,7 +33,7 @@
     "add_torrent_s": "Torrent(s) toevoegen",
     "storage": "Opslag",
     "about_picotorrent": "Over PicoTorrent",
-    "picotorrent_description": "Ontwikkeld met liefde, met Boost, Rasterbar-libtorrent, OpenSSL en wxWidgets.",
+    "picotorrent_description": "Gemaakt met Boost, Rasterbar-libtorrent, OpenSSL, wxWidgets en  💗",
     "github_link": "<a href=\"https://github.com/picotorrent/picotorrent\">PicoTorrent op GitHub</a>",
     "transfers": "Overdrachten",
     "path": "Pad",
@@ -303,5 +303,6 @@
     "leeches": "Leeches",
     "tier": "Rang",
     "amp_console": "C&onsole",
-    "all_torrents_already_in_session": "Geen torrents toevoegen, aangezien deze al zijn toegevoegd …"
+    "all_torrents_already_in_session": "Geen torrents toevoegen, aangezien deze al zijn toegevoegd …",
+    "copyright_text": "© 2015-2021"
 }
