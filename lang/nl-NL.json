@@ -33,7 +33,7 @@
     "add_torrent_s": "Torrent(s) toevoegen",
     "storage": "Opslag",
     "about_picotorrent": "Over PicoTorrent",
-    "picotorrent_description": "Gemaakt met Boost, Rasterbar-libtorrent, OpenSSL, wxWidgets en  💗",
+    "picotorrent_description": "Gemaakt met Boost, Rasterbar-libtorrent, OpenSSL, wxWidgets en 💗",
     "github_link": "<a href=\"https://github.com/picotorrent/picotorrent\">PicoTorrent op GitHub</a>",
     "transfers": "Overdrachten",
     "path": "Pad",
