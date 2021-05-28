@@ -34,7 +34,7 @@
     "add_torrent_s": "Aggiungi torrent",
     "storage": "Archivio",
     "about_picotorrent": "Info su PicoTorrent",
-    "picotorrent_description": "Realizzato con amore, usando Boost, Rasterbar-libtorrent e OpenSSL.",
+    "picotorrent_description": "Fatto con Boost, Rasterbar-libtorrent, OpenSSL e, wxWidgets. e 💗",
     "github_link": "<a href=\"https://github.com/picotorrent/picotorrent\">PicoTorrent su GitHub</a>",
     "downloads": "Download",
     "transfers": "Trasferimenti",
@@ -302,5 +302,6 @@
     "amp_console": "&Console",
     "tier": "Livello",
     "some_torrents_already_in_session": "Salta i torrent che sono già stati aggiunti…",
-    "all_torrents_already_in_session": "Non aggiungere torrent poiché sono già stati aggiunti tutti…"
+    "all_torrents_already_in_session": "Non aggiungere torrent poiché sono già stati aggiunti tutti…",
+    "copyright_text": "© 2015-2021"
 }
