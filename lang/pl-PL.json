@@ -291,5 +291,6 @@
     "file_filter_all_files": "Wszystkie pliki (*.*)|*.*",
     "ip_filter_enabled": "Filtr IP: ✔️",
     "ip_filter_disabled": "Filtr IP: ❌",
-    "dht_num_nodes": "DHT: {0} węzły"
+    "dht_num_nodes": "DHT: {0} węzły",
+    "commitish": "Commitish"
 }
