@@ -43,7 +43,7 @@
     "about_picotorrent": "À propos de PicoTorrent",
     "picotorrent_v_format": "PicoTorrent v{0}",
     "build_info_format": "Branche : {0}\nSHA1 : {1}",
-    "picotorrent_description": "Compilé avec amour, en utilisant Boost, Rasterbar-libtorrent, OpenSSL et wxWidgets.",
+    "picotorrent_description": "Compilé avec Boost, Rasterbar-libtorrent, OpenSSL, wxWidgets et 💗",
     "github_link": "<a href=\"https://github.com/picotorrent/picotorrent\">PicoTorrent sur GitHub</a>",
     "downloads": "Téléchargements",
     "transfers": "Transferts",
