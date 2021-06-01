@@ -1,5 +1,5 @@
 {
-    "size": "Dateigröße",
+    "size": "Größe",
     "progress": "Fortschritt",
     "eta": "Verbleibende Zeit",
     "torrent_finished": "Torrent fertiggestellt",
@@ -31,7 +31,7 @@
     "add_torrent_s": "Torrent(s) hinzufügen",
     "storage": "Speicher",
     "about_picotorrent": "Über PicoTorrent",
-    "picotorrent_description": "Mit Liebe unter Verwendung von Boost, Rasterbar-libtorrent und OpenSSL entwickelt.",
+    "picotorrent_description": "Gebaut mit Boost, Rasterbar-libtorrent, OpenSSL, wxWidgets und 💗",
     "github_link": "<a href=\"https://github.com/picotorrent/picotorrent\">PicoTorrent auf GitHub</a>",
     "transfers": "Übertragungen",
     "path": "Pfad",
@@ -69,7 +69,7 @@
     "trackers": "Tracker",
     "url": "URL",
     "next_announce": "Nächster Announce",
-    "picotorrent_v_available": "PicoTorrent {0} verfügbar",
+    "picotorrent_v_available": "PicoTorrent %s verfügbar",
     "no_update_available": "Kein Update verfügbar",
     "show_on_github": "Auf GitHub anzeigen",
     "new_version_available": "Eine neuere Version von PicoTorrent ist verfügbar.",
@@ -102,7 +102,7 @@
     "general": "Generell",
     "user_interface": "Nutzerinterface",
     "language": "Sprache",
-    "prompt_restart": "PicoTorrent muss neu gestartet werden, um Änderungen zu übernehmen.",
+    "prompt_restart": "PicoTorrent muss neu gestartet werden, um einige Änderungen zu übernehmen.",
     "prompt_restart_title": "Neustart erforderlich",
     "add_torrent": "Torrent hinzufügen",
     "exit": "Schließen",
@@ -135,8 +135,8 @@
     "error_when_loading_torrent": "Fehler beim Laden des Torrents",
     "privacy": "Privatsphäre",
     "encryption": "Verschlüsselung",
-    "require_encryption_incoming": "Für eingehende Verbindungen gefordert",
-    "require_encryption_outgoing": "Für ausgehende Verbindungen gefordert",
+    "require_encryption_incoming": "Für eingehende Verbindungen erfordert",
+    "require_encryption_outgoing": "Für ausgehende Verbindungen erfordert",
     "move_completed_downloads": "Fertige Downloads verschieben",
     "only_move_from_default_save_path": "Nur vom Standardspeicherpfad verschieben",
     "include": "Einschließen",
@@ -303,5 +303,6 @@
     "select_ip_filter_file": "IP Filter Datei auswählen",
     "file_filter_all_files": "Alle Dateien (*.*)|*.*",
     "ip_filter_enabled": "IP Filter: ✔️",
-    "ip_filter_disabled": "IP Filter: ❌"
+    "ip_filter_disabled": "IP Filter: ❌",
+    "copyright_text": "© 2015-2021"
 }

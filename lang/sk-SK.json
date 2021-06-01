@@ -64,7 +64,7 @@
     "picotorrent_v_available": "PicoTorrent % je dostupný",
     "show_on_github": "Zobraziť na GitHub",
     "new_version_available": "Je dostupná nová verzia PicoTorrent.",
-    "ignore_update": "Ignorovať aktualizáciu",
+    "ignore_update": "Ignorovať túto aktualizáciu",
     "confirm_remove": "Potvrdiť odstránenie",
     "select_destination": "Vybrať cieľ",
     "state_checking_resume_data": "Prebieha kontrola dát",

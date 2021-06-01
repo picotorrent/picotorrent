@@ -12,7 +12,7 @@
     "amp_file": "&Файл",
     "amp_add_torrent": "&Добавяне на торент",
     "amp_view": "&Изглед",
-    "amp_exit": "Из&ход",
+    "amp_exit": "&Изход",
     "amp_preferences": "&Настройки",
     "amp_help": "&Помощ",
     "amp_check_for_update": "&Проверка за обновяване",
@@ -245,7 +245,7 @@
     "amp_details_panel": "&Панел с детайли",
     "filter_uploading_active": "Изпращане (активно)",
     "pause_on_low_disk_space_alert": "Пауза (малко дисково пространство)",
-    "picotorrent_description": "Създаден с любов, използвайки Boost, Rasterbar-libtorrent, OpenSSL и wxWidgets.",
+    "picotorrent_description": "Направено с Boost, Rasterbar-libtorrent, OpenSSL и, wxWidgets и 💗",
     "mode_v1": "v1",
     "how_to_create_torrents": "Как да създам торент?",
     "no_such_file_or_directory": "Файлът или папката не съществува",
@@ -296,5 +296,6 @@
     "ip_filter_enabled": "Ф по IP: ✔️",
     "ip_filter_disabled": "Ф по IP: ❌",
     "ip_filter": "Филтриране по адрес на IP",
-    "file_filter_all_files": "Всички файлове (*.*)|*.*"
+    "file_filter_all_files": "Всички файлове (*.*)|*.*",
+    "copyright_text": "© 2015-2021"
 }
