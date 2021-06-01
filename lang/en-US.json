@@ -223,5 +223,9 @@
     "file_filter_all_files": "All files (*.*)|*.*",
     "ip_filter_enabled": "IP filter: ✔️",
     "ip_filter_disabled": "IP filter: ❌",
-    "copyright_text": "© 2015-2021"
+    "copyright_text": "© 2015-2021",
+    "export": "Export",
+    "magnet_link_s": "Magnet link(s)",
+    "torrent_file_s": "Torrent file(s)",
+    "exported_magnet_link_s": "Exported magnet link(s)"
 }

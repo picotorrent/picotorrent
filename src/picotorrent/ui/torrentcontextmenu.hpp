@@ -45,6 +45,8 @@ namespace UI
             ptID_FORCE_RECHECK,
             ptID_FORCE_REANNOUNCE,
             ptID_SEQUENTIAL_DOWNLOAD,
+            ptID_EXPORT_MAGNET_LINK,
+            ptID_EXPORT_TORRENT_FILE,
             ptID_LABELS_NONE,
             ptID_LABELS_USER
         };

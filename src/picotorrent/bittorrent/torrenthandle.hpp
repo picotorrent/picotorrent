@@ -60,12 +60,13 @@ namespace BitTorrent
         void ClearLabel();
         void SetLabel(int id, std::string const& name, bool muted = false);
 
+        libtorrent::torrent_handle& WrappedHandle();
+
     private:
         TorrentHandle(Session* session, libtorrent::torrent_handle const& th);
 
         void BuildStatus(libtorrent::torrent_status const& ts);
         std::unique_ptr<TorrentStatus> Update(libtorrent::torrent_status const& ts);
-        libtorrent::torrent_handle& WrappedHandle();
 
         Session* m_session;
         std::unique_ptr<libtorrent::torrent_handle> m_th;
