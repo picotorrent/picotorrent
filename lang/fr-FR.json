@@ -304,5 +304,8 @@
     "ip_filter_disabled": "Filtrage IP : ❌",
     "select_ip_filter_file": "Sélectionner le fichier de filtre IP",
     "file_filter_all_files": "Tous les fichiers (*.*)|*.*",
-    "copyright_text": "©2015-2021"
+    "copyright_text": "©2015-2021",
+    "exported_magnet_link_s": "Lien(s) magnet exporté(s)",
+    "export": "Exporter",
+    "torrent_file_s": "Fichier(s) torrent"
 }
