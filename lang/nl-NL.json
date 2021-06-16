@@ -304,5 +304,8 @@
     "tier": "Rang",
     "amp_console": "C&onsole",
     "all_torrents_already_in_session": "Geen torrents toevoegen, aangezien deze al zijn toegevoegd …",
-    "copyright_text": "© 2015-2021"
+    "copyright_text": "© 2015-2021",
+    "export": "Exporteren",
+    "torrent_file_s": "Torrentbestand(en)",
+    "exported_magnet_link_s": "Geëxporteerde magnetlinks"
 }
