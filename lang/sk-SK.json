@@ -203,7 +203,7 @@
     "remove_torrent_and_files": "Odstrániť torrent a súbory",
     "copy_info_hash": "Kopírovať hash s informáciami",
     "save_path": "Cieľový priečinok",
-    "picotorrent_description": "Vytvorené s láskou, použitím Boost, Rasterbar-libtorrent, OpenSSL a wxWidgets.",
+    "picotorrent_description": "Vytvorené použitím Boost, Rasterbar-libtorrent, OpenSSL, wxWidgets a 💗",
     "socks5_with_credentials": "SOCKS5 (s prihlásením)",
     "flags": "Značky",
     "no_update_available": "Používate najnovšiu verziu",
@@ -222,5 +222,10 @@
     "edit": "Upraviť",
     "create_torrent": "Vytvoriť torrent",
     "url_seeds_input_per_line": "URL odosielajúcich (jeden na riadok)",
-    "amp_check_for_update": "Skontrolovať &aktualizácie"
+    "amp_check_for_update": "Skontrolovať &aktualizácie",
+    "copyright_text": "© 2015-2021",
+    "export": "Exportovať",
+    "magnet_link_s": "Link(y) magnetu",
+    "torrent_file_s": "Súbory torrentu",
+    "exported_magnet_link_s": "Exportované linky magnetu"
 }

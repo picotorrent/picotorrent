@@ -33,7 +33,7 @@
     "add_torrent_s": "Adicionar torrent(s)",
     "storage": "Armazenamento",
     "about_picotorrent": "Sobre o PicoTorrent",
-    "picotorrent_description": "Construído com amor, usando Boost, Rasterbar-libtorrent, OpenSSL e wxWidgets.",
+    "picotorrent_description": "Feito com Boost, Rasterbar-libtorrent, OpenSSL, wxWidgets e 💗",
     "github_link": "<a href=\"https://github.com/picotorrent/picotorrent\">PicoTorrent no GitHub</a>",
     "transfers": "Transferências",
     "path": "Caminho",
@@ -183,7 +183,7 @@
     "restart_required": "Necessário reiniciar",
     "file": "Arquivo",
     "comment": "Comentário",
-    "skip_add_torrent_dialog": "Não mostrar diálogo 'Adicionar torrent'",
+    "skip_add_torrent_dialog": "Pular Diálogo 'Adicionar torrent'",
     "start_torrent": "Iniciar torrent",
     "auto_managed": "Gerenciado automaticamente",
     "copy": "Copiar",
@@ -239,7 +239,7 @@
     "magnet_link_s": "Link(s) Magnéticos",
     "proxy": "Proxy",
     "host": "Servidor",
-    "seeds": "Seeds",
+    "seeds": "Sementes",
     "proxy_hostnames": "Proxy lida com nomes de host",
     "plugins": "Plugins",
     "ratio": "Taxa",
@@ -303,5 +303,9 @@
     "ip_filter_enabled": "Filtro de IP: ✔️",
     "ip_filter_disabled": "Filtro de IP: ❌",
     "ip_filter": "Filtro de IP",
-    "select_ip_filter_file": "Selecione um arquivo de filtro de IP"
+    "select_ip_filter_file": "Selecione um arquivo de filtro de IP",
+    "copyright_text": "© 2015-2021",
+    "export": "Exportar",
+    "torrent_file_s": "Arquivo(s) torrent(s)",
+    "exported_magnet_link_s": "Link(s) magnéticos exportados"
 }
