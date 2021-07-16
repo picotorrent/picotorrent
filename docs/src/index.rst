@@ -14,6 +14,7 @@ Rasterbar-libtorrent and wxWidgets.
 .. toctree::
    :maxdepth: 1
 
+   installing
    configuration
    ipfilter
    creating-torrents
