@@ -12,4 +12,6 @@ Shortcut            Action
 :kbd:`Ctrl+A`       Select all listed torrents
 :kbd:`Del`          Remove selected torrents while keeping the downloaded data
 :kbd:`Shift+Del`    Remove selected torrents and the downloaded data
+:kbd:`Alt+Up`       Move selected torrents up the queue
+:kbd:`Alt+Down`     Move selected torrents down the queue
 =================== =========================================================

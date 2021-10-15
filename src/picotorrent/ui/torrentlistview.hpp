@@ -29,6 +29,8 @@ namespace Models
             ptID_KEY_SELECT_ALL = wxID_HIGHEST,
             ptID_KEY_DELETE,
             ptID_KEY_DELETE_FILES,
+            ptID_KEY_QUEUE_UP,
+            ptID_KEY_QUEUE_DOWN,
         };
 
         void ShowHeaderContextMenu(wxCommandEvent&);

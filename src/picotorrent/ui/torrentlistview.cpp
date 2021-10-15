@@ -209,6 +209,8 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, pt::UI::Models
         wxAcceleratorEntry(wxACCEL_CTRL,   int('A'),   ptID_KEY_SELECT_ALL),
         wxAcceleratorEntry(wxACCEL_NORMAL, WXK_DELETE, ptID_KEY_DELETE),
         wxAcceleratorEntry(wxACCEL_SHIFT,  WXK_DELETE, ptID_KEY_DELETE_FILES),
+        wxAcceleratorEntry(wxACCEL_ALT,    WXK_UP,     ptID_KEY_QUEUE_UP),
+        wxAcceleratorEntry(wxACCEL_ALT,    WXK_DOWN,   ptID_KEY_QUEUE_DOWN),
     };
 
     this->SetAcceleratorTable(wxAcceleratorTable(static_cast<int>(entries.size()), entries.data()));
@@ -265,6 +267,39 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, pt::UI::Models
                 wxCommandEvent(wxEVT_DATAVIEW_SELECTION_CHANGED, this->GetId()));
         },
         ptID_KEY_SELECT_ALL);
+
+    this->Bind(
+        wxEVT_MENU,
+        [&](wxCommandEvent&)
+        {
+            wxDataViewItemArray items;
+            this->GetSelections(items);
+
+            if (items.IsEmpty()) { return; }
+
+            for (wxDataViewItem& item : items)
+            {
+                m_model->GetTorrentFromItem(item)->QueueUp();
+            }
+        },
+        ptID_KEY_QUEUE_UP);
+
+    this->Bind(
+        wxEVT_MENU,
+        [&](wxCommandEvent&)
+        {
+            wxDataViewItemArray items;
+            this->GetSelections(items);
+
+            if (items.IsEmpty()) { return; }
+
+            for (wxDataViewItem& item : items)
+            {
+                m_model->GetTorrentFromItem(item)->QueueDown();
+            }
+        },
+        ptID_KEY_QUEUE_DOWN);
+
 }
 
 TorrentListView::~TorrentListView()
