@@ -37,12 +37,9 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO arvidn/libtorrent
-    REF af7a96c1df47fcc8fbe0d791c223b0ab8a7d2125 #v2.0.3
-    SHA512 1c1a73f065e6c726ef6b87f6be139abb96bdb2d924e4c6eb3ed736ded3762b9f250c44bd4fc7b703975463bcca18d7518e0588703616e686021b575b8f1193f0
+    REF 3c20db6a1e0ed2d57401aa7fdf82c9c5a3cdc84d # v2.0.5
+    SHA512 750baab503e36bda612b01c5cfee974eb98c65bdfc81831d814adcac87c8502c3550b0f5cc76ddd567ba2a38caa4cbb433da319e6a51c1918b6cba9a9ffa6504
     HEAD_REF RC_2_0
-    PATCHES
-        ${ICONV_PATCH}
-        fix-AppleClang-test.patch
 )
 
 vcpkg_from_github(
@@ -77,6 +74,10 @@ vcpkg_configure_cmake(
 vcpkg_install_cmake()
 
 vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake/LibtorrentRasterbar TARGET_PATH share/LibtorrentRasterbar)
+
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin" "${CURRENT_PACKAGES_DIR}/debug/bin")
+endif()
 
 # Handle copyright
 file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
