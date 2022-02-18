@@ -56,7 +56,7 @@ int Translator::LoadDatabaseCallback(void* user, int, char** data, char**)
     std::string loc = data[0];
     std::string key = data[1];
     std::wstring val = Utils::toStdWString(data[2]);
-    TCHAR localeNameBuffer[1024];
+    /*TCHAR localeNameBuffer[1024];
 
     if (tr->m_languages.find(loc) == tr->m_languages.end())
     {
@@ -82,7 +82,7 @@ int Translator::LoadDatabaseCallback(void* user, int, char** data, char**)
         tr->m_languages.insert({ loc, l });
     }
 
-    tr->m_languages.at(loc).translations.insert({ key, val });
+    tr->m_languages.at(loc).translations.insert({ key, val });*/
 
     return SQLITE_OK;
 }

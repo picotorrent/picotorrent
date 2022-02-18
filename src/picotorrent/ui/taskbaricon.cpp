@@ -6,8 +6,8 @@
 using pt::UI::TaskBarIcon;
 
 TaskBarIcon::TaskBarIcon(wxWindow* parent)
-    : m_parent(parent),
-    m_icon(wxIcon(wxICON(AppIcon)))
+    : m_parent(parent)//,
+    //m_icon(wxIcon(wxICON(AppIcon)))
 {
 }
 

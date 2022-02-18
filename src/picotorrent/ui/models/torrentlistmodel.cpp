@@ -124,7 +124,7 @@ int TorrentListModel::Compare(const wxDataViewItem& item1, const wxDataViewItem&
 
     auto nameSort = [&hashSort](bool ascending, TorrentStatus const& l, TorrentStatus const& r) -> int
     {
-        auto compvalue = _strcmpi(l.name.c_str(),r.name.c_str());
+        auto compvalue = strcmp(l.name.c_str(),r.name.c_str());
         if (compvalue < 0) { return ascending ? -1 : 1; }
         else if (compvalue == 0) { return hashSort(ascending, l, l); }
         else{ return ascending ? 1 : -1; }
@@ -354,16 +354,16 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
         case TorrentStatus::State::Error:
             if (status.errorDetails.empty())
             {
-                variant = fmt::format(
+                variant = ""; /*fmt::format(
                     i18n("state_error"),
-                    Utils::toStdWString(status.error).c_str());
+                    Utils::toStdWString(status.error).c_str());*/
             }
             else
             {
-                variant = fmt::format(
+                variant = ""; /*fmt::format(
                     i18n("state_error_details"),
                     Utils::toStdWString(status.error).c_str(),
-                    Utils::toStdWString(status.errorDetails).c_str());
+                    Utils::toStdWString(status.errorDetails).c_str());*/
             }
 
             break;
@@ -412,19 +412,19 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
         {
             if (min_left.count() <= 0)
             {
-                variant = fmt::format(i18n("eta_s_format"), sec_left.count());
+                variant = ""; //fmt::format(i18n("eta_s_format"), sec_left.count());
                 break;
             }
 
-            variant = fmt::format(i18n("eta_ms_format"), min_left.count(), sec_left.count());
+            variant = ""; //fmt::format(i18n("eta_ms_format"), min_left.count(), sec_left.count());
             break;
         }
 
-        variant = fmt::format(
+        variant = ""; /*fmt::format(
             i18n("eta_hms_format"),
             hours_left.count(),
             min_left.count(),
-            sec_left.count());
+            sec_left.count());*/
 
         break;
     }
@@ -437,9 +437,9 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = fmt::format(
+        variant = ""; /*fmt::format(
             i18n("per_second_format"),
-            Utils::toHumanFileSize(status.downloadPayloadRate));
+            Utils::toHumanFileSize(status.downloadPayloadRate));*/
 
         break;
     }
@@ -452,9 +452,9 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = fmt::format(
+        variant = ""; /*fmt::format(
             i18n("per_second_format"),
-            Utils::toHumanFileSize(status.uploadPayloadRate));
+            Utils::toHumanFileSize(status.uploadPayloadRate));*/
 
         break;
     }
@@ -485,10 +485,10 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = fmt::format(
+        variant = ""; /*fmt::format(
             i18n("d_of_d"),
             status.seedsCurrent,
-            status.seedsTotal);
+            status.seedsTotal);*/
 
         break;
     }
@@ -501,10 +501,10 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = fmt::format(
+        variant = ""; /*fmt::format(
             i18n("d_of_d"),
             status.peersCurrent,
-            status.peersTotal);
+            status.peersTotal);*/
 
         break;
     }

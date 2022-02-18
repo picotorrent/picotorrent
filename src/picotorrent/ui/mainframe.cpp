@@ -40,9 +40,9 @@
 #include "torrentdetailsview.hpp"
 #include "torrentlistview.hpp"
 #include "translator.hpp"
-
+/*
 #include "win32/openfiledialog.hpp"
-
+*/
 namespace fs = std::filesystem;
 using pt::UI::MainFrame;
 
@@ -94,7 +94,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Core::Environment> env, std::shared_ptr
     };
 
     this->SetAcceleratorTable(wxAcceleratorTable(static_cast<int>(entries.size()), entries.data()));
-    this->SetIcon(wxICON(AppIcon));
+    //this->SetIcon(wxICON(AppIcon));
     this->SetMenuBar(this->CreateMainMenu());
     this->SetSizerAndFit(sizer);
     this->SetStatusBar(m_statusBar);
@@ -137,9 +137,9 @@ MainFrame::MainFrame(std::shared_ptr<pt::Core::Environment> env, std::shared_ptr
     this->Bind(ptEVT_TORRENT_FINISHED, [this](wxCommandEvent& evt)
         {
             auto torrent = static_cast<BitTorrent::TorrentHandle*>(evt.GetClientData());
-            m_taskBarIcon->ShowBalloon(
+            /*m_taskBarIcon->ShowBalloon(
                 i18n("torrent_finished"),
-                Utils::toStdWString(torrent->Status().name));
+                Utils::toStdWString(torrent->Status().name));*/
         });
 
     this->Bind(ptEVT_TORRENT_REMOVED, [this](pt::BitTorrent::InfoHashEvent& evt)
@@ -166,7 +166,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Core::Environment> env, std::shared_ptr
                 stats.totalPayloadDownloadRate,
                 stats.totalPayloadUploadRate);
 
-            if (wxTaskBarButton* tbb = MSWGetTaskBarButton())
+            /*if (wxTaskBarButton* tbb = MSWGetTaskBarButton())
             {
                 if (stats.isDownloadingAny && stats.totalWanted > 0)
                 {
@@ -180,7 +180,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Core::Environment> env, std::shared_ptr
                 {
                     tbb->SetProgressState(wxTaskBarButtonState::wxTASKBAR_BUTTON_NO_PROGRESS);
                 }
-            }
+            }*/
         });
 
     this->Bind(ptEVT_TORRENTS_UPDATED, [this](pt::BitTorrent::TorrentsUpdatedEvent& evt)
@@ -522,7 +522,7 @@ void MainFrame::HandleParams(pt::CommandLineOptions const& options)
 
 void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const& torrents)
 {
-    bool shouldCheck = m_cfg->Get<bool>("pause_on_low_disk_space").value();
+    /*bool shouldCheck = m_cfg->Get<bool>("pause_on_low_disk_space").value();
     int limit = m_cfg->Get<int>("pause_on_low_disk_space_limit").value();
 
     if (!shouldCheck)
@@ -563,7 +563,7 @@ void MainFrame::CheckDiskSpace(std::vector<pt::BitTorrent::TorrentHandle*> const
                     status.name);
             }
         }
-    }
+    }*/
 }
 
 void MainFrame::CreateFilterMenuItems()
@@ -675,7 +675,7 @@ void MainFrame::OnClose(wxCloseEvent& evt)
         && m_cfg->Get<bool>("close_to_notification_area").value())
     {
         Hide();
-        MSWGetTaskBarButton()->Hide();
+        //MSWGetTaskBarButton()->Hide();
     }
     else
     {
@@ -702,7 +702,7 @@ void MainFrame::OnFileAddMagnetLink(wxCommandEvent&)
 
 void MainFrame::OnFileAddTorrent(wxCommandEvent&)
 {
-    Win32::OpenFileDialog ofd;
+    /*Win32::OpenFileDialog ofd;
 
     ofd.SetFileTypes({
         std::make_tuple(L"Torrent files", L"*.torrent"),
@@ -723,7 +723,7 @@ void MainFrame::OnFileAddTorrent(wxCommandEvent&)
 
     std::vector<lt::add_torrent_params> params;
     this->ParseTorrentFiles(params, files);
-    this->AddTorrents(params, false);
+    this->AddTorrents(params, false);*/
 }
 
 void MainFrame::OnFileCreateTorrent(wxCommandEvent&)
@@ -754,13 +754,13 @@ void MainFrame::OnIconize(wxIconizeEvent& ev)
         && m_cfg->Get<bool>("show_in_notification_area").value()
         && m_cfg->Get<bool>("minimize_to_notification_area").value())
     {
-        MSWGetTaskBarButton()->Hide();
+        //MSWGetTaskBarButton()->Hide();
     }
 }
 
 void MainFrame::OnTaskBarLeftDown(wxTaskBarIconEvent&)
 {
-    this->MSWGetTaskBarButton()->Show();
+    //this->MSWGetTaskBarButton()->Show();
 
     if (this->IsIconized())
     {
@@ -780,7 +780,7 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
     {
         if (dlg.WantsRestart())
         {
-            TCHAR path[MAX_PATH];
+            /*TCHAR path[MAX_PATH];
             GetModuleFileName(NULL, path, ARRAYSIZE(path));
 
             std::wstringstream proc;
@@ -789,7 +789,7 @@ void MainFrame::OnViewPreferences(wxCommandEvent&)
             wxExecute(proc.str(), wxEXEC_ASYNC);
             Close(true);
 
-            return;
+            return;*/
         }
 
         // Reload settings
@@ -817,7 +817,7 @@ void MainFrame::ParseTorrentFiles(std::vector<lt::add_torrent_params>& params, s
 {
     for (std::wstring const& path : paths)
     {
-        lt::error_code ec;
+        /*lt::error_code ec;
         lt::add_torrent_params param;
 
         std::ifstream in(path, std::ios::binary);
@@ -835,7 +835,7 @@ void MainFrame::ParseTorrentFiles(std::vector<lt::add_torrent_params>& params, s
             continue;
         }
 
-        params.push_back(param);
+        params.push_back(param);*/
     }
 }
 

@@ -1,8 +1,10 @@
 #include "database.hpp"
 
+/*
 #include <Windows.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
+*/
 
 #include <filesystem>
 #include <vector>
@@ -22,6 +24,7 @@ struct Migration
     std::string sql;
 };
 
+/*
 static BOOL CALLBACK EnumMigrations(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
 {
     std::vector<Migration>* migrations = reinterpret_cast<std::vector<Migration>*>(lParam);
@@ -39,6 +42,7 @@ static BOOL CALLBACK EnumMigrations(HMODULE hModule, LPCTSTR lpszType, LPTSTR lp
 
     return TRUE;
 }
+*/
 
 Database::Statement::Statement(sqlite3_stmt* stmt)
     : m_stmt(stmt)
@@ -200,11 +204,11 @@ bool Database::Migrate()
 
     std::vector<Migration> migrations;
 
-    EnumResourceNames(
+    /*EnumResourceNames(
         NULL,
         TEXT("DBMIGRATION"),
         &EnumMigrations,
-        reinterpret_cast<LONG_PTR>(&migrations));
+        reinterpret_cast<LONG_PTR>(&migrations));*/
 
     BOOST_LOG_TRIVIAL(info) << "Found " << migrations.size() << " migrations";
 
@@ -277,7 +281,7 @@ std::shared_ptr<Database::Statement> Database::CreateStatement(std::string const
 
 void Database::GetKnownFolderPath(sqlite3_context* ctx, int argc, sqlite3_value** argv)
 {
-    if (argc > 0)
+    /*if (argc > 0)
     {
         std::string folderId((const char*)sqlite3_value_text(argv[0]));
         KNOWNFOLDERID fid = { 0 };
@@ -299,12 +303,12 @@ void Database::GetKnownFolderPath(sqlite3_context* ctx, int argc, sqlite3_value*
             std::string res = Utils::toStdString(result);
             sqlite3_result_text(ctx, res.c_str(), -1, SQLITE_TRANSIENT);
         }
-    }
+    }*/
 }
 
 void Database::GetUserDefaultUILanguage(sqlite3_context* ctx, int, sqlite3_value**)
 {
-    sqlite3_result_int(ctx, static_cast<int>(::GetUserDefaultUILanguage()));
+    // sqlite3_result_int(ctx, static_cast<int>(::GetUserDefaultUILanguage()));
 }
 
 bool Database::MigrationExists(std::string const& name)

@@ -101,7 +101,8 @@ bool Compare(TLeft const& lhs, TRight const& rhs, Operator oper)
     case Operator::GTE: return lhs >= rhs;
     }
 
-    throw std::exception("Unknown operator");
+    //throw std::exception("Unknown operator");
+    return false;
 }
 
 class FilterVisitor : public pt::PQL::QueryBaseVisitor

@@ -1,10 +1,10 @@
 #include "httpclient.hpp"
 #include "httprequest.hpp"
 #include "httpresponse.hpp"
-
+/*
 #include <Windows.h>
 #include <winhttp.h>
-
+*/
 using pt::HttpClient;
 
 struct HttpClient::InternetHandle

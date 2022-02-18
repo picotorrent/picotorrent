@@ -184,9 +184,9 @@ void PeerListModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned
         }
         else
         {
-            variant = fmt::format(
+            variant = ""; /*fmt::format(
                 i18n("per_second_format"),
-                Utils::toHumanFileSize(peer.payload_down_speed));
+                Utils::toHumanFileSize(peer.payload_down_speed));*/
         }
 
         break;
@@ -199,9 +199,9 @@ void PeerListModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned
         }
         else
         {
-            variant = fmt::format(
+            variant = ""; /*fmt::format(
                 i18n("per_second_format"),
-                Utils::toHumanFileSize(peer.payload_up_speed));
+                Utils::toHumanFileSize(peer.payload_up_speed));*/
         }
 
         break;

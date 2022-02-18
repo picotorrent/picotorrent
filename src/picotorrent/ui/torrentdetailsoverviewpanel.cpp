@@ -34,22 +34,22 @@ std::wstring SecondsToFriendly(std::chrono::seconds secs)
     {
         if (min_left.count() <= 0)
         {
-            return fmt::format(
+            return L""; /*fmt::format(
                 i18n("eta_s_format"),
-                sec_left.count());
+                sec_left.count());*/
         }
 
-        return fmt::format(
+        return L""; /*fmt::format(
             i18n("eta_ms_format"),
             min_left.count(),
-            sec_left.count());
+            sec_left.count());*/
     }
 
-    return fmt::format(
+    return L""; /*fmt::format(
         i18n("eta_hms_format"),
         hours_left.count(),
         min_left.count(),
-        sec_left.count());
+        sec_left.count());*/
 }
 
 class CopyableStaticText : public wxStaticText
@@ -163,11 +163,11 @@ void TorrentDetailsOverviewPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent
     m_name->SetLabel(Utils::toStdWString(status.name));
     m_savePath->SetLabel(Utils::toStdWString(status.savePath));
     m_infoHash->SetLabel(status.infoHash);
-    m_pieces->SetLabel(
+    /*m_pieces->SetLabel(
         fmt::format(
             i18n("d_of_d"),
             status.pieces.count(),
-            status.pieces.size()));
+            status.pieces.size()));*/
     m_ratio->SetLabel(
         fmt::format("{:.3f}", status.ratio));
 
@@ -205,11 +205,11 @@ void TorrentDetailsOverviewPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent
 
         if (tf->total_size() != status.totalWanted)
         {
-            m_size->SetLabel(
+            /*m_size->SetLabel(
                 fmt::format(
                     i18n("d_of_d"),
                     Utils::toHumanFileSize(status.totalWanted),
-                    Utils::toHumanFileSize(tf->total_size())));
+                    Utils::toHumanFileSize(tf->total_size())));*/
         }
         else
         {

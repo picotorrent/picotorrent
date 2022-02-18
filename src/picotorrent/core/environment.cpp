@@ -1,8 +1,10 @@
 #include "environment.hpp"
 
+/*
 #include <Windows.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
+*/
 
 #pragma warning(push)
 #pragma warning(disable: 4244)
@@ -61,11 +63,12 @@ fs::path Environment::GetApplicationDataPath()
 
 fs::path Environment::GetApplicationPath()
 {
+    /*
     TCHAR path[MAX_PATH];
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
     PathRemoveFileSpec(path);
-
-    return path;
+    */
+    return "/tmp";
 }
 
 std::string Environment::GetCrashpadReportUrl()
@@ -85,6 +88,7 @@ fs::path Environment::GetCoreDbFilePath()
 
 std::string Environment::GetCurrentLocale()
 {
+    /*
     TCHAR loc[512];
     int res = GetUserDefaultLocaleName(loc, 512);
 
@@ -96,6 +100,8 @@ std::string Environment::GetCurrentLocale()
 
     return Utils::toStdString(
         std::wstring(loc, res));
+        */
+    return "en";
 }
 
 fs::path Environment::GetDatabaseFilePath()
@@ -105,6 +111,7 @@ fs::path Environment::GetDatabaseFilePath()
 
 fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
 {
+    /*
     KNOWNFOLDERID fid = { 0 };
 
     switch (knownFolder)
@@ -132,13 +139,14 @@ fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
         return p;
     }
 
-    BOOST_LOG_TRIVIAL(fatal) << "Failed to get KnownFolder: " << static_cast<int>(knownFolder);
+    BOOST_LOG_TRIVIAL(fatal) << "Failed to get KnownFolder: " << static_cast<int>(knownFolder);*/
 
     throw std::runtime_error("Could not get known folder path");
 }
 
 fs::path Environment::GetLogFilePath()
 {
+    /*
     std::time_t tim = std::chrono::system_clock::to_time_t(m_startupTime);
     tm t;
     localtime_s(&t, &tim);
@@ -155,10 +163,13 @@ fs::path Environment::GetLogFilePath()
         t.tm_sec);
 
     return GetApplicationDataPath() / "logs" / frmt;
+    */
+    return "/tmp/picotorrent.log";
 }
 
 bool Environment::IsAppContainerProcess()
 {
+    /*
     TCHAR path[MAX_PATH];
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
     PathRemoveFileSpec(path);
@@ -166,10 +177,13 @@ bool Environment::IsAppContainerProcess()
     DWORD dwAttr = GetFileAttributes(path);
 
     return (dwAttr != INVALID_FILE_ATTRIBUTES && !(dwAttr & FILE_ATTRIBUTE_DIRECTORY));
+    */
+    return false;
 }
 
 bool Environment::IsInstalled()
 {
+    /*
     HKEY hKey = NULL;
 
     LSTATUS lStatus = RegOpenKeyEx(
@@ -215,6 +229,6 @@ bool Environment::IsInstalled()
     }
 
     if (hKey != NULL) { RegCloseKey(hKey); }
-
+    */
     return false;
 }

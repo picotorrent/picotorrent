@@ -30,18 +30,18 @@ void StatusBar::UpdateDhtNodesCount(int64_t nodes)
     }
     else
     {
-        SetStatusText(fmt::format(i18n("dht_num_nodes"), nodes), 1);
+        //SetStatusText(fmt::format(i18n("dht_num_nodes"), nodes), 1);
     }
 }
 
 void StatusBar::UpdateTorrentCount(int64_t torrents)
 {
-    SetStatusText(fmt::format(i18n("num_torrents"), torrents), 0);
+    //SetStatusText(fmt::format(i18n("num_torrents"), torrents), 0);
 }
 
 void StatusBar::UpdateTransferRates(int64_t downSpeed, int64_t upSpeed)
 {
-    SetStatusText(fmt::format(i18n("dl_s_ul_s"), Utils::toHumanFileSize(downSpeed), Utils::toHumanFileSize(upSpeed)), 2);
+    //SetStatusText(fmt::format(i18n("dl_s_ul_s"), Utils::toHumanFileSize(downSpeed), Utils::toHumanFileSize(upSpeed)), 2);
 }
 
 void StatusBar::UpdateIPFilterStatus(bool enabled)

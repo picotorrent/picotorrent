@@ -1,7 +1,7 @@
 #include "preferencesgeneralpage.hpp"
-
+/*
 #include <strsafe.h>
-
+*/
 #include <boost/log/trivial.hpp>
 
 #include "../clientdata.hpp"
@@ -9,7 +9,7 @@
 #include "../../core/utils.hpp"
 #include "../translator.hpp"
 
-struct AutoRunKey
+/*struct AutoRunKey
 {
     AutoRunKey()
     {
@@ -77,7 +77,7 @@ struct AutoRunKey
 private:
     HKEY m_key;
 };
-
+*/
 using pt::Core::Configuration;
 using pt::UI::Dialogs::PreferencesGeneralPage;
 
@@ -148,11 +148,11 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
     m_labelColor->SetValue(m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
     m_skipAddTorrentDialog->SetValue(m_cfg->Get<bool>("skip_add_torrent_dialog").value());
 
-    AutoRunKey key;
+    /*AutoRunKey key;
     if (key.Exists())
     {
         m_autoStart->SetValue(true);
-    }
+    }*/
 
     m_startPosition->Append(i18n("normal"), new ClientData<Configuration::WindowState>(Configuration::WindowState::Normal));
     m_startPosition->Append(i18n("minimized"), new ClientData<Configuration::WindowState>(Configuration::WindowState::Minimized));
@@ -210,7 +210,7 @@ void PreferencesGeneralPage::Save(bool* restartRequired)
     }
 
     {
-        AutoRunKey key;
+        /*AutoRunKey key;
 
         if (key.Exists() && !m_autoStart->GetValue())
         {
@@ -220,7 +220,7 @@ void PreferencesGeneralPage::Save(bool* restartRequired)
         if (!key.Exists() && m_autoStart->GetValue())
         {
             key.Create();
-        }
+        }*/
     }
 
     m_cfg->Set("use_label_as_list_bgcolor", m_labelColor->GetValue());

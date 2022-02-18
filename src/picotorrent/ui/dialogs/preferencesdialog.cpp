@@ -1,7 +1,7 @@
 #include "preferencesdialog.hpp"
-
+/*
 #include <CommCtrl.h>
-
+*/
 #include <wx/bookctrl.h>
 #include <wx/listbook.h>
 #include <wx/listctrl.h>
@@ -155,7 +155,7 @@ void PreferencesDialog::ShowRestartRequiredDialog()
     std::wstring main = i18n("prompt_restart");
     std::wstring title = i18n("prompt_restart_title");
 
-    const TASKDIALOG_BUTTON pButtons[] =
+    /*const TASKDIALOG_BUTTON pButtons[] =
     {
         { 1000, btn.c_str() },
     };
@@ -176,5 +176,5 @@ void PreferencesDialog::ShowRestartRequiredDialog()
 
     TaskDialogIndirect(&tdf, &pnButton, &pnRadioButton, &pfVerificationFlagChecked);
 
-    m_wantsRestart = (pnButton == 1000);
+    m_wantsRestart = (pnButton == 1000);*/
 }

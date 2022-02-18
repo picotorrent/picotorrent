@@ -5,7 +5,9 @@
 
 #include <boost/algorithm/string.hpp>
 #include <filesystem>
+/*
 #include <shellapi.h>
+*/
 
 #include <libtorrent/file_storage.hpp>
 #include <libtorrent/torrent_info.hpp>
@@ -24,7 +26,7 @@ FileStorageModel::FileStorageModel(std::function<void(wxDataViewItemArray&, lt::
 {
     if (!FolderIcon.IsOk())
     {
-        SHFILEINFO shfi = { 0 };
+        /*SHFILEINFO shfi = { 0 };
         SHGetFileInfo(
             TEXT("empty"),
             FILE_ATTRIBUTE_DIRECTORY,
@@ -32,17 +34,17 @@ FileStorageModel::FileStorageModel(std::function<void(wxDataViewItemArray&, lt::
             sizeof(SHFILEINFO),
             SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
 
-        FolderIcon.CreateFromHICON(shfi.hIcon);
+        FolderIcon.CreateFromHICON(shfi.hIcon);*/
     }
 
     if (!UnknownIcon.IsOk())
     {
-        SHSTOCKICONINFO sii;
+        /*SHSTOCKICONINFO sii;
         sii.cbSize = sizeof(sii);
         if (SUCCEEDED(SHGetStockIconInfo(SIID_DOCNOASSOC, SHGSI_ICON | SHGSI_SMALLICON, &sii)))
         {
             UnknownIcon.CreateFromHICON(sii.hIcon);
-        }
+        }*/
     }
 }
 
@@ -154,7 +156,7 @@ void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
 
             if (m_icons.find(extension) == m_icons.end())
             {
-                SHFILEINFO shfi = { 0 };
+                /*SHFILEINFO shfi = { 0 };
                 SHGetFileInfo(
                     Utils::toStdWString(extension).c_str(),
                     FILE_ATTRIBUTE_NORMAL,
@@ -165,7 +167,7 @@ void FileStorageModel::RebuildTree(std::shared_ptr<const lt::torrent_info> ti)
                 wxIcon icon;
                 icon.CreateFromHICON(shfi.hIcon);
 
-                m_icons.insert({ extension, icon });
+                m_icons.insert({ extension, icon });*/
             }
         }
     }

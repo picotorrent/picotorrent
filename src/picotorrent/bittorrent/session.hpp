@@ -1,10 +1,5 @@
 #pragma once
 
-#include <wx/wxprec.h>
-#ifndef WX_PRECOMP
-#include <wx/wx.h>
-#endif
-
 #include <map>
 #include <memory>
 #include <thread>
@@ -13,6 +8,7 @@
 #include <libtorrent/fwd.hpp>
 #include <libtorrent/info_hash.hpp>
 #include <libtorrent/session_types.hpp>
+#include <wx/wx.h>
 
 #include "sessionstatistics.hpp"
 #include "torrentstatistics.hpp"

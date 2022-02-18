@@ -1,10 +1,11 @@
 #include <libpico.h>
 
 #include <string>
+/*
 #include <Windows.h>
 #include <CommCtrl.h>
 #include <shellapi.h>
-
+*/
 #pragma warning(push)
 #pragma warning(disable: 4200)
 #pragma warning(disable: 4996)
