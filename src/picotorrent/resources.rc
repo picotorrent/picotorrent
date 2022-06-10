@@ -1,10 +1,10 @@
 #include "version.h"
 
-AppIcon ICON "..\\..\\res\\app.ico"
+AppIcon ICON "..\\..\\res\\app.xpm"
 FileIcon ICON "..\\..\\res\\file.ico"
 
 // Icons
-ICO_TERMINAL ICON "..\\..\\res\\terminal.ico"
+ICO_TERMINAL ICON "..\\..\\res\\terminal.xpm"
 
 // SQL migrations
 20181208115043_create_setting_table             DBMIGRATION "..\\..\\res\\dbmigrations\\20181208115043_create_setting_table.sql"

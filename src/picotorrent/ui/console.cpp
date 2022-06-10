@@ -1,9 +1,10 @@
 #include "console.hpp"
 
-#include "filters/pqltorrentfilter.hpp"
+//#include "filters/pqltorrentfilter.hpp"
 #include "ids.hpp"
 #include "models/torrentlistmodel.hpp"
 #include "torrentlistview.hpp"
+#include "../resources.h"
 
 using pt::UI::Console;
 
@@ -17,7 +18,7 @@ Console::Console(wxWindow* parent, wxWindowID id, pt::UI::Models::TorrentListMod
     m_input->SetFont(
         wxFont(9, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Consolas")));
 
-    wxIcon funnel(L"ICO_TERMINAL", wxBITMAP_TYPE_ICO_RESOURCE, FromDIP(16), FromDIP(16));
+    wxIcon funnel( TERMINAL_ICON, wxBITMAP_TYPE_XPM, FromDIP(16), FromDIP(16));
 
     int i = FromDIP(16);
     printf("%d", i);
@@ -51,16 +52,16 @@ void Console::CreateFilter(std::string const& input)
     }
     else
     {
-        std::string err;
-        auto filter = Filters::PqlTorrentFilter::Create(input, &err);
+        // std::string err;
+        // auto filter = Filters::PqlTorrentFilter::Create(input, &err);
 
-        if (!filter && !err.empty())
-        {
-            wxMessageBox(err, "Filter error", wxICON_ERROR | wxOK, GetParent());
-            return;
-        }
+        // if (!filter && !err.empty())
+        // {
+        //     wxMessageBox(err, "Filter error", wxICON_ERROR | wxOK, GetParent());
+        //     return;
+        // }
 
-        m_model->SetFilter(std::move(filter));
+        // m_model->SetFilter(std::move(filter));
     }
 
     wxCommandEvent evt(ptEVT_FILTER_CHANGED);

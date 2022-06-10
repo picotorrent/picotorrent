@@ -24,28 +24,28 @@ FileStorageModel::FileStorageModel(std::function<void(wxDataViewItemArray&, lt::
     : m_priorityChangedCallback(priorityChanged),
     m_root(std::make_shared<Node>())
 {
-    if (!FolderIcon.IsOk())
-    {
-        /*SHFILEINFO shfi = { 0 };
-        SHGetFileInfo(
-            TEXT("empty"),
-            FILE_ATTRIBUTE_DIRECTORY,
-            &shfi,
-            sizeof(SHFILEINFO),
-            SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
-
-        FolderIcon.CreateFromHICON(shfi.hIcon);*/
-    }
-
-    if (!UnknownIcon.IsOk())
-    {
-        /*SHSTOCKICONINFO sii;
-        sii.cbSize = sizeof(sii);
-        if (SUCCEEDED(SHGetStockIconInfo(SIID_DOCNOASSOC, SHGSI_ICON | SHGSI_SMALLICON, &sii)))
-        {
-            UnknownIcon.CreateFromHICON(sii.hIcon);
-        }*/
-    }
+//    if (!FolderIcon.IsOk())
+//    {
+//        /*SHFILEINFO shfi = { 0 };
+//        SHGetFileInfo(
+//            TEXT("empty"),
+//            FILE_ATTRIBUTE_DIRECTORY,
+//            &shfi,
+//            sizeof(SHFILEINFO),
+//            SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
+//
+//        FolderIcon.CreateFromHICON(shfi.hIcon);*/
+//    }
+//
+//    if (!UnknownIcon.IsOk())
+//    {
+//        /*SHSTOCKICONINFO sii;
+//        sii.cbSize = sizeof(sii);
+//        if (SUCCEEDED(SHGetStockIconInfo(SIID_DOCNOASSOC, SHGSI_ICON | SHGSI_SMALLICON, &sii)))
+//        {
+//            UnknownIcon.CreateFromHICON(sii.hIcon);
+//        }*/
+//    }
 }
 
 void FileStorageModel::ClearNodes()

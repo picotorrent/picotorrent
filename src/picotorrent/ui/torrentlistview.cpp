@@ -280,18 +280,18 @@ void TorrentListView::ShowHeaderContextMenu(wxCommandEvent&)
 
     for (size_t i = 0; i < GetColumnCount() - 1; i++)
     {
-        /*auto col = GetColumnAt(i);
+        auto * col = GetColumn(i);
         auto item = menu.Append(wxID_HIGHEST + i, col->GetTitle());
         item->SetCheckable(true);
-        item->Check(!col->IsHidden());*/
+        item->Check(!col->IsHidden());
     }
 
     menu.Bind(
         wxEVT_MENU,
         [this](wxCommandEvent& evt)
         {
-            /*auto col = GetColumnAt(evt.GetId() - wxID_HIGHEST);
-            col->SetHidden(!col->IsHidden());*/
+            auto col = GetColumn(evt.GetId() - wxID_HIGHEST);
+            col->SetHidden(!col->IsHidden());
         });
 
     PopupMenu(&menu);

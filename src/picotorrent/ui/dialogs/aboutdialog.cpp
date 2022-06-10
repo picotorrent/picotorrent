@@ -13,7 +13,7 @@
 #include <wx/statbmp.h>
 #include <wx/sizer.h>
 #include <wx/version.h>
-
+#include "../../resources.h"
 #include "../../buildinfo.hpp"
 #include "../translator.hpp"
 
@@ -23,7 +23,7 @@ using pt::UI::Dialogs::AboutDialog;
 AboutDialog::AboutDialog(wxWindow* parent, wxWindowID id)
     : wxDialog(parent, id, i18n("about_picotorrent"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
-    wxIcon icon(L"AppIcon", wxBITMAP_TYPE_ICO_RESOURCE, 128, 128);
+    wxIcon icon(APP_ICON, wxBITMAP_TYPE_XPM, 128, 128);
     auto bmp = new wxStaticBitmap(this, wxID_ANY, icon);
 
     auto lv = new wxListView(this);

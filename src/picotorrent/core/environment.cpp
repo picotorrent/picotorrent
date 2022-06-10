@@ -68,7 +68,8 @@ fs::path Environment::GetApplicationPath()
     GetModuleFileName(NULL, path, ARRAYSIZE(path));
     PathRemoveFileSpec(path);
     */
-    return "/tmp";
+
+    return fs::current_path();
 }
 
 std::string Environment::GetCrashpadReportUrl()
@@ -88,25 +89,16 @@ fs::path Environment::GetCoreDbFilePath()
 
 std::string Environment::GetCurrentLocale()
 {
-    /*
-    TCHAR loc[512];
-    int res = GetUserDefaultLocaleName(loc, 512);
+    std::basic_string<char> localeName = std::locale("").name();
+    //en_US.UTF-8
 
-    if (res == 0)
-    {
-        BOOST_LOG_TRIVIAL(error) << "Failed to get current locale - defaulting to 'en'";
-        return "en";
-    }
-
-    return Utils::toStdString(
-        std::wstring(loc, res));
-        */
-    return "en";
+    std::string curLocale = localeName.replace(localeName.size() - 6, localeName.size(), "");
+    return curLocale.replace(2,2, "-");
 }
 
 fs::path Environment::GetDatabaseFilePath()
 {
-    return GetApplicationDataPath() / "PicoTorrent.sqlite";
+    return GetApplicationPath() / "PicoTorrent.sqlite";
 }
 
 fs::path Environment::GetKnownFolderPath(Environment::KnownFolder knownFolder)
@@ -164,7 +156,7 @@ fs::path Environment::GetLogFilePath()
 
     return GetApplicationDataPath() / "logs" / frmt;
     */
-    return "/tmp/picotorrent.log";
+    return GetApplicationPath() / "picotorrent.log";
 }
 
 bool Environment::IsAppContainerProcess()

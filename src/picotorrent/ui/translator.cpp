@@ -1,10 +1,9 @@
 #include "translator.hpp"
+#include "../core/utils.hpp"
 
 #include <boost/log/trivial.hpp>
 #include <nlohmann/json.hpp>
 #include <sqlite3.h>
-
-#include "../core/utils.hpp"
 
 using json = nlohmann::json;
 using pt::UI::Translator;
@@ -56,33 +55,19 @@ int Translator::LoadDatabaseCallback(void* user, int, char** data, char**)
     std::string loc = data[0];
     std::string key = data[1];
     std::wstring val = Utils::toStdWString(data[2]);
-    /*TCHAR localeNameBuffer[1024];
 
-    if (tr->m_languages.find(loc) == tr->m_languages.end())
-    {
+    if (tr->m_languages.find(loc) == tr->m_languages.end()) {
         Language l;
         l.locale = loc;
 
+        std::wstring lval = Utils::toStdWString(l.locale).c_str();
 
-        int res = GetLocaleInfoEx(
-            Utils::toStdWString(l.locale).c_str(),
-            LOCALE_SLOCALIZEDLANGUAGENAME,
-            localeNameBuffer,
-            ARRAYSIZE(localeNameBuffer));
+        l.name = std::wstring(lval, 0);
 
-        if (res > 0)
-        {
-            l.name = std::wstring(localeNameBuffer, res);
-        }
-        else
-        {
-            BOOST_LOG_TRIVIAL(error) << "GetLocaleInfoEx returned " << res << " for " << l.locale;
-        }
-
-        tr->m_languages.insert({ loc, l });
+        tr->m_languages.insert({loc, l});
     }
 
-    tr->m_languages.at(loc).translations.insert({ key, val });*/
+    tr->m_languages.at(loc).translations.insert({ key, val });
 
     return SQLITE_OK;
 }

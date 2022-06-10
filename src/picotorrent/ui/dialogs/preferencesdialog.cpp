@@ -3,6 +3,7 @@
 #include <CommCtrl.h>
 */
 #include <wx/bookctrl.h>
+#include <wx/msgdlg.h>
 #include <wx/listbook.h>
 #include <wx/listctrl.h>
 #include <wx/hyperlink.h>
@@ -155,26 +156,13 @@ void PreferencesDialog::ShowRestartRequiredDialog()
     std::wstring main = i18n("prompt_restart");
     std::wstring title = i18n("prompt_restart_title");
 
-    /*const TASKDIALOG_BUTTON pButtons[] =
-    {
-        { 1000, btn.c_str() },
-    };
+    auto *dial = new wxMessageDialog(NULL,
+                                                main, title,
+                                                wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
 
-    TASKDIALOGCONFIG tdf = { sizeof(TASKDIALOGCONFIG) };
-    tdf.cButtons = ARRAYSIZE(pButtons);
-    tdf.dwCommonButtons = TDCBF_CANCEL_BUTTON;
-    tdf.dwFlags = TDF_POSITION_RELATIVE_TO_WINDOW;
-    tdf.hwndParent = GetHWND();
-    tdf.pButtons = pButtons;
-    tdf.pszMainIcon = TD_INFORMATION_ICON;
-    tdf.pszMainInstruction = main.c_str();
-    tdf.pszWindowTitle = title.c_str();
+    if (dial->ShowModal() == wxID_YES) {
+        m_wantsRestart = true;
+    }
 
-    int pnButton = -1;
-    int pnRadioButton = -1;
-    BOOL pfVerificationFlagChecked = FALSE;
-
-    TaskDialogIndirect(&tdf, &pnButton, &pnRadioButton, &pfVerificationFlagChecked);
-
-    m_wantsRestart = (pnButton == 1000);*/
+   // m_wantsRestart = (pnButton == 1000);
 }
