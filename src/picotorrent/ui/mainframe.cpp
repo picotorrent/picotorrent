@@ -204,7 +204,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Core::Environment> env, std::shared_ptr
 
             if (selectedUpdated.size() > 0)
             {
-         //       m_torrentDetails->Refresh(selectedUpdated);
+               m_torrentDetails->Refresh(selectedUpdated);
             }
 
             this->CheckDiskSpace(torrents);

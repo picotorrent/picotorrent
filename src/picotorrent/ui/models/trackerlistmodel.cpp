@@ -3,6 +3,7 @@
 #include <fmt/format.h>
 #include <libtorrent/announce_entry.hpp>
 #include <libtorrent/peer_info.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 #include "../../bittorrent//torrenthandle.hpp"
 #include "../../bittorrent//torrentstatus.hpp"
@@ -191,7 +192,8 @@ void TrackerListModel::Update(pt::BitTorrent::TorrentHandle* torrent)
         if (tierIter == m_items.end())
         {
             auto newTier = std::make_shared<ListItem>();
-            newTier->key = ""; //Utils::toStdString(fmt::format(i18n("tier_n"), iter->tier));
+            newTier->key =  Utils::toStdString(
+                    static_cast<const wchar_t *>(wxString::Format(_(i18n("tier_n")), iter->tier)));
             newTier->tier = iter->tier;
 
             m_items.push_back(newTier);
@@ -387,10 +389,10 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
             break;
         }
 
-        variant = ""; /*fmt::format(
-            i18n("d_of_d"),
-            li->fails,
-            li->failLimit);*/
+        auto wstr = i18n("d_of_d");
+        boost::replace_all(wstr, "{0}", "%s");
+        boost::replace_all(wstr, "{1}", "%s");
+        variant = wxString::Format(_(wstr), li->fails, li->failLimit);
 
         break;
     }
@@ -415,22 +417,27 @@ void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 
         if (hours_left.count() <= 0)
         {
+            std::locale loc((std::locale()));
             if (min_left.count() <= 0)
             {
-                variant = ""; //fmt::format(i18n("eta_s_format"), sec_left.count());
+                auto wstr = i18n("eta_s_format");
+                boost::replace_all(wstr, "{0}", "%d");
+                variant = wxString::Format(_(wstr),sec_left.count());
                 break;
             }
 
-            variant = ""; //fmt::format(i18n("eta_ms_format"), min_left.count(), sec_left.count());
+            auto wstr = i18n("eta_ms_format");
+            boost::replace_all(wstr, "{0}", "%d");
+            boost::replace_all(wstr, "{1}", "%d");
+            variant = wxString::Format(_(wstr), min_left.count(), sec_left.count());
             break;
         }
 
-        variant = ""; /*fmt::format(
-            i18n("eta_hms_format"),
-            hours_left.count(),
-            min_left.count(),
-            sec_left.count());*/
-
+        auto wstr = i18n("eta_hms_format");
+        boost::replace_all(wstr, "{0}", "%d");
+        boost::replace_all(wstr, "{1}", "%d");
+        boost::replace_all(wstr, "{2}", "%d");
+        variant = wxString::Format(_(wstr),hours_left.count(),min_left.count(),sec_left.count());
         break;
     }
     }

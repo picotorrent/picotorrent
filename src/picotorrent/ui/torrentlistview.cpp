@@ -181,9 +181,8 @@ TorrentListView::TorrentListView(wxWindow* parent, wxWindowID id, pt::UI::Models
                 defaultFlags),
             true));
 
-    /*
-    nameCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
-    statusCol->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);*/
+    m_columns.at(0).column->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
+    m_columns.at(3).column->GetRenderer()->EnableEllipsize(wxELLIPSIZE_END);
 
     // Just add all columns. The persistence manager will set the saved
     // widths, order and hidden attributes. Otherwise we use our defaults.
@@ -281,7 +280,7 @@ void TorrentListView::ShowHeaderContextMenu(wxCommandEvent&)
     for (size_t i = 0; i < GetColumnCount() - 1; i++)
     {
         auto * col = GetColumn(i);
-        auto item = menu.Append(wxID_HIGHEST + i, col->GetTitle());
+        auto item = menu.AppendCheckItem(wxID_HIGHEST + i, col->GetTitle());
         item->SetCheckable(true);
         item->Check(!col->IsHidden());
     }

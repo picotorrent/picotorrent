@@ -2,6 +2,7 @@
 
 #include <boost/log/trivial.hpp>
 #include <fmt/format.h>
+#include <boost/algorithm/string/replace.hpp>
 
 #include "../../bittorrent/torrenthandle.hpp"
 #include "../../bittorrent/torrentstatus.hpp"
@@ -354,16 +355,20 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
         case TorrentStatus::State::Error:
             if (status.errorDetails.empty())
             {
-                variant = ""; /*fmt::format(
-                    i18n("state_error"),
-                    Utils::toStdWString(status.error).c_str());*/
+                auto wstr = i18n("state_error");
+                boost::replace_all(wstr, "{0}", "%s");
+                variant = wxString::Format(_(wstr), Utils::toStdWString(status.error).c_str());
             }
             else
             {
-                variant = ""; /*fmt::format(
-                    i18n("state_error_details"),
+                auto wstr = i18n("state_error_details");
+                boost::replace_all(wstr, "{0}", "%s");
+                boost::replace_all(wstr, "{1}", "%s");
+
+                variant = wxString::Format(
+                    _(wstr),
                     Utils::toStdWString(status.error).c_str(),
-                    Utils::toStdWString(status.errorDetails).c_str());*/
+                    Utils::toStdWString(status.errorDetails).c_str());
             }
 
             break;
@@ -412,19 +417,29 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
         {
             if (min_left.count() <= 0)
             {
-                variant = ""; //fmt::format(i18n("eta_s_format"), sec_left.count());
+                auto wstr = i18n("eta_s_format");
+                boost::replace_all(wstr, "{0}", "%d");
+                variant = wxString::Format(_(wstr), static_cast<int>(sec_left.count()));
                 break;
             }
 
-            variant = ""; //fmt::format(i18n("eta_ms_format"), min_left.count(), sec_left.count());
+            auto wstr = i18n("eta_ms_format");
+            boost::replace_all(wstr, "{0}", "%d");
+            boost::replace_all(wstr, "{1}", "%d");
+            variant = wxString::Format(_(wstr),
+                                       static_cast<int>(min_left.count()),
+                                       static_cast<int>(sec_left.count()));
             break;
         }
 
-        variant = ""; /*fmt::format(
-            i18n("eta_hms_format"),
-            hours_left.count(),
-            min_left.count(),
-            sec_left.count());*/
+        auto wstr = i18n("eta_hms_format");
+        boost::replace_all(wstr, "{0}", "%d");
+        boost::replace_all(wstr, "{1}", "%d");
+        boost::replace_all(wstr, "{2}", "%d");
+        variant = wxString::Format(_(wstr),
+                                   static_cast<int>(hours_left.count()),
+                                   static_cast<int>(min_left.count()),
+                                   static_cast<int>(sec_left.count()));
 
         break;
     }
@@ -437,9 +452,9 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = ""; /*fmt::format(
-            i18n("per_second_format"),
-            Utils::toHumanFileSize(status.downloadPayloadRate));*/
+        auto wstr = i18n("per_second_format");
+        boost::replace_all(wstr, "{0}", "%s");
+        variant = wxString::Format(_(wstr), Utils::toHumanFileSize(status.downloadPayloadRate));
 
         break;
     }
@@ -452,9 +467,9 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = ""; /*fmt::format(
-            i18n("per_second_format"),
-            Utils::toHumanFileSize(status.uploadPayloadRate));*/
+        auto wstr = i18n("per_second_format");
+        boost::replace_all(wstr, "{0}", "%s");
+        variant = wxString::Format(_(wstr), Utils::toHumanFileSize(status.uploadPayloadRate));
 
         break;
     }
@@ -485,10 +500,10 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = ""; /*fmt::format(
-            i18n("d_of_d"),
-            status.seedsCurrent,
-            status.seedsTotal);*/
+        auto wstr = i18n("d_of_d");
+        boost::replace_all(wstr, "{0}", "%d");
+        boost::replace_all(wstr, "{1}", "%d");
+        variant = wxString::Format(_(wstr), status.seedsCurrent, status.seedsTotal);
 
         break;
     }
@@ -501,10 +516,10 @@ void TorrentListModel::GetValueByRow(wxVariant& variant, uint32_t row, uint32_t 
             break;
         }
 
-        variant = ""; /*fmt::format(
-            i18n("d_of_d"),
-            status.peersCurrent,
-            status.peersTotal);*/
+        auto wstr = i18n("d_of_d");
+        boost::replace_all(wstr, "{0}", "%d");
+        boost::replace_all(wstr, "{1}", "%d");
+        variant = wxString::Format(_(wstr), status.peersCurrent, status.peersTotal);
 
         break;
     }

@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <vector>
 
+
 #include <boost/log/trivial.hpp>
 #include <sqlite3.h>
 
@@ -24,25 +25,21 @@ struct Migration
     std::string sql;
 };
 
-/*
-static BOOL CALLBACK EnumMigrations(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
-{
-    std::vector<Migration>* migrations = reinterpret_cast<std::vector<Migration>*>(lParam);
+//static bool EnumMigrations()
+//{
+//    std::vector<Migration>* migrations = reinterpret_cast<std::vector<Migration>*>(LONG_WIDTH);
+//
+//    const char* buffer = reinterpret_cast<const char*>(LockResource());
+//
+//    Migration m;
+//    m.name = pt::Utils::toStdString(lpszName);
+//    m.sql  = std::string(buffer, size);
+//
+//    migrations->push_back(m);
+//
+//    return true;
+//}
 
-    HRSRC rc = FindResource(hModule, lpszName, lpszType);
-    DWORD size = SizeofResource(hModule, rc);
-    HGLOBAL data = LoadResource(hModule, rc);
-    const char* buffer = reinterpret_cast<const char*>(LockResource(data));
-
-    Migration m;
-    m.name = pt::Utils::toStdString(lpszName);
-    m.sql  = std::string(buffer, size);
-
-    migrations->push_back(m);
-
-    return TRUE;
-}
-*/
 
 Database::Statement::Statement(sqlite3_stmt* stmt)
     : m_stmt(stmt)
@@ -204,11 +201,11 @@ bool Database::Migrate()
 
     std::vector<Migration> migrations;
 
-    /*EnumResourceNames(
-        NULL,
-        TEXT("DBMIGRATION"),
-        &EnumMigrations,
-        reinterpret_cast<LONG_PTR>(&migrations));*/
+//    EnumResourceNames(
+//        NULL,
+//        L"DBMIGRATION",
+//        &EnumMigrations,
+//        reinterpret_cast<LONG_PTR>(&migrations));
 
     BOOST_LOG_TRIVIAL(info) << "Found " << migrations.size() << " migrations";
 
@@ -308,7 +305,7 @@ void Database::GetKnownFolderPath(sqlite3_context* ctx, int argc, sqlite3_value*
 
 void Database::GetUserDefaultUILanguage(sqlite3_context* ctx, int, sqlite3_value**)
 {
-    // sqlite3_result_int(ctx, static_cast<int>(::GetUserDefaultUILanguage()));
+    //sqlite3_result_int(ctx, static_cast<int>(::GetUserDefaultUILanguage()));
 }
 
 bool Database::MigrationExists(std::string const& name)

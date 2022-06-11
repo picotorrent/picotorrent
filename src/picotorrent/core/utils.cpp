@@ -24,11 +24,8 @@ void Utils::openAndSelect(fs::path path)
 
 std::wstring Utils::toHumanFileSize(int64_t bytes)
 {
-    /*TCHAR buf[1024];
-    StrFormatByteSize64(bytes, buf, 1024);
-    return buf;*/
-    return L"file size";
-
+    long val = bytes / 1024;
+    return std::to_wstring(val);
 }
 
 std::string Utils::toStdString(const std::wstring& input)
