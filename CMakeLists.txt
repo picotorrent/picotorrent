@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 cmake_policy(SET CMP0092 NEW) # don't add /W3 as default
-cmake_policy(SET CMP0115 OLD) # Source file extensions must be explicit.
+
+if (NOT CMAKE_VERSION VERSION_LESS "3.20")
+    cmake_policy(SET CMP0115 OLD) # Source file extensions must be explicit.
+endif()
 
 set(VCPKG_OVERLAY_PORTS    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/vcpkg-overlays/ports)
 set(VCPKG_OVERLAY_TRIPLETS ${CMAKE_CURRENT_SOURCE_DIR}/vendor/vcpkg-overlays/triplets)
@@ -21,7 +24,7 @@ set(wxUSE_EXCEPTIONS      OFF   CACHE BOOL   "" FORCE)
 # --------------------
 
 # vendor libs
-add_subdirectory(vendor/sentry-crashpad)
+# add_subdirectory(vendor/sentry-crashpad)
 add_subdirectory(vendor/wx)
 
 # pico components
@@ -33,17 +36,18 @@ find_package(fmt                 CONFIG REQUIRED)
 find_package(LibtorrentRasterbar CONFIG REQUIRED)
 find_package(nlohmann_json       CONFIG REQUIRED)
 find_package(unofficial-sqlite3  CONFIG REQUIRED)
+#find_package(wxWidgets                  REQUIRED)
 
 # Generate buildinfo file
 configure_file("${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp.in" "${CMAKE_SOURCE_DIR}/src/picotorrent/buildinfo.cpp" @ONLY)
 
 # Debug flags
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
 
 # Release flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
-set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+#set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
+#set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG /INCREMENTAL:NO /MAP /OPT:REF /OPT:ICF")
 
 add_executable(
     PicoTorrent-coredb
@@ -83,17 +87,17 @@ target_link_libraries(
 
 add_executable(
     PicoTorrent
-    WIN32
+    #WIN32
 
     src/picotorrent/application
     src/picotorrent/buildinfo
-    src/picotorrent/crashpadinitializer
+    #src/picotorrent/crashpadinitializer
     src/picotorrent/main
     src/picotorrent/persistencemanager
     src/picotorrent/resources.rc
 
     # API
-    src/picotorrent/api/libpico
+    # src/picotorrent/api/libpico
 
     # BitTorrent
     src/picotorrent/bittorrent/session
@@ -106,7 +110,7 @@ add_executable(
     src/picotorrent/core/utils
 
     # Http
-    src/picotorrent/http/httpclient
+    # src/picotorrent/http/httpclient
 
     # IPC
     src/picotorrent/ipc/applicationoptionsconnection
@@ -159,22 +163,22 @@ add_executable(
     src/picotorrent/ui/widgets/pieceprogressbar
 
     # Win32 specific stuff
-    src/picotorrent/ui/win32/openfiledialog
+    # src/picotorrent/ui/win32/openfiledialog
 )
 
 target_compile_definitions(
     PicoTorrent
     PRIVATE
-    -D_UNICODE
-    -D_WIN32
-    -D_WIN32_WINNT=0x0600
-    -DNOMINMAX
+    #-D_UNICODE
+    #-D_WIN32
+    #-D_WIN32_WINNT=0x0600
+    #-DNOMINMAX
     -DPICOJSON_USE_INT64
-    -DUNICODE
-    -DWIN32
-    -DWIN32_LEAN_AND_MEAN
+    #-DUNICODE
+    #-DWIN32
+    #-DWIN32_LEAN_AND_MEAN
 
-    -DLIBPICO_API_EXPORT
+    #-DLIBPICO_API_EXPORT
 
     -DPICO_GIT_COMMITISH=${GITVERSION_VAR_SHORTSHA}
     -DPICO_VERSION_MAJOR=${GITVERSION_VAR_VERSION_MAJOR}
@@ -184,7 +188,7 @@ target_compile_definitions(
     -DPICO_WX_GIT_COMMITISH=${PICO_WX_GIT_COMMITISH}
 )
 
-target_compile_options(PicoTorrent PRIVATE /guard:cf /W4 /WX)
+#target_compile_options(PicoTorrent PRIVATE /guard:cf /W4 /WX)
 
 target_include_directories(
     PicoTorrent
@@ -203,22 +207,12 @@ target_link_libraries(
     Boost::log
 
     # wxWidgets
-    wxcore wxbase wxpropgrid
-
-    # Windows
-    Comctl32
-    crypt32
-    iphlpapi
-    legacy_stdio_definitions
-    propsys
-    shlwapi
-    wininet
-    winhttp
+    wxcore wxbase wxpropgrid wxnet
 
     # Crashpad
-    crashpad_client
-    crashpad_util
-    mini_chromium
+    # crashpad_client
+    # crashpad_util
+    # mini_chromium
 
     # fmt
     fmt::fmt
@@ -233,31 +227,34 @@ target_link_libraries(
     PicoTorrentPQL
 
     unofficial::sqlite3::sqlite3
+
+    # linux deps
+    -lX11
 )
 
-set_property(TARGET PicoTorrent PROPERTY ENABLE_EXPORTS 1)
+#set_property(TARGET PicoTorrent PROPERTY ENABLE_EXPORTS 1)
 
 # Plugins
-add_library(
-    Plugin_Updater
-    SHARED
-    src/plugins/updater/updater
-)
+#add_library(
+#    Plugin_Updater
+#    SHARED
+#    src/plugins/updater/updater
+#)
 
-target_compile_definitions(Plugin_Updater PRIVATE -D_WIN32 -DUNICODE -DWIN32_LEAN_AND_MEAN)
-target_include_directories(Plugin_Updater PRIVATE include)
-target_link_libraries(Plugin_Updater PRIVATE PicoTorrent Comctl32)
+#target_compile_definitions(Plugin_Updater PRIVATE -D_WIN32 -DUNICODE -DWIN32_LEAN_AND_MEAN)
+#target_include_directories(Plugin_Updater PRIVATE include)
+#target_link_libraries(Plugin_Updater PRIVATE PicoTorrent Comctl32)
 
 # Copy Crashpad handler
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:crashpad_handler>
-        $<TARGET_FILE_DIR:PicoTorrent>
-)
+#add_custom_command(
+#    TARGET PicoTorrent POST_BUILD
+#    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#        $<TARGET_FILE:crashpad_handler>
+#        $<TARGET_FILE_DIR:PicoTorrent>
+#)
 
 # Generate coredb
-add_custom_command(
-    TARGET PicoTorrent POST_BUILD
-    COMMAND PicoTorrent-coredb "${CMAKE_SOURCE_DIR}/lang" $<TARGET_FILE_DIR:PicoTorrent>
-)
+#add_custom_command(
+#    TARGET PicoTorrent POST_BUILD
+#    COMMAND PicoTorrent-coredb "${CMAKE_SOURCE_DIR}/lang" $<TARGET_FILE_DIR:PicoTorrent>
+#)

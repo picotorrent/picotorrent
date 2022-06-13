@@ -2,12 +2,14 @@
 
 #include "ids.hpp"
 #include "translator.hpp"
+#include "../resources.h"
+
 
 using pt::UI::TaskBarIcon;
 
 TaskBarIcon::TaskBarIcon(wxWindow* parent)
-    : m_parent(parent),
-    m_icon(wxIcon(wxICON(AppIcon)))
+    : m_parent(parent), //,
+    m_icon(APP_ICON, wxBITMAP_TYPE_XPM)
 {
 }
 

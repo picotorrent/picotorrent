@@ -1,11 +1,11 @@
 #include "listeninterfacedialog.hpp"
 
 #include <sstream>
-
+/*
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <iphlpapi.h>
-
+*/
 #include <wx/hyperlink.h>
 #include <wx/statbmp.h>
 #include <wx/sizer.h>
@@ -113,7 +113,7 @@ int ListenInterfaceDialog::GetPort()
 
 void ListenInterfaceDialog::LoadAdapters()
 {
-    NetworkAdapter any4;
+    /*NetworkAdapter any4;
     any4.address = "0.0.0.0";
     any4.name = "0.0.0.0";
 
@@ -213,5 +213,5 @@ void ListenInterfaceDialog::LoadAdapters()
                 }
             }
         }
-    }
+    }*/
 }

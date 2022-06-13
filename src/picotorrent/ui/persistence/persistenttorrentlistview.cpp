@@ -83,7 +83,7 @@ bool PersistentTorrentListView::Restore()
 
     for (uint32_t i = m_tlv->GetColumnCount(); i > 0 ; i--)
     {
-        auto col = m_tlv->GetColumnAt(i - 1);
+        /*auto col = m_tlv->GetColumnAt(i - 1);
 
         // Calculate its order based on the index in the models array
 
@@ -95,7 +95,7 @@ bool PersistentTorrentListView::Restore()
 
         cols[dist] = col;
 
-        m_tlv->DeleteColumn(col);
+        m_tlv->DeleteColumn(col);*/
     }
 
     for (uint32_t i = 0; i < cols.size(); i++)
@@ -124,7 +124,7 @@ void PersistentTorrentListView::Save() const
 {
     if (auto sortingColumn = m_tlv->GetSortingColumn())
     {
-        SaveValue("SortIndex", m_tlv->GetColumnIndex(sortingColumn));
+        //SaveValue("SortIndex", m_tlv->GetColumnIndex(sortingColumn));
         SaveValue("SortAscending", sortingColumn->IsSortOrderAscending());
     }
 
@@ -137,11 +137,11 @@ void PersistentTorrentListView::Save() const
 
     for (uint32_t i = 0; i < m_tlv->GetColumnCount() - 1; i++)
     {
-        auto col = m_tlv->GetColumnAt(i);
+        /*auto col = m_tlv->GetColumnAt(i);
 
         hidden.push_back(col->IsHidden());
         models.push_back(col->GetModelColumn());
-        widths.push_back(col->GetWidth());
+        widths.push_back(col->GetWidth());*/
     }
 
     SaveValue("Hidden", hidden.dump());

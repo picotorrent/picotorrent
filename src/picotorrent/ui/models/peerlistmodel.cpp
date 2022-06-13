@@ -2,7 +2,7 @@
 
 #include <fmt/format.h>
 #include <libtorrent/peer_info.hpp>
-
+#include <boost/algorithm/string/replace.hpp>
 #include "../../core/utils.hpp"
 #include "../translator.hpp"
 
@@ -184,9 +184,9 @@ void PeerListModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned
         }
         else
         {
-            variant = fmt::format(
-                i18n("per_second_format"),
-                Utils::toHumanFileSize(peer.payload_down_speed));
+            auto wstr = i18n("per_second_format");
+            boost::replace_all(wstr, "{0}", "%s");
+            variant = wxString::Format(_(wstr), Utils::toHumanFileSize(peer.payload_down_speed));
         }
 
         break;
@@ -199,9 +199,9 @@ void PeerListModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned
         }
         else
         {
-            variant = fmt::format(
-                i18n("per_second_format"),
-                Utils::toHumanFileSize(peer.payload_up_speed));
+            auto wstr = i18n("per_second_format");
+            boost::replace_all(wstr, "{0}", "%s");
+            variant = wxString::Format(_(wstr), Utils::toHumanFileSize(peer.payload_up_speed));
         }
 
         break;

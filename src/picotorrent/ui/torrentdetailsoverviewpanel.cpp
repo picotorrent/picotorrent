@@ -6,6 +6,7 @@
 #include <wx/sizer.h>
 
 #include <libtorrent/torrent_status.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 #include "../bittorrent/torrenthandle.hpp"
 #include "../bittorrent/torrentstatus.hpp"
@@ -34,22 +35,30 @@ std::wstring SecondsToFriendly(std::chrono::seconds secs)
     {
         if (min_left.count() <= 0)
         {
-            return fmt::format(
-                i18n("eta_s_format"),
-                sec_left.count());
+            auto wstr = i18n("eta_s_format");
+            boost::replace_all(wstr, "{0}", "%d");
+            return wxString::Format(_(wstr),
+                                    static_cast<int>(sec_left.count())).ToStdWstring();
         }
 
-        return fmt::format(
-            i18n("eta_ms_format"),
-            min_left.count(),
-            sec_left.count());
+        auto wstr = i18n("eta_ms_format");
+        boost::replace_all(wstr, "{0}", "%d");
+        boost::replace_all(wstr, "{1}", "%d");
+        return wxString::Format(_(wstr),
+                                static_cast<int>(min_left.count()),
+                                static_cast<int>(sec_left.count())).ToStdWstring();
+
     }
 
-    return fmt::format(
-        i18n("eta_hms_format"),
-        hours_left.count(),
-        min_left.count(),
-        sec_left.count());
+    auto wstr = i18n("eta_ms_format");
+    boost::replace_all(wstr, "{0}", "%d");
+    boost::replace_all(wstr, "{1}", "%d");
+    boost::replace_all(wstr, "{2}", "%d");
+    return wxString::Format(_(wstr),
+                            static_cast<int>(hours_left.count()),
+                            static_cast<int>(min_left.count()),
+                            static_cast<int>(sec_left.count())).ToStdWstring();
+
 }
 
 class CopyableStaticText : public wxStaticText
@@ -163,9 +172,14 @@ void TorrentDetailsOverviewPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent
     m_name->SetLabel(Utils::toStdWString(status.name));
     m_savePath->SetLabel(Utils::toStdWString(status.savePath));
     m_infoHash->SetLabel(status.infoHash);
+
+
+    auto wstr = i18n("d_of_d");
+    boost::replace_all(wstr, "{0}", "%d");
+    boost::replace_all(wstr, "{1}", "%d");
     m_pieces->SetLabel(
-        fmt::format(
-            i18n("d_of_d"),
+        wxString::Format(
+            _(wstr),
             status.pieces.count(),
             status.pieces.size()));
     m_ratio->SetLabel(
@@ -205,9 +219,13 @@ void TorrentDetailsOverviewPanel::Refresh(pt::BitTorrent::TorrentHandle* torrent
 
         if (tf->total_size() != status.totalWanted)
         {
+            auto wstr = i18n("d_of_d");
+            boost::replace_all(wstr, "{0}", "%d");
+            boost::replace_all(wstr, "{1}", "%d");
+
             m_size->SetLabel(
-                fmt::format(
-                    i18n("d_of_d"),
+                wxString::Format(
+                    _(wstr),
                     Utils::toHumanFileSize(status.totalWanted),
                     Utils::toHumanFileSize(tf->total_size())));
         }

@@ -9,6 +9,7 @@
 #include <libtorrent/info_hash.hpp>
 
 #include <map>
+#include <memory>
 #include <unordered_set>
 #include <vector>
 

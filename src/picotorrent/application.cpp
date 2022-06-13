@@ -7,8 +7,9 @@
 #include <wx/persist.h>
 #include <wx/snglinst.h>
 #include <wx/taskbarbutton.h>
-
+/*
 #include "api/libpico_impl.hpp"
+*/
 #include "crashpadinitializer.hpp"
 #include "persistencemanager.hpp"
 #include "core/configuration.hpp"
@@ -25,14 +26,14 @@ Application::Application()
     : wxApp(),
     m_singleInstance(std::make_unique<wxSingleInstanceChecker>("584c8e47-d8a5-4e52-9165-c0650a85723a"))
 {
-    SetProcessDPIAware();
+    // SetProcessDPIAware();
 }
 
 Application::~Application()
 {
     for (auto plugin : m_plugins)
     {
-        delete plugin;
+        // delete plugin;
     }
 }
 
@@ -86,7 +87,7 @@ bool Application::OnInit()
     }
 
     auto env = pt::Core::Environment::Create();
-    pt::CrashpadInitializer::Initialize(env);
+    //pt::CrashpadInitializer::Initialize(env);
 
     auto db = std::make_shared<pt::Core::Database>(env);
 
@@ -109,7 +110,7 @@ bool Application::OnInit()
             .value_or(env->GetCurrentLocale()));
 
     // Load plugins
-    for (auto& p : fs::directory_iterator(env->GetApplicationPath()))
+    /*for (auto& p : fs::directory_iterator(env->GetApplicationPath()))
     {
         if (p.path().extension() != ".dll") { continue; }
 
@@ -126,7 +127,7 @@ bool Application::OnInit()
         {
             m_plugins.push_back(plugin);
         }
-    }
+    }*/
 
     // Set up persistence manager
     m_persistence = std::make_unique<PersistenceManager>(db);
@@ -134,10 +135,10 @@ bool Application::OnInit()
 
     auto mainFrame = new UI::MainFrame(env, db, cfg, m_options);
 
-    std::for_each(
+    /*std::for_each(
         m_plugins.begin(),
         m_plugins.end(),
-        [mainFrame](auto plugin) { plugin->EmitEvent(libpico_event_mainwnd_created, mainFrame); });
+        [mainFrame](auto plugin) { plugin->EmitEvent(libpico_event_mainwnd_created, mainFrame); });*/
 
     auto windowState = static_cast<pt::Core::Configuration::WindowState>(cfg->Get<int>("start_position").value());
 
@@ -147,7 +148,7 @@ bool Application::OnInit()
         // Only valid if we have a notify icon
         if (cfg->Get<bool>("show_in_notification_area").value())
         {
-            mainFrame->MSWGetTaskBarButton()->Hide();
+            //mainFrame->MSWGetTaskBarButton()->Hide();
         }
         else
         {
@@ -214,8 +215,8 @@ void Application::ActivateOtherInstance()
 
 void Application::WaitForPreviousInstance(long pid)
 {
-    HANDLE hProc = OpenProcess(SYNCHRONIZE, FALSE, pid);
+    /*HANDLE hProc = OpenProcess(SYNCHRONIZE, FALSE, pid);
     if (hProc == NULL) { return; }
     WaitForSingleObject(hProc, 10000);
-    CloseHandle(hProc);
+    CloseHandle(hProc);*/
 }

@@ -5,6 +5,14 @@ docs/build
 src/installer/bin
 src/installer/obj
 src/picotorrent/buildinfo.cpp
+src/pql/.cproject
+src/pql/.project
+src/pql/CMakeFiles/
+src/pql/Makefile
+src/pql/cmake_install.cmake
+src/pql/libPicoTorrentPQL.a
+src/pql/libantlr4.a
+src/pql/utfcpp-prefix/
 tools
 .vscode
 [D|d]ebug

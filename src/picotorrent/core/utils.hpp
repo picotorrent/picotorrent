@@ -3,6 +3,10 @@
 #include <filesystem>
 #include <string>
 
+#ifndef CP_UTF8
+#define CP_UTF8 65001
+#endif
+
 namespace pt
 {
     class Utils

@@ -4,10 +4,10 @@
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
 #endif
-
+/*
 #include <Windows.h>
 #include <winhttp.h>
-
+*/
 #include <memory>
 
 namespace pt
