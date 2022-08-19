@@ -138,7 +138,7 @@
     "low": "Nízké",
     "do_not_download": "Nestahovat",
     "priority": "Priorita",
-    "save_path": "Uložit cestu",
+    "save_path": "Stahuji do",
     "add_torrent_s": "Přidat torrent(y)",
     "picotorrent_description": "Vytvořeno s láskou, pomocí Boost, Rasterbar-libtorrent, OpenSSL a wxWidgets.",
     "downloads": "Stažené",
