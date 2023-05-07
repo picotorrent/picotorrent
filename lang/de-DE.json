@@ -304,7 +304,7 @@
     "file_filter_all_files": "Alle Dateien (*.*)|*.*",
     "ip_filter_enabled": "IP Filter: ✔️",
     "ip_filter_disabled": "IP Filter: ❌",
-    "copyright_text": "© 2015-2021",
+    "copyright_text": "© 2015-2023, PicoTorrent-Mitwirkende",
     "exported_magnet_link_s": "Exportierte magnet Link(s)",
     "export": "Exportieren",
     "torrent_file_s": "Torrent Datei(en)"

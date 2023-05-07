@@ -22,12 +22,13 @@ set(wxUSE_EXCEPTIONS      OFF   CACHE BOOL   "" FORCE)
 
 # vendor libs
 add_subdirectory(vendor/sentry-crashpad)
-add_subdirectory(vendor/wx)
+# add_subdirectory(vendor/wx)
 
 # pico components
 add_subdirectory(src/pql)
 
 # vcpkg packages
+find_package(wxWidgets  CONFIG REQUIRED)
 find_package(Boost                      REQUIRED COMPONENTS log)
 find_package(fmt                 CONFIG REQUIRED)
 find_package(LibtorrentRasterbar CONFIG REQUIRED)
@@ -203,7 +204,7 @@ target_link_libraries(
     Boost::log
 
     # wxWidgets
-    wxcore wxbase wxpropgrid
+    wx::core wx::base wx::propgrid
 
     # Windows
     Comctl32

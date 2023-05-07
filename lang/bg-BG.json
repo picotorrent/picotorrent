@@ -297,7 +297,7 @@
     "ip_filter_disabled": "Ф по IP: ❌",
     "ip_filter": "Филтриране по адрес на IP",
     "file_filter_all_files": "Всички файлове (*.*)|*.*",
-    "copyright_text": "© 2015-2021",
+    "copyright_text": "© 2015-2023, сътрудници на PicoTorrent",
     "export": "Изнасяне",
     "torrent_file_s": "Файл на торент",
     "exported_magnet_link_s": "Изнесени магнитни препратки"

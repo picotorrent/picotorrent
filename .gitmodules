@@ -1,6 +1,3 @@
-[submodule "vendor/wx"]
-	path = vendor/wx
-	url = https://github.com/wxWidgets/wxWidgets
 [submodule "vendor/duktape"]
 [submodule "vendor/crashpad"]
 	path = vendor/crashpad

@@ -222,7 +222,7 @@
     "label": "标签",
     "restart_picotorrent": "重启 PicoTorrent",
     "ip_filter_disabled": "IP过滤器：❌",
-    "copyright_text": "© 2015-2021",
+    "copyright_text": "© 2015-2023，PicoTorrent 贡献者",
     "exported_magnet_link_s": "导出磁力链接",
     "torrent_file_s": "种子文件",
     "export": "导出",

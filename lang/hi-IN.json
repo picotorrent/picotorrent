@@ -289,7 +289,7 @@
     "per_second_format": "{0}/सेकंड",
     "eta_hms_format": "{0}घंटे{1} मिनट {2}सेकंड",
     "ip_filter_disabled": "IP फ़िल्टर: ❌",
-    "copyright_text": "© 2015-2021",
+    "copyright_text": "© 2015-2023, PicoTorrent योगदानकर्ता",
     "ip_filter": "IP फ़िल्टर",
     "amp_console": "&कंसोल",
     "some_torrents_already_in_session": "पहले से ही उपस्थित टोरेंट को छोड़ दिया …",

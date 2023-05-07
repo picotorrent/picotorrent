@@ -3,6 +3,7 @@
   "name": "picotorrent",
   "version-string": "1",
   "dependencies": [
+    "wxwidgets",
     "boost-log",
     "fmt",
     "libtorrent",
