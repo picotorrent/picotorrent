@@ -223,7 +223,7 @@
     "eta_ms_format": "{0}m {1}s",
     "eta_s_format": "{0}s",
     "per_second_format": "{0}/s",
-    "copyright_text": "© 2015-2021",
+    "copyright_text": "© 2015-2023, PicoTorrent contributors",
     "export": "Izvezi",
     "magnet_link_s": "Magnet link(ovi)",
     "torrent_file_s": "Torent fajl(ovi)",

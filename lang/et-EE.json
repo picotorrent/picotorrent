@@ -123,7 +123,7 @@
     "documentation": "Dokumentatsioon",
     "restore_defaults_description": "See taastab enamus sätteid tava peale. Kas olete kindel?",
     "export": "Ekspordi",
-    "copyright_text": "© 2015-2021",
+    "copyright_text": "© 2015-2023, PicoTorrenti kaastöötajad",
     "select_ip_filter_file": "Vali IP filtri fail",
     "file_filter_all_files": "Kõik failid (*.*)|*.*",
     "ip_filter_enabled": "IP filter: ✔️",

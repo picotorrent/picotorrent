@@ -221,7 +221,7 @@
     "scrape": "Zeskrob",
     "state_error_details": "Błąd: {0} ({1})",
     "restart_picotorrent": "Zrestartuj PicoTorrent",
-    "copyright_text": "© 2015-2021",
+    "copyright_text": "© 2015-2023, współtwórcy PicoTorrent",
     "ip_filter": "Filtr IP",
     "no": "Nie",
     "remove_tier": "Usuń poziom",

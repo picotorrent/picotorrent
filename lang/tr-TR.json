@@ -251,7 +251,7 @@
     "restore_defaults_description": "Bu, çoğu ayarı varsayılan değerlerine geri yükleyecektir. Emin misiniz?",
     "add_to_session": "Oturuma ekle",
     "documentation": "Dokümantasyon",
-    "copyright_text": "© 2015-2021",
+    "copyright_text": "© 2015-2023, PicoTorrent'e katkıda bulunanlar",
     "export": "Dışa aktar",
     "torrent_file_s": "Torrent dosyaları",
     "exported_magnet_link_s": "Dışa aktarılan mıknatıs bağlantıları",
