@@ -103,7 +103,9 @@ CreateTorrentDialog::CreateTorrentDialog(wxWindow* parent, wxWindowID id, std::s
 
     auto optionsSizer = new wxStaticBoxSizer(wxHORIZONTAL, this, i18n("options"));
     m_mode = new wxChoice(optionsSizer->GetStaticBox(), wxID_ANY);
-    m_mode->Append({ i18n("mode_v1"), i18n("mode_hybrid"), i18n("mode_v2") });
+    m_mode->Append(i18n("mode_v1"));
+    m_mode->Append(i18n("mode_hybrid"));
+    m_mode->Append(i18n("mode_v2"));
     m_mode->Select(1);
 
     m_private = new wxCheckBox(optionsSizer->GetStaticBox(), wxID_ANY, i18n("private"));
