@@ -2,6 +2,7 @@
 
 #include <boost/log/trivial.hpp>
 #include <fmt/format.h>
+#include <fmt/xchar.h>
 
 #include "../../bittorrent/torrenthandle.hpp"
 #include "../../bittorrent/torrentstatus.hpp"

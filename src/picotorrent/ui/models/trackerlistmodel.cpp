@@ -1,6 +1,7 @@
 #include "trackerlistmodel.hpp"
 
 #include <fmt/format.h>
+#include <fmt/xchar.h>
 #include <libtorrent/announce_entry.hpp>
 #include <libtorrent/peer_info.hpp>
 
