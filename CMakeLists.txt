@@ -16,7 +16,7 @@ option(WITH_STATIC_CRT "" Off)
 
 # --------- wx options
 set(wxBUILD_SHARED        OFF   CACHE BOOL   "" FORCE)
-set(wxBUILD_COMPATIBILITY "3.1" CACHE STRING "" FORCE)
+set(wxBUILD_COMPATIBILITY "3.2" CACHE STRING "" FORCE)
 set(wxUSE_EXCEPTIONS      OFF   CACHE BOOL   "" FORCE)
 # --------------------
 
