@@ -5,6 +5,7 @@
 
 #include <boost/log/trivial.hpp>
 #include <fmt/format.h>
+#include <fmt/xchar.h>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/create_torrent.hpp>
 #include <libtorrent/torrent_info.hpp>

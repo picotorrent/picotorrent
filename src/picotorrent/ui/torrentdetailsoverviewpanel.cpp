@@ -1,6 +1,7 @@
 #include "torrentdetailsoverviewpanel.hpp"
 
 #include <fmt/format.h>
+#include <fmt/xchar.h>
 #include <wx/clipbrd.h>
 #include <wx/dcbuffer.h>
 #include <wx/sizer.h>

@@ -1,6 +1,7 @@
 #include "statusbar.hpp"
 
 #include <fmt/format.h>
+#include <fmt/xchar.h>
 
 #include "translator.hpp"
 #include "../core/utils.hpp"

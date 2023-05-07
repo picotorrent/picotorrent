@@ -1,6 +1,7 @@
 #include "peerlistmodel.hpp"
 
 #include <fmt/format.h>
+#include <fmt/xchar.h>
 #include <libtorrent/peer_info.hpp>
 
 #include "../../core/utils.hpp"
