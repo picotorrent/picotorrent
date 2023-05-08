@@ -160,6 +160,9 @@ add_executable(
 
     # Win32 specific stuff
     src/picotorrent/ui/win32/openfiledialog
+
+    # Theming
+    src/picotorrent/ui/theming/theming
 )
 
 target_compile_definitions(

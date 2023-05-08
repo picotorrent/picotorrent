@@ -30,6 +30,7 @@ ICO_TERMINAL ICON "..\\..\\res\\terminal.ico"
 20201107234213_setup_filters                    DBMIGRATION "..\\..\\res\\dbmigrations\\20201107234213_setup_filters.sql"
 20201219222232_insert_connections_limit         DBMIGRATION "..\\..\\res\\dbmigrations\\20201219222232_insert_connections_limit.sql"
 20201227195100_insert_ipfilter_settings         DBMIGRATION "..\\..\\res\\dbmigrations\\20201227195100_insert_ipfilter_settings.sql"
+20220508103321_insert_theme_id.sql              DBMIGRATION "..\\..\\res\\dbmigrations\\20220508103321_insert_theme_id.sql"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION        VER_FILE_VERSION

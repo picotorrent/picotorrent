@@ -9,6 +9,8 @@
 #include "../../core/utils.hpp"
 #include "../translator.hpp"
 
+#include "../theming/theming.hpp"
+
 struct AutoRunKey
 {
     AutoRunKey()
@@ -88,9 +90,12 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
     wxStaticBoxSizer* uiSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("user_interface"));
     wxFlexGridSizer* uiGrid = new wxFlexGridSizer(2, FromDIP(10), FromDIP(10));
     m_language = new wxChoice(uiSizer->GetStaticBox(), wxID_ANY);
+    m_theme = new wxChoice(uiSizer->GetStaticBox(), wxID_ANY);
     uiGrid->AddGrowableCol(1, 1);
     uiGrid->Add(new wxStaticText(uiSizer->GetStaticBox(), wxID_ANY, i18n("language")), 0, wxALIGN_CENTER_VERTICAL);
     uiGrid->Add(m_language, 1, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL);
+    uiGrid->Add(new wxStaticText(uiSizer->GetStaticBox(), wxID_ANY, i18n("theme")), 0, wxALIGN_CENTER_VERTICAL);
+    uiGrid->Add(m_theme, 1, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL);
     uiSizer->Add(uiGrid, 1, wxEXPAND | wxALL, FromDIP(5));
 
     wxStaticBoxSizer* miscSizer = new wxStaticBoxSizer(wxVERTICAL, this, i18n("miscellaneous"));
@@ -145,6 +150,16 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
         }
     }
 
+    for (auto &theme : pt::UI::Theming::GetInstance().GetThemes())
+    {
+      int pos = m_theme->Append(i18n(theme.i18n_name), new ClientData<std::string>(theme.id));
+
+      if (theme.id == Theming::GetInstance().GetCurrentTheme())
+      {
+        m_theme->SetSelection(pos);
+      }
+    }
+
     m_labelColor->SetValue(m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
     m_skipAddTorrentDialog->SetValue(m_cfg->Get<bool>("skip_add_torrent_dialog").value());
 
@@ -191,6 +206,11 @@ void PreferencesGeneralPage::Save(bool* restartRequired)
         ? reinterpret_cast<ClientData<std::string>*>(m_language->GetClientObject(langIndex))
         : nullptr;
 
+    int themeIndex = m_theme->GetSelection();
+    ClientData<std::string> *themeData = themeIndex >= 0
+        ? reinterpret_cast<ClientData<std::string> *>(m_theme->GetClientObject(themeIndex))
+        : nullptr;
+
     int startPosIndex = m_startPosition->GetSelection();
     ClientData<Configuration::WindowState>* startPosData = reinterpret_cast<ClientData<Configuration::WindowState>*>(m_startPosition->GetClientObject(startPosIndex));
 
@@ -202,6 +222,15 @@ void PreferencesGeneralPage::Save(bool* restartRequired)
         }
 
         m_cfg->Set("locale_name", langData->GetValue());
+    }
+
+    if (themeData != nullptr)
+    {
+      if (themeData->GetValue() != m_cfg->Get<std::string>("theme_id"))
+        {
+          *restartRequired = true;
+        }
+      m_cfg->Set("theme_id", themeData->GetValue());
     }
 
     if (startPosData != nullptr)

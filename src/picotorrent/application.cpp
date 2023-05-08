@@ -18,6 +18,8 @@
 #include "ui/mainframe.hpp"
 #include "ui/translator.hpp"
 
+#include "ui/theming/theming.hpp"
+
 using json = nlohmann::json;
 using pt::Application;
 
@@ -102,11 +104,21 @@ bool Application::OnInit()
 
     auto cfg = std::make_shared<pt::Core::Configuration>(db);
 
+    // Load current locale
     pt::UI::Translator& translator = pt::UI::Translator::GetInstance();
     translator.LoadDatabase(env->GetCoreDbFilePath());
     translator.SetLocale(
         cfg->Get<std::string>("locale_name")
             .value_or(env->GetCurrentLocale()));
+    
+    // Load theme
+    pt::UI::Theming &theming = pt::UI::Theming::GetInstance();
+    theming.LoadThemes();
+    theming.SetCurrentTheme(cfg->Get<std::string>("theme_id").value_or("light"));
+    if (theming.GetMSWDarkMode())
+    {
+      wxApp::MSWEnableDarkMode();
+    }
 
     // Load plugins
     for (auto& p : fs::directory_iterator(env->GetApplicationPath()))

@@ -2,6 +2,8 @@
 
 #include <wx/dcbuffer.h>
 
+#include "../theming/theming.hpp"
+
 namespace lt = libtorrent;
 using pt::UI::Widgets::PieceProgressBar;
 
@@ -46,7 +48,14 @@ void PieceProgressBar::RenderProgress(wxDC& dc)
         wxMemoryDC memDC;
 
         memDC.SelectObject(prg);
-        memDC.SetBrush(*wxWHITE);
+        if (pt::UI::Theming::GetInstance().GetMSWDarkMode())
+        {
+            memDC.SetBrush(wxColor(24, 24, 24));
+        }
+        else
+        {
+            memDC.SetBrush(*wxWHITE);
+        }
         memDC.SetPen(darkBorder);
         memDC.DrawRectangle({ 0, 0 }, prg.GetSize());
 
@@ -71,7 +80,14 @@ void PieceProgressBar::RenderProgress(wxDC& dc)
     }
     else
     {
-        dc.SetBrush(*wxWHITE);
+        if (pt::UI::Theming::GetInstance().GetMSWDarkMode())
+        {
+            dc.SetBrush(wxColor(24, 24, 24));
+        }
+        else
+        {
+            dc.SetBrush(*wxWHITE);
+        }
         dc.SetPen(wxColor(190, 190, 190));
         dc.DrawRectangle(this->GetClientRect());
     }
