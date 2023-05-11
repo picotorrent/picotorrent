@@ -6,6 +6,8 @@
 #include <vector>
 #include <wx/colour.h>
 
+#define getBGCol() pt::UI::Theming::GetInstance().GetBackgroundColor()
+
 namespace pt
 {
   namespace UI
@@ -24,6 +26,7 @@ namespace pt
       void operator=(Theming const &) = delete;
 
       bool GetMSWDarkMode();
+      wxColour GetBackgroundColor();
       std::string GetCurrentTheme();
       std::vector<Theme> GetThemes();
       void LoadThemes();

@@ -33,8 +33,25 @@ bool Theming::GetMSWDarkMode()
   return dark_mode;
 }
 
+wxColour Theming::GetBackgroundColor(){
+  return GetMSWDarkMode() ? wxColour(32,32,32) : wxColour(255,255,255);
+}
+
 void Theming::LoadThemes()
 {
+  bool systemUsesDarkTheme = false;
+  HKEY hKey = 0;
+  DWORD dwValue = 1;
+  DWORD dwBufSize = sizeof(dwValue);
+  if (RegOpenKeyEx(HKEY_CURRENT_USER, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"), 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS)
+  {
+    RegQueryValueEx(hKey, TEXT("AppsUseLightTheme"), NULL, NULL, (LPBYTE)&dwValue, &dwBufSize);
+  }
+  if (dwValue == 0)
+  {
+    systemUsesDarkTheme = true;
+  }
+
   m_themes = {{
                   "light",
                   {"light",
@@ -44,7 +61,11 @@ void Theming::LoadThemes()
               {"dark",
                {"dark",
                 "dark_mode",
-                true}}};
+                true}},
+              {"system",
+               {"system",
+                "system_sets_theme_mode",
+                systemUsesDarkTheme}}};
 }
 
 std::vector<Theming::Theme> Theming::GetThemes()

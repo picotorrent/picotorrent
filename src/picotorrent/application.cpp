@@ -114,7 +114,7 @@ bool Application::OnInit()
     // Load theme
     pt::UI::Theming &theming = pt::UI::Theming::GetInstance();
     theming.LoadThemes();
-    theming.SetCurrentTheme(cfg->Get<std::string>("theme_id").value_or("light"));
+    theming.SetCurrentTheme(cfg->Get<std::string>("theme_id").value_or("system")); // Sets default to 'System'.
     if (theming.GetMSWDarkMode())
     {
       wxApp::MSWEnableDarkMode();

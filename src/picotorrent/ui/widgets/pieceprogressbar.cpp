@@ -48,14 +48,7 @@ void PieceProgressBar::RenderProgress(wxDC& dc)
         wxMemoryDC memDC;
 
         memDC.SelectObject(prg);
-        if (pt::UI::Theming::GetInstance().GetMSWDarkMode())
-        {
-            memDC.SetBrush(wxColor(24, 24, 24));
-        }
-        else
-        {
-            memDC.SetBrush(*wxWHITE);
-        }
+        memDC.SetBrush(getBGCol());
         memDC.SetPen(darkBorder);
         memDC.DrawRectangle({ 0, 0 }, prg.GetSize());
 
@@ -80,14 +73,7 @@ void PieceProgressBar::RenderProgress(wxDC& dc)
     }
     else
     {
-        if (pt::UI::Theming::GetInstance().GetMSWDarkMode())
-        {
-            dc.SetBrush(wxColor(24, 24, 24));
-        }
-        else
-        {
-            dc.SetBrush(*wxWHITE);
-        }
+        dc.SetBrush(getBGCol());
         dc.SetPen(wxColor(190, 190, 190));
         dc.DrawRectangle(this->GetClientRect());
     }

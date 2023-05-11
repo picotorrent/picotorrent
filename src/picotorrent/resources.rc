@@ -5,6 +5,7 @@ FileIcon ICON "..\\..\\res\\file.ico"
 
 // Icons
 ICO_TERMINAL ICON "..\\..\\res\\terminal.ico"
+ICO_TERMINAL_DARK_THEME ICON "..\\..\\res\\terminal-dark-theme.ico"
 
 // SQL migrations
 20181208115043_create_setting_table             DBMIGRATION "..\\..\\res\\dbmigrations\\20181208115043_create_setting_table.sql"

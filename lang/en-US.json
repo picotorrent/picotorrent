@@ -230,5 +230,6 @@
     "exported_magnet_link_s": "Exported magnet link(s)",
     "theme": "Theme",
     "light_mode": "Light",
-    "dark_mode": "Dark"
+    "dark_mode": "Dark",
+    "system_sets_theme_mode":"System"
 }

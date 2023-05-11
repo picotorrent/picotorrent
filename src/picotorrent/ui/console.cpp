@@ -4,6 +4,7 @@
 #include "ids.hpp"
 #include "models/torrentlistmodel.hpp"
 #include "torrentlistview.hpp"
+#include "theming/theming.hpp"
 
 using pt::UI::Console;
 
@@ -17,7 +18,7 @@ Console::Console(wxWindow* parent, wxWindowID id, pt::UI::Models::TorrentListMod
     m_input->SetFont(
         wxFont(9, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Consolas")));
 
-    wxIcon funnel(L"ICO_TERMINAL", wxBITMAP_TYPE_ICO_RESOURCE, FromDIP(16), FromDIP(16));
+    wxIcon funnel(pt::UI::Theming::GetInstance().GetMSWDarkMode() ? L"ICO_TERMINAL_DARK_THEME" : L"ICO_TERMINAL", wxBITMAP_TYPE_ICO_RESOURCE, FromDIP(16), FromDIP(16));
 
     int i = FromDIP(16);
     printf("%d", i);
@@ -26,7 +27,7 @@ Console::Console(wxWindow* parent, wxWindowID id, pt::UI::Models::TorrentListMod
     sizer->Add(new wxStaticBitmap(this, wxID_ANY, funnel), 0, wxALIGN_CENTER | wxLEFT, FromDIP(4));
     sizer->Add(m_input, 1, wxEXPAND | wxALL, FromDIP(4));
 
-    this->SetBackgroundColour(*wxWHITE);
+    this->SetBackgroundColour(getBGCol());
     this->SetSizerAndFit(sizer);
 
     this->Bind(
