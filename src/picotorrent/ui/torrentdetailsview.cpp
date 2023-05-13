@@ -15,7 +15,7 @@ using pt::UI::TorrentDetailsView;
 TorrentDetailsView::TorrentDetailsView(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Core::Configuration> cfg)
     : wxNotebook(parent, id),
     m_cfg(cfg),
-    m_overview(new TorrentDetailsOverviewPanel(this, wxID_ANY)),
+    m_overview(new TorrentDetailsOverviewPanel(this, wxID_ANY, cfg)),
     m_files(new TorrentDetailsFilesPanel(this, wxID_ANY)),
     m_peers(new TorrentDetailsPeersPanel(this, wxID_ANY)),
     m_trackers(new TorrentDetailsTrackersPanel(this, wxID_ANY))
@@ -52,7 +52,8 @@ void TorrentDetailsView::ReloadConfiguration()
 
     m_overview->UpdateView(
         cols.value_or(2),
-        showPieceProgress.value_or(true));
+        showPieceProgress.value_or(true),
+        m_cfg);
 }
 
 void TorrentDetailsView::Reset()

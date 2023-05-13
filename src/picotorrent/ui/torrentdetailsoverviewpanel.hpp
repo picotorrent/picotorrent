@@ -5,6 +5,8 @@
 #include <wx/wx.h>
 #endif
 
+#include "../core/configuration.hpp"
+
 class wxFlexGridSizer;
 
 namespace pt::UI::Widgets { class PieceProgressBar; }
@@ -20,11 +22,11 @@ namespace UI
     class TorrentDetailsOverviewPanel : public wxScrolledWindow
     {
     public:
-        TorrentDetailsOverviewPanel(wxWindow* parent, wxWindowID id, int cols = 2, bool showPieceProgress = true);
+        TorrentDetailsOverviewPanel(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Core::Configuration> cfg,int cols = 2, bool showPieceProgress = true);
 
         void Refresh(BitTorrent::TorrentHandle* torrent);
         void Reset();
-        void UpdateView(int cols, bool showPieceProgress);
+        void UpdateView(int cols, bool showPieceProgress, std::shared_ptr<pt::Core::Configuration> cfg);
 
     private:
         wxFlexGridSizer* m_sizer;

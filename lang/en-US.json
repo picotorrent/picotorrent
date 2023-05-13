@@ -229,7 +229,6 @@
     "torrent_file_s": "Torrent file(s)",
     "exported_magnet_link_s": "Exported magnet link(s)",
     "theme": "Theme",
-    "light_mode": "Light",
-    "dark_mode": "Dark",
-    "system_sets_theme_mode":"System"
+    "light_theme": "Light",
+    "follow_system_theme": "System"
 }

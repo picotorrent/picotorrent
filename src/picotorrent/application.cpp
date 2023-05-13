@@ -18,8 +18,6 @@
 #include "ui/mainframe.hpp"
 #include "ui/translator.hpp"
 
-#include "ui/theming/theming.hpp"
-
 using json = nlohmann::json;
 using pt::Application;
 
@@ -112,10 +110,7 @@ bool Application::OnInit()
             .value_or(env->GetCurrentLocale()));
     
     // Load theme
-    pt::UI::Theming &theming = pt::UI::Theming::GetInstance();
-    theming.LoadThemes();
-    theming.SetCurrentTheme(cfg->Get<std::string>("theme_id").value_or("system")); // Sets default to 'System'.
-    if (theming.GetMSWDarkMode())
+    if (cfg->IsDarkMode())
     {
       wxApp::MSWEnableDarkMode();
     }

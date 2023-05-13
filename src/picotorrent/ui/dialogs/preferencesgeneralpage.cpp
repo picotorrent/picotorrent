@@ -9,8 +9,6 @@
 #include "../../core/utils.hpp"
 #include "../translator.hpp"
 
-#include "../theming/theming.hpp"
-
 struct AutoRunKey
 {
     AutoRunKey()
@@ -149,15 +147,14 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
             m_language->SetSelection(pos);
         }
     }
-
-    for (auto &theme : pt::UI::Theming::GetInstance().GetThemes())
+    
+    m_theme->Append(i18n("follow_system_theme"), new ClientData<std::string>("system"));
+    m_theme->Append(i18n("light_theme"), new ClientData<std::string>("light"));
+    if (m_cfg->Get<std::string>("theme_id").value_or("system") == "light")
     {
-      int pos = m_theme->Append(i18n(theme.i18n_name), new ClientData<std::string>(theme.id));
-
-      if (theme.id == Theming::GetInstance().GetCurrentTheme())
-      {
-        m_theme->SetSelection(pos);
-      }
+        m_theme->SetSelection(1);
+    } else {
+        m_theme->SetSelection(0);
     }
 
     m_labelColor->SetValue(m_cfg->Get<bool>("use_label_as_list_bgcolor").value());
