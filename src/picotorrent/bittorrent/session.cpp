@@ -142,7 +142,58 @@ static lt::settings_pack getSettingsPack(std::shared_ptr<pt::Core::Configuration
     settings.set_int(lt::settings_pack::active_lsd_limit, cfg->Get<int>("libtorrent.active_lsd_limit").value());
     settings.set_int(lt::settings_pack::active_seeds, cfg->Get<int>("libtorrent.active_seeds").value());
     settings.set_int(lt::settings_pack::active_tracker_limit, cfg->Get<int>("libtorrent.active_tracker_limit").value());
+    settings.set_int(lt::settings_pack::allowed_fast_set_size, cfg->Get<int>("libtorrent.allowed_fast_set_size").value());
+    settings.set_int(lt::settings_pack::auto_manage_interval, cfg->Get<int>("libtorrent.auto_manage_interval").value());
     settings.set_int(lt::settings_pack::connections_limit, cfg->Get<int>("libtorrent.connections_limit").value());
+    settings.set_int(lt::settings_pack::connection_speed, cfg->Get<int>("libtorrent.connection_speed").value());
+    settings.set_int(lt::settings_pack::inactive_down_rate, cfg->Get<int>("libtorrent.inactive_down_rate").value());
+    settings.set_int(lt::settings_pack::inactive_up_rate, cfg->Get<int>("libtorrent.inactive_up_rate").value());
+    settings.set_int(lt::settings_pack::seed_time_ratio_limit, cfg->Get<int>("libtorrent.seed_time_ratio_limit").value());
+    settings.set_int(lt::settings_pack::share_ratio_limit, cfg->Get<int>("libtorrent.share_ratio_limit").value());
+
+    // Misc
+    settings.set_bool(lt::settings_pack::allow_multiple_connections_per_ip, cfg->Get<bool>("libtorrent.allow_multiple_connections_per_ip").value());
+    settings.set_bool(lt::settings_pack::auto_manage_prefer_seeds, cfg->Get<bool>("libtorrent.auto_manage_prefer_seeds").value());
+    settings.set_int(lt::settings_pack::auto_scrape_interval, cfg->Get<int>("libtorrent.auto_scrape_interval").value());
+    settings.set_int(lt::settings_pack::auto_scrape_min_interval, cfg->Get<int>("libtorrent.auto_scrape_min_interval").value());
+    settings.set_int(lt::settings_pack::checking_mem_usage, cfg->Get<int>("libtorrent.checking_mem_usage").value());
+    settings.set_int(lt::settings_pack::choking_algorithm, cfg->Get<int>("libtorrent.choking_algorithm").value());
+    settings.set_int(lt::settings_pack::seed_choking_algorithm, cfg->Get<int>("libtorrent.seed_choking_algorithm").value());
+    settings.set_int(lt::settings_pack::disk_write_mode, cfg->Get<int>("libtorrent.disk_write_mode").value());
+    settings.set_bool(lt::settings_pack::dont_count_slow_torrents, cfg->Get<bool>("libtorrent.dont_count_slow_torrents").value());
+    settings.set_int(lt::settings_pack::file_pool_size, cfg->Get<int>("libtorrent.file_pool_size").value());
+    settings.set_int(lt::settings_pack::hashing_threads, cfg->Get<int>("libtorrent.hashing_threads").value());
+    settings.set_int(lt::settings_pack::inactivity_timeout, cfg->Get<int>("libtorrent.inactivity_timeout").value());
+    settings.set_bool(lt::settings_pack::incoming_starts_queued_torrents, cfg->Get<bool>("libtorrent.incoming_starts_queued_torrents").value());
+    settings.set_int(lt::settings_pack::initial_picker_threshold, cfg->Get<int>("libtorrent.initial_picker_threshold").value());
+    settings.set_int(lt::settings_pack::listen_queue_size, cfg->Get<int>("libtorrent.listen_queue_size").value());
+    settings.set_int(lt::settings_pack::max_allowed_in_request_queue, cfg->Get<int>("libtorrent.max_allowed_in_request_queue").value());
+    settings.set_int(lt::settings_pack::max_failcount, cfg->Get<int>("libtorrent.max_failcount").value());
+    settings.set_int(lt::settings_pack::max_out_request_queue, cfg->Get<int>("libtorrent.max_out_request_queue").value());
+    settings.set_int(lt::settings_pack::max_peer_recv_buffer_size, cfg->Get<int>("libtorrent.max_peer_recv_buffer_size").value());
+    settings.set_int(lt::settings_pack::max_queued_disk_bytes, cfg->Get<int>("libtorrent.max_queued_disk_bytes").value());
+    settings.set_int(lt::settings_pack::max_rejects, cfg->Get<int>("libtorrent.max_rejects").value());
+    settings.set_int(lt::settings_pack::min_reconnect_time, cfg->Get<int>("libtorrent.min_reconnect_time").value());
+    settings.set_int(lt::settings_pack::mixed_mode_algorithm, cfg->Get<int>("libtorrent.mixed_mode_algorithm").value());
+    settings.set_int(lt::settings_pack::mmap_file_size_cutoff, cfg->Get<int>("libtorrent.mmap_file_size_cutoff").value());
+    settings.set_bool(lt::settings_pack::no_atime_storage, cfg->Get<bool>("libtorrent.no_atime_storage").value());
+    settings.set_int(lt::settings_pack::peer_timeout, cfg->Get<int>("libtorrent.peer_timeout").value());
+    settings.set_int(lt::settings_pack::peer_turnover, cfg->Get<int>("libtorrent.peer_turnover").value());
+    settings.set_int(lt::settings_pack::peer_turnover_cutoff, cfg->Get<int>("libtorrent.peer_turnover_cutoff").value());
+    settings.set_int(lt::settings_pack::peer_turnover_interval, cfg->Get<int>("libtorrent.peer_turnover_interval").value());
+    settings.set_int(lt::settings_pack::predictive_piece_announce, cfg->Get<int>("libtorrent.predictive_piece_announce").value());
+    settings.set_int(lt::settings_pack::rate_choker_initial_threshold, cfg->Get<int>("libtorrent.rate_choker_initial_threshold").value());
+    settings.set_int(lt::settings_pack::request_timeout, cfg->Get<int>("libtorrent.request_timeout").value());
+    settings.set_int(lt::settings_pack::send_buffer_low_watermark, cfg->Get<int>("libtorrent.send_buffer_low_watermark").value());
+    settings.set_int(lt::settings_pack::send_buffer_watermark, cfg->Get<int>("libtorrent.send_buffer_watermark").value());
+    settings.set_int(lt::settings_pack::send_buffer_watermark_factor, cfg->Get<int>("libtorrent.send_buffer_watermark_factor").value());
+    settings.set_int(lt::settings_pack::send_not_sent_low_watermark, cfg->Get<int>("libtorrent.send_not_sent_low_watermark").value());
+    settings.set_bool(lt::settings_pack::strict_end_game_mode, cfg->Get<bool>("libtorrent.strict_end_game_mode").value());
+    settings.set_int(lt::settings_pack::suggest_mode, cfg->Get<int>("libtorrent.suggest_mode").value());
+    settings.set_int(lt::settings_pack::torrent_connect_boost, cfg->Get<int>("libtorrent.torrent_connect_boost").value());
+    settings.set_int(lt::settings_pack::unchoke_slots_limit, cfg->Get<int>("libtorrent.unchoke_slots_limit").value());
+    settings.set_bool(lt::settings_pack::use_parole_mode, cfg->Get<bool>("libtorrent.use_parole_mode").value());
+    settings.set_int(lt::settings_pack::whole_pieces_threshold, cfg->Get<int>("libtorrent.whole_pieces_threshold").value());
 
     // Tracker things
     settings.set_bool(lt::settings_pack::announce_to_all_tiers, cfg->Get<bool>("libtorrent.announce_to_all_tiers").value());
