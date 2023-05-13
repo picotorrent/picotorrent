@@ -153,7 +153,9 @@ PreferencesGeneralPage::PreferencesGeneralPage(wxWindow* parent, std::shared_ptr
     if (m_cfg->Get<std::string>("theme_id").value_or("system") == "light")
     {
         m_theme->SetSelection(1);
-    } else {
+    }
+    else
+    {
         m_theme->SetSelection(0);
     }
 
@@ -223,11 +225,11 @@ void PreferencesGeneralPage::Save(bool* restartRequired)
 
     if (themeData != nullptr)
     {
-      if (themeData->GetValue() != m_cfg->Get<std::string>("theme_id"))
+        if (themeData->GetValue() != m_cfg->Get<std::string>("theme_id"))
         {
-          *restartRequired = true;
+            *restartRequired = true;
         }
-      m_cfg->Set("theme_id", themeData->GetValue());
+        m_cfg->Set("theme_id", themeData->GetValue());
     }
 
     if (startPosData != nullptr)

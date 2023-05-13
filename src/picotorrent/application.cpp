@@ -112,7 +112,7 @@ bool Application::OnInit()
     // Load theme
     if (cfg->IsDarkMode())
     {
-      wxApp::MSWEnableDarkMode();
+        wxApp::MSWEnableDarkMode();
     }
 
     // Load plugins

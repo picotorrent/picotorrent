@@ -227,6 +227,7 @@ bool Configuration::IsSystemDarkMode()
     {
         RegQueryValueEx(hKey, TEXT("AppsUseLightTheme"), NULL, NULL, (LPBYTE)&dwValue, &dwBufSize);
     }
+    RegCloseKey(hKey);
     if (dwValue == 0)
     {
         systemUsesDarkTheme = true;
@@ -236,10 +237,7 @@ bool Configuration::IsSystemDarkMode()
 
 bool Configuration::IsDarkMode()
 {
-    auto val = Configuration::Get<std::string>("theme_id").value_or("system");
-
-    if (val == "light"){
-        return false;
-    }
-    return Configuration::IsSystemDarkMode();
+    return Configuration::Get<std::string>("theme_id").value_or("system") == "light"
+        ? false
+        : Configuration::IsSystemDarkMode();
 }

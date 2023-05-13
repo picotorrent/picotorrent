@@ -16,7 +16,7 @@ namespace pt::UI::Widgets
     class PieceProgressBar : public wxPanel
     {
     public:
-        PieceProgressBar(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Core::Configuration> cfg, libtorrent::typed_bitfield<libtorrent::piece_index_t> field = {});
+        PieceProgressBar(wxWindow* parent, wxWindowID id, bool isDarkMode, libtorrent::typed_bitfield<libtorrent::piece_index_t> field = {});
         void UpdateBitfield(libtorrent::typed_bitfield<libtorrent::piece_index_t> const& field);
 
     protected:
@@ -26,7 +26,7 @@ namespace pt::UI::Widgets
 
     private:
         void RenderProgress(wxDC& dc);
-        wxColour BGColour;
+        wxColour m_bgColor;
         libtorrent::typed_bitfield<libtorrent::piece_index_t> m_bitfield;
     };
 }

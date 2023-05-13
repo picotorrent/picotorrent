@@ -22,11 +22,11 @@ namespace UI
     class TorrentDetailsOverviewPanel : public wxScrolledWindow
     {
     public:
-        TorrentDetailsOverviewPanel(wxWindow* parent, wxWindowID id, std::shared_ptr<pt::Core::Configuration> cfg,int cols = 2, bool showPieceProgress = true);
+        TorrentDetailsOverviewPanel(wxWindow* parent, wxWindowID id, bool isDarkMode, int cols = 2, bool showPieceProgress = true);
 
         void Refresh(BitTorrent::TorrentHandle* torrent);
         void Reset();
-        void UpdateView(int cols, bool showPieceProgress, std::shared_ptr<pt::Core::Configuration> cfg);
+        void UpdateView(int cols, bool showPieceProgress);
 
     private:
         wxFlexGridSizer* m_sizer;
@@ -44,6 +44,7 @@ namespace UI
         wxStaticText* m_lastUpload;
         wxStaticText* m_totalDownload;
         wxStaticText* m_totalUpload;
+        bool m_isDarkMode;
     };
 }
 }
