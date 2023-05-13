@@ -226,8 +226,8 @@ bool Configuration::IsSystemDarkMode()
     if (RegOpenKeyEx(HKEY_CURRENT_USER, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"), 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS)
     {
         RegQueryValueEx(hKey, TEXT("AppsUseLightTheme"), NULL, NULL, (LPBYTE)&dwValue, &dwBufSize);
+        RegCloseKey(hKey);
     }
-    RegCloseKey(hKey);
     if (dwValue == 0)
     {
         systemUsesDarkTheme = true;
