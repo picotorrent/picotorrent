@@ -5,6 +5,8 @@
 #include <wx/wx.h>
 #endif
 
+#include "../core/configuration.hpp"
+
 class wxFlexGridSizer;
 
 namespace pt::UI::Widgets { class PieceProgressBar; }
@@ -20,7 +22,7 @@ namespace UI
     class TorrentDetailsOverviewPanel : public wxScrolledWindow
     {
     public:
-        TorrentDetailsOverviewPanel(wxWindow* parent, wxWindowID id, int cols = 2, bool showPieceProgress = true);
+        TorrentDetailsOverviewPanel(wxWindow* parent, wxWindowID id, bool isDarkMode, int cols = 2, bool showPieceProgress = true);
 
         void Refresh(BitTorrent::TorrentHandle* torrent);
         void Reset();
@@ -42,6 +44,7 @@ namespace UI
         wxStaticText* m_lastUpload;
         wxStaticText* m_totalDownload;
         wxStaticText* m_totalUpload;
+        bool m_isDarkMode;
     };
 }
 }

@@ -7,6 +7,8 @@
 #include "database.hpp"
 #include "environment.hpp"
 
+#include <Windows.h>
+
 namespace fs = std::filesystem;
 
 using pt::Core::Configuration;
@@ -213,4 +215,29 @@ void Configuration::UpsertListenInterface(Configuration::ListenInterface const& 
         stmt->Bind(3, iface.id);
         stmt->Execute();
     }
+}
+
+bool Configuration::IsSystemDarkMode()
+{
+    bool systemUsesDarkTheme = false;
+    HKEY hKey = 0;
+    DWORD dwValue = 1;
+    DWORD dwBufSize = sizeof(dwValue);
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"), 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS)
+    {
+        RegQueryValueEx(hKey, TEXT("AppsUseLightTheme"), NULL, NULL, (LPBYTE)&dwValue, &dwBufSize);
+        RegCloseKey(hKey);
+    }
+    if (dwValue == 0)
+    {
+        systemUsesDarkTheme = true;
+    }
+    return systemUsesDarkTheme;
+}
+
+bool Configuration::IsDarkMode()
+{
+    return Configuration::Get<std::string>("theme_id").value_or("system") == "light"
+        ? false
+        : Configuration::IsSystemDarkMode();
 }
