@@ -1,17 +1,21 @@
 #include "pieceprogressbar.hpp"
 
+#include "../../core/configuration.hpp"
+
 #include <wx/dcbuffer.h>
+#include <wx/colour.h>
 
 namespace lt = libtorrent;
 using pt::UI::Widgets::PieceProgressBar;
 
-PieceProgressBar::PieceProgressBar(wxWindow* parent, wxWindowID id, lt::typed_bitfield<lt::piece_index_t> field)
+PieceProgressBar::PieceProgressBar(wxWindow* parent, wxWindowID id, bool isDarkMode, lt::typed_bitfield<lt::piece_index_t> field)
     : wxPanel(parent, id, wxDefaultPosition, wxSize(-1, parent->FromDIP(15)), wxTAB_TRAVERSAL | wxNO_BORDER | wxBG_STYLE_PAINT),
     m_bitfield(field)
 {
     Connect(wxEVT_ERASE_BACKGROUND, wxEraseEventHandler(PieceProgressBar::OnEraseBackground));
     Connect(wxEVT_PAINT, wxPaintEventHandler(PieceProgressBar::OnPaint));
     Connect(wxEVT_SIZE, wxSizeEventHandler(PieceProgressBar::OnSize));
+    m_bgColor = isDarkMode ? wxColour(32,32,32) : wxColour(255,255,255);
 }
 
 void PieceProgressBar::UpdateBitfield(lt::typed_bitfield<lt::piece_index_t> const& field)
@@ -46,7 +50,7 @@ void PieceProgressBar::RenderProgress(wxDC& dc)
         wxMemoryDC memDC;
 
         memDC.SelectObject(prg);
-        memDC.SetBrush(*wxWHITE);
+        memDC.SetBrush(m_bgColor);
         memDC.SetPen(darkBorder);
         memDC.DrawRectangle({ 0, 0 }, prg.GetSize());
 
@@ -71,7 +75,7 @@ void PieceProgressBar::RenderProgress(wxDC& dc)
     }
     else
     {
-        dc.SetBrush(*wxWHITE);
+        dc.SetBrush(m_bgColor);
         dc.SetPen(wxColor(190, 190, 190));
         dc.DrawRectangle(this->GetClientRect());
     }

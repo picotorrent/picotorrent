@@ -5,6 +5,7 @@ FileIcon ICON "..\\..\\res\\file.ico"
 
 // Icons
 ICO_TERMINAL ICON "..\\..\\res\\terminal.ico"
+ICO_TERMINAL_DARK_THEME ICON "..\\..\\res\\terminal-dark-theme.ico"
 
 // SQL migrations
 20181208115043_create_setting_table             DBMIGRATION "..\\..\\res\\dbmigrations\\20181208115043_create_setting_table.sql"
@@ -30,6 +31,7 @@ ICO_TERMINAL ICON "..\\..\\res\\terminal.ico"
 20201107234213_setup_filters                    DBMIGRATION "..\\..\\res\\dbmigrations\\20201107234213_setup_filters.sql"
 20201219222232_insert_connections_limit         DBMIGRATION "..\\..\\res\\dbmigrations\\20201219222232_insert_connections_limit.sql"
 20201227195100_insert_ipfilter_settings         DBMIGRATION "..\\..\\res\\dbmigrations\\20201227195100_insert_ipfilter_settings.sql"
+20220508103321_insert_theme_id                  DBMIGRATION "..\\..\\res\\dbmigrations\\20220508103321_insert_theme_id.sql"
 20230511023104_extend_advanced_settings         DBMIGRATION "..\\..\\res\\dbmigrations\\20230511023104_extend_advanced_settings.sql"
 
 VS_VERSION_INFO VERSIONINFO

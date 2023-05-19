@@ -67,7 +67,7 @@ MainFrame::MainFrame(std::shared_ptr<pt::Core::Environment> env, std::shared_ptr
     m_menuItemFilters(nullptr),
     m_ipc(std::make_unique<IPC::Server>(this))
 {
-    m_console = new Console(this, wxID_ANY, m_torrentListModel);
+    m_console = new Console(this, wxID_ANY, m_torrentListModel, m_cfg->IsDarkMode());
 
     m_splitter->SetWindowStyleFlag(
         m_splitter->GetWindowStyleFlag() | wxSP_LIVE_UPDATE);

@@ -103,6 +103,10 @@ namespace Core
 
         std::vector<DhtBootstrapNode> GetDhtBootstrapNodes();
 
+        // Dark mode
+        bool IsDarkMode();
+        bool IsSystemDarkMode();
+        
         std::vector<Filter> GetFilters();
         std::optional<Filter> GetFilterById(int id);
 

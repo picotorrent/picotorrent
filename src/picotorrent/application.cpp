@@ -102,11 +102,18 @@ bool Application::OnInit()
 
     auto cfg = std::make_shared<pt::Core::Configuration>(db);
 
+    // Load current locale
     pt::UI::Translator& translator = pt::UI::Translator::GetInstance();
     translator.LoadDatabase(env->GetCoreDbFilePath());
     translator.SetLocale(
         cfg->Get<std::string>("locale_name")
             .value_or(env->GetCurrentLocale()));
+    
+    // Load theme
+    if (cfg->IsDarkMode())
+    {
+        wxApp::MSWEnableDarkMode();
+    }
 
     // Load plugins
     for (auto& p : fs::directory_iterator(env->GetApplicationPath()))

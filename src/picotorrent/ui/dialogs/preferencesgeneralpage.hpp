@@ -30,6 +30,7 @@ namespace Dialogs
         std::shared_ptr<Core::Configuration> m_cfg;
 
         wxChoice* m_language;
+        wxChoice* m_theme;
         wxCheckBox* m_labelColor;
         wxCheckBox* m_skipAddTorrentDialog;
         wxCheckBox* m_autoStart;
