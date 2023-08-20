@@ -25,9 +25,7 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 
 ## Download for Windows
 
-[![](https://img.shields.io/badge/Installation-EF2D5E?style=for-the-badge&logoColor=white&logo=DocuSign)](https://github.com/picotorrent/picotorrent/releases/download/v0.25.0/PicoTorrent-0.25.0-x64.exe)
-
-[![Download zip](https://custom-icon-badges.demolab.com/badge/-Download-blue?style=for-the-badge&logo=download&logoColor=white "Download zip")](https://github.com/picotorrent/picotorrent/releases/download/v0.25.0/PicoTorrent-0.25.0-x64.exe)
+[![Download zip](https://custom-icon-badges.demolab.com/badge/-Download-blue?style=for-the-badge&logo=download&logoColor=white "Download zip")](https://github.com/picotorrent/picotorrent/releases)
 
 
 ## Building PicoTorrent
