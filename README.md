@@ -23,6 +23,11 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 *The portable version of PicoTorrent requires manual installation of [the Microsoft Visual C++ Redistributable for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/).*
 
 
+## Download for Windows
+
+[![Download zip](https://custom-icon-badges.demolab.com/badge/-Download-blue?style=for-the-badge&logo=download&logoColor=white "Download zip")](https://github.com/picotorrent/picotorrent/releases)
+
+
 ## Building PicoTorrent
 
 To successfully build PicoTorrent, you need the following libraries and
