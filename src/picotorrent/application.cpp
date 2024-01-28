@@ -10,7 +10,7 @@
 /*
 #include "api/libpico_impl.hpp"
 */
-#include "crashpadinitializer.hpp"
+//#include "crashpadinitializer.hpp"
 #include "persistencemanager.hpp"
 #include "core/configuration.hpp"
 #include "core/database.hpp"

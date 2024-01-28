@@ -8,6 +8,7 @@
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/torrent_info.hpp>
+#include <utility>
 #include <wx/persist.h>
 #include <wx/persist/toplevel.h>
 #include <wx/sizer.h>
@@ -52,12 +53,12 @@ const char* WindowTitle = "PicoTorrent";
 
 #define LABEL_ICON_SIZE 16
 
-MainFrame::MainFrame(std::shared_ptr<pt::Core::Environment> env, std::shared_ptr<pt::Core::Database> db, std::shared_ptr<pt::Core::Configuration> cfg, pt::CommandLineOptions const& options)
+MainFrame::MainFrame(const std::shared_ptr<pt::Core::Environment>& env, std::shared_ptr<pt::Core::Database> db, std::shared_ptr<pt::Core::Configuration> cfg, pt::CommandLineOptions  options)
     : wxFrame(nullptr, wxID_ANY, WindowTitle, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, "MainFrame"),
     m_env(env),
     m_db(db),
     m_cfg(cfg),
-    m_options(options),
+    m_options(std::move(options)),
     m_session(new BitTorrent::Session(this, db, cfg, env)),
     m_splitter(new wxSplitterWindow(this, ptID_MAIN_SPLITTER)),
     m_statusBar(new StatusBar(this)),

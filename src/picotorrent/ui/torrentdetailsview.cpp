@@ -42,7 +42,7 @@ void TorrentDetailsView::Refresh(std::map<lt::info_hash_t, pt::BitTorrent::Torre
     m_overview->Refresh(torrents.begin()->second);
     m_files->Refresh(torrents.begin()->second);
     m_peers->Refresh(torrents.begin()->second);
-    m_trackers->Refresh(torrents.begin()->second);
+   // m_trackers->Refresh(torrents.begin()->second);
 }
 
 void TorrentDetailsView::ReloadConfiguration()

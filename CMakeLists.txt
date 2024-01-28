@@ -232,8 +232,6 @@ target_link_libraries(
     -lX11
 )
 
-#set_property(TARGET PicoTorrent PROPERTY ENABLE_EXPORTS 1)
-
 # Plugins
 #add_library(
 #    Plugin_Updater

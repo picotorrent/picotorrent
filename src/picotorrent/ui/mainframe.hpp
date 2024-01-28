@@ -55,10 +55,10 @@ namespace Models
     {
     public:
         MainFrame(
-            std::shared_ptr<Core::Environment> env,
+            const std::shared_ptr<Core::Environment>& env,
             std::shared_ptr<Core::Database> db,
             std::shared_ptr<Core::Configuration> cfg,
-            pt::CommandLineOptions const& options);
+            pt::CommandLineOptions  options);
 
         virtual ~MainFrame();
 
@@ -100,14 +100,14 @@ namespace Models
         std::unique_ptr<IPC::Server> m_ipc;
         pt::CommandLineOptions m_options;
 
-        wxMenu* m_viewMenu;
-        wxMenu* m_filtersMenu;
-        wxMenu* m_labelsMenu;
-        wxMenuItem* m_menuItemLabels;
+        wxMenu* m_viewMenu{};
+        wxMenu* m_filtersMenu{};
+        wxMenu* m_labelsMenu{};
+        wxMenuItem* m_menuItemLabels{};
         wxMenuItem* m_menuItemFilters;
-        wxMenuItem* m_menuItemDetailsPanel;
-        wxMenuItem* m_menuItemConsoleInput;
-        wxMenuItem* m_menuItemStatusBar;
+        wxMenuItem* m_menuItemDetailsPanel{};
+        wxMenuItem* m_menuItemConsoleInput{};
+        wxMenuItem* m_menuItemStatusBar{};
 
         std::unordered_set<Dialogs::AddTorrentDialog*> m_addDialogs;
         std::map<libtorrent::info_hash_t, BitTorrent::TorrentHandle*> m_selection;

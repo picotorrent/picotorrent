@@ -8,7 +8,8 @@
 
 #include <filesystem>
 #include <vector>
-
+#include <cstdlib>
+#include <iostream>
 
 #include <boost/log/trivial.hpp>
 #include <sqlite3.h>
@@ -152,6 +153,7 @@ Database::Database(std::shared_ptr<pt::Core::Environment> env)
     std::string convertedPath = Utils::toStdString(dbFile.wstring());
 
     BOOST_LOG_TRIVIAL(info) << "Loading PicoTorrent database from " << convertedPath;
+    std::cout << "Loading picotorrent database from" << convertedPath <<  std::endl;
 
     sqlite3_open(convertedPath.c_str(), &m_db);
 
@@ -278,29 +280,37 @@ std::shared_ptr<Database::Statement> Database::CreateStatement(std::string const
 
 void Database::GetKnownFolderPath(sqlite3_context* ctx, int argc, sqlite3_value** argv)
 {
-    /*if (argc > 0)
+    if (argc > 0)
     {
-        std::string folderId((const char*)sqlite3_value_text(argv[0]));
-        KNOWNFOLDERID fid = { 0 };
+        const char* folderId = (const char*)sqlite3_value_text(argv[0]);
 
-        if (folderId == "FOLDERID_Downloads")
+        if (folderId == nullptr)
         {
-            fid = FOLDERID_Downloads;
+            return;
+        }
+
+        std::string result;
+
+        if (std::string(folderId) == "FOLDERID_Downloads")
+        {
+            const char* downloadsPath = getenv("HOME");
+            if (downloadsPath != nullptr)
+            {
+                result = downloadsPath;
+                result += "/Downloads";
+            }
+            else
+            {
+                return;
+            }
         }
         else
         {
             return;
         }
 
-        PWSTR result;
-        HRESULT hr = SHGetKnownFolderPath(fid, 0, nullptr, &result);
-
-        if (SUCCEEDED(hr))
-        {
-            std::string res = Utils::toStdString(result);
-            sqlite3_result_text(ctx, res.c_str(), -1, SQLITE_TRANSIENT);
-        }
-    }*/
+        sqlite3_result_text(ctx, result.c_str(), -1, SQLITE_TRANSIENT);
+    }
 }
 
 void Database::GetUserDefaultUILanguage(sqlite3_context* ctx, int, sqlite3_value**)

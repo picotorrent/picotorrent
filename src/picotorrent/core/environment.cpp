@@ -93,7 +93,7 @@ std::string Environment::GetCurrentLocale()
     //en_US.UTF-8
 
     std::string curLocale = localeName.replace(localeName.size() - 6, localeName.size(), "");
-    return curLocale.replace(2,2, "-");
+    return curLocale.replace(2,1, "-");
 }
 
 fs::path Environment::GetDatabaseFilePath()

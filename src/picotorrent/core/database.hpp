@@ -10,9 +10,8 @@ typedef struct sqlite3_context sqlite3_context;
 typedef struct sqlite3_stmt sqlite3_stmt;
 typedef struct sqlite3_value sqlite3_value;
 
-namespace pt
-{
-namespace Core
+
+namespace pt::Core
 {
     class Environment;
 
@@ -57,4 +56,4 @@ namespace Core
         std::shared_ptr<Environment> m_env;
     };
 }
-}
+

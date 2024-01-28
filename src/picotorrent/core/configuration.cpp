@@ -17,8 +17,7 @@ Configuration::Configuration(std::shared_ptr<pt::Core::Database> db)
 }
 
 Configuration::~Configuration()
-{
-}
+= default;
 
 bool Configuration::GetValue(std::string const& key, std::string& val)
 {
@@ -29,6 +28,7 @@ bool Configuration::GetValue(std::string const& key, std::string& val)
     {
         return false;
     }
+
 
     val = stmt->GetString(0);
 

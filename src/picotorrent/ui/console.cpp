@@ -1,6 +1,6 @@
 #include "console.hpp"
 
-//#include "filters/pqltorrentfilter.hpp"
+#include "filters/pqltorrentfilter.hpp"
 #include "ids.hpp"
 #include "models/torrentlistmodel.hpp"
 #include "torrentlistview.hpp"
@@ -27,7 +27,7 @@ Console::Console(wxWindow* parent, wxWindowID id, pt::UI::Models::TorrentListMod
     sizer->Add(new wxStaticBitmap(this, wxID_ANY, funnel), 0, wxALIGN_CENTER | wxLEFT, FromDIP(4));
     sizer->Add(m_input, 1, wxEXPAND | wxALL, FromDIP(4));
 
-    this->SetBackgroundColour(*wxWHITE);
+    //this->SetBackgroundColour(*wxWHITE);
     this->SetSizerAndFit(sizer);
 
     this->Bind(
@@ -52,16 +52,16 @@ void Console::CreateFilter(std::string const& input)
     }
     else
     {
-        // std::string err;
-        // auto filter = Filters::PqlTorrentFilter::Create(input, &err);
+         std::string err;
+         auto filter = Filters::PqlTorrentFilter::Create(input, &err);
 
-        // if (!filter && !err.empty())
-        // {
-        //     wxMessageBox(err, "Filter error", wxICON_ERROR | wxOK, GetParent());
-        //     return;
-        // }
+         if (!filter && !err.empty())
+         {
+             wxMessageBox(err, "Filter error", wxICON_ERROR | wxOK, GetParent());
+             return;
+         }
 
-        // m_model->SetFilter(std::move(filter));
+         m_model->SetFilter(std::move(filter));
     }
 
     wxCommandEvent evt(ptEVT_FILTER_CHANGED);
