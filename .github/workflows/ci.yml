@@ -5,35 +5,50 @@ on:
     branches:
       - feature/**
       - master
+      - modern
+
+permissions:
+  contents: read
 
 jobs:
   build:
-    name: Build
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        arch: [x86, x64]
-        os: [windows-latest]
+    name: Build (x64)
+    runs-on: windows-latest
+
+    env:
+      VCPKG_ROOT: C:\vcpkg
+      VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          submodules: recursive
 
-      - name: Setup Git
-        run: |
-          git fetch --prune --unshallow
-          git submodule update --init --recursive
+      - name: Export vcpkg binary cache environment
+        uses: actions/github-script@v9
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
 
       - name: Restore .NET tools
         run: dotnet tool restore
 
       - name: Build
-        run: dotnet cake --platform=${{ matrix.arch }} --target=Publish --vcpkg-triplet=${{ matrix.arch }}-windows-static-md-rel
+        run: dotnet cake --platform=x64 --target=Publish --vcpkg-triplet=x64-windows-static-md-rel
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v7
         with:
-          name: PicoTorrent-${{ matrix.arch }}-CI-binaries
+          name: PicoTorrent-x64-CI-binaries
           path: |
-            build-${{ matrix.arch }}/Release/packages/PicoTorrent-*-${{ matrix.arch }}.exe
-            build-${{ matrix.arch }}/Release/packages/PicoTorrent-*-${{ matrix.arch }}.zip
-            build-${{ matrix.arch }}/Release/packages/PicoTorrent-*-${{ matrix.arch }}.symbols.zip
+            build-x64/Release/packages/PicoTorrent-*-x64.exe
+            build-x64/Release/packages/PicoTorrent-*-x64.msi
+            build-x64/Release/packages/PicoTorrent-*-x64.zip
+            build-x64/Release/packages/PicoTorrent-*-x64.symbols.zip

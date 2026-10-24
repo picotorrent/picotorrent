@@ -68,16 +68,6 @@ fs::path Environment::GetApplicationPath()
     return path;
 }
 
-std::string Environment::GetCrashpadReportUrl()
-{
-    if (const char* url = std::getenv("PICOTORRENT_CRASHPAD_URL"))
-    {
-        return url;
-    }
-
-    return "https://o314884.ingest.sentry.io/api/1794272/minidump/?sentry_key=722163e5427c4a8892d2c158b5ffe954";
-}
-
 fs::path Environment::GetCoreDbFilePath()
 {
     return GetApplicationPath() / "coredb.sqlite";

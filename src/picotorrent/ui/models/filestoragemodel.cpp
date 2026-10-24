@@ -234,16 +234,6 @@ wxIcon FileStorageModel::GetIconForFile(std::string const& fileName) const
     return UnknownIcon;
 }
 
-unsigned int FileStorageModel::GetColumnCount() const
-{
-    return Columns::_Max;
-}
-
-wxString FileStorageModel::GetColumnType(unsigned int) const
-{
-    return "string";
-}
-
 void FileStorageModel::GetValue(wxVariant &variant, const wxDataViewItem &item, unsigned int col) const
 {
     wxASSERT(item.IsOk());

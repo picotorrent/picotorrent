@@ -69,10 +69,6 @@ namespace pt::UI::Models
 
         bool GetAttrByRow(unsigned int row, unsigned int col, wxDataViewItemAttr& attr) const wxOVERRIDE;
 
-        unsigned int GetColumnCount() const wxOVERRIDE { return Columns::_Max; }
-
-        wxString GetColumnType(unsigned int column) const wxOVERRIDE;
-
         unsigned int GetCount() const wxOVERRIDE;
 
         void GetValueByRow(wxVariant& variant, unsigned row, unsigned col) const wxOVERRIDE;

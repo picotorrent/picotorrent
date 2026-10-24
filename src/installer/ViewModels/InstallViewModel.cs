@@ -1,4 +1,4 @@
-﻿using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+using WixToolset.BootstrapperApplicationApi;
 using PicoTorrentBootstrapper.Models;
 using PicoTorrentBootstrapper.Views;
 using System;
@@ -11,17 +11,17 @@ namespace PicoTorrentBootstrapper.ViewModels
 {
     public sealed class InstallViewModel : PropertyNotifyBase
     {
-        private readonly BootstrapperApplication _bootstrapper;
+        private readonly PicoBA _bootstrapper;
         private readonly MainViewModel _mainModel;
 
         private bool _isUpgrade;
         private ICommand _installCommand;
         private ICommand _launchCommand;
 
-        public InstallViewModel(BootstrapperApplication bootstrapper, MainViewModel mainModel)
+        public InstallViewModel(PicoBA bootstrapper, MainViewModel mainModel)
         {
             _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
-            _bootstrapper.ResolveSource += OnResolveSource;
+            _bootstrapper.CacheAcquireResolving += OnResolveSource;
 
             _mainModel = mainModel ?? throw new ArgumentNullException(nameof(mainModel));
             _mainModel.PropertyChanged += OnMainModelPropertyChanged;
@@ -123,7 +123,7 @@ namespace PicoTorrentBootstrapper.ViewModels
 
         private void LaunchApplication()
         {
-            var target = _bootstrapper.Engine.StringVariables["LaunchTarget"];
+            var target = _bootstrapper.Engine.GetVariableString("LaunchTarget");
             var formatted = _bootstrapper.Engine.FormatString(target);
 
             _bootstrapper.Engine.Log(LogLevel.Standard, $"Launching target: {formatted}");
@@ -147,11 +147,11 @@ namespace PicoTorrentBootstrapper.ViewModels
             }
         }
 
-        private void OnResolveSource(object sender, ResolveSourceEventArgs e)
+        private void OnResolveSource(object sender, CacheAcquireResolvingEventArgs e)
         {
-            e.Result = InstallWaitingModel.ShouldDownloadDependencies
-                ? Result.Download
-                : Result.Ignore;
+            e.Action = InstallWaitingModel.ShouldDownloadDependencies
+                ? CacheResolveOperation.Download
+                : CacheResolveOperation.None;
         }
     }
 }

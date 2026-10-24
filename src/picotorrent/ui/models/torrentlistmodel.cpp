@@ -267,11 +267,6 @@ bool TorrentListModel::GetAttrByRow(unsigned int row, unsigned int col, wxDataVi
     return false;
 }
 
-wxString TorrentListModel::GetColumnType(unsigned int) const
-{
-    return "string";
-}
-
 unsigned int TorrentListModel::GetCount() const
 {
     return m_filtered.size();

@@ -1,17 +1,3 @@
-include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
-
-set(THIRDPARTY_DIR ${CMAKE_BINARY_DIR}/runtime/thirdparty)
-set(UTFCPP_DIR ${THIRDPARTY_DIR}/utfcpp)
-ExternalProject_Add(
-  utfcpp
-  GIT_REPOSITORY        "git://github.com/nemtrif/utfcpp"
-  GIT_TAG               "v3.1.1"
-  SOURCE_DIR            ${UTFCPP_DIR}
-  UPDATE_DISCONNECTED   1
-  CMAKE_ARGS            -DCMAKE_INSTALL_PREFIX=${UTFCPP_DIR}/install -Dgtest_force_shared_crt=ON
-  TEST_AFTER_INSTALL    1
-  STEP_TARGETS          build)
-
 set(ANTLR4_SOURCE_DIR "../../vendor/antlr4/runtime/Cpp")
 
 file(GLOB libantlrcpp_SRC
@@ -55,17 +41,21 @@ target_include_directories(
     ${ANTLR4_SOURCE_DIR}/runtime/src/tree
     ${ANTLR4_SOURCE_DIR}/runtime/src/tree/pattern
     ${ANTLR4_SOURCE_DIR}/runtime/src/tree/xpath
-    ${UTFCPP_DIR}/install/include/utf8cpp
-    ${UTFCPP_DIR}/install/include/utf8cpp/utf8
+)
+
+target_link_libraries(
+    antlr4
+    PUBLIC
+    utf8cpp::utf8cpp
 )
 
 add_library(
     PicoTorrentPQL
     STATIC
-    generated/QueryBaseVisitor
-    generated/QueryLexer
-    generated/QueryParser
-    generated/QueryVisitor
+    generated/QueryBaseVisitor.cpp
+    generated/QueryLexer.cpp
+    generated/QueryParser.cpp
+    generated/QueryVisitor.cpp
 )
 
 target_include_directories(

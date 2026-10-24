@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
-using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+using WixToolset.BootstrapperApplicationApi;
 using PicoTorrentBootstrapper.ViewModels;
 using PicoTorrentBootstrapper.Views;
 
@@ -15,6 +15,17 @@ namespace PicoTorrentBootstrapper
         public static Dispatcher Dispatcher { get; private set; }
 
         public static Window View { get; private set; }
+
+        public IEngine Engine => this.engine;
+
+        public IBootstrapperCommand Command { get; private set; }
+
+        protected override void OnCreate(CreateEventArgs args)
+        {
+            base.OnCreate(args);
+
+            this.Command = args.Command;
+        }
 
         public static void LaunchProcess(string fileName)
         {

@@ -20,7 +20,7 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 - Native look-and-feel across Windows versions.
 - Easy to use with high performance.
 
-*The portable version of PicoTorrent requires manual installation of [the Microsoft Visual C++ Redistributable for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/).*
+*The portable version of PicoTorrent requires manual installation of [the Microsoft Visual C++ Redistributable for Visual Studio 2026](https://visualstudio.microsoft.com/downloads/).*
 
 
 ## Download for Windows
@@ -30,23 +30,17 @@ Rasterbar-libtorrent to provide high performance and low memory usage.
 
 ## Building PicoTorrent
 
-To successfully build PicoTorrent, you need the following libraries and
-applications installed,
+To successfully build PicoTorrent, you need the following installed,
 
- * [CMake (>= v3.14)](https://cmake.org/download/).
- * [Visual Studio 2019 Build Tools](https://visualstudio.microsoft.com/downloads/) (or regular Visual Studio 2019) with the C++ toolset.
- * [OpenSSL v1.1.1](https://slproweb.com/products/Win32OpenSSL.html) (*not*
-   the light version) for the architecture you plan on building. Both Win32
-   and Win64 can be installed side by side.
- * [Boost 1.73.0](https://www.boost.org).
- * [Chocolatey](https://chocolatey.org/install) (Optional) if you plan to build
-   or test the Chocolatey package.
- * [.NET Core](https://dotnet.microsoft.com/download). Used for the build scripts.
+ * [CMake (>= v3.20)](https://cmake.org/download/).
+ * [Visual Studio 2026 Build Tools](https://visualstudio.microsoft.com/downloads/) (or regular Visual Studio 2026) with the C++ toolset (v145).
+ * [vcpkg](https://github.com/microsoft/vcpkg) — the Visual Studio integration works, or set `VCPKG_ROOT` to a local clone. Dependencies are restored from `vcpkg.json` in manifest mode (no system OpenSSL/Boost needed).
+ * [.NET SDK 10](https://dotnet.microsoft.com/download). Used for the build scripts.
 
 ```
 λ git submodule update --init --recursive
 λ dotnet tool restore
-λ dotnet cake --platorm=[x86|x64] --configuration=[Debug|Release]
+λ dotnet cake --platform=x64 --configuration=Release
 ```
 
 
@@ -57,5 +51,5 @@ PicoTorrent uses [Weblate](https://translate.picotorrent.org/) to handle the tra
 
 ## License
 
-Copyright (c) Viktor Elofsson and contributors. PicoTorrent is provided
+Copyright (c) 2015-2026 Viktor Elofsson and contributors. PicoTorrent is provided
 as-is under the MIT license. For more information see [LICENSE](LICENSE).

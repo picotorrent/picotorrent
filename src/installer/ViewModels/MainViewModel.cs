@@ -1,5 +1,5 @@
-﻿using Microsoft.Deployment.WindowsInstaller;
-using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+using WixToolset.Dtf.WindowsInstaller;
+using WixToolset.BootstrapperApplicationApi;
 using PicoTorrentBootstrapper.Models;
 using PicoTorrentBootstrapper.Views;
 using System;
@@ -12,7 +12,7 @@ namespace PicoTorrentBootstrapper.ViewModels
 {
     public sealed class MainViewModel : PropertyNotifyBase
     {
-        private readonly BootstrapperApplication _bootstrapper;
+        private readonly PicoBA _bootstrapper;
         private readonly Window _mainWindow;
 
         private DetectionState _detectState;
@@ -23,7 +23,7 @@ namespace PicoTorrentBootstrapper.ViewModels
         private ICommand _cancelCommand;
         private ICommand _closeCommand;
 
-        public MainViewModel(BootstrapperApplication ba, Window mainWindow)
+        public MainViewModel(PicoBA ba, Window mainWindow)
         {
             _bootstrapper = ba ?? throw new ArgumentNullException(nameof(ba));
             _mainWindow = mainWindow ?? throw new ArgumentNullException(nameof(mainWindow));
@@ -202,7 +202,7 @@ namespace PicoTorrentBootstrapper.ViewModels
 
         private void OnDetectBegin(object sender, DetectBeginEventArgs e)
         {
-            DetectState = e.Installed
+            DetectState = e.RegistrationType == RegistrationType.Full
                 ? DetectionState.Present
                 : DetectionState.Absent;
         }
@@ -241,9 +241,15 @@ namespace PicoTorrentBootstrapper.ViewModels
 
         private void OnDetectRelatedBundle(object sender, DetectRelatedBundleEventArgs e)
         {
-            if (e.Operation == RelatedOperation.Downgrade)
+            // A related bundle with a higher version means installing this bundle would downgrade.
+            if (e.RelationType == RelationType.Upgrade || e.RelationType == RelationType.Update)
             {
-                _downgrade = true;
+                var ourVersion = _bootstrapper.Engine.GetVariableString("WixBundleVersion");
+
+                if (_bootstrapper.Engine.CompareVersions(e.Version, ourVersion) > 0)
+                {
+                    _downgrade = true;
+                }
             }
         }
 
@@ -265,8 +271,8 @@ namespace PicoTorrentBootstrapper.ViewModels
                     var firewallFeature = existingProduct.GetFeatureState("F_Firewall");
                     var associationFeature = existingProduct.GetFeatureState("F_Handlers");
 
-                    InstallModel.InstallWaitingModel.AddWindowsFirewallException = firewallFeature == Microsoft.Deployment.WindowsInstaller.InstallState.Local;
-                    InstallModel.InstallWaitingModel.RegisterFileProtocolHandlers = associationFeature == Microsoft.Deployment.WindowsInstaller.InstallState.Local;
+                    InstallModel.InstallWaitingModel.AddWindowsFirewallException = firewallFeature == WixToolset.Dtf.WindowsInstaller.InstallState.Local;
+                    InstallModel.InstallWaitingModel.RegisterFileProtocolHandlers = associationFeature == WixToolset.Dtf.WindowsInstaller.InstallState.Local;
                 }
                 catch (ArgumentException argException)
                 {

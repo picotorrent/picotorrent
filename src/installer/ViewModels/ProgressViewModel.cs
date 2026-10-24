@@ -1,4 +1,4 @@
-﻿using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+using WixToolset.BootstrapperApplicationApi;
 using PicoTorrentBootstrapper.Models;
 using System;
 using System.ComponentModel;
@@ -7,7 +7,7 @@ namespace PicoTorrentBootstrapper.ViewModels
 {
     public sealed class ProgressViewModel : PropertyNotifyBase
     {
-        private readonly BootstrapperApplication _bootstrapper;
+        private readonly PicoBA _bootstrapper;
         private readonly MainViewModel _mainModel;
 
         private int _cacheProgress;
@@ -16,12 +16,12 @@ namespace PicoTorrentBootstrapper.ViewModels
         private int _progress;
         private int _progressPhases;
 
-        public ProgressViewModel(BootstrapperApplication bootstrapper, MainViewModel mainModel)
+        public ProgressViewModel(PicoBA bootstrapper, MainViewModel mainModel)
         {
             _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
             _mainModel = mainModel ?? throw new ArgumentNullException(nameof(mainModel));
 
-            _bootstrapper.ApplyPhaseCount += (sender, args) => _progressPhases = args.PhaseCount;
+            _bootstrapper.ApplyBegin += (sender, args) => _progressPhases = args.PhaseCount;
             _bootstrapper.CacheAcquireProgress += OnCacheAcquireProgress;
             _bootstrapper.CacheComplete += OnCacheComplete;
             _bootstrapper.ExecuteMsiMessage += OnExecuteMsiMessage;
@@ -55,9 +55,7 @@ namespace PicoTorrentBootstrapper.ViewModels
                 _cacheProgress = e.OverallPercentage;
                 Progress = (_cacheProgress + _executeProgress) / _progressPhases;
 
-                e.Result = _mainModel.Canceled
-                    ? Result.Cancel
-                    : Result.Ok;
+                e.Cancel = _mainModel.Canceled;
             }
         }
 
@@ -97,9 +95,7 @@ namespace PicoTorrentBootstrapper.ViewModels
                     _bootstrapper.Engine.SendEmbeddedProgress(e.ProgressPercentage, Progress);
                 }
 
-                e.Result = _mainModel.Canceled
-                    ? Result.Cancel
-                    : Result.Ok;
+                e.Cancel = _mainModel.Canceled;
             }
         }
 
@@ -107,9 +103,7 @@ namespace PicoTorrentBootstrapper.ViewModels
         {
             lock (this)
             {
-                e.Result = _mainModel.Canceled
-                    ? Result.Cancel
-                    : Result.Ok;
+                e.Cancel = _mainModel.Canceled;
             }
         }
 

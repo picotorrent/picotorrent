@@ -1,19 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<?if $(var.Platform) = "x64" ?>
-    <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
-<?else ?>
-    <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
-<?endif ?>
-
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
-        <Directory Id="TARGETDIR" Name="SourceDir">
-            <Directory Id="$(var.PlatformProgramFilesFolder)" Name="PFiles">
-                <Directory Id="INSTALLDIR" Name="PicoTorrent" />
-            </Directory>
+        <StandardDirectory Id="ProgramFiles64Folder">
+            <Directory Id="INSTALLDIR" Name="PicoTorrent" />
+        </StandardDirectory>
 
-            <Directory Id="ProgramMenuFolder" />
-        </Directory>
+        <StandardDirectory Id="ProgramMenuFolder" />
     </Fragment>
 </Wix>

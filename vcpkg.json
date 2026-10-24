@@ -2,11 +2,13 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "picotorrent",
   "version-string": "1",
+  "builtin-baseline": "1460b31b08c42cc2e9ac2c79f45ec8707e2675e2",
   "dependencies": [
     "boost-log",
     "fmt",
     "libtorrent",
     "nlohmann-json",
-    "sqlite3"
+    "sqlite3",
+    "utfcpp"
   ]
 }

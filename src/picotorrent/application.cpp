@@ -9,7 +9,6 @@
 #include <wx/taskbarbutton.h>
 
 #include "api/libpico_impl.hpp"
-#include "crashpadinitializer.hpp"
 #include "persistencemanager.hpp"
 #include "core/configuration.hpp"
 #include "core/database.hpp"
@@ -86,7 +85,6 @@ bool Application::OnInit()
     }
 
     auto env = pt::Core::Environment::Create();
-    pt::CrashpadInitializer::Initialize(env);
 
     auto db = std::make_shared<pt::Core::Database>(env);
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+using WixToolset.BootstrapperApplicationApi;
 using System;
 using System.Windows.Input;
 
@@ -6,7 +6,7 @@ namespace PicoTorrentBootstrapper.ViewModels
 {
     public sealed class InstallWaitingViewModel : PropertyNotifyBase
     {
-        private readonly BootstrapperApplication _bootstrapper;
+        private readonly PicoBA _bootstrapper;
 
         private bool _addWindowsFirewallException;
         private bool _downloadDependencies;
@@ -14,7 +14,7 @@ namespace PicoTorrentBootstrapper.ViewModels
         private string _installLocation;
         private ICommand _changeInstallLocationCommand;
 
-        public InstallWaitingViewModel(BootstrapperApplication bootstrapper)
+        public InstallWaitingViewModel(PicoBA bootstrapper)
         {
             _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
 
@@ -43,7 +43,7 @@ namespace PicoTorrentBootstrapper.ViewModels
             get { return _installLocation; }
             set
             {
-                _bootstrapper.Engine.StringVariables["InstallFolder"] = value;
+                _bootstrapper.Engine.SetVariableString("InstallFolder", value, true);
                 _installLocation = value;
                 OnPropertyChanged(nameof(InstallLocation));
             }
@@ -54,7 +54,7 @@ namespace PicoTorrentBootstrapper.ViewModels
             get { return _addWindowsFirewallException; }
             set
             {
-                _bootstrapper.Engine.StringVariables["SKIP_FIREWALL_EXCEPTION"] = value ? "0" : "1";
+                _bootstrapper.Engine.SetVariableString("SKIP_FIREWALL_EXCEPTION", value ? "0" : "1", true);
                 _addWindowsFirewallException = value;
                 OnPropertyChanged(nameof(AddWindowsFirewallException));
             }
@@ -65,7 +65,7 @@ namespace PicoTorrentBootstrapper.ViewModels
             get { return _registerFileProtocolHandlers; }
             set
             {
-                _bootstrapper.Engine.StringVariables["SKIP_ASSOCIATE_FILES"] = value ? "0" : "1";
+                _bootstrapper.Engine.SetVariableString("SKIP_ASSOCIATE_FILES", value ? "0" : "1", true);
                 _registerFileProtocolHandlers = value;
                 OnPropertyChanged(nameof(RegisterFileProtocolHandlers));
             }
@@ -76,7 +76,7 @@ namespace PicoTorrentBootstrapper.ViewModels
             get { return _downloadDependencies; }
             set
             {
-                _bootstrapper.Engine.StringVariables["INSTALL_VCREDIST"] = value ? "1" : "0";
+                _bootstrapper.Engine.SetVariableString("INSTALL_VCREDIST", value ? "1" : "0", true);
                 _downloadDependencies = value;
                 OnPropertyChanged(nameof(ShouldDownloadDependencies));
             }
@@ -84,9 +84,9 @@ namespace PicoTorrentBootstrapper.ViewModels
 
         public void Refresh()
         {
-            if (_bootstrapper.Engine.StringVariables.Contains("InstallFolder"))
+            if (_bootstrapper.Engine.ContainsVariable("InstallFolder"))
             {
-                InstallLocation = _bootstrapper.Engine.FormatString(_bootstrapper.Engine.StringVariables["InstallFolder"]).TrimEnd('\\');
+                InstallLocation = _bootstrapper.Engine.FormatString(_bootstrapper.Engine.GetVariableString("InstallFolder")).TrimEnd('\\');
             }
         }
 

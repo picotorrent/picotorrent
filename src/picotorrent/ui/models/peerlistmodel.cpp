@@ -68,16 +68,6 @@ void PeerListModel::Update(std::vector<lt::peer_info> const& peers)
     }
 }
 
-unsigned int PeerListModel::GetColumnCount() const
-{
-    return Column::_Max;
-}
-
-wxString PeerListModel::GetColumnType(unsigned int) const
-{
-    return "string";
-}
-
 void PeerListModel::GetValueByRow(wxVariant &variant, unsigned int row, unsigned int col) const
 {
     lt::peer_info const& peer = m_data.at(row);

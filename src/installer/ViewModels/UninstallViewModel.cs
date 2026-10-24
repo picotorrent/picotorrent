@@ -1,4 +1,4 @@
-﻿using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+using WixToolset.BootstrapperApplicationApi;
 using PicoTorrentBootstrapper.Models;
 using PicoTorrentBootstrapper.Views;
 using System;
@@ -10,12 +10,12 @@ namespace PicoTorrentBootstrapper.ViewModels
 {
     public sealed class UninstallViewModel : PropertyNotifyBase
     {
-        private readonly BootstrapperApplication _bootstrapper;
+        private readonly PicoBA _bootstrapper;
         private readonly MainViewModel _mainModel;
 
         private ICommand _uninstallCommand;
 
-        public UninstallViewModel(BootstrapperApplication bootstrapper, MainViewModel mainModel)
+        public UninstallViewModel(PicoBA bootstrapper, MainViewModel mainModel)
         {
             _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
             _mainModel = mainModel ?? throw new ArgumentNullException(nameof(mainModel));

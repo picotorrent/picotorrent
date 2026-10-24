@@ -37,8 +37,6 @@ namespace Models
         void Update(std::vector<libtorrent::peer_info> const&);
 
     private:
-        unsigned int GetColumnCount() const wxOVERRIDE;
-        wxString GetColumnType(unsigned int col) const wxOVERRIDE;
         void GetValueByRow(wxVariant &variant, unsigned row, unsigned col) const wxOVERRIDE;
         bool SetValueByRow(const wxVariant &variant, unsigned row, unsigned col) wxOVERRIDE;
 

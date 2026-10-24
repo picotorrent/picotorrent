@@ -6,42 +6,34 @@
     <?define UpgradeCode = "2611493f-f5d7-4c5d-934a-623c9a7c7b36" ?>
 <?endif ?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
-    <Product Id="*"
+    <Package ProductCode="*"
         UpgradeCode="$(var.UpgradeCode)"
         Name="PicoTorrent"
         Manufacturer="PicoTorrent contributors"
         Language="1033"
-        Version="$(var.Version)">
+        Version="$(var.Version)"
+        Scope="perMachine"
+        InstallerVersion="301">
 
-        <Package Id="*"
-            Description="PicoTorrent installer"
-            Compressed="yes"
-            InstallScope="perMachine"
-            InstallerVersion="301" />
+        <SummaryInformation Description="PicoTorrent installer" />
 
         <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit." />
 
-        <Media Id="1" Cabinet="PicoTorrent.cab" EmbedCab="yes" CompressionLevel="high" />
+        <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
         <Icon Id="I_PicoTorrent.ico" SourceFile="$(var.ResourceDirectory)\app.ico" />
 
-        <DirectoryRef Id="TARGETDIR" />
-
+        <!-- Schedules before InstallValidate automatically (WiX v4+). -->
         <util:CloseApplication Id="CloseApp"
                                Target="PicoTorrent.exe"
                                RebootPrompt="no"
                                EndSessionMessage="yes" />
 
-        <InstallExecuteSequence>
-            <Custom Action="WixCloseApplications"
-                    Before="InstallValidate">1</Custom>
-        </InstallExecuteSequence>
-
         <Feature Id="F_Complete"
                  Title="PicoTorrent"
-                 Absent="disallow"
+                 AllowAbsent="no"
                  ConfigurableDirectory="INSTALLDIR"
                  Display="expand"
                  Level="1">
@@ -49,20 +41,20 @@
             <ComponentGroupRef Id="CG_MainApplication" />
 
             <Feature Id="F_Firewall"
-                     Absent="allow"
+                     AllowAbsent="yes"
                      Level="1">
-                <Condition Level="0">SKIP_FIREWALL_EXCEPTION = 1</Condition>
+                <Level Condition="SKIP_FIREWALL_EXCEPTION = 1" Value="0" />
                 <ComponentGroupRef Id="CG_FirewallException" />
             </Feature>
 
             <Feature Id="F_Handlers"
-                     Absent="allow"
+                     AllowAbsent="yes"
                      Level="1">
-                <Condition Level="0">SKIP_ASSOCIATE_FILES = 1</Condition>
+                <Level Condition="SKIP_ASSOCIATE_FILES = 1" Value="0" />
                 <ComponentGroupRef Id="CG_Associations" />
             </Feature>
         </Feature>
 
         <Property Id="ARPPRODUCTICON" Value="I_PicoTorrent.ico" />
-    </Product>
+    </Package>
 </Wix>

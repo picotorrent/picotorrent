@@ -1,16 +1,6 @@
 [submodule "vendor/wx"]
 	path = vendor/wx
 	url = https://github.com/wxWidgets/wxWidgets
-[submodule "vendor/duktape"]
-[submodule "vendor/crashpad"]
-	path = vendor/crashpad
-	url = https://github.com/picotorrent/crashpad
-[submodule "vendor/sentry-crashpad"]
-	path = vendor/sentry-crashpad
-	url = https://github.com/picotorrent/sentry-crashpad
 [submodule "vendor/antlr4"]
 	path = vendor/antlr4
 	url = https://github.com/antlr/antlr4
-[submodule "vendor/vcpkg"]
-	path = vendor/vcpkg
-	url = https://github.com/microsoft/vcpkg

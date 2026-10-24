@@ -282,16 +282,6 @@ void TrackerListModel::Update(pt::BitTorrent::TorrentHandle* torrent)
     }
 }
 
-unsigned int TrackerListModel::GetColumnCount() const
-{
-    return Column::_Max;
-}
-
-wxString TrackerListModel::GetColumnType(unsigned int) const
-{
-    return "string";
-}
-
 void TrackerListModel::GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const
 {
     wxASSERT(item.IsOk());

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:fw="http://schemas.microsoft.com/wix/FirewallExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:fw="http://wixtoolset.org/schemas/v4/wxs/firewall">
     <Fragment>
         <ComponentGroup Id="CG_MainApplication" Directory="INSTALLDIR">
             <Component Id="C_PicoTorrent.exe" Guid="5eb6d6ac-dc76-4fac-80ff-f31a4c05f205">
@@ -24,13 +24,6 @@
                     KeyPath="yes"
                     Name="coredb.sqlite"
                     Source="$(var.PublishDirectory)\coredb.sqlite" />
-            </Component>
-
-            <Component Id="C_crashpad_handler.exe" Guid="99f10c73-7f2e-466b-a46b-cf755f884823">
-                <File Id="F_crashpad_handler.exe"
-                    KeyPath="yes"
-                    Name="crashpad_handler.exe"
-                    Source="$(var.PublishDirectory)\crashpad_handler.exe" />
             </Component>
 
             <Component Id="C_Plugin_Updater.dll" Guid="32b14933-0426-4e75-a115-56f2a9d21286">

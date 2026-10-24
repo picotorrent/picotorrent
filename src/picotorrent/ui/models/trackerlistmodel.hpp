@@ -66,8 +66,6 @@ namespace Models
         virtual ~TrackerListModel();
 
         // Things we need to override
-        unsigned int GetColumnCount() const wxOVERRIDE;
-        wxString GetColumnType(unsigned int col) const wxOVERRIDE;
         void GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const wxOVERRIDE;
         bool SetValue(const wxVariant& variant, const wxDataViewItem& item, unsigned int col) wxOVERRIDE;
         wxDataViewItem GetParent(const wxDataViewItem& item) const wxOVERRIDE;
